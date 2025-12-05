@@ -412,7 +412,7 @@ This confirms the agent is *learning*---eventually performing as well as the ora
 ### Solution
 
 ```python
-# Cumulative regret: Regret(T) = Σ_{t=1}^T (R*_t - R_t)
+# Cumulative regret: Regret(T) = Sum_{t=1}^T (R*_t - R_t)
 # where R*_t is oracle reward and R_t is agent reward
 
 # Run 2000 episodes with geometric decay: eps_t = 0.9 * 0.998^t
@@ -555,7 +555,7 @@ Analysis:
 
 3. **Optimistic initialization:** We initialize CM2 estimates at $10.0$ (optimistic). As estimates converge to true values, many actions become infeasible, leading to policy instability.
 
-**Better Approaches (Chapter 3, §3.6):**
+**Better Approaches (Chapter 3, Section 3.6):**
 
 1. **Lagrangian relaxation:** Instead of hard constraints, penalize violations:
    $$\max_\pi \mathbb{E}[R] - \lambda(\tau - \mathbb{E}[\text{CM2}])$$

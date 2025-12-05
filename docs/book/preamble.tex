@@ -1,19 +1,9 @@
-% LaTeX preamble for callout boxes
+% LaTeX preamble for PDF compilation
+% Minimal configuration - source files use proper LaTeX commands
+
 \usepackage{tcolorbox}
-\usepackage{newunicodechar}
 
-% Map Unicode special characters to LaTeX commands
-\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
-\newunicodechar{→}{\ensuremath{\rightarrow}}
-\newunicodechar{←}{\ensuremath{\leftarrow}}
-\newunicodechar{≥}{\ensuremath{\geq}}
-\newunicodechar{≤}{\ensuremath{\leq}}
-\newunicodechar{≈}{\ensuremath{\approx}}
-\newunicodechar{π}{\ensuremath{\pi}}
-\newunicodechar{ε}{\ensuremath{\varepsilon}}
-\newunicodechar{α}{\ensuremath{\alpha}}
-
-% Define CalloutNote environment
+% Define CalloutNote environment for callout boxes
 \newtcolorbox{CalloutNote}[1]{
   colback=blue!5!white,
   colframe=blue!75!black,

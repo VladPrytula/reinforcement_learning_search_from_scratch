@@ -1,8 +1,8 @@
-# Chapter 0 — Exercises & Labs (Application Mode)
+# Chapter 0 --- Exercises \& Labs (Application Mode)
 
 We keep every experiment executable. These warm-ups extend the Chapter 0 toy environment and force you to compare learning curves against the analytical expectations stated in the draft.
 
-## Lab 0.1 — Tabular Boost Search (Toy World)
+## Lab 0.1 --- Tabular Boost Search (Toy World)
 
 Goal: reproduce the $\geq 90\%$ of oracle guarantee using the public `scripts/ch00/toy_problem_solution.py`.
 
@@ -29,13 +29,13 @@ results = run_learning_experiment(
     n_eval=120,
     seed=314,
 )
-print(f"Final mean reward: {results['final_mean']:.2f} (target ≥ 0.90 × oracle)")
+print(f"Final mean reward: {results['final_mean']:.2f} (target >= 0.90 * oracle)")
 print(f"Per-user reward: {results['final_per_user']}")
 ```
 
 Output (representative):
 ```
-Final mean reward: 16.13 (target ≥ 0.90 × oracle)
+Final mean reward: 16.13 (target >= 0.90 * oracle)
 Per-user reward: {'price_hunter': 14.62, 'premium': 22.65, 'bulk_buyer': 11.02}
 ```
 
@@ -44,9 +44,9 @@ Per-user reward: {'price_hunter': 14.62, 'premium': 22.65, 'bulk_buyer': 11.02}
 2. Highlight which segments remain under-optimized and tie that back to action-grid resolution (Section 0.3).
 3. Export the figure `toy_problem_learning_curves.png` produced by the script and annotate regime changes (exploration vs exploitation) in your lab notes.
 
-## Exercise 0.2 — Stress-Testing Reward Weights
+## Exercise 0.2 --- Stress-Testing Reward Weights
 
-This exercise validates the sensitivity discussion in §0.3.2. Modify the toy reward to overweight engagement and measure how Q-learning reacts:
+This exercise validates the sensitivity discussion in Section 0.3.2. Modify the toy reward to overweight engagement and measure how Q-learning reacts:
 
 ```python
 from scripts.ch00.toy_problem_solution import (
@@ -77,14 +77,14 @@ Reward with delta=0.3: 0.30
 
 ---
 
-## Exercise 0.1 — Reward Sensitivity Analysis
+## Exercise 0.1 --- Reward Sensitivity Analysis
 
 **Goal:** Compare learned policies under different reward configurations.
 
 Three configurations to test:
-- **(a) Pure GMV:** $(α, β, δ) = (1.0, 0.0, 0.0)$
-- **(b) Profit-focused:** $(α, β, δ) = (0.4, 0.5, 0.1)$
-- **(c) Engagement-heavy:** $(α, β, δ) = (0.5, 0.2, 0.3)$
+- **(a) Pure GMV:** $(\alpha, \beta, \delta) = (1.0, 0.0, 0.0)$
+- **(b) Profit-focused:** $(\alpha, \beta, \delta) = (0.4, 0.5, 0.1)$
+- **(c) Engagement-heavy:** $(\alpha, \beta, \delta) = (0.5, 0.2, 0.3)$
 
 ```python
 from scripts.ch00.lab_solutions import exercise_0_1_reward_sensitivity
@@ -101,7 +101,7 @@ results = exercise_0_1_reward_sensitivity(seed=42)
 
 ---
 
-## Exercise 0.2 — Action Geometry and the Cold Start Problem
+## Exercise 0.2 --- Action Geometry and the Cold Start Problem
 
 **Learning objective:** Understand how exploration strategy effectiveness depends on policy quality.
 
@@ -109,17 +109,17 @@ This is the pedagogical highlight of Chapter 0. You'll form a hypothesis, test i
 
 ### Setup
 
-We compare two ε-greedy exploration strategies on the toy world:
+We compare two $\varepsilon$-greedy exploration strategies on the toy world:
 - **Uniform exploration:** When exploring, sample ANY action uniformly from the 25-action grid
-- **Local exploration:** When exploring, sample only NEIGHBORS (±1 grid cell) of the current best action
+- **Local exploration:** When exploring, sample only NEIGHBORS ($\pm 1$ grid cell) of the current best action
 
-### Part A — Form Hypothesis (5 min)
+### Part A --- Form Hypothesis (5 min)
 
 Before running experiments, predict: *Which strategy will converge faster?*
 
 Write down your reasoning. The intuitive answer is "local exploration should be more efficient because it exploits structure near good solutions."
 
-### Part B — Cold Start Experiment (10 min)
+### Part B --- Cold Start Experiment (10 min)
 
 Run both strategies from random initialization (Q=0 everywhere):
 
@@ -139,7 +139,7 @@ results = exercise_0_2_action_geometry(
 1. Which strategy wins? By how much?
 2. Does this match your hypothesis?
 
-### Part C — Diagnosis (10 min)
+### Part C --- Diagnosis (10 min)
 
 The code reports action coverage. Examine how many of the 25 actions each strategy explored.
 
@@ -148,7 +148,7 @@ The code reports action coverage. Examine how many of the 25 actions each strate
 2. What does "cold start problem" mean in this context?
 3. Why is the local agent doing "local refinement of garbage"?
 
-### Part D — Warm Start Experiment (10 min)
+### Part D --- Warm Start Experiment (10 min)
 
 The code also runs a warm start experiment: first train with uniform for 200 episodes, then compare strategies for 300 more episodes.
 
@@ -157,12 +157,12 @@ The code also runs a warm start experiment: first train with uniform for 200 epi
 2. Why is local exploration now competitive?
 3. When would local exploration actually *win*?
 
-### Part E — Synthesis (15 min)
+### Part E --- Synthesis (15 min)
 
 Connect your findings to real RL algorithms:
 
 1. **SAC** uses entropy regularization that naturally decays. How does this relate to the cold start problem?
-2. **ε-greedy** schedules typically decay ε from 0.9 → 0.05. Why?
+2. **$\varepsilon$-greedy** schedules typically decay $\varepsilon$ from 0.9 $\rightarrow$ 0.05. Why?
 3. **Optimistic initialization** (starting with high Q-values) is a common trick. How does it help with cold start?
 
 **Deliverable:** Write a 1-paragraph guideline for choosing exploration strategies based on policy maturity.
@@ -171,7 +171,7 @@ Connect your findings to real RL algorithms:
 
 ---
 
-## Exercise 0.3 — Regret Analysis
+## Exercise 0.3 --- Regret Analysis
 
 **Goal:** Track cumulative regret and verify sublinear scaling.
 
@@ -184,13 +184,13 @@ results = exercise_0_3_regret_analysis(n_train=2000, seed=42)
 **What to analyze:**
 1. Is regret sublinear? (Does average regret per episode decrease?)
 2. Fit the curve to $\text{Regret}(T) \approx C \cdot T^\alpha$. What is $\alpha$?
-3. Compare to theory: constant ε-greedy gives $O(T^{2/3})$, decaying ε gives $O(\sqrt{T \log T})$
+3. Compare to theory: constant $\varepsilon$-greedy gives $O(T^{2/3})$, decaying $\varepsilon$ gives $O(\sqrt{T \log T})$
 
 **Time estimate:** 20 minutes
 
 ---
 
-## Exercise 0.4 — Constrained Q-Learning with CM2 Floor
+## Exercise 0.4 --- Constrained Q-Learning with CM2 Floor
 
 **Goal:** Add profitability constraint $\mathbb{E}[\text{CM2} \mid x, a] \geq \tau$ and study the GMV-CM2 tradeoff.
 
@@ -205,13 +205,13 @@ results = exercise_0_4_constrained_qlearning(seed=42)
 2. What causes the high violation rates?
 3. Propose an alternative approach (hint: Lagrangian relaxation, chance constraints)
 
-**Connection to Chapter 3:** This motivates the CMDP formalism in §3.6.
+**Connection to Chapter 3:** This motivates the CMDP formalism in Section 3.6.
 
 **Time estimate:** 25 minutes
 
 ---
 
-## Exercise 0.5 — Bandit-Bellman Bridge (Conceptual)
+## Exercise 0.5 --- Bandit-Bellman Bridge (Conceptual)
 
 **Goal:** Show that contextual bandit Q-learning is the $\gamma = 0$ case of MDP Q-learning.
 

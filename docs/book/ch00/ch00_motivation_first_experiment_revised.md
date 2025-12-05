@@ -1,10 +1,10 @@
-# Chapter 0 — Motivation: Your First RL Experiment
+# Chapter 0 --- Motivation: Your First RL Experiment
 
 *Vlad Prytula*
 
 ## 0.0 Who Should Read This?
 
-This is an **optional but highly recommended warm-up**. It's deliberately light on mathematics and heavy on code. You'll build a tiny search world, train a small agent to learn context-adaptive boost weights, and see the core RL loop in action. The rest of the book (Chapters 1–3) provides the rigorous foundations that explain *why* this works and *when* it fails.
+This is an **optional but highly recommended warm-up**. It's deliberately light on mathematics and heavy on code. You'll build a tiny search world, train a small agent to learn context-adaptive boost weights, and see the core RL loop in action. The rest of the book (Chapters 1--3) provides the rigorous foundations that explain *why* this works and *when* it fails.
 
 **If you're a practitioner:** Start here. Get your hands dirty with a working system in 30 minutes. Return to the theory when you need deeper understanding.
 
@@ -18,11 +18,11 @@ This is an **optional but highly recommended warm-up**. It's deliberately light 
 
 You've just joined the search team at **zooplus**, Europe's leading pet supplies retailer. Your first task seems straightforward: improve the ranking for "cat food" searches.
 
-The current system uses Elasticsearch's BM25 relevance plus some manual boost multipliers—a `category_match` bonus, a `discount_boost` for promotions, a `margin_boost` for profitable products. Your manager hands you last week's A/B test results and says:
+The current system uses Elasticsearch's BM25 relevance plus some manual boost multipliers---a `category_match` bonus, a `discount_boost` for promotions, a `margin_boost` for profitable products. Your manager hands you last week's A/B test results and says:
 
 > "Revenue is flat, but profit dropped 8%. Can you fix the boosts by Friday?"
 
-You dig into the data. The test increased `discount_boost` from 1.5 to 2.5, hoping to drive sales. It worked—clicks went up 12%. But the wrong people clicked. Price-sensitive shoppers loved the discounted bulk bags. Premium customers, who usually buy veterinary-grade specialty foods, saw cheap products ranked first and bounced. Click-through rate (CTR) rose, but conversion rate (CVR) plummeted for high-value segments.
+You dig into the data. The test increased `discount_boost` from 1.5 to 2.5, hoping to drive sales. It worked---clicks went up 12%. But the wrong people clicked. Price-sensitive shoppers loved the discounted bulk bags. Premium customers, who usually buy veterinary-grade specialty foods, saw cheap products ranked first and bounced. Click-through rate (CTR) rose, but conversion rate (CVR) plummeted for high-value segments.
 
 **The problem is clear:** One set of boost weights cannot serve all users. Price hunters need discount_boost = 2.5. Premium shoppers need discount_boost = 0.3. Bulk buyers fall somewhere in between.
 
@@ -34,7 +34,7 @@ You need **context-adaptive weights** that adjust to user type. But testing all 
 
 ## 0.2 The Core Insight: Boosts as Actions
 
-Let's reframe the problem in RL language. Don't worry if these terms are unfamiliar—they'll make sense through the code.
+Let's reframe the problem in RL language. Don't worry if these terms are unfamiliar---they'll make sense through the code.
 
 **Context** (what we observe): User segment, query type, session history
 **Action** (what we choose): Boost weight template $\mathbf{w} = [w_{\text{discount}}, w_{\text{quality}}, w_{\text{margin}}, \ldots]$
@@ -96,7 +96,7 @@ class Product:
     margin: float          # Profit margin (0.1 = 10%)
     quality: float         # Brand quality score (0-1)
     discount: float        # Discount flag (0 or 1)
-    price: float           # € per item
+    price: float           # EUR per item
 ```
 
 Example: Product 3 is a premium veterinary diet (high quality, high margin, no discount, high price). Product 7 is a bulk discount bag (low quality, low margin, discounted, low price per kg).
@@ -107,12 +107,12 @@ We'll use deterministic generation with a fixed seed so results are reproducible
 
 The full action space is continuous: $\mathbf{a} = [w_{\text{discount}}, w_{\text{quality}}, w_{\text{margin}}] \in [-2, 2]^3$.
 
-For this chapter, we **discretize** to a 5×5 grid (25 templates) to keep learning tabular and fast:
+For this chapter, we **discretize** to a $5 \times 5$ grid (25 templates) to keep learning tabular and fast:
 
 ```python
 import numpy as np
 
-# Discretize [-1, 1] × [-1, 1] into a 5×5 grid
+# Discretize [-1, 1] x [-1, 1] into a 5x5 grid
 discount_values = np.linspace(-1, 1, 5)  # [-1.0, -0.5, 0.0, 0.5, 1.0]
 quality_values = np.linspace(-1, 1, 5)
 
@@ -137,9 +137,9 @@ $$
 
 **Components:**
 
-- **GMV** (Gross Merchandise Value): Total € purchased (simulated based on user preferences + product attributes + boost-induced ranking)
+- **GMV** (Gross Merchandise Value): Total EUR purchased (simulated based on user preferences + product attributes + boost-induced ranking)
 - **CM2** (Contribution Margin 2): Profitability after variable costs
-- **CLICKS**: Engagement signal (prevents pure GMV exploitation; see Chapter 1, §1.2.1 for why this matters)
+- **CLICKS**: Engagement signal (prevents pure GMV exploitation; see Chapter 1, Section 1.2.1 for why this matters)
 
 **Notes:**
 
@@ -158,8 +158,8 @@ Now we get to the core idea: **learn which boost template to use for each user t
 ### 0.4.1 Problem Recap
 
 - **Contexts** $\mathcal{X}$: Three user types `{price_hunter, premium, bulk_buyer}`
-- **Actions** $\mathcal{A}$: 25 boost templates (5×5 grid)
-- **Reward** $R$: Stochastic $R_{\text{toy}}$ from §0.3.4
+- **Actions** $\mathcal{A}$: 25 boost templates ($5 \times 5$ grid)
+- **Reward** $R$: Stochastic $R_{\text{toy}}$ from Section 0.3.4
 - **Goal**: Find a policy $\pi: \mathcal{X} \to \mathcal{A}$ that maximizes expected reward
 
 This is a **contextual bandit** (Chapter 1 makes this formal). Each episode:
@@ -230,15 +230,15 @@ def reward(x: str, a: Tuple[int, int]) -> float:
 
     Args:
         x: User type
-        a: Boost template indices (i, j) in [0, 4] × [0, 4]
+        a: Boost template indices (i, j) in [0, 4] x [0, 4]
 
     Returns:
-        Scalar reward ~ R_toy from §0.3.4
+        Scalar reward ~ R_toy from Section 0.3.4
     """
     i, j = a  # i = discount index, j = quality index
 
     # Map indices to [-1, 1] weights
-    # i=0 → w_discount=-1.0, i=4 → w_discount=1.0
+    # i=0 -> w_discount=-1.0, i=4 -> w_discount=1.0
     w_discount = -1.0 + 0.5 * i
     w_quality = -1.0 + 0.5 * j
 
@@ -282,7 +282,7 @@ def train(T: int = 3000, eps: float = 0.1, lr: float = 0.1) -> List[float]:
         # Simulate outcome and observe reward
         r = reward(x, a)
 
-        # Q-learning update: Q(x,a) ← (1-α)Q(x,a) + α·r
+        # Q-learning update: Q(x,a) <- (1-alpha)Q(x,a) + alpha*r
         Q[x][a] = (1 - lr) * Q[x][a] + lr * r
 
         history.append(r)
@@ -298,7 +298,7 @@ print(f"Final average reward (last 100 episodes): {np.mean(hist[-100:]):.3f}")
 print("\nLearned policy:")
 for x in X:
     a_star = max(A, key=lambda a: Q[x][a])
-    print(f"  {x:15s} → action {a_star} (Q = {Q[x][a_star]:.3f})")
+    print(f"  {x:15s} -> action {a_star} (Q = {Q[x][a_star]:.3f})")
 ```
 
 **Run it.** Copy this code, execute it. You should see output like:
@@ -306,19 +306,19 @@ for x in X:
 ```
 Final average reward (last 100 episodes): 1.640
 Learned policy:
-  price_hunter    → action (4, 1) (Q = 1.948)
-  premium         → action (1, 4) (Q = 2.289)
-  bulk_buyer      → action (2, 2) (Q = 0.942)
+  price_hunter    -> action (4, 1) (Q = 1.948)
+  premium         -> action (1, 4) (Q = 2.289)
+  bulk_buyer      -> action (2, 2) (Q = 0.942)
 ```
 
 **What just happened?**
 
-1. The agent explored 25 boost templates × 3 user types = 75 state-action pairs
+1. The agent explored 25 boost templates $\times$ 3 user types = 75 state-action pairs
 2. After 3000 episodes, it learned:
-   - **Price hunters**: Use `(4, 1)` = high discount boost (+1.0), low quality boost (−0.5)
-   - **Premium shoppers**: Use `(1, 4)` = low discount boost (−0.5), high quality boost (+1.0)
-   - **Bulk buyers**: Use `(2, 2)` = balanced boosts (0.0, 0.0) — **exactly optimal!**
-3. This matches our intuition from §0.3.1!
+   - **Price hunters**: Use `(4, 1)` = high discount boost (+1.0), low quality boost (-0.5)
+   - **Premium shoppers**: Use `(1, 4)` = low discount boost (-0.5), high quality boost (+1.0)
+   - **Bulk buyers**: Use `(2, 2)` = balanced boosts (0.0, 0.0) --- **exactly optimal!**
+3. This matches our intuition from Section 0.3.1!
 
 **Stochastic convergence.** Run the script multiple times with different seeds. The learned actions might vary slightly (e.g., `(4, 0)` vs `(4, 1)` for price hunters), but the pattern holds: discount-heavy for price hunters, quality-heavy for premium shoppers, balanced for bulk buyers.
 
@@ -352,7 +352,7 @@ def plot_learning_curves(history: List[float], window: int = 50):
                label=f'Static best ({static_best:.2f})')
 
     # Oracle (knows user type, chooses optimally)
-    # Optimal actions: price_hunter→(4,0), premium→(0,4), bulk_buyer→(2,2)
+    # Optimal actions: price_hunter->(4,0), premium->(0,4), bulk_buyer->(2,2)
     oracle_rewards = {
         "price_hunter": np.mean([reward("price_hunter", (4, 0)) for _ in range(50)]),
         "premium": np.mean([reward("premium", (0, 4)) for _ in range(50)]),
@@ -381,7 +381,7 @@ print("Saved learning curve to toy_problem_learning_curves.png")
 
 ![Learning Curves](learning_curves.png)
 
-- **Random policy** (red dashed): ~0.0 average reward (baseline—random actions average out)
+- **Random policy** (red dashed): ~0.0 average reward (baseline---random actions average out)
 - **Static best** (orange dashed): ~0.3 (one-size-fits-all `(2,2)` helps bulk buyers but hurts price hunters and premium)
 - **Q-learning** (blue solid): Starts near 0, converges to ~1.6 by episode 1500
 - **Oracle** (green dashed): ~2.0 (theoretical maximum with perfect knowledge of optimal actions per user)
@@ -396,9 +396,9 @@ print("Saved learning curve to toy_problem_learning_curves.png")
 
 The learning curve has three phases:
 
-1. **Pure exploration** (episodes 0–500): High variance, $\varepsilon$-greedy tries random actions, Q-values are noisy
-2. **Exploitation begins** (episodes 500–1500): Agent identifies good actions per context, reward climbs steadily
-3. **Convergence** (episodes 1500–3000): Q-values stabilize, reward plateaus at ~82% of oracle
+1. **Pure exploration** (episodes 0--500): High variance, $\varepsilon$-greedy tries random actions, Q-values are noisy
+2. **Exploitation begins** (episodes 500--1500): Agent identifies good actions per context, reward climbs steadily
+3. **Convergence** (episodes 1500--3000): Q-values stabilize, reward plateaus at ~82% of oracle
 
 This is **regret minimization** in action. Chapter 1 formalizes this; Chapter 6 analyzes convergence rates.
 
@@ -429,8 +429,8 @@ bulk_buyer     : mean reward = 0.917
 
 **Analysis:**
 
-- **Price hunters** get the highest rewards (~2.3)—the agent found a near-optimal action `(4, 1)` with high discount boost
-- **Premium shoppers** get high rewards (~2.2)—high quality boost `(1, 4)` closely matches their preferences
+- **Price hunters** get the highest rewards (~2.3)---the agent found a near-optimal action `(4, 1)` with high discount boost
+- **Premium shoppers** get high rewards (~2.2)---high quality boost `(1, 4)` closely matches their preferences
 - **Bulk buyers** get lower rewards (~0.9) because their **balanced preferences** have inherently lower optimal reward (base=1.0 at `(2,2)`) compared to polarized users (base=2.5). But the agent finds the **exact optimal**!
 - All three segments dramatically beat the static baseline (~0.3 average) through personalization
 
@@ -452,7 +452,7 @@ None of these are free. The rest of the book makes them precise and shows when t
 
 Our toy used $\varepsilon$-greedy exploration with constant $\varepsilon = 0.1$. This deserves scrutiny.
 
-**What theory says:** With decaying $\varepsilon_t = O(1/t)$, $\varepsilon$-greedy achieves $O(\sqrt{T \log T})$ regret for finite-armed bandits—worse than UCB's $O(\sqrt{KT \log T})$ by a factor due to uniform exploration wasting samples on clearly suboptimal arms.
+**What theory says:** With decaying $\varepsilon_t = O(1/t)$, $\varepsilon$-greedy achieves $O(\sqrt{T \log T})$ regret for finite-armed bandits---worse than UCB's $O(\sqrt{KT \log T})$ by a factor due to uniform exploration wasting samples on clearly suboptimal arms.
 
 **What practice shows:** $\varepsilon$-greedy with constant $\varepsilon \in [0.05, 0.2]$ is often competitive because:
 
@@ -466,12 +466,12 @@ Our toy used $\varepsilon$-greedy exploration with constant $\varepsilon = 0.1$.
 
 **Why UCB and Thompson Sampling?** (Preview for Chapter 6)
 
-$\varepsilon$-greedy explores **uniformly**—it wastes samples on arms it already knows are bad. UCB explores **optimistically**—it tries arms whose rewards *might* be high given uncertainty:
+$\varepsilon$-greedy explores **uniformly**---it wastes samples on arms it already knows are bad. UCB explores **optimistically**---it tries arms whose rewards *might* be high given uncertainty:
 
 - **UCB:** Choose $a_t = \arg\max_a [Q(x,a) + \beta \sigma(x,a)]$ where $\sigma$ is a confidence width. Explores arms with high uncertainty, not randomly.
 - **Thompson Sampling:** Maintain posterior $P(Q^* \mid \text{data})$, sample $\tilde{Q} \sim P$, act greedily on sample. Naturally balances exploration (high posterior variance $\rightarrow$ diverse samples) with exploitation.
 
-Both achieve $\tilde{O}(d\sqrt{T})$ regret for $d$-dimensional linear bandits—matching the lower bound up to logs. $\varepsilon$-greedy achieves $O(T^{2/3})$ for the same problem (provably worse). The gap widens in high dimensions.
+Both achieve $\tilde{O}(d\sqrt{T})$ regret for $d$-dimensional linear bandits---matching the lower bound up to logs. $\varepsilon$-greedy achieves $O(T^{2/3})$ for the same problem (provably worse). The gap widens in high dimensions.
 
 ---
 
@@ -481,7 +481,7 @@ Our toy is **pedagogical**, not production-ready. Here's what breaks at scale:
 
 ### 1. Discrete Action Space
 
-We used 25 templates. Real search has continuous boosts: $\mathbf{w} \in [-5, 5]^{10}$ (ten features, unbounded). Discretizing to a grid would require $100^{10} = 10^{20}$ actions—intractable.
+We used 25 templates. Real search has continuous boosts: $\mathbf{w} \in [-5, 5]^{10}$ (ten features, unbounded). Discretizing to a grid would require $100^{10} = 10^{20}$ actions---intractable.
 
 **Solution:** Chapter 7 introduces **continuous action bandits** via $Q(x, a)$ regression and cross-entropy method (CEM) optimization.
 
@@ -498,7 +498,7 @@ Our agent optimized $R_{\text{toy}}$ without guardrails. Real systems must enfor
 - Exposure targets (strategic products get visibility)
 - Rank stability (limit reordering volatility)
 
-**Solution:** Chapter 10 introduces production **guardrails** (CM2 floors, ΔRank@k stability), with Chapter 3 (§3.6) providing the formal CMDP theory and Lagrangian methods.
+**Solution:** Chapter 10 introduces production **guardrails** (CM2 floors, $\Delta$Rank@k stability), with Chapter 3 (Section 3.6) providing the formal CMDP theory and Lagrangian methods.
 
 ### 4. Simplified Position Bias
 
@@ -533,13 +533,13 @@ Here's how our toy connects to the rigorous treatment ahead:
 | Stochastic outcomes      | Probability spaces, click models (PBM/DBN)    | 2           |
 | Learning curves          | Regret bounds, sample complexity              | 6           |
 | Static best vs oracle    | Importance sampling, off-policy evaluation    | 9           |
-| Guardrails (missing)     | CMDP (§3.6), production guardrails            | 3, 10       |
+| Guardrails (missing)     | CMDP (Section 3.6), production guardrails            | 3, 10       |
 | Engagement proxy         | Multi-episode MDP, retention modeling         | 11          |
 
-**Chapters 1–3** provide foundations: contextual bandits, measure theory, Bellman operators.
-**Chapters 4–8** build the simulator and core algorithms.
-**Chapters 9–11** handle evaluation, robustness, and production deployment.
-**Chapters 12–15** cover frontier methods (slate ranking, offline RL, multi-objective optimization).
+**Chapters 1--3** provide foundations: contextual bandits, measure theory, Bellman operators.
+**Chapters 4--8** build the simulator and core algorithms.
+**Chapters 9--11** handle evaluation, robustness, and production deployment.
+**Chapters 12--15** cover frontier methods (slate ranking, offline RL, multi-objective optimization).
 
 ---
 
@@ -549,12 +549,12 @@ Here's how our toy connects to the rigorous treatment ahead:
 
 **Do Chapter 0 thoroughly.** Run the code. Modify the reward function (Exercise 0.1). Try different exploration strategies (Exercise 0.2).
 
-**Then skim Chapters 1–3** on first read. Focus on:
+**Then skim Chapters 1--3** on first read. Focus on:
 - The reward formulation (#EQ-1.2 in Chapter 1)
-- Why engagement matters (§1.2.1)
+- Why engagement matters (Section 1.2.1)
 - The Bellman contraction intuition (Chapter 3, skip proof details initially)
 
-**Dive deep into Chapters 4–11** (simulator + algorithms + evaluation). This is your implementation roadmap.
+**Dive deep into Chapters 4--11** (simulator + algorithms + evaluation). This is your implementation roadmap.
 
 **Return to theory as needed.** When something doesn't work (e.g., "why is my Q-network diverging?"), revisit Chapter 3's convergence analysis.
 
@@ -566,7 +566,7 @@ Here's how our toy connects to the rigorous treatment ahead:
 
 **Do the exercises.** Mix of proofs (30%), implementations (40%), experiments (20%), conceptual questions (10%).
 
-**Use Chapter 0 as a touchstone.** When abstractions feel overwhelming, return to the toy: "How does this theorem explain why Q-learning converged in §0.4?"
+**Use Chapter 0 as a touchstone.** When abstractions feel overwhelming, return to the toy: "How does this theorem explain why Q-learning converged in Section 0.4?"
 
 ### For Everyone
 
@@ -590,7 +590,7 @@ For each, train Q-learning and report:
 - Learned actions per user type
 - Does the policy change? Why?
 
-**Hint:** Case (c) risks "clickbait" strategies (see Chapter 1, §1.2.1). Monitor conversion quality.
+**Hint:** Case (c) risks "clickbait" strategies (see Chapter 1, Section 1.2.1). Monitor conversion quality.
 
 ---
 
@@ -669,7 +669,7 @@ def choose_action_constrained(x, eps, tau_cm2):
 
 (c) Plot the Pareto frontier: GMV vs CM2 as you sweep $\tau \in [0.0, 0.5]$.
 
-**Connection:** This is a **Constrained MDP (CMDP)**. Chapter 3 (§3.6) develops the Lagrangian theory, and Chapter 10 implements production guardrails for multi-constraint optimization.
+**Connection:** This is a **Constrained MDP (CMDP)**. Chapter 3 (Section 3.6) develops the Lagrangian theory, and Chapter 10 implements production guardrails for multi-constraint optimization.
 
 ---
 
@@ -716,9 +716,9 @@ Expected output:
 ```
 Final average reward (last 100): 1.640
 Learned policy:
-  price_hunter    → (4, 1)
-  premium         → (1, 4)
-  bulk_buyer      → (2, 2)
+  price_hunter    -> (4, 1)
+  premium         -> (1, 4)
+  bulk_buyer      -> (2, 2)
 Saved curves to toy_problem_learning_curves.png
 ```
 :::
@@ -731,10 +731,10 @@ Saved curves to toy_problem_learning_curves.png
 
 **But we cheated.** We used a tiny discrete action space, three user types, and online exploration without safety guarantees. Real systems need:
 
-1. **Rigorous foundations** (Chapters 1–3): Formalize contextual bandits, measure-theoretic probability, Bellman operators
-2. **Realistic simulation** (Chapters 4–5): Scalable catalog generation, position bias models, rich user dynamics
+1. **Rigorous foundations** (Chapters 1--3): Formalize contextual bandits, measure-theoretic probability, Bellman operators
+2. **Realistic simulation** (Chapters 4--5): Scalable catalog generation, position bias models, rich user dynamics
 3. **Continuous actions** (Chapter 7): Regression-based Q-learning, CEM optimization, trust regions
-4. **Constraints and guardrails** (Chapter 10): CM2 floors, ΔRank@k stability, safe fallback policies
+4. **Constraints and guardrails** (Chapter 10): CM2 floors, $\Delta$Rank@k stability, safe fallback policies
 5. **Safe evaluation** (Chapter 9): Off-policy evaluation (IPS, DR, FQE) for production deployment
 6. **Multi-episode dynamics** (Chapter 11): Retention modeling, long-term value, engagement as state
 
