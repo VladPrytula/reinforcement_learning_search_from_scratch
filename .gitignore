@@ -11,3 +11,19 @@ wheels/
 
 # MkDocs build output
 site/
+
+# OS files
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Archive and backup folders
+**/archive/
+**/before_revision_backup/
+
+# Verification and experimental data
+**/data/verification_*/

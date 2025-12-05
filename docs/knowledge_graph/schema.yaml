@@ -1,0 +1,41 @@
+version: 1
+about: |
+  Knowledge graph schema for chapters, definitions, equations, concepts, code, tests, and plans.
+
+  Anchor conventions:
+  - Equations: {#EQ-X.Y} (Pandoc labels)
+  - Theorems: {#THM-X.Y.Z}
+  - Definitions: {#DEF-X.Y.Z}
+  - Sections: #section-name (markdown auto-generated)
+
+  See docs/knowledge_graph/README.md for detailed workflow.
+
+node:
+  required: [id, kind, title, status]
+  fields:
+    id: {type: string, unique: true}
+    kind: {type: enum, values: [chapter, section, equation, definition, theorem, remark, concept, algorithm, module, test, plan, doc]}
+    title: {type: string}
+    status: {type: enum, values: [planned, in_progress, complete, archived]}
+    file: {type: string, optional: true}
+    anchor: {type: string, optional: true}
+    summary: {type: string, optional: true}
+    tags: {type: list, items: string, optional: true}
+    code_refs: {type: list, items: string, optional: true}
+    depends_on: {type: list, items: string, optional: true}
+    provides: {type: list, items: string, optional: true}
+    defines: {type: list, items: string, optional: true}
+    uses: {type: list, items: string, optional: true}
+    proves: {type: list, items: string, optional: true}
+    implements: {type: list, items: string, optional: true}
+    tested_by: {type: list, items: string, optional: true}
+    forward_refs: {type: list, items: string, optional: true}
+    see_also: {type: list, items: string, optional: true}
+
+edge:
+  # Optional explicit edge list; redundant with adjacency fields in nodes.
+  fields:
+    src: {type: string}
+    dst: {type: string}
+    rel: {type: enum, values: [defines, proves, uses, implements, tested_by, depends_on, refers_to_future, superseded_by, see_also]}
+    status: {type: enum, values: [planned, in_progress, complete]}

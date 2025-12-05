@@ -1,0 +1,40 @@
+% Unicode helpers for text and code rendering
+\usepackage{newunicodechar}
+% Map selected Unicode symbols in text to math glyphs
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{—}{\textemdash}
+\newunicodechar{–}{\textendash}
+\newunicodechar{‑}{-} % non-breaking hyphen
+% Suppress visible space symbols (␣) in code blocks
+\newunicodechar{␣}{ }
+\newunicodechar{␠}{ }
+\newunicodechar{⎵}{ }
+
+% If listings is enabled (via pandoc --listings), map Unicode inside code
+% blocks so monospace fonts without Greek still render correctly.
+\makeatletter
+\@ifpackageloaded{listings}{% already loaded
+  \lstset{
+    literate={π}{{$\pi$}}1
+             {≈}{{$\approx$}}1
+             {–}{{-}}1
+             {—}{{-}}1
+             {‑}{{-}}1
+             {≤}{{$\le$}}1
+             {≥}{{$\ge$}}1
+             {→}{{$\to$}}1
+             {←}{{$\leftarrow$}}1
+             {↔}{{$\leftrightarrow$}}1,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false
+  }
+}{}
+\makeatother
+
+% Callout styling for Pandoc fenced divs (requires callouts.lua filter)
+\usepackage[most]{tcolorbox}
+\newtcolorbox{CalloutNote}[1]{colback=blue!4!white,colframe=blue!40!black,boxrule=0.5pt,arc=2pt,
+  title=#1,fonttitle=\bfseries\sffamily}

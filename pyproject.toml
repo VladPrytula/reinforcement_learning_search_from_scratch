@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rl-search-from-scratch"
+version = "0.1.0"
+description = "Unified RL textbook + simulator for search ranking (Vlad Prytula)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mkdocs>=1.6.1",
+    "pymdown-extensions>=10.8",
+    "numpy>=1.26.0",
+    "torch>=2.4.0",
+    "pandas>=2.2.0",
+    "matplotlib>=3.8.0",
+    "seaborn>=0.13.0",
+    "gymnasium>=0.29.1",
+    "pytest>=8.2.0",
+    "PyYAML>=6.0",
+    "pandoc>=2.4",
+    "scipy>=1.15.3",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: mark tests as slow integration tests for long-running Chapter 6 experiments",
+]
+
+[tool.setuptools]
+packages = [
+    "zoosim",
+    "zoosim.core",
+    "zoosim.world",
+    "zoosim.ranking",
+    "zoosim.dynamics",
+    "zoosim.envs",
+    "zoosim.multi_episode",
+    "zoosim.policies",
+    "zoosim.optimizers",
+    "zoosim.evaluation",
+    "zoosim.monitoring",
+]

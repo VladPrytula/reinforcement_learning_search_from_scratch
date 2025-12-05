@@ -1,0 +1,1486 @@
+{
+  "generated_at": "2025-11-19T05:14:40Z",
+  "output_file": "/Volumes/Lexar2T/src/rl_search_from_scratch/scripts/ch06/data/cpu/parity_cpu_20251119T051440Z.json",
+  "parallel_workers": null,
+  "scenarios": [
+    {
+      "scenario": {
+        "name": "simple_baseline",
+        "description": "Segment + query features only; pedagogical failure mode.",
+        "features": "simple",
+        "hparam_mode": "simple",
+        "n_static": 2000,
+        "n_bandit": 50000,
+        "world_seed": 20250319,
+        "bandit_base_seed": 20250319,
+        "rich_regularization": null,
+        "rich_blend_weight": 0.4,
+        "rich_shrink": 0.9,
+        "rich_quant_step": 0.25,
+        "rich_clip": [
+          -3.5,
+          3.5
+        ],
+        "prior_override": null,
+        "lin_alpha_override": null,
+        "ts_sigma_override": null,
+        "resolved_prior_weight": 0,
+        "resolved_lin_alpha": 1.0,
+        "resolved_ts_sigma": 1.0,
+        "resolved_rich_regularization": null
+      },
+      "results": {
+        "config": {
+          "seed": 20250319,
+          "n_static": 2000,
+          "n_bandit": 50000,
+          "feature_mode": "simple",
+          "feature_dim": 8,
+          "prior_weight": 0,
+          "lin_alpha": 1.0,
+          "ts_sigma": 1.0,
+          "rich_regularization": null,
+          "rich_regularization_params": null
+        },
+        "templates": [
+          {
+            "id": 0,
+            "name": "Neutral",
+            "description": "No boost adjustment (base ranker only)"
+          },
+          {
+            "id": 1,
+            "name": "High Margin",
+            "description": "Promote products with margin > 40%"
+          },
+          {
+            "id": 2,
+            "name": "CM2 Boost",
+            "description": "Promote own-brand (private-label) products"
+          },
+          {
+            "id": 3,
+            "name": "Popular",
+            "description": "Boost by log-popularity (bestseller score)"
+          },
+          {
+            "id": 4,
+            "name": "Premium",
+            "description": "Promote expensive items (price > 75th percentile)"
+          },
+          {
+            "id": 5,
+            "name": "Budget",
+            "description": "Promote cheap items (price < 25th percentile)"
+          },
+          {
+            "id": 6,
+            "name": "Discount",
+            "description": "Boost discounted products (max discount 30%)"
+          },
+          {
+            "id": 7,
+            "name": "Strategic",
+            "description": "Promote strategic categories"
+          }
+        ],
+        "static_results": {
+          "0": {
+            "reward": 4.624069752610999,
+            "gmv": 4.247495148945212,
+            "cm2": 0.44331150916441836,
+            "orders": 0.4095
+          },
+          "1": {
+            "reward": 4.684069742047743,
+            "gmv": 4.339724165603518,
+            "cm2": 0.5578639411105264,
+            "orders": 0.402
+          },
+          "2": {
+            "reward": 6.758793886978575,
+            "gmv": 6.184146064692279,
+            "cm2": 0.6002445557157086,
+            "orders": 0.579
+          },
+          "3": {
+            "reward": 4.368450915489981,
+            "gmv": 4.1212311823144026,
+            "cm2": 0.4869243329389015,
+            "orders": 0.334
+          },
+          "4": {
+            "reward": 7.148150560063252,
+            "gmv": 6.716570525226222,
+            "cm2": 0.7425750870925273,
+            "orders": 0.3425
+          },
+          "5": {
+            "reward": 2.995076459998381,
+            "gmv": 2.643854208210726,
+            "cm2": 0.2713056294691246,
+            "orders": 0.4355
+          },
+          "6": {
+            "reward": 4.726071775593697,
+            "gmv": 4.3437026399235155,
+            "cm2": 0.44267283917543243,
+            "orders": 0.3915
+          },
+          "7": {
+            "reward": 4.784256943893624,
+            "gmv": 3.9223973564527874,
+            "cm2": -0.12397603139791605,
+            "orders": 0.426
+          }
+        },
+        "static_best": {
+          "id": 4,
+          "name": "Premium",
+          "result": {
+            "reward": 7.148150560063252,
+            "gmv": 6.716570525226222,
+            "cm2": 0.7425750870925273,
+            "orders": 0.3425
+          },
+          "segments": {
+            "price_hunter": {
+              "reward": 8.576329331046313e-05,
+              "gmv": 0.0,
+              "cm2": 0.0,
+              "orders": 0.0
+            },
+            "pl_lover": {
+              "reward": 5.4138856037406695,
+              "gmv": 5.088270845133125,
+              "cm2": 0.504122319282706,
+              "orders": 0.26607608953571144
+            },
+            "litter_heavy": {
+              "reward": 4.841819597653426,
+              "gmv": 4.439632674583064,
+              "cm2": 0.20070978526914873,
+              "orders": 0.2416773367477593
+            },
+            "premium": {
+              "reward": 33.22235216103041,
+              "gmv": 31.365851037468296,
+              "cm2": 4.040079291064671,
+              "orders": 1.5546058879392213
+            }
+          }
+        },
+        "linucb": {
+          "global": {
+            "reward": 7.436184715158572,
+            "gmv": 6.980968797600898,
+            "cm2": 0.7827697938944996,
+            "orders": 0.36124
+          },
+          "segments": {
+            "pl_lover": {
+              "reward": 5.412376297089609,
+              "gmv": 5.084605805519213,
+              "cm2": 0.5251224314579397,
+              "orders": 0.27840140116232787
+            },
+            "premium": {
+              "reward": 32.64038917638576,
+              "gmv": 30.82220787686587,
+              "cm2": 3.972367092490897,
+              "orders": 1.5246732461989865
+            },
+            "price_hunter": {
+              "reward": 0.00609062103201891,
+              "gmv": 0.004384860839451001,
+              "cm2": 0.0006905310202055648,
+              "orders": 0.001480806469985192
+            },
+            "litter_heavy": {
+              "reward": 4.762965349396158,
+              "gmv": 4.360720528915603,
+              "cm2": 0.2217147726748386,
+              "orders": 0.2509085035936364
+            }
+          },
+          "diagnostics": {
+            "template_counts": [
+              2537,
+              2922,
+              2219,
+              2122,
+              32696,
+              2887,
+              2293,
+              2324
+            ],
+            "template_freqs": [
+              0.05074,
+              0.05844,
+              0.04438,
+              0.04244,
+              0.65392,
+              0.05774,
+              0.04586,
+              0.04648
+            ]
+          }
+        },
+        "ts": {
+          "global": {
+            "reward": 6.80251065882937,
+            "gmv": 6.230948536130436,
+            "cm2": 0.619210306747504,
+            "orders": 0.5726
+          },
+          "segments": {
+            "price_hunter": {
+              "reward": 0.005204901043283136,
+              "gmv": 0.0033948105063024985,
+              "cm2": 0.0005456111340228556,
+              "orders": 0.0011452130096197893
+            },
+            "litter_heavy": {
+              "reward": 6.952853126323101,
+              "gmv": 6.0332496325211755,
+              "cm2": 0.3048589062162595,
+              "orders": 0.6563373532465459
+            },
+            "premium": {
+              "reward": 13.868903634720787,
+              "gmv": 13.054833661027425,
+              "cm2": 1.5891242535485246,
+              "orders": 0.9576762366895808
+            },
+            "pl_lover": {
+              "reward": 11.915255993090797,
+              "gmv": 11.042554005706677,
+              "cm2": 1.2181752606160996,
+              "orders": 1.0548586852969197
+            }
+          },
+          "diagnostics": {
+            "template_counts": [
+              2436,
+              2425,
+              33556,
+              2118,
+              2283,
+              2639,
+              2334,
+              2209
+            ],
+            "template_freqs": [
+              0.04872,
+              0.0485,
+              0.67112,
+              0.04236,
+              0.04566,
+              0.05278,
+              0.04668,
+              0.04418
+            ]
+          }
+        }
+      },
+      "summary": {
+        "static_gmv": 6.716570525226222,
+        "linucb_gmv": 6.980968797600898,
+        "ts_gmv": 6.230948536130436,
+        "linucb_delta_pct": 3.936507051949259,
+        "ts_delta_pct": -7.230207548210481
+      },
+      "stdout": "\nRunning static template baselines for 2000 episodes...\n  Static templates progress:   0.1% (1/2000) | best template ID 2 avg reward 19.22\n  Static templates progress:   2.0% (40/2000) | best template ID 2 avg reward 6.69\n  Static templates progress:   4.0% (80/2000) | best template ID 4 avg reward 6.23\n  Static templates progress:   6.0% (120/2000) | best template ID 2 avg reward 6.00\n  Static templates progress:   8.0% (160/2000) | best template ID 4 avg reward 7.83\n  Static templates progress:  10.0% (200/2000) | best template ID 4 avg reward 7.12\n  Static templates progress:  12.0% (240/2000) | best template ID 4 avg reward 7.31\n  Static templates progress:  14.0% (280/2000) | best template ID 4 avg reward 7.20\n  Static templates progress:  16.0% (320/2000) | best template ID 4 avg reward 7.28\n  Static templates progress:  18.0% (360/2000) | best template ID 4 avg reward 7.15\n  Static templates progress:  20.0% (400/2000) | best template ID 4 avg reward 7.25\n  Static templates progress:  22.0% (440/2000) | best template ID 4 avg reward 7.17\n  Static templates progress:  24.0% (480/2000) | best template ID 4 avg reward 7.18\n  Static templates progress:  26.0% (520/2000) | best template ID 4 avg reward 7.13\n  Static templates progress:  28.0% (560/2000) | best template ID 4 avg reward 7.32\n  Static templates progress:  30.0% (600/2000) | best template ID 4 avg reward 7.01\n  Static templates progress:  32.0% (640/2000) | best template ID 4 avg reward 6.84\n  Static templates progress:  34.0% (680/2000) | best template ID 4 avg reward 6.93\n  Static templates progress:  36.0% (720/2000) | best template ID 4 avg reward 7.00\n  Static templates progress:  38.0% (760/2000) | best template ID 4 avg reward 7.01\n  Static templates progress:  40.0% (800/2000) | best template ID 4 avg reward 6.99\n  Static templates progress:  42.0% (840/2000) | best template ID 4 avg reward 6.99\n  Static templates progress:  44.0% (880/2000) | best template ID 4 avg reward 6.85\n  Static templates progress:  46.0% (920/2000) | best template ID 4 avg reward 6.92\n  Static templates progress:  48.0% (960/2000) | best template ID 4 avg reward 6.92\n  Static templates progress:  50.0% (1000/2000) | best template ID 4 avg reward 6.90\n  Static templates progress:  52.0% (1040/2000) | best template ID 4 avg reward 6.94\n  Static templates progress:  54.0% (1080/2000) | best template ID 4 avg reward 6.97\n  Static templates progress:  56.0% (1120/2000) | best template ID 4 avg reward 6.89\n  Static templates progress:  58.0% (1160/2000) | best template ID 4 avg reward 6.98\n  Static templates progress:  60.0% (1200/2000) | best template ID 4 avg reward 7.05\n  Static templates progress:  62.0% (1240/2000) | best template ID 4 avg reward 6.97\n  Static templates progress:  64.0% (1280/2000) | best template ID 4 avg reward 7.13\n  Static templates progress:  66.0% (1320/2000) | best template ID 4 avg reward 7.13\n  Static templates progress:  68.0% (1360/2000) | best template ID 4 avg reward 7.11\n  Static templates progress:  70.0% (1400/2000) | best template ID 4 avg reward 7.08\n  Static templates progress:  72.0% (1440/2000) | best template ID 4 avg reward 7.10\n  Static templates progress:  74.0% (1480/2000) | best template ID 4 avg reward 7.05\n  Static templates progress:  76.0% (1520/2000) | best template ID 4 avg reward 6.99\n  Static templates progress:  78.0% (1560/2000) | best template ID 4 avg reward 7.03\n  Static templates progress:  80.0% (1600/2000) | best template ID 4 avg reward 7.02\n  Static templates progress:  82.0% (1640/2000) | best template ID 4 avg reward 7.03\n  Static templates progress:  84.0% (1680/2000) | best template ID 4 avg reward 7.11\n  Static templates progress:  86.0% (1720/2000) | best template ID 4 avg reward 7.06\n  Static templates progress:  88.0% (1760/2000) | best template ID 4 avg reward 7.04\n  Static templates progress:  90.0% (1800/2000) | best template ID 4 avg reward 7.07\n  Static templates progress:  92.0% (1840/2000) | best template ID 4 avg reward 7.08\n  Static templates progress:  94.0% (1880/2000) | best template ID 4 avg reward 7.16\n  Static templates progress:  96.0% (1920/2000) | best template ID 4 avg reward 7.18\n  Static templates progress:  98.0% (1960/2000) | best template ID 4 avg reward 7.20\n  Static templates progress: 100.0% (2000/2000) | best template ID 4 avg reward 7.15\n\n\nBest static template: ID=4 (Premium) with avg reward=7.15, GMV=6.72, CM2=0.74\n\nRunning LinUCB with features=simple for 50000 episodes...\n  LINUCB progress:   0.0% (1/50000) | avg reward 0.00\n  LINUCB progress:   2.0% (1000/50000) | avg reward 7.68\n  LINUCB progress:   4.0% (2000/50000) | avg reward 7.48\n  LINUCB progress:   6.0% (3000/50000) | avg reward 7.48\n  LINUCB progress:   8.0% (4000/50000) | avg reward 7.47\n  LINUCB progress:  10.0% (5000/50000) | avg reward 7.35\n  LINUCB progress:  12.0% (6000/50000) | avg reward 7.47\n  LINUCB progress:  14.0% (7000/50000) | avg reward 7.41\n  LINUCB progress:  16.0% (8000/50000) | avg reward 7.50\n  LINUCB progress:  18.0% (9000/50000) | avg reward 7.64\n  LINUCB progress:  20.0% (10000/50000) | avg reward 7.62\n  LINUCB progress:  22.0% (11000/50000) | avg reward 7.59\n  LINUCB progress:  24.0% (12000/50000) | avg reward 7.60\n  LINUCB progress:  26.0% (13000/50000) | avg reward 7.59\n  LINUCB progress:  28.0% (14000/50000) | avg reward 7.59\n  LINUCB progress:  30.0% (15000/50000) | avg reward 7.59\n  LINUCB progress:  32.0% (16000/50000) | avg reward 7.60\n  LINUCB progress:  34.0% (17000/50000) | avg reward 7.61\n  LINUCB progress:  36.0% (18000/50000) | avg reward 7.56\n  LINUCB progress:  38.0% (19000/50000) | avg reward 7.52\n  LINUCB progress:  40.0% (20000/50000) | avg reward 7.50\n  LINUCB progress:  42.0% (21000/50000) | avg reward 7.48\n  LINUCB progress:  44.0% (22000/50000) | avg reward 7.49\n  LINUCB progress:  46.0% (23000/50000) | avg reward 7.51\n  LINUCB progress:  48.0% (24000/50000) | avg reward 7.47\n  LINUCB progress:  50.0% (25000/50000) | avg reward 7.49\n  LINUCB progress:  52.0% (26000/50000) | avg reward 7.50\n  LINUCB progress:  54.0% (27000/50000) | avg reward 7.49\n  LINUCB progress:  56.0% (28000/50000) | avg reward 7.45\n  LINUCB progress:  58.0% (29000/50000) | avg reward 7.45\n  LINUCB progress:  60.0% (30000/50000) | avg reward 7.46\n  LINUCB progress:  62.0% (31000/50000) | avg reward 7.51\n  LINUCB progress:  64.0% (32000/50000) | avg reward 7.48\n  LINUCB progress:  66.0% (33000/50000) | avg reward 7.48\n  LINUCB progress:  68.0% (34000/50000) | avg reward 7.52\n  LINUCB progress:  70.0% (35000/50000) | avg reward 7.53\n  LINUCB progress:  72.0% (36000/50000) | avg reward 7.52\n  LINUCB progress:  74.0% (37000/50000) | avg reward 7.51\n  LINUCB progress:  76.0% (38000/50000) | avg reward 7.53\n  LINUCB progress:  78.0% (39000/50000) | avg reward 7.52\n  LINUCB progress:  80.0% (40000/50000) | avg reward 7.52\n  LINUCB progress:  82.0% (41000/50000) | avg reward 7.51\n  LINUCB progress:  84.0% (42000/50000) | avg reward 7.49\n  LINUCB progress:  86.0% (43000/50000) | avg reward 7.49\n  LINUCB progress:  88.0% (44000/50000) | avg reward 7.50\n  LINUCB progress:  90.0% (45000/50000) | avg reward 7.48\n  LINUCB progress:  92.0% (46000/50000) | avg reward 7.46\n  LINUCB progress:  94.0% (47000/50000) | avg reward 7.47\n  LINUCB progress:  96.0% (48000/50000) | avg reward 7.47\n  LINUCB progress:  98.0% (49000/50000) | avg reward 7.46\n  LINUCB progress: 100.0% (50000/50000) | avg reward 7.44\n\nRunning Thompson Sampling with features=simple for 50000 episodes...\n  TS progress:   0.0% (1/50000) | avg reward 0.00\n  TS progress:   2.0% (1000/50000) | avg reward 6.21\n  TS progress:   4.0% (2000/50000) | avg reward 6.43\n  TS progress:   6.0% (3000/50000) | avg reward 6.61\n  TS progress:   8.0% (4000/50000) | avg reward 6.57\n  TS progress:  10.0% (5000/50000) | avg reward 6.50\n  TS progress:  12.0% (6000/50000) | avg reward 6.60\n  TS progress:  14.0% (7000/50000) | avg reward 6.62\n  TS progress:  16.0% (8000/50000) | avg reward 6.61\n  TS progress:  18.0% (9000/50000) | avg reward 6.63\n  TS progress:  20.0% (10000/50000) | avg reward 6.70\n  TS progress:  22.0% (11000/50000) | avg reward 6.71\n  TS progress:  24.0% (12000/50000) | avg reward 6.71\n  TS progress:  26.0% (13000/50000) | avg reward 6.74\n  TS progress:  28.0% (14000/50000) | avg reward 6.72\n  TS progress:  30.0% (15000/50000) | avg reward 6.73\n  TS progress:  32.0% (16000/50000) | avg reward 6.72\n  TS progress:  34.0% (17000/50000) | avg reward 6.70\n  TS progress:  36.0% (18000/50000) | avg reward 6.70\n  TS progress:  38.0% (19000/50000) | avg reward 6.71\n  TS progress:  40.0% (20000/50000) | avg reward 6.73\n  TS progress:  42.0% (21000/50000) | avg reward 6.76\n  TS progress:  44.0% (22000/50000) | avg reward 6.77\n  TS progress:  46.0% (23000/50000) | avg reward 6.75\n  TS progress:  48.0% (24000/50000) | avg reward 6.75\n  TS progress:  50.0% (25000/50000) | avg reward 6.74\n  TS progress:  52.0% (26000/50000) | avg reward 6.72\n  TS progress:  54.0% (27000/50000) | avg reward 6.72\n  TS progress:  56.0% (28000/50000) | avg reward 6.74\n  TS progress:  58.0% (29000/50000) | avg reward 6.74\n  TS progress:  60.0% (30000/50000) | avg reward 6.75\n  TS progress:  62.0% (31000/50000) | avg reward 6.77\n  TS progress:  64.0% (32000/50000) | avg reward 6.76\n  TS progress:  66.0% (33000/50000) | avg reward 6.76\n  TS progress:  68.0% (34000/50000) | avg reward 6.77\n  TS progress:  70.0% (35000/50000) | avg reward 6.78\n  TS progress:  72.0% (36000/50000) | avg reward 6.78\n  TS progress:  74.0% (37000/50000) | avg reward 6.80\n  TS progress:  76.0% (38000/50000) | avg reward 6.79\n  TS progress:  78.0% (39000/50000) | avg reward 6.79\n  TS progress:  80.0% (40000/50000) | avg reward 6.80\n  TS progress:  82.0% (41000/50000) | avg reward 6.79\n  TS progress:  84.0% (42000/50000) | avg reward 6.78\n  TS progress:  86.0% (43000/50000) | avg reward 6.78\n  TS progress:  88.0% (44000/50000) | avg reward 6.78\n  TS progress:  90.0% (45000/50000) | avg reward 6.77\n  TS progress:  92.0% (46000/50000) | avg reward 6.79\n  TS progress:  94.0% (47000/50000) | avg reward 6.79\n  TS progress:  96.0% (48000/50000) | avg reward 6.80\n  TS progress:  98.0% (49000/50000) | avg reward 6.80\n  TS progress: 100.0% (50000/50000) | avg reward 6.80\n\n  Static (best) segment stats:   0.0% (1/50000) | avg reward 0.00\n  Static (best) segment stats:   2.0% (1000/50000) | avg reward 6.40\n  Static (best) segment stats:   4.0% (2000/50000) | avg reward 6.33\n  Static (best) segment stats:   6.0% (3000/50000) | avg reward 6.66\n  Static (best) segment stats:   8.0% (4000/50000) | avg reward 6.83\n  Static (best) segment stats:  10.0% (5000/50000) | avg reward 6.93\n  Static (best) segment stats:  12.0% (6000/50000) | avg reward 6.88\n  Static (best) segment stats:  14.0% (7000/50000) | avg reward 6.96\n  Static (best) segment stats:  16.0% (8000/50000) | avg reward 6.94\n  Static (best) segment stats:  18.0% (9000/50000) | avg reward 6.91\n  Static (best) segment stats:  20.0% (10000/50000) | avg reward 6.96\n  Static (best) segment stats:  22.0% (11000/50000) | avg reward 7.09\n  Static (best) segment stats:  24.0% (12000/50000) | avg reward 7.10\n  Static (best) segment stats:  26.0% (13000/50000) | avg reward 7.12\n  Static (best) segment stats:  28.0% (14000/50000) | avg reward 7.16\n  Static (best) segment stats:  30.0% (15000/50000) | avg reward 7.21\n  Static (best) segment stats:  32.0% (16000/50000) | avg reward 7.20\n  Static (best) segment stats:  34.0% (17000/50000) | avg reward 7.16\n  Static (best) segment stats:  36.0% (18000/50000) | avg reward 7.16\n  Static (best) segment stats:  38.0% (19000/50000) | avg reward 7.24\n  Static (best) segment stats:  40.0% (20000/50000) | avg reward 7.24\n  Static (best) segment stats:  42.0% (21000/50000) | avg reward 7.26\n  Static (best) segment stats:  44.0% (22000/50000) | avg reward 7.22\n  Static (best) segment stats:  46.0% (23000/50000) | avg reward 7.26\n  Static (best) segment stats:  48.0% (24000/50000) | avg reward 7.25\n  Static (best) segment stats:  50.0% (25000/50000) | avg reward 7.25\n  Static (best) segment stats:  52.0% (26000/50000) | avg reward 7.27\n  Static (best) segment stats:  54.0% (27000/50000) | avg reward 7.28\n  Static (best) segment stats:  56.0% (28000/50000) | avg reward 7.33\n  Static (best) segment stats:  58.0% (29000/50000) | avg reward 7.35\n  Static (best) segment stats:  60.0% (30000/50000) | avg reward 7.37\n  Static (best) segment stats:  62.0% (31000/50000) | avg reward 7.37\n  Static (best) segment stats:  64.0% (32000/50000) | avg reward 7.36\n  Static (best) segment stats:  66.0% (33000/50000) | avg reward 7.36\n  Static (best) segment stats:  68.0% (34000/50000) | avg reward 7.35\n  Static (best) segment stats:  70.0% (35000/50000) | avg reward 7.35\n  Static (best) segment stats:  72.0% (36000/50000) | avg reward 7.35\n  Static (best) segment stats:  74.0% (37000/50000) | avg reward 7.38\n  Static (best) segment stats:  76.0% (38000/50000) | avg reward 7.39\n  Static (best) segment stats:  78.0% (39000/50000) | avg reward 7.41\n  Static (best) segment stats:  80.0% (40000/50000) | avg reward 7.42\n  Static (best) segment stats:  82.0% (41000/50000) | avg reward 7.45\n  Static (best) segment stats:  84.0% (42000/50000) | avg reward 7.46\n  Static (best) segment stats:  86.0% (43000/50000) | avg reward 7.47\n  Static (best) segment stats:  88.0% (44000/50000) | avg reward 7.48\n  Static (best) segment stats:  90.0% (45000/50000) | avg reward 7.47\n  Static (best) segment stats:  92.0% (46000/50000) | avg reward 7.48\n  Static (best) segment stats:  94.0% (47000/50000) | avg reward 7.46\n  Static (best) segment stats:  96.0% (48000/50000) | avg reward 7.47\n  Static (best) segment stats:  98.0% (49000/50000) | avg reward 7.47\n  Static (best) segment stats: 100.0% (50000/50000) | avg reward 7.48\n\n"
+    },
+    {
+      "scenario": {
+        "name": "rich_oracle_raw",
+        "description": "Oracle latents with minimal smoothing (for comparison).",
+        "features": "rich",
+        "hparam_mode": "rich",
+        "n_static": 2000,
+        "n_bandit": 50000,
+        "world_seed": 20250320,
+        "bandit_base_seed": 20250329,
+        "rich_regularization": "none",
+        "rich_blend_weight": 0.4,
+        "rich_shrink": 0.9,
+        "rich_quant_step": 0.25,
+        "rich_clip": [
+          -3.5,
+          3.5
+        ],
+        "prior_override": null,
+        "lin_alpha_override": null,
+        "ts_sigma_override": null,
+        "resolved_prior_weight": 6,
+        "resolved_lin_alpha": 1.0,
+        "resolved_ts_sigma": 1.0,
+        "resolved_rich_regularization": null
+      },
+      "results": {
+        "config": {
+          "seed": 20250329,
+          "n_static": 2000,
+          "n_bandit": 50000,
+          "feature_mode": "rich",
+          "feature_dim": 18,
+          "prior_weight": 6,
+          "lin_alpha": 1.0,
+          "ts_sigma": 1.0,
+          "rich_regularization": null,
+          "rich_regularization_params": null
+        },
+        "templates": [
+          {
+            "id": 0,
+            "name": "Neutral",
+            "description": "No boost adjustment (base ranker only)"
+          },
+          {
+            "id": 1,
+            "name": "High Margin",
+            "description": "Promote products with margin > 40%"
+          },
+          {
+            "id": 2,
+            "name": "CM2 Boost",
+            "description": "Promote own-brand (private-label) products"
+          },
+          {
+            "id": 3,
+            "name": "Popular",
+            "description": "Boost by log-popularity (bestseller score)"
+          },
+          {
+            "id": 4,
+            "name": "Premium",
+            "description": "Promote expensive items (price > 75th percentile)"
+          },
+          {
+            "id": 5,
+            "name": "Budget",
+            "description": "Promote cheap items (price < 25th percentile)"
+          },
+          {
+            "id": 6,
+            "name": "Discount",
+            "description": "Boost discounted products (max discount 30%)"
+          },
+          {
+            "id": 7,
+            "name": "Strategic",
+            "description": "Promote strategic categories"
+          }
+        ],
+        "static_results": {
+          "0": {
+            "reward": 4.890433762871339,
+            "gmv": 4.491668083297832,
+            "cm2": 0.4569141989337293,
+            "orders": 0.401
+          },
+          "1": {
+            "reward": 4.91142303352656,
+            "gmv": 4.548443227131263,
+            "cm2": 0.5755745159882326,
+            "orders": 0.3915
+          },
+          "2": {
+            "reward": 6.953221117145494,
+            "gmv": 6.3554681333533765,
+            "cm2": 0.5965074594802291,
+            "orders": 0.5745
+          },
+          "3": {
+            "reward": 5.1787742396764544,
+            "gmv": 4.911468417919,
+            "cm2": 0.5573895543936083,
+            "orders": 0.312
+          },
+          "4": {
+            "reward": 7.762105996014612,
+            "gmv": 7.286447054179101,
+            "cm2": 0.7893973545887355,
+            "orders": 0.362
+          },
+          "5": {
+            "reward": 3.0752501181069465,
+            "gmv": 2.7119598926254227,
+            "cm2": 0.25872556370380206,
+            "orders": 0.4455
+          },
+          "6": {
+            "reward": 5.087967053288319,
+            "gmv": 4.6847227850743955,
+            "cm2": 0.4126106705347796,
+            "orders": 0.3955
+          },
+          "7": {
+            "reward": 4.500618956716306,
+            "gmv": 3.6831470564857023,
+            "cm2": -0.11294524942350218,
+            "orders": 0.4035
+          }
+        },
+        "static_best": {
+          "id": 4,
+          "name": "Premium",
+          "result": {
+            "reward": 7.762105996014612,
+            "gmv": 7.286447054179101,
+            "cm2": 0.7893973545887355,
+            "orders": 0.362
+          },
+          "segments": {
+            "pl_lover": {
+              "reward": 5.547516043673103,
+              "gmv": 5.221953084712957,
+              "cm2": 0.532730031046495,
+              "orders": 0.2713793379818867
+            },
+            "litter_heavy": {
+              "reward": 4.959873535324176,
+              "gmv": 4.5652656709827335,
+              "cm2": 0.2315642397427583,
+              "orders": 0.24263652284668047
+            },
+            "price_hunter": {
+              "reward": 9.16485278955207e-05,
+              "gmv": 0.0,
+              "cm2": 0.0,
+              "orders": 0.0
+            },
+            "premium": {
+              "reward": 32.69169011782786,
+              "gmv": 30.90194245403497,
+              "cm2": 3.863313581713078,
+              "orders": 1.5081967213114753
+            }
+          }
+        },
+        "linucb": {
+          "global": {
+            "reward": 9.747268824584845,
+            "gmv": 9.023655704600301,
+            "cm2": 0.9485627999621836,
+            "orders": 0.64084
+          },
+          "segments": {
+            "price_hunter": {
+              "reward": 0.0037315288991370535,
+              "gmv": 0.0025874295869384605,
+              "cm2": 0.0005036327211551833,
+              "orders": 0.0006814310051107325
+            },
+            "pl_lover": {
+              "reward": 12.356302053423493,
+              "gmv": 11.4341258230109,
+              "cm2": 1.2054965670724247,
+              "orders": 1.0399136138217886
+            },
+            "litter_heavy": {
+              "reward": 7.175427710768514,
+              "gmv": 6.260172009297909,
+              "cm2": 0.2996674471882046,
+              "orders": 0.622198851225629
+            },
+            "premium": {
+              "reward": 32.43307809228639,
+              "gmv": 30.663716400793906,
+              "cm2": 3.8054953672986027,
+              "orders": 1.5063106151189052
+            }
+          },
+          "diagnostics": {
+            "template_counts": [
+              1787,
+              751,
+              23818,
+              4454,
+              8811,
+              1289,
+              4457,
+              4633
+            ],
+            "template_freqs": [
+              0.03574,
+              0.01502,
+              0.47636,
+              0.08908,
+              0.17622,
+              0.02578,
+              0.08914,
+              0.09266
+            ]
+          }
+        },
+        "ts": {
+          "global": {
+            "reward": 6.740406728270826,
+            "gmv": 6.108706312258963,
+            "cm2": 0.4638110400298755,
+            "orders": 0.48936
+          },
+          "segments": {
+            "price_hunter": {
+              "reward": 0.001758010766378842,
+              "gmv": 0.0008545465615555215,
+              "cm2": 0.00012069823081005378,
+              "orders": 0.00033980857450303
+            },
+            "litter_heavy": {
+              "reward": 6.61257469918817,
+              "gmv": 5.751645169163245,
+              "cm2": 0.2868478263510464,
+              "orders": 0.5878704896907216
+            },
+            "pl_lover": {
+              "reward": 5.736176194954762,
+              "gmv": 4.808829606436862,
+              "cm2": 0.0034015982308912684,
+              "orders": 0.4992016605460642
+            },
+            "premium": {
+              "reward": 24.731282898840465,
+              "gmv": 23.479583949973275,
+              "cm2": 2.6461707608995515,
+              "orders": 1.4741251182272666
+            }
+          },
+          "diagnostics": {
+            "template_counts": [
+              6167,
+              1248,
+              13956,
+              8529,
+              5512,
+              367,
+              3491,
+              10730
+            ],
+            "template_freqs": [
+              0.12334,
+              0.02496,
+              0.27912,
+              0.17058,
+              0.11024,
+              0.00734,
+              0.06982,
+              0.2146
+            ]
+          }
+        }
+      },
+      "summary": {
+        "static_gmv": 7.286447054179101,
+        "linucb_gmv": 9.023655704600301,
+        "ts_gmv": 6.108706312258963,
+        "linucb_delta_pct": 23.841642401351617,
+        "ts_delta_pct": -16.163443351237298
+      },
+      "stdout": "\nRunning static template baselines for 2000 episodes...\n  Static templates progress:   0.1% (1/2000) | best template ID 0 avg reward 0.00\n  Static templates progress:   2.0% (40/2000) | best template ID 2 avg reward 4.79\n  Static templates progress:   4.0% (80/2000) | best template ID 2 avg reward 5.69\n  Static templates progress:   6.0% (120/2000) | best template ID 2 avg reward 5.97\n  Static templates progress:   8.0% (160/2000) | best template ID 4 avg reward 6.93\n  Static templates progress:  10.0% (200/2000) | best template ID 4 avg reward 7.02\n  Static templates progress:  12.0% (240/2000) | best template ID 4 avg reward 7.11\n  Static templates progress:  14.0% (280/2000) | best template ID 4 avg reward 7.90\n  Static templates progress:  16.0% (320/2000) | best template ID 4 avg reward 7.72\n  Static templates progress:  18.0% (360/2000) | best template ID 4 avg reward 7.58\n  Static templates progress:  20.0% (400/2000) | best template ID 4 avg reward 7.78\n  Static templates progress:  22.0% (440/2000) | best template ID 4 avg reward 7.70\n  Static templates progress:  24.0% (480/2000) | best template ID 4 avg reward 7.81\n  Static templates progress:  26.0% (520/2000) | best template ID 4 avg reward 7.67\n  Static templates progress:  28.0% (560/2000) | best template ID 4 avg reward 7.86\n  Static templates progress:  30.0% (600/2000) | best template ID 4 avg reward 7.76\n  Static templates progress:  32.0% (640/2000) | best template ID 4 avg reward 7.83\n  Static templates progress:  34.0% (680/2000) | best template ID 4 avg reward 7.86\n  Static templates progress:  36.0% (720/2000) | best template ID 4 avg reward 7.92\n  Static templates progress:  38.0% (760/2000) | best template ID 4 avg reward 7.97\n  Static templates progress:  40.0% (800/2000) | best template ID 4 avg reward 7.89\n  Static templates progress:  42.0% (840/2000) | best template ID 4 avg reward 7.85\n  Static templates progress:  44.0% (880/2000) | best template ID 4 avg reward 7.77\n  Static templates progress:  46.0% (920/2000) | best template ID 4 avg reward 7.68\n  Static templates progress:  48.0% (960/2000) | best template ID 4 avg reward 7.64\n  Static templates progress:  50.0% (1000/2000) | best template ID 4 avg reward 7.68\n  Static templates progress:  52.0% (1040/2000) | best template ID 4 avg reward 7.58\n  Static templates progress:  54.0% (1080/2000) | best template ID 4 avg reward 7.44\n  Static templates progress:  56.0% (1120/2000) | best template ID 4 avg reward 7.41\n  Static templates progress:  58.0% (1160/2000) | best template ID 4 avg reward 7.60\n  Static templates progress:  60.0% (1200/2000) | best template ID 4 avg reward 7.70\n  Static templates progress:  62.0% (1240/2000) | best template ID 4 avg reward 7.65\n  Static templates progress:  64.0% (1280/2000) | best template ID 4 avg reward 7.59\n  Static templates progress:  66.0% (1320/2000) | best template ID 4 avg reward 7.72\n  Static templates progress:  68.0% (1360/2000) | best template ID 4 avg reward 7.73\n  Static templates progress:  70.0% (1400/2000) | best template ID 4 avg reward 7.78\n  Static templates progress:  72.0% (1440/2000) | best template ID 4 avg reward 7.67\n  Static templates progress:  74.0% (1480/2000) | best template ID 4 avg reward 7.61\n  Static templates progress:  76.0% (1520/2000) | best template ID 4 avg reward 7.52\n  Static templates progress:  78.0% (1560/2000) | best template ID 4 avg reward 7.57\n  Static templates progress:  80.0% (1600/2000) | best template ID 4 avg reward 7.49\n  Static templates progress:  82.0% (1640/2000) | best template ID 4 avg reward 7.54\n  Static templates progress:  84.0% (1680/2000) | best template ID 4 avg reward 7.61\n  Static templates progress:  86.0% (1720/2000) | best template ID 4 avg reward 7.56\n  Static templates progress:  88.0% (1760/2000) | best template ID 4 avg reward 7.60\n  Static templates progress:  90.0% (1800/2000) | best template ID 4 avg reward 7.78\n  Static templates progress:  92.0% (1840/2000) | best template ID 4 avg reward 7.73\n  Static templates progress:  94.0% (1880/2000) | best template ID 4 avg reward 7.82\n  Static templates progress:  96.0% (1920/2000) | best template ID 4 avg reward 7.88\n  Static templates progress:  98.0% (1960/2000) | best template ID 4 avg reward 7.79\n  Static templates progress: 100.0% (2000/2000) | best template ID 4 avg reward 7.76\n\n\nBest static template: ID=4 (Premium) with avg reward=7.76, GMV=7.29, CM2=0.79\n\nRunning LinUCB with features=rich for 50000 episodes...\n  LINUCB progress:   0.0% (1/50000) | avg reward 0.00\n  LINUCB progress:   2.0% (1000/50000) | avg reward 8.63\n  LINUCB progress:   4.0% (2000/50000) | avg reward 9.53\n  LINUCB progress:   6.0% (3000/50000) | avg reward 9.70\n  LINUCB progress:   8.0% (4000/50000) | avg reward 9.76\n  LINUCB progress:  10.0% (5000/50000) | avg reward 9.93\n  LINUCB progress:  12.0% (6000/50000) | avg reward 9.92\n  LINUCB progress:  14.0% (7000/50000) | avg reward 9.91\n  LINUCB progress:  16.0% (8000/50000) | avg reward 9.85\n  LINUCB progress:  18.0% (9000/50000) | avg reward 9.95\n  LINUCB progress:  20.0% (10000/50000) | avg reward 9.96\n  LINUCB progress:  22.0% (11000/50000) | avg reward 10.01\n  LINUCB progress:  24.0% (12000/50000) | avg reward 10.05\n  LINUCB progress:  26.0% (13000/50000) | avg reward 10.04\n  LINUCB progress:  28.0% (14000/50000) | avg reward 10.08\n  LINUCB progress:  30.0% (15000/50000) | avg reward 10.06\n  LINUCB progress:  32.0% (16000/50000) | avg reward 10.04\n  LINUCB progress:  34.0% (17000/50000) | avg reward 10.01\n  LINUCB progress:  36.0% (18000/50000) | avg reward 9.94\n  LINUCB progress:  38.0% (19000/50000) | avg reward 9.97\n  LINUCB progress:  40.0% (20000/50000) | avg reward 9.96\n  LINUCB progress:  42.0% (21000/50000) | avg reward 9.95\n  LINUCB progress:  44.0% (22000/50000) | avg reward 9.90\n  LINUCB progress:  46.0% (23000/50000) | avg reward 9.90\n  LINUCB progress:  48.0% (24000/50000) | avg reward 9.87\n  LINUCB progress:  50.0% (25000/50000) | avg reward 9.87\n  LINUCB progress:  52.0% (26000/50000) | avg reward 9.89\n  LINUCB progress:  54.0% (27000/50000) | avg reward 9.90\n  LINUCB progress:  56.0% (28000/50000) | avg reward 9.87\n  LINUCB progress:  58.0% (29000/50000) | avg reward 9.86\n  LINUCB progress:  60.0% (30000/50000) | avg reward 9.84\n  LINUCB progress:  62.0% (31000/50000) | avg reward 9.82\n  LINUCB progress:  64.0% (32000/50000) | avg reward 9.82\n  LINUCB progress:  66.0% (33000/50000) | avg reward 9.84\n  LINUCB progress:  68.0% (34000/50000) | avg reward 9.81\n  LINUCB progress:  70.0% (35000/50000) | avg reward 9.82\n  LINUCB progress:  72.0% (36000/50000) | avg reward 9.82\n  LINUCB progress:  74.0% (37000/50000) | avg reward 9.79\n  LINUCB progress:  76.0% (38000/50000) | avg reward 9.80\n  LINUCB progress:  78.0% (39000/50000) | avg reward 9.79\n  LINUCB progress:  80.0% (40000/50000) | avg reward 9.79\n  LINUCB progress:  82.0% (41000/50000) | avg reward 9.78\n  LINUCB progress:  84.0% (42000/50000) | avg reward 9.79\n  LINUCB progress:  86.0% (43000/50000) | avg reward 9.78\n  LINUCB progress:  88.0% (44000/50000) | avg reward 9.78\n  LINUCB progress:  90.0% (45000/50000) | avg reward 9.77\n  LINUCB progress:  92.0% (46000/50000) | avg reward 9.77\n  LINUCB progress:  94.0% (47000/50000) | avg reward 9.75\n  LINUCB progress:  96.0% (48000/50000) | avg reward 9.75\n  LINUCB progress:  98.0% (49000/50000) | avg reward 9.75\n  LINUCB progress: 100.0% (50000/50000) | avg reward 9.75\n\nRunning Thompson Sampling with features=rich for 50000 episodes...\n  TS progress:   0.0% (1/50000) | avg reward 0.00\n  TS progress:   2.0% (1000/50000) | avg reward 5.82\n  TS progress:   4.0% (2000/50000) | avg reward 6.10\n  TS progress:   6.0% (3000/50000) | avg reward 5.99\n  TS progress:   8.0% (4000/50000) | avg reward 5.87\n  TS progress:  10.0% (5000/50000) | avg reward 5.97\n  TS progress:  12.0% (6000/50000) | avg reward 5.96\n  TS progress:  14.0% (7000/50000) | avg reward 6.05\n  TS progress:  16.0% (8000/50000) | avg reward 6.10\n  TS progress:  18.0% (9000/50000) | avg reward 6.07\n  TS progress:  20.0% (10000/50000) | avg reward 6.14\n  TS progress:  22.0% (11000/50000) | avg reward 6.14\n  TS progress:  24.0% (12000/50000) | avg reward 6.18\n  TS progress:  26.0% (13000/50000) | avg reward 6.20\n  TS progress:  28.0% (14000/50000) | avg reward 6.20\n  TS progress:  30.0% (15000/50000) | avg reward 6.23\n  TS progress:  32.0% (16000/50000) | avg reward 6.28\n  TS progress:  34.0% (17000/50000) | avg reward 6.38\n  TS progress:  36.0% (18000/50000) | avg reward 6.40\n  TS progress:  38.0% (19000/50000) | avg reward 6.43\n  TS progress:  40.0% (20000/50000) | avg reward 6.45\n  TS progress:  42.0% (21000/50000) | avg reward 6.47\n  TS progress:  44.0% (22000/50000) | avg reward 6.49\n  TS progress:  46.0% (23000/50000) | avg reward 6.52\n  TS progress:  48.0% (24000/50000) | avg reward 6.53\n  TS progress:  50.0% (25000/50000) | avg reward 6.54\n  TS progress:  52.0% (26000/50000) | avg reward 6.55\n  TS progress:  54.0% (27000/50000) | avg reward 6.57\n  TS progress:  56.0% (28000/50000) | avg reward 6.59\n  TS progress:  58.0% (29000/50000) | avg reward 6.59\n  TS progress:  60.0% (30000/50000) | avg reward 6.60\n  TS progress:  62.0% (31000/50000) | avg reward 6.60\n  TS progress:  64.0% (32000/50000) | avg reward 6.61\n  TS progress:  66.0% (33000/50000) | avg reward 6.63\n  TS progress:  68.0% (34000/50000) | avg reward 6.64\n  TS progress:  70.0% (35000/50000) | avg reward 6.66\n  TS progress:  72.0% (36000/50000) | avg reward 6.67\n  TS progress:  74.0% (37000/50000) | avg reward 6.68\n  TS progress:  76.0% (38000/50000) | avg reward 6.69\n  TS progress:  78.0% (39000/50000) | avg reward 6.70\n  TS progress:  80.0% (40000/50000) | avg reward 6.71\n  TS progress:  82.0% (41000/50000) | avg reward 6.70\n  TS progress:  84.0% (42000/50000) | avg reward 6.70\n  TS progress:  86.0% (43000/50000) | avg reward 6.70\n  TS progress:  88.0% (44000/50000) | avg reward 6.71\n  TS progress:  90.0% (45000/50000) | avg reward 6.71\n  TS progress:  92.0% (46000/50000) | avg reward 6.73\n  TS progress:  94.0% (47000/50000) | avg reward 6.73\n  TS progress:  96.0% (48000/50000) | avg reward 6.74\n  TS progress:  98.0% (49000/50000) | avg reward 6.74\n  TS progress: 100.0% (50000/50000) | avg reward 6.74\n\n  Static (best) segment stats:   0.0% (1/50000) | avg reward 0.00\n  Static (best) segment stats:   2.0% (1000/50000) | avg reward 7.20\n  Static (best) segment stats:   4.0% (2000/50000) | avg reward 7.59\n  Static (best) segment stats:   6.0% (3000/50000) | avg reward 7.37\n  Static (best) segment stats:   8.0% (4000/50000) | avg reward 7.19\n  Static (best) segment stats:  10.0% (5000/50000) | avg reward 7.43\n  Static (best) segment stats:  12.0% (6000/50000) | avg reward 7.36\n  Static (best) segment stats:  14.0% (7000/50000) | avg reward 7.41\n  Static (best) segment stats:  16.0% (8000/50000) | avg reward 7.29\n  Static (best) segment stats:  18.0% (9000/50000) | avg reward 7.29\n  Static (best) segment stats:  20.0% (10000/50000) | avg reward 7.33\n  Static (best) segment stats:  22.0% (11000/50000) | avg reward 7.38\n  Static (best) segment stats:  24.0% (12000/50000) | avg reward 7.42\n  Static (best) segment stats:  26.0% (13000/50000) | avg reward 7.36\n  Static (best) segment stats:  28.0% (14000/50000) | avg reward 7.32\n  Static (best) segment stats:  30.0% (15000/50000) | avg reward 7.30\n  Static (best) segment stats:  32.0% (16000/50000) | avg reward 7.34\n  Static (best) segment stats:  34.0% (17000/50000) | avg reward 7.36\n  Static (best) segment stats:  36.0% (18000/50000) | avg reward 7.40\n  Static (best) segment stats:  38.0% (19000/50000) | avg reward 7.40\n  Static (best) segment stats:  40.0% (20000/50000) | avg reward 7.38\n  Static (best) segment stats:  42.0% (21000/50000) | avg reward 7.38\n  Static (best) segment stats:  44.0% (22000/50000) | avg reward 7.43\n  Static (best) segment stats:  46.0% (23000/50000) | avg reward 7.44\n  Static (best) segment stats:  48.0% (24000/50000) | avg reward 7.40\n  Static (best) segment stats:  50.0% (25000/50000) | avg reward 7.42\n  Static (best) segment stats:  52.0% (26000/50000) | avg reward 7.46\n  Static (best) segment stats:  54.0% (27000/50000) | avg reward 7.48\n  Static (best) segment stats:  56.0% (28000/50000) | avg reward 7.48\n  Static (best) segment stats:  58.0% (29000/50000) | avg reward 7.48\n  Static (best) segment stats:  60.0% (30000/50000) | avg reward 7.49\n  Static (best) segment stats:  62.0% (31000/50000) | avg reward 7.52\n  Static (best) segment stats:  64.0% (32000/50000) | avg reward 7.54\n  Static (best) segment stats:  66.0% (33000/50000) | avg reward 7.53\n  Static (best) segment stats:  68.0% (34000/50000) | avg reward 7.55\n  Static (best) segment stats:  70.0% (35000/50000) | avg reward 7.52\n  Static (best) segment stats:  72.0% (36000/50000) | avg reward 7.51\n  Static (best) segment stats:  74.0% (37000/50000) | avg reward 7.53\n  Static (best) segment stats:  76.0% (38000/50000) | avg reward 7.51\n  Static (best) segment stats:  78.0% (39000/50000) | avg reward 7.49\n  Static (best) segment stats:  80.0% (40000/50000) | avg reward 7.49\n  Static (best) segment stats:  82.0% (41000/50000) | avg reward 7.50\n  Static (best) segment stats:  84.0% (42000/50000) | avg reward 7.51\n  Static (best) segment stats:  86.0% (43000/50000) | avg reward 7.53\n  Static (best) segment stats:  88.0% (44000/50000) | avg reward 7.53\n  Static (best) segment stats:  90.0% (45000/50000) | avg reward 7.54\n  Static (best) segment stats:  92.0% (46000/50000) | avg reward 7.53\n  Static (best) segment stats:  94.0% (47000/50000) | avg reward 7.53\n  Static (best) segment stats:  96.0% (48000/50000) | avg reward 7.55\n  Static (best) segment stats:  98.0% (49000/50000) | avg reward 7.53\n  Static (best) segment stats: 100.0% (50000/50000) | avg reward 7.54\n\n"
+    },
+    {
+      "scenario": {
+        "name": "rich_oracle_blend",
+        "description": "Oracle latents blended with segment priors + shrinkage.",
+        "features": "rich",
+        "hparam_mode": "rich",
+        "n_static": 2000,
+        "n_bandit": 50000,
+        "world_seed": 20250321,
+        "bandit_base_seed": 20250339,
+        "rich_regularization": "blend",
+        "rich_blend_weight": 0.4,
+        "rich_shrink": 0.9,
+        "rich_quant_step": 0.25,
+        "rich_clip": [
+          -3.5,
+          3.5
+        ],
+        "prior_override": null,
+        "lin_alpha_override": null,
+        "ts_sigma_override": null,
+        "resolved_prior_weight": 6,
+        "resolved_lin_alpha": 1.0,
+        "resolved_ts_sigma": 1.0,
+        "resolved_rich_regularization": {
+          "mode": "blend",
+          "blend_weight": 0.4,
+          "shrink": 0.9,
+          "quant_step": 0.25,
+          "clip": [
+            -3.5,
+            3.5
+          ]
+        }
+      },
+      "results": {
+        "config": {
+          "seed": 20250339,
+          "n_static": 2000,
+          "n_bandit": 50000,
+          "feature_mode": "rich",
+          "feature_dim": 18,
+          "prior_weight": 6,
+          "lin_alpha": 1.0,
+          "ts_sigma": 1.0,
+          "rich_regularization": "blend",
+          "rich_regularization_params": {
+            "blend_weight": 0.4,
+            "shrink": 0.9,
+            "quant_step": 0.25,
+            "clip": [
+              -3.5,
+              3.5
+            ]
+          }
+        },
+        "templates": [
+          {
+            "id": 0,
+            "name": "Neutral",
+            "description": "No boost adjustment (base ranker only)"
+          },
+          {
+            "id": 1,
+            "name": "High Margin",
+            "description": "Promote products with margin > 40%"
+          },
+          {
+            "id": 2,
+            "name": "CM2 Boost",
+            "description": "Promote own-brand (private-label) products"
+          },
+          {
+            "id": 3,
+            "name": "Popular",
+            "description": "Boost by log-popularity (bestseller score)"
+          },
+          {
+            "id": 4,
+            "name": "Premium",
+            "description": "Promote expensive items (price > 75th percentile)"
+          },
+          {
+            "id": 5,
+            "name": "Budget",
+            "description": "Promote cheap items (price < 25th percentile)"
+          },
+          {
+            "id": 6,
+            "name": "Discount",
+            "description": "Boost discounted products (max discount 30%)"
+          },
+          {
+            "id": 7,
+            "name": "Strategic",
+            "description": "Promote strategic categories"
+          }
+        ],
+        "static_results": {
+          "0": {
+            "reward": 5.337514099432533,
+            "gmv": 4.914797208656031,
+            "cm2": 0.5031672269412099,
+            "orders": 0.434
+          },
+          "1": {
+            "reward": 5.005509970037541,
+            "gmv": 4.64451976914464,
+            "cm2": 0.5734755022322147,
+            "orders": 0.4045
+          },
+          "2": {
+            "reward": 6.929664935458081,
+            "gmv": 6.32314237261837,
+            "cm2": 0.5848064070992547,
+            "orders": 0.5875
+          },
+          "3": {
+            "reward": 4.042030391220869,
+            "gmv": 3.8311796332510966,
+            "cm2": 0.41225189492441,
+            "orders": 0.327
+          },
+          "4": {
+            "reward": 7.467385186642922,
+            "gmv": 7.033107094183656,
+            "cm2": 0.7604452311481226,
+            "orders": 0.3515
+          },
+          "5": {
+            "reward": 3.2126713115378274,
+            "gmv": 2.8442263569743247,
+            "cm2": 0.27136238640874233,
+            "orders": 0.4595
+          },
+          "6": {
+            "reward": 4.955054187112593,
+            "gmv": 4.579864741434675,
+            "cm2": 0.46447361419476746,
+            "orders": 0.392
+          },
+          "7": {
+            "reward": 4.801026661645549,
+            "gmv": 3.9605544502910024,
+            "cm2": -0.12319447161367307,
+            "orders": 0.4165
+          }
+        },
+        "static_best": {
+          "id": 4,
+          "name": "Premium",
+          "result": {
+            "reward": 7.467385186642922,
+            "gmv": 7.033107094183656,
+            "cm2": 0.7604452311481226,
+            "orders": 0.3515
+          },
+          "segments": {
+            "litter_heavy": {
+              "reward": 4.683604831477073,
+              "gmv": 4.310736866594951,
+              "cm2": 0.23770991220573734,
+              "orders": 0.23032
+            },
+            "price_hunter": {
+              "reward": 0.0011576839660428708,
+              "gmv": 0.0008817244689125011,
+              "cm2": -2.0086489481249783e-05,
+              "orders": 5.6798818584573444e-05
+            },
+            "premium": {
+              "reward": 33.52335466344785,
+              "gmv": 31.69881378604633,
+              "cm2": 3.9451041977798615,
+              "orders": 1.5440940673436665
+            },
+            "pl_lover": {
+              "reward": 5.331497803790578,
+              "gmv": 5.021089442330472,
+              "cm2": 0.5054729584450299,
+              "orders": 0.2603545527800161
+            }
+          }
+        },
+        "linucb": {
+          "global": {
+            "reward": 7.43827414577301,
+            "gmv": 6.865478353458312,
+            "cm2": 0.6683594807869386,
+            "orders": 0.6271
+          },
+          "segments": {
+            "price_hunter": {
+              "reward": 0.003946107463597827,
+              "gmv": 0.0025341567083525147,
+              "cm2": 0.0005898757463652512,
+              "orders": 0.0010846606154021807
+            },
+            "pl_lover": {
+              "reward": 12.197783478394308,
+              "gmv": 11.335439737907205,
+              "cm2": 1.2300702174481832,
+              "orders": 1.0484378784209252
+            },
+            "litter_heavy": {
+              "reward": 7.085273585231515,
+              "gmv": 6.192873998180655,
+              "cm2": 0.32131088831693133,
+              "orders": 0.6396389135165632
+            },
+            "premium": {
+              "reward": 17.277103655272196,
+              "gmv": 16.384763574064255,
+              "cm2": 1.8447466785042896,
+              "orders": 1.3542723371049552
+            }
+          },
+          "diagnostics": {
+            "template_counts": [
+              3842,
+              3896,
+              24252,
+              8165,
+              527,
+              1521,
+              3911,
+              3886
+            ],
+            "template_freqs": [
+              0.07684,
+              0.07792,
+              0.48504,
+              0.1633,
+              0.01054,
+              0.03042,
+              0.07822,
+              0.07772
+            ]
+          }
+        },
+        "ts": {
+          "global": {
+            "reward": 9.949746496461712,
+            "gmv": 9.223790195795441,
+            "cm2": 0.9888207516663992,
+            "orders": 0.65894
+          },
+          "segments": {
+            "premium": {
+              "reward": 33.709943522527766,
+              "gmv": 31.86826473170924,
+              "cm2": 4.021756500855924,
+              "orders": 1.557010582010582
+            },
+            "litter_heavy": {
+              "reward": 7.1557420392121225,
+              "gmv": 6.249939868757454,
+              "cm2": 0.3006305159999637,
+              "orders": 0.6349548685997284
+            },
+            "price_hunter": {
+              "reward": 0.003060249805207318,
+              "gmv": 0.0020611112557301376,
+              "cm2": 0.0002448184189256976,
+              "orders": 0.000631421847195913
+            },
+            "pl_lover": {
+              "reward": 12.240328367363546,
+              "gmv": 11.35892196655147,
+              "cm2": 1.2214960020295713,
+              "orders": 1.05728
+            }
+          },
+          "diagnostics": {
+            "template_counts": [
+              3835,
+              3792,
+              24163,
+              3774,
+              8620,
+              631,
+              3646,
+              1539
+            ],
+            "template_freqs": [
+              0.0767,
+              0.07584,
+              0.48326,
+              0.07548,
+              0.1724,
+              0.01262,
+              0.07292,
+              0.03078
+            ]
+          }
+        }
+      },
+      "summary": {
+        "static_gmv": 7.033107094183656,
+        "linucb_gmv": 6.865478353458312,
+        "ts_gmv": 9.223790195795441,
+        "linucb_delta_pct": -2.383423691414737,
+        "ts_delta_pct": 31.148155036960397
+      },
+      "stdout": "\nRunning static template baselines for 2000 episodes...\n  Static templates progress:   0.1% (1/2000) | best template ID 0 avg reward 29.86\n  Static templates progress:   2.0% (40/2000) | best template ID 4 avg reward 9.81\n  Static templates progress:   4.0% (80/2000) | best template ID 4 avg reward 7.87\n  Static templates progress:   6.0% (120/2000) | best template ID 2 avg reward 7.77\n  Static templates progress:   8.0% (160/2000) | best template ID 2 avg reward 7.51\n  Static templates progress:  10.0% (200/2000) | best template ID 2 avg reward 7.47\n  Static templates progress:  12.0% (240/2000) | best template ID 2 avg reward 7.19\n  Static templates progress:  14.0% (280/2000) | best template ID 2 avg reward 7.32\n  Static templates progress:  16.0% (320/2000) | best template ID 2 avg reward 7.13\n  Static templates progress:  18.0% (360/2000) | best template ID 2 avg reward 7.51\n  Static templates progress:  20.0% (400/2000) | best template ID 2 avg reward 7.52\n  Static templates progress:  22.0% (440/2000) | best template ID 2 avg reward 7.64\n  Static templates progress:  24.0% (480/2000) | best template ID 2 avg reward 7.78\n  Static templates progress:  26.0% (520/2000) | best template ID 2 avg reward 7.64\n  Static templates progress:  28.0% (560/2000) | best template ID 2 avg reward 7.54\n  Static templates progress:  30.0% (600/2000) | best template ID 2 avg reward 7.72\n  Static templates progress:  32.0% (640/2000) | best template ID 2 avg reward 7.72\n  Static templates progress:  34.0% (680/2000) | best template ID 2 avg reward 7.81\n  Static templates progress:  36.0% (720/2000) | best template ID 2 avg reward 8.06\n  Static templates progress:  38.0% (760/2000) | best template ID 2 avg reward 8.04\n  Static templates progress:  40.0% (800/2000) | best template ID 2 avg reward 8.03\n  Static templates progress:  42.0% (840/2000) | best template ID 2 avg reward 7.96\n  Static templates progress:  44.0% (880/2000) | best template ID 2 avg reward 7.90\n  Static templates progress:  46.0% (920/2000) | best template ID 2 avg reward 7.83\n  Static templates progress:  48.0% (960/2000) | best template ID 2 avg reward 7.75\n  Static templates progress:  50.0% (1000/2000) | best template ID 2 avg reward 7.67\n  Static templates progress:  52.0% (1040/2000) | best template ID 4 avg reward 7.55\n  Static templates progress:  54.0% (1080/2000) | best template ID 2 avg reward 7.54\n  Static templates progress:  56.0% (1120/2000) | best template ID 2 avg reward 7.49\n  Static templates progress:  58.0% (1160/2000) | best template ID 4 avg reward 7.44\n  Static templates progress:  60.0% (1200/2000) | best template ID 4 avg reward 7.55\n  Static templates progress:  62.0% (1240/2000) | best template ID 4 avg reward 7.50\n  Static templates progress:  64.0% (1280/2000) | best template ID 4 avg reward 7.46\n  Static templates progress:  66.0% (1320/2000) | best template ID 4 avg reward 7.60\n  Static templates progress:  68.0% (1360/2000) | best template ID 4 avg reward 7.63\n  Static templates progress:  70.0% (1400/2000) | best template ID 4 avg reward 7.62\n  Static templates progress:  72.0% (1440/2000) | best template ID 4 avg reward 7.70\n  Static templates progress:  74.0% (1480/2000) | best template ID 4 avg reward 7.78\n  Static templates progress:  76.0% (1520/2000) | best template ID 4 avg reward 7.61\n  Static templates progress:  78.0% (1560/2000) | best template ID 4 avg reward 7.60\n  Static templates progress:  80.0% (1600/2000) | best template ID 4 avg reward 7.49\n  Static templates progress:  82.0% (1640/2000) | best template ID 4 avg reward 7.60\n  Static templates progress:  84.0% (1680/2000) | best template ID 4 avg reward 7.55\n  Static templates progress:  86.0% (1720/2000) | best template ID 4 avg reward 7.62\n  Static templates progress:  88.0% (1760/2000) | best template ID 4 avg reward 7.62\n  Static templates progress:  90.0% (1800/2000) | best template ID 4 avg reward 7.52\n  Static templates progress:  92.0% (1840/2000) | best template ID 4 avg reward 7.44\n  Static templates progress:  94.0% (1880/2000) | best template ID 4 avg reward 7.50\n  Static templates progress:  96.0% (1920/2000) | best template ID 4 avg reward 7.49\n  Static templates progress:  98.0% (1960/2000) | best template ID 4 avg reward 7.51\n  Static templates progress: 100.0% (2000/2000) | best template ID 4 avg reward 7.47\n\n\nBest static template: ID=4 (Premium) with avg reward=7.47, GMV=7.03, CM2=0.76\n\nRunning LinUCB with features=rich for 50000 episodes...\n  LINUCB progress:   0.0% (1/50000) | avg reward 0.00\n  LINUCB progress:   2.0% (1000/50000) | avg reward 7.11\n  LINUCB progress:   4.0% (2000/50000) | avg reward 7.27\n  LINUCB progress:   6.0% (3000/50000) | avg reward 7.47\n  LINUCB progress:   8.0% (4000/50000) | avg reward 7.49\n  LINUCB progress:  10.0% (5000/50000) | avg reward 7.43\n  LINUCB progress:  12.0% (6000/50000) | avg reward 7.41\n  LINUCB progress:  14.0% (7000/50000) | avg reward 7.38\n  LINUCB progress:  16.0% (8000/50000) | avg reward 7.37\n  LINUCB progress:  18.0% (9000/50000) | avg reward 7.46\n  LINUCB progress:  20.0% (10000/50000) | avg reward 7.41\n  LINUCB progress:  22.0% (11000/50000) | avg reward 7.40\n  LINUCB progress:  24.0% (12000/50000) | avg reward 7.41\n  LINUCB progress:  26.0% (13000/50000) | avg reward 7.36\n  LINUCB progress:  28.0% (14000/50000) | avg reward 7.37\n  LINUCB progress:  30.0% (15000/50000) | avg reward 7.38\n  LINUCB progress:  32.0% (16000/50000) | avg reward 7.37\n  LINUCB progress:  34.0% (17000/50000) | avg reward 7.38\n  LINUCB progress:  36.0% (18000/50000) | avg reward 7.41\n  LINUCB progress:  38.0% (19000/50000) | avg reward 7.43\n  LINUCB progress:  40.0% (20000/50000) | avg reward 7.44\n  LINUCB progress:  42.0% (21000/50000) | avg reward 7.44\n  LINUCB progress:  44.0% (22000/50000) | avg reward 7.46\n  LINUCB progress:  46.0% (23000/50000) | avg reward 7.45\n  LINUCB progress:  48.0% (24000/50000) | avg reward 7.44\n  LINUCB progress:  50.0% (25000/50000) | avg reward 7.46\n  LINUCB progress:  52.0% (26000/50000) | avg reward 7.46\n  LINUCB progress:  54.0% (27000/50000) | avg reward 7.46\n  LINUCB progress:  56.0% (28000/50000) | avg reward 7.46\n  LINUCB progress:  58.0% (29000/50000) | avg reward 7.45\n  LINUCB progress:  60.0% (30000/50000) | avg reward 7.43\n  LINUCB progress:  62.0% (31000/50000) | avg reward 7.42\n  LINUCB progress:  64.0% (32000/50000) | avg reward 7.41\n  LINUCB progress:  66.0% (33000/50000) | avg reward 7.41\n  LINUCB progress:  68.0% (34000/50000) | avg reward 7.41\n  LINUCB progress:  70.0% (35000/50000) | avg reward 7.42\n  LINUCB progress:  72.0% (36000/50000) | avg reward 7.41\n  LINUCB progress:  74.0% (37000/50000) | avg reward 7.42\n  LINUCB progress:  76.0% (38000/50000) | avg reward 7.44\n  LINUCB progress:  78.0% (39000/50000) | avg reward 7.44\n  LINUCB progress:  80.0% (40000/50000) | avg reward 7.45\n  LINUCB progress:  82.0% (41000/50000) | avg reward 7.44\n  LINUCB progress:  84.0% (42000/50000) | avg reward 7.44\n  LINUCB progress:  86.0% (43000/50000) | avg reward 7.43\n  LINUCB progress:  88.0% (44000/50000) | avg reward 7.44\n  LINUCB progress:  90.0% (45000/50000) | avg reward 7.44\n  LINUCB progress:  92.0% (46000/50000) | avg reward 7.45\n  LINUCB progress:  94.0% (47000/50000) | avg reward 7.44\n  LINUCB progress:  96.0% (48000/50000) | avg reward 7.45\n  LINUCB progress:  98.0% (49000/50000) | avg reward 7.44\n  LINUCB progress: 100.0% (50000/50000) | avg reward 7.44\n\nRunning Thompson Sampling with features=rich for 50000 episodes...\n  TS progress:   0.0% (1/50000) | avg reward 17.50\n  TS progress:   2.0% (1000/50000) | avg reward 10.08\n  TS progress:   4.0% (2000/50000) | avg reward 10.14\n  TS progress:   6.0% (3000/50000) | avg reward 9.99\n  TS progress:   8.0% (4000/50000) | avg reward 9.79\n  TS progress:  10.0% (5000/50000) | avg reward 9.76\n  TS progress:  12.0% (6000/50000) | avg reward 9.71\n  TS progress:  14.0% (7000/50000) | avg reward 9.81\n  TS progress:  16.0% (8000/50000) | avg reward 9.99\n  TS progress:  18.0% (9000/50000) | avg reward 9.98\n  TS progress:  20.0% (10000/50000) | avg reward 9.96\n  TS progress:  22.0% (11000/50000) | avg reward 9.96\n  TS progress:  24.0% (12000/50000) | avg reward 10.03\n  TS progress:  26.0% (13000/50000) | avg reward 10.01\n  TS progress:  28.0% (14000/50000) | avg reward 9.99\n  TS progress:  30.0% (15000/50000) | avg reward 9.96\n  TS progress:  32.0% (16000/50000) | avg reward 9.95\n  TS progress:  34.0% (17000/50000) | avg reward 9.92\n  TS progress:  36.0% (18000/50000) | avg reward 9.93\n  TS progress:  38.0% (19000/50000) | avg reward 9.93\n  TS progress:  40.0% (20000/50000) | avg reward 9.91\n  TS progress:  42.0% (21000/50000) | avg reward 9.97\n  TS progress:  44.0% (22000/50000) | avg reward 9.95\n  TS progress:  46.0% (23000/50000) | avg reward 9.92\n  TS progress:  48.0% (24000/50000) | avg reward 9.95\n  TS progress:  50.0% (25000/50000) | avg reward 9.93\n  TS progress:  52.0% (26000/50000) | avg reward 9.95\n  TS progress:  54.0% (27000/50000) | avg reward 9.96\n  TS progress:  56.0% (28000/50000) | avg reward 9.97\n  TS progress:  58.0% (29000/50000) | avg reward 9.98\n  TS progress:  60.0% (30000/50000) | avg reward 9.96\n  TS progress:  62.0% (31000/50000) | avg reward 9.96\n  TS progress:  64.0% (32000/50000) | avg reward 9.96\n  TS progress:  66.0% (33000/50000) | avg reward 9.99\n  TS progress:  68.0% (34000/50000) | avg reward 10.00\n  TS progress:  70.0% (35000/50000) | avg reward 10.00\n  TS progress:  72.0% (36000/50000) | avg reward 9.98\n  TS progress:  74.0% (37000/50000) | avg reward 9.98\n  TS progress:  76.0% (38000/50000) | avg reward 10.00\n  TS progress:  78.0% (39000/50000) | avg reward 9.98\n  TS progress:  80.0% (40000/50000) | avg reward 9.97\n  TS progress:  82.0% (41000/50000) | avg reward 9.97\n  TS progress:  84.0% (42000/50000) | avg reward 9.98\n  TS progress:  86.0% (43000/50000) | avg reward 10.00\n  TS progress:  88.0% (44000/50000) | avg reward 9.99\n  TS progress:  90.0% (45000/50000) | avg reward 9.99\n  TS progress:  92.0% (46000/50000) | avg reward 9.98\n  TS progress:  94.0% (47000/50000) | avg reward 9.98\n  TS progress:  96.0% (48000/50000) | avg reward 9.96\n  TS progress:  98.0% (49000/50000) | avg reward 9.98\n  TS progress: 100.0% (50000/50000) | avg reward 9.95\n\n  Static (best) segment stats:   0.0% (1/50000) | avg reward 0.00\n  Static (best) segment stats:   2.0% (1000/50000) | avg reward 7.69\n  Static (best) segment stats:   4.0% (2000/50000) | avg reward 7.64\n  Static (best) segment stats:   6.0% (3000/50000) | avg reward 7.58\n  Static (best) segment stats:   8.0% (4000/50000) | avg reward 7.65\n  Static (best) segment stats:  10.0% (5000/50000) | avg reward 7.68\n  Static (best) segment stats:  12.0% (6000/50000) | avg reward 7.55\n  Static (best) segment stats:  14.0% (7000/50000) | avg reward 7.63\n  Static (best) segment stats:  16.0% (8000/50000) | avg reward 7.47\n  Static (best) segment stats:  18.0% (9000/50000) | avg reward 7.55\n  Static (best) segment stats:  20.0% (10000/50000) | avg reward 7.62\n  Static (best) segment stats:  22.0% (11000/50000) | avg reward 7.65\n  Static (best) segment stats:  24.0% (12000/50000) | avg reward 7.52\n  Static (best) segment stats:  26.0% (13000/50000) | avg reward 7.45\n  Static (best) segment stats:  28.0% (14000/50000) | avg reward 7.49\n  Static (best) segment stats:  30.0% (15000/50000) | avg reward 7.43\n  Static (best) segment stats:  32.0% (16000/50000) | avg reward 7.49\n  Static (best) segment stats:  34.0% (17000/50000) | avg reward 7.49\n  Static (best) segment stats:  36.0% (18000/50000) | avg reward 7.49\n  Static (best) segment stats:  38.0% (19000/50000) | avg reward 7.54\n  Static (best) segment stats:  40.0% (20000/50000) | avg reward 7.51\n  Static (best) segment stats:  42.0% (21000/50000) | avg reward 7.51\n  Static (best) segment stats:  44.0% (22000/50000) | avg reward 7.50\n  Static (best) segment stats:  46.0% (23000/50000) | avg reward 7.54\n  Static (best) segment stats:  48.0% (24000/50000) | avg reward 7.53\n  Static (best) segment stats:  50.0% (25000/50000) | avg reward 7.54\n  Static (best) segment stats:  52.0% (26000/50000) | avg reward 7.53\n  Static (best) segment stats:  54.0% (27000/50000) | avg reward 7.52\n  Static (best) segment stats:  56.0% (28000/50000) | avg reward 7.50\n  Static (best) segment stats:  58.0% (29000/50000) | avg reward 7.48\n  Static (best) segment stats:  60.0% (30000/50000) | avg reward 7.49\n  Static (best) segment stats:  62.0% (31000/50000) | avg reward 7.49\n  Static (best) segment stats:  64.0% (32000/50000) | avg reward 7.50\n  Static (best) segment stats:  66.0% (33000/50000) | avg reward 7.49\n  Static (best) segment stats:  68.0% (34000/50000) | avg reward 7.48\n  Static (best) segment stats:  70.0% (35000/50000) | avg reward 7.44\n  Static (best) segment stats:  72.0% (36000/50000) | avg reward 7.45\n  Static (best) segment stats:  74.0% (37000/50000) | avg reward 7.44\n  Static (best) segment stats:  76.0% (38000/50000) | avg reward 7.44\n  Static (best) segment stats:  78.0% (39000/50000) | avg reward 7.43\n  Static (best) segment stats:  80.0% (40000/50000) | avg reward 7.43\n  Static (best) segment stats:  82.0% (41000/50000) | avg reward 7.46\n  Static (best) segment stats:  84.0% (42000/50000) | avg reward 7.48\n  Static (best) segment stats:  86.0% (43000/50000) | avg reward 7.47\n  Static (best) segment stats:  88.0% (44000/50000) | avg reward 7.48\n  Static (best) segment stats:  90.0% (45000/50000) | avg reward 7.48\n  Static (best) segment stats:  92.0% (46000/50000) | avg reward 7.49\n  Static (best) segment stats:  94.0% (47000/50000) | avg reward 7.51\n  Static (best) segment stats:  96.0% (48000/50000) | avg reward 7.50\n  Static (best) segment stats:  98.0% (49000/50000) | avg reward 7.51\n  Static (best) segment stats: 100.0% (50000/50000) | avg reward 7.51\n\n"
+    },
+    {
+      "scenario": {
+        "name": "rich_oracle_quantized",
+        "description": "Oracle latents quantized to mimic estimated signals.",
+        "features": "rich",
+        "hparam_mode": "rich_est",
+        "n_static": 2000,
+        "n_bandit": 50000,
+        "world_seed": 20250322,
+        "bandit_base_seed": 20250349,
+        "rich_regularization": "quantized",
+        "rich_blend_weight": 0.4,
+        "rich_shrink": 0.9,
+        "rich_quant_step": 0.25,
+        "rich_clip": [
+          -3.5,
+          3.5
+        ],
+        "prior_override": null,
+        "lin_alpha_override": null,
+        "ts_sigma_override": null,
+        "resolved_prior_weight": 12,
+        "resolved_lin_alpha": 0.85,
+        "resolved_ts_sigma": 0.7,
+        "resolved_rich_regularization": {
+          "mode": "quantized",
+          "blend_weight": 0.4,
+          "shrink": 0.9,
+          "quant_step": 0.25,
+          "clip": [
+            -3.5,
+            3.5
+          ]
+        }
+      },
+      "results": {
+        "config": {
+          "seed": 20250349,
+          "n_static": 2000,
+          "n_bandit": 50000,
+          "feature_mode": "rich",
+          "feature_dim": 18,
+          "prior_weight": 12,
+          "lin_alpha": 0.85,
+          "ts_sigma": 0.7,
+          "rich_regularization": "quantized",
+          "rich_regularization_params": {
+            "blend_weight": 0.4,
+            "shrink": 0.9,
+            "quant_step": 0.25,
+            "clip": [
+              -3.5,
+              3.5
+            ]
+          }
+        },
+        "templates": [
+          {
+            "id": 0,
+            "name": "Neutral",
+            "description": "No boost adjustment (base ranker only)"
+          },
+          {
+            "id": 1,
+            "name": "High Margin",
+            "description": "Promote products with margin > 40%"
+          },
+          {
+            "id": 2,
+            "name": "CM2 Boost",
+            "description": "Promote own-brand (private-label) products"
+          },
+          {
+            "id": 3,
+            "name": "Popular",
+            "description": "Boost by log-popularity (bestseller score)"
+          },
+          {
+            "id": 4,
+            "name": "Premium",
+            "description": "Promote expensive items (price > 75th percentile)"
+          },
+          {
+            "id": 5,
+            "name": "Budget",
+            "description": "Promote cheap items (price < 25th percentile)"
+          },
+          {
+            "id": 6,
+            "name": "Discount",
+            "description": "Boost discounted products (max discount 30%)"
+          },
+          {
+            "id": 7,
+            "name": "Strategic",
+            "description": "Promote strategic categories"
+          }
+        ],
+        "static_results": {
+          "0": {
+            "reward": 5.746585085650774,
+            "gmv": 5.280658307804588,
+            "cm2": 0.5036919446154388,
+            "orders": 0.435
+          },
+          "1": {
+            "reward": 5.43903301748305,
+            "gmv": 5.073160878162713,
+            "cm2": 0.6325553483008052,
+            "orders": 0.4035
+          },
+          "2": {
+            "reward": 7.353779623070387,
+            "gmv": 6.729149808312096,
+            "cm2": 0.6114495368957179,
+            "orders": 0.578
+          },
+          "3": {
+            "reward": 4.787565916542771,
+            "gmv": 4.525088165578739,
+            "cm2": 0.5193193774100392,
+            "orders": 0.399
+          },
+          "4": {
+            "reward": 7.564609709854171,
+            "gmv": 7.111873550299372,
+            "cm2": 0.7359653988869408,
+            "orders": 0.3455
+          },
+          "5": {
+            "reward": 3.441760695872733,
+            "gmv": 3.0385082954357894,
+            "cm2": 0.25750600109233307,
+            "orders": 0.4705
+          },
+          "6": {
+            "reward": 5.041690028426199,
+            "gmv": 4.6154218566817375,
+            "cm2": 0.452920429361112,
+            "orders": 0.4175
+          },
+          "7": {
+            "reward": 4.834585866487057,
+            "gmv": 3.9896780349177456,
+            "cm2": -0.125980421076756,
+            "orders": 0.419
+          }
+        },
+        "static_best": {
+          "id": 4,
+          "name": "Premium",
+          "result": {
+            "reward": 7.564609709854171,
+            "gmv": 7.111873550299372,
+            "cm2": 0.7359653988869408,
+            "orders": 0.3455
+          },
+          "segments": {
+            "premium": {
+              "reward": 33.948250610216974,
+              "gmv": 32.13598563775116,
+              "cm2": 3.868570094565349,
+              "orders": 1.5448933029123608
+            },
+            "price_hunter": {
+              "reward": 0.00018057671688956613,
+              "gmv": 0.0,
+              "cm2": 0.0,
+              "orders": 0.0
+            },
+            "litter_heavy": {
+              "reward": 5.242645841818682,
+              "gmv": 4.824850917702526,
+              "cm2": 0.18311520596563124,
+              "orders": 0.2544953831200389
+            },
+            "pl_lover": {
+              "reward": 5.622448914892903,
+              "gmv": 5.290858530446113,
+              "cm2": 0.5165660909041232,
+              "orders": 0.26878705335683384
+            }
+          }
+        },
+        "linucb": {
+          "global": {
+            "reward": 10.140542462645447,
+            "gmv": 9.37748503264204,
+            "cm2": 0.9405935750093959,
+            "orders": 0.65148
+          },
+          "segments": {
+            "pl_lover": {
+              "reward": 12.649556520588968,
+              "gmv": 11.716750098056597,
+              "cm2": 1.204995224672819,
+              "orders": 1.0349071020670795
+            },
+            "price_hunter": {
+              "reward": 0.0026091616295941884,
+              "gmv": 0.0012841939985342714,
+              "cm2": 0.00011132155850035511,
+              "orders": 0.00045729964559277465
+            },
+            "premium": {
+              "reward": 33.723059742811806,
+              "gmv": 31.916156429846474,
+              "cm2": 3.8758174364119355,
+              "orders": 1.5390614672835425
+            },
+            "litter_heavy": {
+              "reward": 7.562727477125811,
+              "gmv": 6.534354699501445,
+              "cm2": 0.2178978858580174,
+              "orders": 0.6440677966101694
+            }
+          },
+          "diagnostics": {
+            "template_counts": [
+              4337,
+              1102,
+              25305,
+              1598,
+              8903,
+              3168,
+              548,
+              5039
+            ],
+            "template_freqs": [
+              0.08674,
+              0.02204,
+              0.5061,
+              0.03196,
+              0.17806,
+              0.06336,
+              0.01096,
+              0.10078
+            ]
+          }
+        },
+        "ts": {
+          "global": {
+            "reward": 7.672526293241694,
+            "gmv": 7.037359256297826,
+            "cm2": 0.6419325923602237,
+            "orders": 0.61926
+          },
+          "segments": {
+            "price_hunter": {
+              "reward": 0.0030920787108150035,
+              "gmv": 0.0017513056106506692,
+              "cm2": 0.00019880542139631062,
+              "orders": 0.000802614229203692
+            },
+            "pl_lover": {
+              "reward": 12.70557804756264,
+              "gmv": 11.76526525029502,
+              "cm2": 1.2214140382572298,
+              "orders": 1.046135265700483
+            },
+            "premium": {
+              "reward": 17.18396653688181,
+              "gmv": 16.284701382032058,
+              "cm2": 1.888480137619958,
+              "orders": 1.2808988764044944
+            },
+            "litter_heavy": {
+              "reward": 7.617912291672735,
+              "gmv": 6.563717342299584,
+              "cm2": 0.20973968014601602,
+              "orders": 0.6574928412344894
+            }
+          },
+          "diagnostics": {
+            "template_counts": [
+              985,
+              327,
+              24289,
+              9060,
+              4853,
+              3924,
+              5298,
+              1264
+            ],
+            "template_freqs": [
+              0.0197,
+              0.00654,
+              0.48578,
+              0.1812,
+              0.09706,
+              0.07848,
+              0.10596,
+              0.02528
+            ]
+          }
+        }
+      },
+      "summary": {
+        "static_gmv": 7.111873550299372,
+        "linucb_gmv": 9.37748503264204,
+        "ts_gmv": 7.037359256297826,
+        "linucb_delta_pct": 31.856745853521225,
+        "ts_delta_pct": -1.0477449222703032
+      },
+      "stdout": "\nRunning static template baselines for 2000 episodes...\n  Static templates progress:   0.1% (1/2000) | best template ID 4 avg reward 20.70\n  Static templates progress:   2.0% (40/2000) | best template ID 4 avg reward 8.55\n  Static templates progress:   4.0% (80/2000) | best template ID 4 avg reward 10.36\n  Static templates progress:   6.0% (120/2000) | best template ID 4 avg reward 11.91\n  Static templates progress:   8.0% (160/2000) | best template ID 4 avg reward 9.97\n  Static templates progress:  10.0% (200/2000) | best template ID 4 avg reward 9.41\n  Static templates progress:  12.0% (240/2000) | best template ID 4 avg reward 9.80\n  Static templates progress:  14.0% (280/2000) | best template ID 4 avg reward 9.60\n  Static templates progress:  16.0% (320/2000) | best template ID 4 avg reward 9.90\n  Static templates progress:  18.0% (360/2000) | best template ID 4 avg reward 9.64\n  Static templates progress:  20.0% (400/2000) | best template ID 4 avg reward 9.57\n  Static templates progress:  22.0% (440/2000) | best template ID 4 avg reward 9.49\n  Static templates progress:  24.0% (480/2000) | best template ID 4 avg reward 9.21\n  Static templates progress:  26.0% (520/2000) | best template ID 4 avg reward 8.67\n  Static templates progress:  28.0% (560/2000) | best template ID 4 avg reward 8.82\n  Static templates progress:  30.0% (600/2000) | best template ID 4 avg reward 8.78\n  Static templates progress:  32.0% (640/2000) | best template ID 4 avg reward 8.88\n  Static templates progress:  34.0% (680/2000) | best template ID 4 avg reward 8.75\n  Static templates progress:  36.0% (720/2000) | best template ID 4 avg reward 8.77\n  Static templates progress:  38.0% (760/2000) | best template ID 4 avg reward 8.52\n  Static templates progress:  40.0% (800/2000) | best template ID 4 avg reward 8.37\n  Static templates progress:  42.0% (840/2000) | best template ID 4 avg reward 8.39\n  Static templates progress:  44.0% (880/2000) | best template ID 4 avg reward 8.30\n  Static templates progress:  46.0% (920/2000) | best template ID 4 avg reward 8.22\n  Static templates progress:  48.0% (960/2000) | best template ID 4 avg reward 8.38\n  Static templates progress:  50.0% (1000/2000) | best template ID 4 avg reward 8.14\n  Static templates progress:  52.0% (1040/2000) | best template ID 4 avg reward 8.01\n  Static templates progress:  54.0% (1080/2000) | best template ID 2 avg reward 7.92\n  Static templates progress:  56.0% (1120/2000) | best template ID 2 avg reward 7.99\n  Static templates progress:  58.0% (1160/2000) | best template ID 2 avg reward 7.99\n  Static templates progress:  60.0% (1200/2000) | best template ID 2 avg reward 8.09\n  Static templates progress:  62.0% (1240/2000) | best template ID 2 avg reward 8.06\n  Static templates progress:  64.0% (1280/2000) | best template ID 2 avg reward 8.08\n  Static templates progress:  66.0% (1320/2000) | best template ID 2 avg reward 8.00\n  Static templates progress:  68.0% (1360/2000) | best template ID 2 avg reward 7.99\n  Static templates progress:  70.0% (1400/2000) | best template ID 4 avg reward 7.96\n  Static templates progress:  72.0% (1440/2000) | best template ID 4 avg reward 7.90\n  Static templates progress:  74.0% (1480/2000) | best template ID 4 avg reward 7.87\n  Static templates progress:  76.0% (1520/2000) | best template ID 4 avg reward 7.77\n  Static templates progress:  78.0% (1560/2000) | best template ID 4 avg reward 7.77\n  Static templates progress:  80.0% (1600/2000) | best template ID 4 avg reward 7.72\n  Static templates progress:  82.0% (1640/2000) | best template ID 4 avg reward 7.67\n  Static templates progress:  84.0% (1680/2000) | best template ID 4 avg reward 7.54\n  Static templates progress:  86.0% (1720/2000) | best template ID 4 avg reward 7.55\n  Static templates progress:  88.0% (1760/2000) | best template ID 4 avg reward 7.57\n  Static templates progress:  90.0% (1800/2000) | best template ID 4 avg reward 7.57\n  Static templates progress:  92.0% (1840/2000) | best template ID 4 avg reward 7.57\n  Static templates progress:  94.0% (1880/2000) | best template ID 4 avg reward 7.53\n  Static templates progress:  96.0% (1920/2000) | best template ID 4 avg reward 7.48\n  Static templates progress:  98.0% (1960/2000) | best template ID 4 avg reward 7.46\n  Static templates progress: 100.0% (2000/2000) | best template ID 4 avg reward 7.56\n\n\nBest static template: ID=4 (Premium) with avg reward=7.56, GMV=7.11, CM2=0.74\n\nRunning LinUCB with features=rich for 50000 episodes...\n  LINUCB progress:   0.0% (1/50000) | avg reward 0.00\n  LINUCB progress:   2.0% (1000/50000) | avg reward 8.98\n  LINUCB progress:   4.0% (2000/50000) | avg reward 9.26\n  LINUCB progress:   6.0% (3000/50000) | avg reward 9.60\n  LINUCB progress:   8.0% (4000/50000) | avg reward 9.81\n  LINUCB progress:  10.0% (5000/50000) | avg reward 9.92\n  LINUCB progress:  12.0% (6000/50000) | avg reward 9.83\n  LINUCB progress:  14.0% (7000/50000) | avg reward 9.87\n  LINUCB progress:  16.0% (8000/50000) | avg reward 9.86\n  LINUCB progress:  18.0% (9000/50000) | avg reward 9.91\n  LINUCB progress:  20.0% (10000/50000) | avg reward 9.96\n  LINUCB progress:  22.0% (11000/50000) | avg reward 10.08\n  LINUCB progress:  24.0% (12000/50000) | avg reward 10.05\n  LINUCB progress:  26.0% (13000/50000) | avg reward 10.07\n  LINUCB progress:  28.0% (14000/50000) | avg reward 10.10\n  LINUCB progress:  30.0% (15000/50000) | avg reward 10.15\n  LINUCB progress:  32.0% (16000/50000) | avg reward 10.16\n  LINUCB progress:  34.0% (17000/50000) | avg reward 10.15\n  LINUCB progress:  36.0% (18000/50000) | avg reward 10.16\n  LINUCB progress:  38.0% (19000/50000) | avg reward 10.12\n  LINUCB progress:  40.0% (20000/50000) | avg reward 10.13\n  LINUCB progress:  42.0% (21000/50000) | avg reward 10.07\n  LINUCB progress:  44.0% (22000/50000) | avg reward 10.08\n  LINUCB progress:  46.0% (23000/50000) | avg reward 10.04\n  LINUCB progress:  48.0% (24000/50000) | avg reward 10.06\n  LINUCB progress:  50.0% (25000/50000) | avg reward 10.07\n  LINUCB progress:  52.0% (26000/50000) | avg reward 10.06\n  LINUCB progress:  54.0% (27000/50000) | avg reward 10.08\n  LINUCB progress:  56.0% (28000/50000) | avg reward 10.08\n  LINUCB progress:  58.0% (29000/50000) | avg reward 10.08\n  LINUCB progress:  60.0% (30000/50000) | avg reward 10.09\n  LINUCB progress:  62.0% (31000/50000) | avg reward 10.09\n  LINUCB progress:  64.0% (32000/50000) | avg reward 10.12\n  LINUCB progress:  66.0% (33000/50000) | avg reward 10.11\n  LINUCB progress:  68.0% (34000/50000) | avg reward 10.14\n  LINUCB progress:  70.0% (35000/50000) | avg reward 10.13\n  LINUCB progress:  72.0% (36000/50000) | avg reward 10.10\n  LINUCB progress:  74.0% (37000/50000) | avg reward 10.13\n  LINUCB progress:  76.0% (38000/50000) | avg reward 10.12\n  LINUCB progress:  78.0% (39000/50000) | avg reward 10.12\n  LINUCB progress:  80.0% (40000/50000) | avg reward 10.13\n  LINUCB progress:  82.0% (41000/50000) | avg reward 10.12\n  LINUCB progress:  84.0% (42000/50000) | avg reward 10.13\n  LINUCB progress:  86.0% (43000/50000) | avg reward 10.14\n  LINUCB progress:  88.0% (44000/50000) | avg reward 10.14\n  LINUCB progress:  90.0% (45000/50000) | avg reward 10.16\n  LINUCB progress:  92.0% (46000/50000) | avg reward 10.15\n  LINUCB progress:  94.0% (47000/50000) | avg reward 10.16\n  LINUCB progress:  96.0% (48000/50000) | avg reward 10.15\n  LINUCB progress:  98.0% (49000/50000) | avg reward 10.15\n  LINUCB progress: 100.0% (50000/50000) | avg reward 10.14\n\nRunning Thompson Sampling with features=rich for 50000 episodes...\n  TS progress:   0.0% (1/50000) | avg reward 0.00\n  TS progress:   2.0% (1000/50000) | avg reward 5.91\n  TS progress:   4.0% (2000/50000) | avg reward 6.53\n  TS progress:   6.0% (3000/50000) | avg reward 6.69\n  TS progress:   8.0% (4000/50000) | avg reward 6.81\n  TS progress:  10.0% (5000/50000) | avg reward 7.04\n  TS progress:  12.0% (6000/50000) | avg reward 7.07\n  TS progress:  14.0% (7000/50000) | avg reward 7.12\n  TS progress:  16.0% (8000/50000) | avg reward 7.23\n  TS progress:  18.0% (9000/50000) | avg reward 7.29\n  TS progress:  20.0% (10000/50000) | avg reward 7.31\n  TS progress:  22.0% (11000/50000) | avg reward 7.34\n  TS progress:  24.0% (12000/50000) | avg reward 7.35\n  TS progress:  26.0% (13000/50000) | avg reward 7.40\n  TS progress:  28.0% (14000/50000) | avg reward 7.41\n  TS progress:  30.0% (15000/50000) | avg reward 7.46\n  TS progress:  32.0% (16000/50000) | avg reward 7.50\n  TS progress:  34.0% (17000/50000) | avg reward 7.52\n  TS progress:  36.0% (18000/50000) | avg reward 7.53\n  TS progress:  38.0% (19000/50000) | avg reward 7.54\n  TS progress:  40.0% (20000/50000) | avg reward 7.56\n  TS progress:  42.0% (21000/50000) | avg reward 7.56\n  TS progress:  44.0% (22000/50000) | avg reward 7.61\n  TS progress:  46.0% (23000/50000) | avg reward 7.60\n  TS progress:  48.0% (24000/50000) | avg reward 7.62\n  TS progress:  50.0% (25000/50000) | avg reward 7.64\n  TS progress:  52.0% (26000/50000) | avg reward 7.63\n  TS progress:  54.0% (27000/50000) | avg reward 7.64\n  TS progress:  56.0% (28000/50000) | avg reward 7.68\n  TS progress:  58.0% (29000/50000) | avg reward 7.67\n  TS progress:  60.0% (30000/50000) | avg reward 7.66\n  TS progress:  62.0% (31000/50000) | avg reward 7.65\n  TS progress:  64.0% (32000/50000) | avg reward 7.64\n  TS progress:  66.0% (33000/50000) | avg reward 7.65\n  TS progress:  68.0% (34000/50000) | avg reward 7.66\n  TS progress:  70.0% (35000/50000) | avg reward 7.67\n  TS progress:  72.0% (36000/50000) | avg reward 7.68\n  TS progress:  74.0% (37000/50000) | avg reward 7.68\n  TS progress:  76.0% (38000/50000) | avg reward 7.70\n  TS progress:  78.0% (39000/50000) | avg reward 7.68\n  TS progress:  80.0% (40000/50000) | avg reward 7.69\n  TS progress:  82.0% (41000/50000) | avg reward 7.68\n  TS progress:  84.0% (42000/50000) | avg reward 7.69\n  TS progress:  86.0% (43000/50000) | avg reward 7.67\n  TS progress:  88.0% (44000/50000) | avg reward 7.67\n  TS progress:  90.0% (45000/50000) | avg reward 7.68\n  TS progress:  92.0% (46000/50000) | avg reward 7.66\n  TS progress:  94.0% (47000/50000) | avg reward 7.67\n  TS progress:  96.0% (48000/50000) | avg reward 7.66\n  TS progress:  98.0% (49000/50000) | avg reward 7.68\n  TS progress: 100.0% (50000/50000) | avg reward 7.67\n\n  Static (best) segment stats:   0.0% (1/50000) | avg reward 0.00\n  Static (best) segment stats:   2.0% (1000/50000) | avg reward 7.47\n  Static (best) segment stats:   4.0% (2000/50000) | avg reward 7.20\n  Static (best) segment stats:   6.0% (3000/50000) | avg reward 7.09\n  Static (best) segment stats:   8.0% (4000/50000) | avg reward 7.41\n  Static (best) segment stats:  10.0% (5000/50000) | avg reward 7.45\n  Static (best) segment stats:  12.0% (6000/50000) | avg reward 7.54\n  Static (best) segment stats:  14.0% (7000/50000) | avg reward 7.60\n  Static (best) segment stats:  16.0% (8000/50000) | avg reward 7.66\n  Static (best) segment stats:  18.0% (9000/50000) | avg reward 7.76\n  Static (best) segment stats:  20.0% (10000/50000) | avg reward 7.71\n  Static (best) segment stats:  22.0% (11000/50000) | avg reward 7.67\n  Static (best) segment stats:  24.0% (12000/50000) | avg reward 7.72\n  Static (best) segment stats:  26.0% (13000/50000) | avg reward 7.73\n  Static (best) segment stats:  28.0% (14000/50000) | avg reward 7.72\n  Static (best) segment stats:  30.0% (15000/50000) | avg reward 7.72\n  Static (best) segment stats:  32.0% (16000/50000) | avg reward 7.68\n  Static (best) segment stats:  34.0% (17000/50000) | avg reward 7.67\n  Static (best) segment stats:  36.0% (18000/50000) | avg reward 7.67\n  Static (best) segment stats:  38.0% (19000/50000) | avg reward 7.66\n  Static (best) segment stats:  40.0% (20000/50000) | avg reward 7.65\n  Static (best) segment stats:  42.0% (21000/50000) | avg reward 7.64\n  Static (best) segment stats:  44.0% (22000/50000) | avg reward 7.65\n  Static (best) segment stats:  46.0% (23000/50000) | avg reward 7.66\n  Static (best) segment stats:  48.0% (24000/50000) | avg reward 7.63\n  Static (best) segment stats:  50.0% (25000/50000) | avg reward 7.61\n  Static (best) segment stats:  52.0% (26000/50000) | avg reward 7.65\n  Static (best) segment stats:  54.0% (27000/50000) | avg reward 7.70\n  Static (best) segment stats:  56.0% (28000/50000) | avg reward 7.71\n  Static (best) segment stats:  58.0% (29000/50000) | avg reward 7.73\n  Static (best) segment stats:  60.0% (30000/50000) | avg reward 7.76\n  Static (best) segment stats:  62.0% (31000/50000) | avg reward 7.78\n  Static (best) segment stats:  64.0% (32000/50000) | avg reward 7.81\n  Static (best) segment stats:  66.0% (33000/50000) | avg reward 7.80\n  Static (best) segment stats:  68.0% (34000/50000) | avg reward 7.82\n  Static (best) segment stats:  70.0% (35000/50000) | avg reward 7.82\n  Static (best) segment stats:  72.0% (36000/50000) | avg reward 7.82\n  Static (best) segment stats:  74.0% (37000/50000) | avg reward 7.83\n  Static (best) segment stats:  76.0% (38000/50000) | avg reward 7.82\n  Static (best) segment stats:  78.0% (39000/50000) | avg reward 7.81\n  Static (best) segment stats:  80.0% (40000/50000) | avg reward 7.80\n  Static (best) segment stats:  82.0% (41000/50000) | avg reward 7.78\n  Static (best) segment stats:  84.0% (42000/50000) | avg reward 7.81\n  Static (best) segment stats:  86.0% (43000/50000) | avg reward 7.79\n  Static (best) segment stats:  88.0% (44000/50000) | avg reward 7.78\n  Static (best) segment stats:  90.0% (45000/50000) | avg reward 7.77\n  Static (best) segment stats:  92.0% (46000/50000) | avg reward 7.76\n  Static (best) segment stats:  94.0% (47000/50000) | avg reward 7.77\n  Static (best) segment stats:  96.0% (48000/50000) | avg reward 7.77\n  Static (best) segment stats:  98.0% (49000/50000) | avg reward 7.75\n  Static (best) segment stats: 100.0% (50000/50000) | avg reward 7.76\n\n"
+    },
+    {
+      "scenario": {
+        "name": "rich_estimated",
+        "description": "Estimated user latent features (production-style).",
+        "features": "rich_est",
+        "hparam_mode": "rich_est",
+        "n_static": 2000,
+        "n_bandit": 50000,
+        "world_seed": 20250323,
+        "bandit_base_seed": 20250359,
+        "rich_regularization": null,
+        "rich_blend_weight": 0.4,
+        "rich_shrink": 0.9,
+        "rich_quant_step": 0.25,
+        "rich_clip": [
+          -3.5,
+          3.5
+        ],
+        "prior_override": null,
+        "lin_alpha_override": null,
+        "ts_sigma_override": null,
+        "resolved_prior_weight": 12,
+        "resolved_lin_alpha": 0.85,
+        "resolved_ts_sigma": 0.7,
+        "resolved_rich_regularization": null
+      },
+      "results": {
+        "config": {
+          "seed": 20250359,
+          "n_static": 2000,
+          "n_bandit": 50000,
+          "feature_mode": "rich_est",
+          "feature_dim": 18,
+          "prior_weight": 12,
+          "lin_alpha": 0.85,
+          "ts_sigma": 0.7,
+          "rich_regularization": null,
+          "rich_regularization_params": null
+        },
+        "templates": [
+          {
+            "id": 0,
+            "name": "Neutral",
+            "description": "No boost adjustment (base ranker only)"
+          },
+          {
+            "id": 1,
+            "name": "High Margin",
+            "description": "Promote products with margin > 40%"
+          },
+          {
+            "id": 2,
+            "name": "CM2 Boost",
+            "description": "Promote own-brand (private-label) products"
+          },
+          {
+            "id": 3,
+            "name": "Popular",
+            "description": "Boost by log-popularity (bestseller score)"
+          },
+          {
+            "id": 4,
+            "name": "Premium",
+            "description": "Promote expensive items (price > 75th percentile)"
+          },
+          {
+            "id": 5,
+            "name": "Budget",
+            "description": "Promote cheap items (price < 25th percentile)"
+          },
+          {
+            "id": 6,
+            "name": "Discount",
+            "description": "Boost discounted products (max discount 30%)"
+          },
+          {
+            "id": 7,
+            "name": "Strategic",
+            "description": "Promote strategic categories"
+          }
+        ],
+        "static_results": {
+          "0": {
+            "reward": 5.851738604648706,
+            "gmv": 5.35809256111689,
+            "cm2": 0.5387401088295167,
+            "orders": 0.4665
+          },
+          "1": {
+            "reward": 5.419372838071,
+            "gmv": 5.0375393963661015,
+            "cm2": 0.637458604262206,
+            "orders": 0.4225
+          },
+          "2": {
+            "reward": 7.601776687349198,
+            "gmv": 6.953817172383988,
+            "cm2": 0.6527737874129961,
+            "orders": 0.6115
+          },
+          "3": {
+            "reward": 5.840711677927085,
+            "gmv": 5.51110730076475,
+            "cm2": 0.6791359429057348,
+            "orders": 0.3805
+          },
+          "4": {
+            "reward": 7.852616532720711,
+            "gmv": 7.385787244879494,
+            "cm2": 0.8266982196030234,
+            "orders": 0.365
+          },
+          "5": {
+            "reward": 3.3960981669632395,
+            "gmv": 2.984673899637698,
+            "cm2": 0.26568566831384693,
+            "orders": 0.4825
+          },
+          "6": {
+            "reward": 4.907612875416417,
+            "gmv": 4.51037358982275,
+            "cm2": 0.4515982139841109,
+            "orders": 0.391
+          },
+          "7": {
+            "reward": 4.817035808283034,
+            "gmv": 3.936479605036262,
+            "cm2": -0.12123449188308935,
+            "orders": 0.4335
+          }
+        },
+        "static_best": {
+          "id": 4,
+          "name": "Premium",
+          "result": {
+            "reward": 7.852616532720711,
+            "gmv": 7.385787244879494,
+            "cm2": 0.8266982196030234,
+            "orders": 0.365
+          },
+          "segments": {
+            "premium": {
+              "reward": 33.420439757573526,
+              "gmv": 31.578300590654827,
+              "cm2": 3.9976756416558175,
+              "orders": 1.5260416666666667
+            },
+            "price_hunter": {
+              "reward": 0.0001543386303875615,
+              "gmv": 0.0,
+              "cm2": 0.0,
+              "orders": 0.0
+            },
+            "litter_heavy": {
+              "reward": 4.988573495200705,
+              "gmv": 4.588073870722773,
+              "cm2": 0.23871649626280617,
+              "orders": 0.24354622246782978
+            },
+            "pl_lover": {
+              "reward": 6.012755305609297,
+              "gmv": 5.659735584019074,
+              "cm2": 0.5903664847707542,
+              "orders": 0.28629260788600114
+            }
+          }
+        },
+        "linucb": {
+          "global": {
+            "reward": 7.943691491368193,
+            "gmv": 7.275038286249204,
+            "cm2": 0.7184080127981439,
+            "orders": 0.64512
+          },
+          "segments": {
+            "price_hunter": {
+              "reward": 0.006597248861261723,
+              "gmv": 0.004306755363543332,
+              "cm2": 0.0005241701157491886,
+              "orders": 0.002407566638005159
+            },
+            "pl_lover": {
+              "reward": 12.280961124805854,
+              "gmv": 11.360146489718705,
+              "cm2": 1.2042617395231616,
+              "orders": 1.0366730584851391
+            },
+            "litter_heavy": {
+              "reward": 7.294954969520065,
+              "gmv": 6.250049762283486,
+              "cm2": 0.2076802819867938,
+              "orders": 0.6761426978818283
+            },
+            "premium": {
+              "reward": 20.28484582498844,
+              "gmv": 19.115768558356873,
+              "cm2": 2.436929231276017,
+              "orders": 1.4367063226841332
+            }
+          },
+          "diagnostics": {
+            "template_counts": [
+              4711,
+              7787,
+              24633,
+              457,
+              2274,
+              787,
+              5451,
+              3900
+            ],
+            "template_freqs": [
+              0.09422,
+              0.15574,
+              0.49266,
+              0.00914,
+              0.04548,
+              0.01574,
+              0.10902,
+              0.078
+            ]
+          }
+        },
+        "ts": {
+          "global": {
+            "reward": 7.842298473285891,
+            "gmv": 7.260361690772022,
+            "cm2": 0.7239119562849674,
+            "orders": 0.42818
+          },
+          "segments": {
+            "litter_heavy": {
+              "reward": 5.264335706619147,
+              "gmv": 4.558295806021118,
+              "cm2": 0.05084220082910478,
+              "orders": 0.372683542307389
+            },
+            "price_hunter": {
+              "reward": 0.006558753979864955,
+              "gmv": 0.0045517528949809965,
+              "cm2": 0.00022361133547325779,
+              "orders": 0.002583534274888047
+            },
+            "premium": {
+              "reward": 33.56992541615738,
+              "gmv": 31.73319554164213,
+              "cm2": 3.9836162394214596,
+              "orders": 1.5280653950953678
+            },
+            "pl_lover": {
+              "reward": 6.276601356360742,
+              "gmv": 5.749016616103237,
+              "cm2": 0.5021279998359904,
+              "orders": 0.43165353076984314
+            }
+          },
+          "diagnostics": {
+            "template_counts": [
+              2461,
+              615,
+              3956,
+              7869,
+              16090,
+              5249,
+              5137,
+              8623
+            ],
+            "template_freqs": [
+              0.04922,
+              0.0123,
+              0.07912,
+              0.15738,
+              0.3218,
+              0.10498,
+              0.10274,
+              0.17246
+            ]
+          }
+        }
+      },
+      "summary": {
+        "static_gmv": 7.385787244879494,
+        "linucb_gmv": 7.275038286249204,
+        "ts_gmv": 7.260361690772022,
+        "linucb_delta_pct": -1.49948752865947,
+        "ts_delta_pct": -1.6982015586006531
+      },
+      "stdout": "\nRunning static template baselines for 2000 episodes...\n  Static templates progress:   0.1% (1/2000) | best template ID 2 avg reward 15.35\n  Static templates progress:   2.0% (40/2000) | best template ID 2 avg reward 7.81\n  Static templates progress:   4.0% (80/2000) | best template ID 2 avg reward 8.49\n  Static templates progress:   6.0% (120/2000) | best template ID 4 avg reward 9.25\n  Static templates progress:   8.0% (160/2000) | best template ID 2 avg reward 9.20\n  Static templates progress:  10.0% (200/2000) | best template ID 2 avg reward 8.90\n  Static templates progress:  12.0% (240/2000) | best template ID 2 avg reward 9.34\n  Static templates progress:  14.0% (280/2000) | best template ID 2 avg reward 8.64\n  Static templates progress:  16.0% (320/2000) | best template ID 2 avg reward 8.43\n  Static templates progress:  18.0% (360/2000) | best template ID 2 avg reward 8.38\n  Static templates progress:  20.0% (400/2000) | best template ID 2 avg reward 8.35\n  Static templates progress:  22.0% (440/2000) | best template ID 2 avg reward 8.24\n  Static templates progress:  24.0% (480/2000) | best template ID 2 avg reward 8.16\n  Static templates progress:  26.0% (520/2000) | best template ID 2 avg reward 7.99\n  Static templates progress:  28.0% (560/2000) | best template ID 2 avg reward 8.04\n  Static templates progress:  30.0% (600/2000) | best template ID 2 avg reward 7.90\n  Static templates progress:  32.0% (640/2000) | best template ID 2 avg reward 7.86\n  Static templates progress:  34.0% (680/2000) | best template ID 2 avg reward 7.83\n  Static templates progress:  36.0% (720/2000) | best template ID 2 avg reward 7.73\n  Static templates progress:  38.0% (760/2000) | best template ID 2 avg reward 7.68\n  Static templates progress:  40.0% (800/2000) | best template ID 2 avg reward 7.79\n  Static templates progress:  42.0% (840/2000) | best template ID 2 avg reward 7.64\n  Static templates progress:  44.0% (880/2000) | best template ID 2 avg reward 7.65\n  Static templates progress:  46.0% (920/2000) | best template ID 2 avg reward 7.64\n  Static templates progress:  48.0% (960/2000) | best template ID 2 avg reward 7.56\n  Static templates progress:  50.0% (1000/2000) | best template ID 4 avg reward 7.74\n  Static templates progress:  52.0% (1040/2000) | best template ID 4 avg reward 7.81\n  Static templates progress:  54.0% (1080/2000) | best template ID 4 avg reward 7.86\n  Static templates progress:  56.0% (1120/2000) | best template ID 4 avg reward 7.72\n  Static templates progress:  58.0% (1160/2000) | best template ID 2 avg reward 7.74\n  Static templates progress:  60.0% (1200/2000) | best template ID 4 avg reward 7.83\n  Static templates progress:  62.0% (1240/2000) | best template ID 4 avg reward 7.96\n  Static templates progress:  64.0% (1280/2000) | best template ID 4 avg reward 7.88\n  Static templates progress:  66.0% (1320/2000) | best template ID 4 avg reward 7.90\n  Static templates progress:  68.0% (1360/2000) | best template ID 4 avg reward 7.94\n  Static templates progress:  70.0% (1400/2000) | best template ID 4 avg reward 7.91\n  Static templates progress:  72.0% (1440/2000) | best template ID 4 avg reward 7.82\n  Static templates progress:  74.0% (1480/2000) | best template ID 4 avg reward 7.78\n  Static templates progress:  76.0% (1520/2000) | best template ID 4 avg reward 7.73\n  Static templates progress:  78.0% (1560/2000) | best template ID 4 avg reward 7.71\n  Static templates progress:  80.0% (1600/2000) | best template ID 4 avg reward 7.73\n  Static templates progress:  82.0% (1640/2000) | best template ID 4 avg reward 7.74\n  Static templates progress:  84.0% (1680/2000) | best template ID 4 avg reward 7.78\n  Static templates progress:  86.0% (1720/2000) | best template ID 4 avg reward 7.74\n  Static templates progress:  88.0% (1760/2000) | best template ID 4 avg reward 7.81\n  Static templates progress:  90.0% (1800/2000) | best template ID 4 avg reward 7.95\n  Static templates progress:  92.0% (1840/2000) | best template ID 4 avg reward 7.92\n  Static templates progress:  94.0% (1880/2000) | best template ID 4 avg reward 7.92\n  Static templates progress:  96.0% (1920/2000) | best template ID 4 avg reward 7.97\n  Static templates progress:  98.0% (1960/2000) | best template ID 4 avg reward 7.93\n  Static templates progress: 100.0% (2000/2000) | best template ID 4 avg reward 7.85\n\n\nBest static template: ID=4 (Premium) with avg reward=7.85, GMV=7.39, CM2=0.83\n\nRunning LinUCB with features=rich_est for 50000 episodes...\n  LINUCB progress:   0.0% (1/50000) | avg reward 0.00\n  LINUCB progress:   2.0% (1000/50000) | avg reward 7.46\n  LINUCB progress:   4.0% (2000/50000) | avg reward 7.61\n  LINUCB progress:   6.0% (3000/50000) | avg reward 7.81\n  LINUCB progress:   8.0% (4000/50000) | avg reward 7.83\n  LINUCB progress:  10.0% (5000/50000) | avg reward 7.85\n  LINUCB progress:  12.0% (6000/50000) | avg reward 7.77\n  LINUCB progress:  14.0% (7000/50000) | avg reward 7.79\n  LINUCB progress:  16.0% (8000/50000) | avg reward 7.81\n  LINUCB progress:  18.0% (9000/50000) | avg reward 7.82\n  LINUCB progress:  20.0% (10000/50000) | avg reward 7.84\n  LINUCB progress:  22.0% (11000/50000) | avg reward 7.83\n  LINUCB progress:  24.0% (12000/50000) | avg reward 7.81\n  LINUCB progress:  26.0% (13000/50000) | avg reward 7.81\n  LINUCB progress:  28.0% (14000/50000) | avg reward 7.87\n  LINUCB progress:  30.0% (15000/50000) | avg reward 7.91\n  LINUCB progress:  32.0% (16000/50000) | avg reward 7.91\n  LINUCB progress:  34.0% (17000/50000) | avg reward 7.95\n  LINUCB progress:  36.0% (18000/50000) | avg reward 7.95\n  LINUCB progress:  38.0% (19000/50000) | avg reward 7.93\n  LINUCB progress:  40.0% (20000/50000) | avg reward 7.91\n  LINUCB progress:  42.0% (21000/50000) | avg reward 7.90\n  LINUCB progress:  44.0% (22000/50000) | avg reward 7.90\n  LINUCB progress:  46.0% (23000/50000) | avg reward 7.89\n  LINUCB progress:  48.0% (24000/50000) | avg reward 7.88\n  LINUCB progress:  50.0% (25000/50000) | avg reward 7.87\n  LINUCB progress:  52.0% (26000/50000) | avg reward 7.89\n  LINUCB progress:  54.0% (27000/50000) | avg reward 7.90\n  LINUCB progress:  56.0% (28000/50000) | avg reward 7.91\n  LINUCB progress:  58.0% (29000/50000) | avg reward 7.92\n  LINUCB progress:  60.0% (30000/50000) | avg reward 7.93\n  LINUCB progress:  62.0% (31000/50000) | avg reward 7.95\n  LINUCB progress:  64.0% (32000/50000) | avg reward 7.94\n  LINUCB progress:  66.0% (33000/50000) | avg reward 7.93\n  LINUCB progress:  68.0% (34000/50000) | avg reward 7.91\n  LINUCB progress:  70.0% (35000/50000) | avg reward 7.90\n  LINUCB progress:  72.0% (36000/50000) | avg reward 7.90\n  LINUCB progress:  74.0% (37000/50000) | avg reward 7.92\n  LINUCB progress:  76.0% (38000/50000) | avg reward 7.91\n  LINUCB progress:  78.0% (39000/50000) | avg reward 7.92\n  LINUCB progress:  80.0% (40000/50000) | avg reward 7.93\n  LINUCB progress:  82.0% (41000/50000) | avg reward 7.92\n  LINUCB progress:  84.0% (42000/50000) | avg reward 7.92\n  LINUCB progress:  86.0% (43000/50000) | avg reward 7.92\n  LINUCB progress:  88.0% (44000/50000) | avg reward 7.92\n  LINUCB progress:  90.0% (45000/50000) | avg reward 7.92\n  LINUCB progress:  92.0% (46000/50000) | avg reward 7.91\n  LINUCB progress:  94.0% (47000/50000) | avg reward 7.91\n  LINUCB progress:  96.0% (48000/50000) | avg reward 7.92\n  LINUCB progress:  98.0% (49000/50000) | avg reward 7.93\n  LINUCB progress: 100.0% (50000/50000) | avg reward 7.94\n\nRunning Thompson Sampling with features=rich_est for 50000 episodes...\n  TS progress:   0.0% (1/50000) | avg reward 32.00\n  TS progress:   2.0% (1000/50000) | avg reward 6.90\n  TS progress:   4.0% (2000/50000) | avg reward 7.16\n  TS progress:   6.0% (3000/50000) | avg reward 7.31\n  TS progress:   8.0% (4000/50000) | avg reward 7.43\n  TS progress:  10.0% (5000/50000) | avg reward 7.48\n  TS progress:  12.0% (6000/50000) | avg reward 7.46\n  TS progress:  14.0% (7000/50000) | avg reward 7.42\n  TS progress:  16.0% (8000/50000) | avg reward 7.54\n  TS progress:  18.0% (9000/50000) | avg reward 7.65\n  TS progress:  20.0% (10000/50000) | avg reward 7.62\n  TS progress:  22.0% (11000/50000) | avg reward 7.55\n  TS progress:  24.0% (12000/50000) | avg reward 7.59\n  TS progress:  26.0% (13000/50000) | avg reward 7.55\n  TS progress:  28.0% (14000/50000) | avg reward 7.62\n  TS progress:  30.0% (15000/50000) | avg reward 7.64\n  TS progress:  32.0% (16000/50000) | avg reward 7.63\n  TS progress:  34.0% (17000/50000) | avg reward 7.69\n  TS progress:  36.0% (18000/50000) | avg reward 7.67\n  TS progress:  38.0% (19000/50000) | avg reward 7.68\n  TS progress:  40.0% (20000/50000) | avg reward 7.72\n  TS progress:  42.0% (21000/50000) | avg reward 7.74\n  TS progress:  44.0% (22000/50000) | avg reward 7.76\n  TS progress:  46.0% (23000/50000) | avg reward 7.76\n  TS progress:  48.0% (24000/50000) | avg reward 7.76\n  TS progress:  50.0% (25000/50000) | avg reward 7.80\n  TS progress:  52.0% (26000/50000) | avg reward 7.81\n  TS progress:  54.0% (27000/50000) | avg reward 7.80\n  TS progress:  56.0% (28000/50000) | avg reward 7.83\n  TS progress:  58.0% (29000/50000) | avg reward 7.87\n  TS progress:  60.0% (30000/50000) | avg reward 7.86\n  TS progress:  62.0% (31000/50000) | avg reward 7.85\n  TS progress:  64.0% (32000/50000) | avg reward 7.85\n  TS progress:  66.0% (33000/50000) | avg reward 7.84\n  TS progress:  68.0% (34000/50000) | avg reward 7.85\n  TS progress:  70.0% (35000/50000) | avg reward 7.87\n  TS progress:  72.0% (36000/50000) | avg reward 7.86\n  TS progress:  74.0% (37000/50000) | avg reward 7.85\n  TS progress:  76.0% (38000/50000) | avg reward 7.86\n  TS progress:  78.0% (39000/50000) | avg reward 7.87\n  TS progress:  80.0% (40000/50000) | avg reward 7.88\n  TS progress:  82.0% (41000/50000) | avg reward 7.86\n  TS progress:  84.0% (42000/50000) | avg reward 7.88\n  TS progress:  86.0% (43000/50000) | avg reward 7.89\n  TS progress:  88.0% (44000/50000) | avg reward 7.89\n  TS progress:  90.0% (45000/50000) | avg reward 7.89\n  TS progress:  92.0% (46000/50000) | avg reward 7.90\n  TS progress:  94.0% (47000/50000) | avg reward 7.89\n  TS progress:  96.0% (48000/50000) | avg reward 7.86\n  TS progress:  98.0% (49000/50000) | avg reward 7.86\n  TS progress: 100.0% (50000/50000) | avg reward 7.84\n\n  Static (best) segment stats:   0.0% (1/50000) | avg reward 16.54\n  Static (best) segment stats:   2.0% (1000/50000) | avg reward 6.83\n  Static (best) segment stats:   4.0% (2000/50000) | avg reward 7.35\n  Static (best) segment stats:   6.0% (3000/50000) | avg reward 7.16\n  Static (best) segment stats:   8.0% (4000/50000) | avg reward 7.38\n  Static (best) segment stats:  10.0% (5000/50000) | avg reward 7.51\n  Static (best) segment stats:  12.0% (6000/50000) | avg reward 7.55\n  Static (best) segment stats:  14.0% (7000/50000) | avg reward 7.54\n  Static (best) segment stats:  16.0% (8000/50000) | avg reward 7.57\n  Static (best) segment stats:  18.0% (9000/50000) | avg reward 7.59\n  Static (best) segment stats:  20.0% (10000/50000) | avg reward 7.55\n  Static (best) segment stats:  22.0% (11000/50000) | avg reward 7.54\n  Static (best) segment stats:  24.0% (12000/50000) | avg reward 7.57\n  Static (best) segment stats:  26.0% (13000/50000) | avg reward 7.65\n  Static (best) segment stats:  28.0% (14000/50000) | avg reward 7.64\n  Static (best) segment stats:  30.0% (15000/50000) | avg reward 7.68\n  Static (best) segment stats:  32.0% (16000/50000) | avg reward 7.71\n  Static (best) segment stats:  34.0% (17000/50000) | avg reward 7.77\n  Static (best) segment stats:  36.0% (18000/50000) | avg reward 7.73\n  Static (best) segment stats:  38.0% (19000/50000) | avg reward 7.73\n  Static (best) segment stats:  40.0% (20000/50000) | avg reward 7.76\n  Static (best) segment stats:  42.0% (21000/50000) | avg reward 7.76\n  Static (best) segment stats:  44.0% (22000/50000) | avg reward 7.76\n  Static (best) segment stats:  46.0% (23000/50000) | avg reward 7.82\n  Static (best) segment stats:  48.0% (24000/50000) | avg reward 7.81\n  Static (best) segment stats:  50.0% (25000/50000) | avg reward 7.80\n  Static (best) segment stats:  52.0% (26000/50000) | avg reward 7.82\n  Static (best) segment stats:  54.0% (27000/50000) | avg reward 7.84\n  Static (best) segment stats:  56.0% (28000/50000) | avg reward 7.83\n  Static (best) segment stats:  58.0% (29000/50000) | avg reward 7.81\n  Static (best) segment stats:  60.0% (30000/50000) | avg reward 7.81\n  Static (best) segment stats:  62.0% (31000/50000) | avg reward 7.82\n  Static (best) segment stats:  64.0% (32000/50000) | avg reward 7.80\n  Static (best) segment stats:  66.0% (33000/50000) | avg reward 7.80\n  Static (best) segment stats:  68.0% (34000/50000) | avg reward 7.81\n  Static (best) segment stats:  70.0% (35000/50000) | avg reward 7.80\n  Static (best) segment stats:  72.0% (36000/50000) | avg reward 7.80\n  Static (best) segment stats:  74.0% (37000/50000) | avg reward 7.79\n  Static (best) segment stats:  76.0% (38000/50000) | avg reward 7.79\n  Static (best) segment stats:  78.0% (39000/50000) | avg reward 7.80\n  Static (best) segment stats:  80.0% (40000/50000) | avg reward 7.80\n  Static (best) segment stats:  82.0% (41000/50000) | avg reward 7.79\n  Static (best) segment stats:  84.0% (42000/50000) | avg reward 7.80\n  Static (best) segment stats:  86.0% (43000/50000) | avg reward 7.80\n  Static (best) segment stats:  88.0% (44000/50000) | avg reward 7.81\n  Static (best) segment stats:  90.0% (45000/50000) | avg reward 7.80\n  Static (best) segment stats:  92.0% (46000/50000) | avg reward 7.79\n  Static (best) segment stats:  94.0% (47000/50000) | avg reward 7.78\n  Static (best) segment stats:  96.0% (48000/50000) | avg reward 7.77\n  Static (best) segment stats:  98.0% (49000/50000) | avg reward 7.75\n  Static (best) segment stats: 100.0% (50000/50000) | avg reward 7.75\n\n"
+    }
+  ]
+}
