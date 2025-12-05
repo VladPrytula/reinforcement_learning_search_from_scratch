@@ -36,13 +36,13 @@ This syllabus lays out a chapter-by-chapter path from foundations and a working 
 
 4) Chapter 4 — Catalog, Users, Queries (Generative Design)
 - Objectives: Deterministic world generation with seeds; realistic priors.
-- Implementation: `zoosim/world/{catalog,users,queries}.py`, config defaults in `zoosim/core/config.py`.
+- Implementation: `zoosim/world/{catalog,users,queries}.py`, config defaults in `zoosim/core/config.py`; demo script `scripts/ch04/ch04_demo.py`.
 - Labs: Compute catalog price/margin stats; verify deterministic generation given seed.
 - Acceptance: `uv run pytest -q` passes `tests/test_catalog_stats.py` and determinism checks.
 
 5) Chapter 5 — Relevance, Features, Reward
 - Objectives: Hybrid lexical/semantic relevance; engineered boost features; reward aggregation.
-- Implementation: `zoosim/ranking/{relevance,features}.py`, `zoosim/dynamics/reward.py`; config-driven constants.
+- Implementation: `zoosim/ranking/{relevance,features}.py`, `zoosim/dynamics/reward.py`; config-driven constants; demo script `scripts/ch05/ch05_demo.py`.
 - Labs: Visualize feature interactions (cm2×cat, discount×price_sens); validate reward breakdown.
 - Acceptance: Feature standardization applied; reward equals weighted sum expected from lab.
 
