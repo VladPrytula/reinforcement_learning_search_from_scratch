@@ -1104,7 +1104,17 @@ We can solve this via policy gradients! Parameterize $\pi_\theta(a|s) = \mathcal
 
 ## 8.7 Modern Context (2020-2025)
 
-REINFORCE (1992) is historically important but rarely used in production today. Modern policy gradient methods address its limitations through variance reduction, trust regions, and hybrid architectures. We survey the landscape to position our work within frontier RL.
+REINFORCE (1992) is historically important and---contrary to common belief---**still deployed at scale in recommendation systems**. Modern policy gradient methods address its limitations through variance reduction, trust regions, and hybrid architectures. We survey the landscape to position our work within frontier RL.
+
+!!! example "Industry Case Study: YouTube's REINFORCE Recommender"
+    Google deployed a **REINFORCE-based recommender at YouTube** ([@chen:top_k_reinforce:2019], WSDM 2019), directly optimizing for long-term user engagement. Key insights:
+
+    - **Scale**: Action space of millions of videos, serving billions of users
+    - **Architecture**: RNN (Chaos-Free RNN for stability) encodes user history, policy outputs softmax over candidates
+    - **Off-Policy Correction**: Top-K correction addresses the mismatch between logged policy (previous recommender) and learned policy
+    - **Why REINFORCE?** They found policy gradients outperformed value-based methods for this setting---the action space is too large for Q-learning enumeration, and they needed to optimize logged data (off-policy)
+
+    This is remarkably similar to our search ranking problem: sparse rewards (most users don't purchase), large action spaces (many products), and the need to learn from historical logs. YouTube's success validates that well-engineered REINFORCE can work at production scale---but requires careful off-policy correction (Chapter 9) and variance reduction (this chapter).
 
 ### 8.7.1 Actor-Critic Methods (A2C, A3C)
 
@@ -1364,6 +1374,7 @@ Full citations in `references.bib`. Key references:
 - [@schulman:high_dimensional:2015] — Trust regions, GAE
 - [@schulman:proximal_policy:2017] — PPO
 - [@haarnoja:soft_actor_critic:2018] — SAC
+- [@chen:top_k_reinforce:2019] — YouTube REINFORCE recommender (WSDM 2019)
 - [@ouyang:training_language:2022] — RLHF for LLMs (InstructGPT)
 - [@fazel:global_convergence:2018] — Policy gradient convergence for LQR
 

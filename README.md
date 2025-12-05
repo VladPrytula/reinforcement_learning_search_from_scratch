@@ -11,7 +11,7 @@
 [![LaTeX](https://img.shields.io/badge/LaTeX-008080?logo=latex&logoColor=white)](https://www.latex-project.org/)
 
 **Author:** Vlad Prytula
-**Status:** Active Development (Chapters 0--7 Complete)
+**Status:** Work in Progress (Chapters 0--10 drafted, Part V in development)
 
 ## Project Overview
 
@@ -22,22 +22,50 @@ Our goal is to bridge the gap between rigorous mathematics and production engine
 We build the system on three core principles:
 
 1.  **Foundational Math**: We derive algorithms from first principles (measure theory, Bellman operators) to understand *why* they work.
-2.  **Production-Quality Code**: We avoid "research scripts" in favor of structured, typed, and tested Python/PyTorch code that mirrors real-world systems.
+2.  **Clean, Modular Code**: Readable, reproducible, and maintainable Python/PyTorch---not a pile of scripts. The architecture is designed so the same blueprint can realistically scale to production.
 3.  **Realistic Constraints**: We move beyond gridworlds to tackle the messy reality of search: optimizing GMV, managing user retention, and respecting business constraints.
+
+---
+
+## The Journey: From Toy Bandits to Frontier RL
+
+By the final chapter, you'll have built and understood every major RL paradigm---and seen them compete head-to-head on the same e-commerce search task:
+
+```
+Foundations          Bandits              Value-Based           Policy Gradient        Frontier
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Measure Theory   →   LinUCB           →   Q-Ensemble + CEM  →   REINFORCE          →   SlateQ
+Bellman Ops          Thompson Sampling    Continuous Actions     Neural PG              CQL (Offline)
+Click Models         Template Selection   Trust Regions          Variance Reduction     Differentiable Ranking
+```
+
+**Where these techniques appear in the wild:**
+- **Bandits**: Netflix artwork personalization ([RecSys 2018](https://dl.acm.org/doi/10.1145/3240323.3241729)), Spotify's BaRT shelf ranking ([engineering blog](https://www.music-tomorrow.com/blog/how-spotify-recommendation-system-works-complete-guide)), LinkedIn feed optimization ([Netflix ML Meetup](https://netflixtechblog.com/ml-platform-meetup-infra-for-contextual-bandits-and-reinforcement-learning-4a90305948ef))
+- **Value-Based RL**: Alibaba real-time bidding ([KDD 2018](https://arxiv.org/abs/1803.00259)), Google data center cooling ([DeepMind 2016](https://deepmind.google/discover/blog/deepmind-ai-reduces-google-data-centre-cooling-bill-by-40/))
+- **Policy Gradients**: RLHF for LLMs ([InstructGPT/PPO](https://huggingface.co/blog/rlhf)), YouTube recommendations ([WSDM 2019, REINFORCE](https://arxiv.org/abs/1812.02353)), chip placement ([AlphaChip/Nature 2021](https://deepmind.google/blog/how-alphachip-transformed-computer-chip-design/)), robotics control (PPO/SAC are standard)
+- **Offline RL**: Learning from logs without risky online exploration---critical for healthcare treatment planning, autonomous driving, and any setting where mistakes are expensive ([survey](https://arxiv.org/abs/2005.01643))
+- **Slate RL & Differentiable Ranking**: YouTube ([SlateQ, IJCAI 2019](https://research.google/pubs/pub48200/)), Amazon page layout optimization ([Amazon Science](https://www.amazon.science/publications/automate-page-layout-optimization-an-offline-deep-q-learning-approach))
+
+The `scripts/part4_global_comparison.py` "Battle Royale" runs all algorithms on `zoosim`, our realistic e-commerce simulator with position bias, multi-objective rewards, and business constraints (CM2 floors, exposure fairness).
+
+**What you'll learn along the way:**
+- Why a theoretically sound bandit can underperform a static baseline by 28%---and how fixing *features* (not algorithms) yields a 44-point GMV swing
+- When continuous Q-learning beats discrete templates, and when it doesn't
+- The honest 50% gap between REINFORCE and value methods (and why policy gradients still matter for LLMs)
+- How to evaluate policies offline without running A/B tests (OPE: IPS, SNIPS, DR)
+- Deploying RL safely with guardrails, drift detection, and automatic rollback
 
 ---
 
 ## Project Status
 
-We are currently working through **Part III (Continuous Control)**.
-
 | Part | Focus | Chapters | Status |
 | :--- | :--- | :--- | :--- |
-| **I** | **Foundations** | 0–3 | ✅ **Complete** (Measure theory, PBMs, Bellman operators) |
-| **II** | **The Simulator** | 4–6 | ✅ **Complete** (Generative world, discrete bandits, LinUCB) |
-| **III** | **Continuous Control** | 7 | ✅ **Complete** (Q-Ensembles, CEM, Trust Regions) |
-| **IV** | **Safety & Scale** | 8–10 | 🚧 *In Progress* (Constrained MDPs, OPE, Drift) |
-| **V** | **Frontier** | 11–15 | 📅 *Planned* (Slate RL, Offline RL, Differentiable Ranking) |
+| **I** | **Foundations** | 0--3 | 📝 Drafted (Motivation, measure theory, click models, Bellman operators) |
+| **II** | **Simulator & Bandits** | 4--6 | 📝 Drafted (Generative world, features/rewards, LinUCB/Thompson Sampling) |
+| **III** | **Continuous & Policy Gradients** | 7--8 | 📝 Drafted (Q-Ensemble + CEM, REINFORCE, theory-practice gaps) |
+| **IV** | **Evaluation & Robustness** | 9--10 | 📝 Drafted (OPE: IPS/SNIPS/DR, drift detection, guardrails) |
+| **V** | **Frontier** | 11--15 | 🚧 In Development (Multi-episode retention, Slate RL, Offline RL, Fairness) |
 
 ---
 
