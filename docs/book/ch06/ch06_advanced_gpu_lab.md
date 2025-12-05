@@ -1,8 +1,8 @@
-# Chapter 6 — Advanced Lab: From CPU Loops to GPU Batches
+# Chapter 6 --- Advanced Lab: From CPU Loops to GPU Batches
 
 Author: Vlad Prytula
 
-Time budget: 2–3 hours (spread over a few sessions if needed)  
+Time budget: 2--3 hours (spread over a few sessions if needed)  
 Prerequisites: Comfortable with NumPy and basic Python; no prior PyTorch or GPU experience assumed.
 
 ---
@@ -36,9 +36,9 @@ At some point, the canonical implementation becomes what you feel as a **compute
 
 This lab is your guided path from:
 
-- “I can read and run the Chapter 6 CPU code”  
+- "I can read and run the Chapter 6 CPU code"  
 to  
-- “I can confidently use a GPU-accelerated version, understand what changed, and know when it is safe to trust it.”
+- "I can confidently use a GPU-accelerated version, understand what changed, and know when it is safe to trust it."
 
 We will walk from **zero GPU knowledge** to:
 
@@ -47,11 +47,11 @@ We will walk from **zero GPU knowledge** to:
 - Running GPU-accelerated experiments
 - Applying best practices to avoid subtle bugs
 
-You do not need to be a “PyTorch person” to finish this lab. Think of the GPU as a slightly stricter NumPy: arrays live on a device, and you try very hard not to move them around unnecessarily.
+You do not need to be a "PyTorch person" to finish this lab. Think of the GPU as a slightly stricter NumPy: arrays live on a device, and you try very hard not to move them around unnecessarily.
 
 ---
 
-## 2. The Starting Point — Canonical CPU Implementation
+## 2. The Starting Point --- Canonical CPU Implementation
 
 Before touching GPUs, make sure you are comfortable with the **canonical CPU path**. We will treat it as ground truth.
 
@@ -108,7 +108,7 @@ Planned scenarios:
 
 [1/5] Running scenario 'simple_baseline'...
 ...
-✓ Completed 'simple_baseline'
+[OK] Completed 'simple_baseline'
 ...
 
 Saved batch results to docs/book/drafts/ch06/data/bandit_matrix_20250701T120000Z.json
@@ -141,11 +141,11 @@ But numerically, it behaves like this:
   - Simulate user response
   - Update bandit
 
-Imagine a single cashier scanning items one by one, printing receipts, and answering questions. Every action requires the cashier’s attention.
+Imagine a single cashier scanning items one by one, printing receipts, and answering questions. Every action requires the cashier's attention.
 
 Now imagine you want to:
 
-- Increase episode count from 20k → 200k
+- Increase episode count from 20k to 200k
 - Sweep over many seeds and feature modes
 - Compare multiple hyperparameter settings
 
@@ -169,7 +169,7 @@ is designed to do.
 
 ## 4. GPU Mental Model: From Loops to Batches
 
-If you are new to GPUs, the mental model can feel intimidating. Let’s strip it down to something concrete.
+If you are new to GPUs, the mental model can feel intimidating. Let's strip it down to something concrete.
 
 ### 4.1. CPU vs GPU in One Sentence
 
@@ -178,7 +178,7 @@ If you are new to GPUs, the mental model can feel intimidating. Let’s strip it
 
 In Chapter 6, almost all of our heavy work is:
 
-- Matrix multiplications, dot products, softmax and top‑k, random draws, simple elementwise arithmetic
+- Matrix multiplications, dot products, softmax and top-k, random draws, simple elementwise arithmetic
 
 These map perfectly to the GPU.
 
@@ -187,7 +187,7 @@ These map perfectly to the GPU.
 The only new concepts you need from PyTorch are:
 
 - `torch.Tensor`: like a NumPy array, but can live on CPU or GPU.
-- `device`: where the tensor lives (`"cpu"`, `"cuda"`, `"mps"`, …).
+- `device`: where the tensor lives (`"cpu"`, `"cuda"`, `"mps"`, ...).
 
 In `scripts/ch06/optimization_gpu/template_bandits_gpu.py`, this is wrapped by:
 
@@ -235,9 +235,9 @@ Conceptually:
 The bandit algorithms themselves (LinUCB and Thompson Sampling) remain **sequential in episode index**:
 
 - We still update the posterior after each selected action.
-- We still reveal only the chosen action’s reward to the policy.
+- We still reveal only the chosen action's reward to the policy.
 
-The GPU’s job is not to change the algorithm; it is to **amortize simulator work** across many episodes.
+The GPU's job is not to change the algorithm; it is to **amortize simulator work** across many episodes.
 
 ---
 
@@ -274,22 +274,22 @@ Key pieces:
 
 - `product_prices`, `product_cm2`, `product_discount`, `product_is_pl`
 - `product_embeddings`, `normalized_embeddings`
-- `template_boosts` (boost values per template × product)
+- `template_boosts` (boost values per template x product)
 - `lexical_matrix` and `pos_bias` for relevance
 - `segment_params` (price and PL distributions per segment)
 
 You can think of `GPUWorld` as:
 
-- “All the catalog and behavior data, but now as dense tensors on a device.”
+- "All the catalog and behavior data, but now as dense tensors on a device."
 
 Analogy:
 
 - The CPU version keeps shelf labels, prices, and product attributes in many small Python objects.
 - The GPU version moves them onto a big **warehouse whiteboard** that all workers can see in one glance.
 
-Once `GPUWorld` is constructed, all costly operations (matrix multiplications, top‑k, sampling) happen inside these tensors.
+Once `GPUWorld` is constructed, all costly operations (matrix multiplications, top-k, sampling) happen inside these tensors.
 
-!!! note "Code ↔ Simulator (GPU world construction)"
+!!! note "Code -- Simulator (GPU world construction)"
     - KG IDs: `CH-6`, `DOC-ch06-template_bandits_demo`
     - Files:
       - `scripts/ch06/template_bandits_demo.py:300-420` (CPU static templates and bandit runs)
@@ -297,7 +297,7 @@ Once `GPUWorld` is constructed, all costly operations (matrix multiplications, t
 
 ### 5.2. Sampling Users and Queries in Batches
 
-The sampler helpers in the GPU implementation correspond closely to the CPU’s per-episode sampling:
+The sampler helpers in the GPU implementation correspond closely to the CPU's per-episode sampling:
 
 - `_sample_segments` chooses user segments according to `cfg.users.segment_mix`
 - `_sample_theta` samples continuous user preferences for price and PL, plus a categorical preference vector
@@ -342,7 +342,7 @@ All operations are **tensor operations** on the chosen device:
 The output is a tensor:
 
 - Shape: `(batch_size, num_products)`
-- Semantics: base score for each episode × product pair
+- Semantics: base score for each episode x product pair
 
 ### 5.4. Simulating Sessions in Parallel
 
@@ -355,7 +355,7 @@ This function:
 
 1. Adds template boosts to base scores for every template and episode at once.
 2. Applies `top_k` to get rankings for each template and episode.
-3. Steps through positions `pos = 0, …, top_k-1` in a vectorized loop:
+3. Steps through positions `pos = 0, ..., top_k-1` in a vectorized loop:
    - Computes utilities from price sensitivity, PL preferences, category affinity, and semantic match.
    - Samples clicks and purchases via logistic models and behavioral noise.
    - Updates satisfaction and purchase counts.
@@ -363,7 +363,7 @@ This function:
 
 Conceptually, you are running:
 
-- “all templates × all episodes”
+- "all templates x all episodes"
 
 simultaneously, but with careful use of tensor shapes so the GPU can execute it efficiently.
 
@@ -371,8 +371,8 @@ simultaneously, but with careful use of tensor shapes so the GPU can execute it 
 
 A crucial design principle in this project is:
 
-- “If the theorem doesn’t compile, it’s not ready.”  
-  Here: “If the GPU rewards don’t match the CPU rewards, we do not trust the speedup.”
+- "If the theorem doesn't compile, it's not ready."  
+  Here: "If the GPU rewards don't match the CPU rewards, we do not trust the speedup."
 
 The GPU implementation therefore includes an explicit **safety guard**:
 
@@ -389,7 +389,7 @@ On each batch, it:
 
 If there is any mismatch, the GPU code raises an error instead of silently drifting.
 
-!!! note "Code ↔ Reward Safety"
+!!! note "Code -- Reward Safety"
     - KG IDs: `EQ-5.7`, `CH-6`
     - Files:
       - `scripts/ch06/optimization_gpu/template_bandits_gpu.py:792-821` (GPU reward validation)
@@ -422,7 +422,7 @@ Notice the hybrid:
 
 This preserves the correctness of the learning algorithm while amortizing the heavy work.
 
-!!! note "Code ↔ Agent (GPU bandits)"
+!!! note "Code -- Agent (GPU bandits)"
     - KG IDs: `MOD-zoosim.policies.lin_ucb`, `MOD-zoosim.policies.thompson_sampling`
     - Files:
       - `scripts/ch06/template_bandits_demo.py:620-1120` (CPU bandit loop)
@@ -432,7 +432,7 @@ This preserves the correctness of the learning algorithm while amortizing the he
 
 ## 6. Running the GPU Compute Arc
 
-Now that you have a conceptual map, let’s run the GPU-accelerated version of the core Chapter 6 compute arc:
+Now that you have a conceptual map, let's run the GPU-accelerated version of the core Chapter 6 compute arc:
 
 - Simple features (failure)
 - Rich features (recovery)
@@ -458,20 +458,20 @@ python scripts/ch06/optimization_gpu/ch06_compute_arc_gpu.py \
 Output (abridged, representative):
 
 ```text
-CHAPTER 6 — GPU COMPUTE ARC: SIMPLE → RICH FEATURES
+CHAPTER 6 --- GPU COMPUTE ARC: SIMPLE -> RICH FEATURES
 Static episodes: 2,000
 Bandit episodes: 20,000
 Base seed:      20250601
 Batch size:     1024
 Device:         cpu
 
-Experiment 1: Simple features (failure mode) — features=simple, ...
+Experiment 1: Simple features (failure mode) --- features=simple, ...
 RESULTS (Simple Features):
   Static (best):  GMV = 123.45
   LinUCB:         GMV =  88.90  (-28.0%)
   TS:             GMV =  95.12  (-23.0%)
 
-Experiment 2: Rich features (oracle) — features=rich, ...
+Experiment 2: Rich features (oracle) --- features=rich, ...
 RESULTS (Rich Features):
   Static (best):  GMV = 123.45  (shared world)
   LinUCB:         GMV = 126.89  (+2.8%)
@@ -485,7 +485,7 @@ IMPROVEMENT (Rich vs Simple):
 You should recognize:
 
 - The failure with `features=simple` (bandits underperform static templates).
-- The recovery with `features=rich` (Chapter 6’s +3% / +27% GMV story).
+- The recovery with `features=rich` (Chapter 6's +3% / +27% GMV story).
 
 Behind the scenes, all the heavy lifting is already happening on batched tensors via PyTorch. You are just running it on CPU.
 
@@ -540,7 +540,7 @@ The last part of the script dynamically imports:
 
 to reuse the CPU plotting logic.
 
-!!! note "Code ↔ Env (compute arc CLI)"
+!!! note "Code -- Env (compute arc CLI)"
     - KG IDs: `DOC-ch06-compute-arc`
     - Files:
       - `scripts/ch06/ch06_compute_arc.py:1-120` (CPU compute arc)
@@ -575,16 +575,16 @@ python scripts/ch06/optimization_gpu/run_bandit_matrix_gpu.py \
 Output (abridged, representative):
 
 ```text
-CHAPTER 6 — GPU BATCH RUNNER
+CHAPTER 6 --- GPU BATCH RUNNER
 
 [1/5] Running scenario 'simple_baseline' on auto...
-Scenario Summary — simple_baseline
+Scenario Summary --- simple_baseline
 ----------------------------------
 Static templates (per-episode averages):
   ...
 
 Summary (per-episode averages):
-  Policy              Reward       GMV       CM2    Orders   ΔGMV vs static
+  Policy              Reward       GMV       CM2    Orders   DeltaGMV vs static
   Static-...          123.45     123.45     80.00    0.80        +0.00%
   LinUCB              100.01      88.90     70.00    0.70       -28.00%
   ThompsonSampling    110.11      95.12     72.00    0.72       -23.00%
@@ -615,19 +615,19 @@ For small workloads (e.g. 2k episodes), a GPU may not be faster:
 
 The GPU shines when:
 
-- `n_bandit` is large (e.g. 50k–500k episodes)
+- `n_bandit` is large (e.g. 50k--500k episodes)
 - `batch_size` is tuned to fill the GPU reasonably well
 
 Analogy:
 
-- Calling the GPU for 100 episodes is like renting a 100‑seat bus to transport 3 people. The bus moves fast, but boarding takes time and you are not using its capacity.
-- Calling the GPU for 100k episodes with `batch_size=4096` is like running a shuttle service at full capacity. You amortize the boarding cost and benefit from the bus’s speed.
+- Calling the GPU for 100 episodes is like renting a 100-seat bus to transport 3 people. The bus moves fast, but boarding takes time and you are not using its capacity.
+- Calling the GPU for 100k episodes with `batch_size=4096` is like running a shuttle service at full capacity. You amortize the boarding cost and benefit from the bus's speed.
 
 ---
 
-## 8. Best Practices for Safe CPU → GPU Migration
+## 8. Best Practices for Safe CPU to GPU Migration
 
-This lab is not just about “making it faster.” It is about making sure the GPU version is:
+This lab is not just about "making it faster." It is about making sure the GPU version is:
 
 - Correct (matches the canonical implementation)
 - Reproducible (same seeds, same answers)
@@ -731,7 +731,7 @@ If you ever extend the GPU implementation:
 
 This section turns the narrative into concrete steps. Each task builds confidence that you can **use** and **extend** the GPU implementation without being a PyTorch expert.
 
-### Task 9.1 — CPU vs GPU Time Comparison
+### Task 9.1 --- CPU vs GPU Time Comparison
 
 Goal:
 
@@ -777,7 +777,7 @@ The exact numbers will differ, but you should see:
 - Near-identical GMV values across CPU and GPU.
 - Increasing relative speedup of GPU as `N` grows.
 
-### Task 9.2 — Batch Size Trade-Off
+### Task 9.2 --- Batch Size Trade-Off
 
 Goal:
 
@@ -804,11 +804,11 @@ You are looking for a **sweet spot** where:
 - Runtime is near-minimal
 - Memory usage is stable
 
-### Task 9.3 — Feature Mode Sanity Check
+### Task 9.3 --- Feature Mode Sanity Check
 
 Goal:
 
-- Verify that the “simple vs rich” narrative still holds under GPU acceleration.
+- Verify that the "simple vs rich" narrative still holds under GPU acceleration.
 
 Steps:
 
@@ -824,7 +824,7 @@ Expected qualitative result:
 - Simple features:
   - LinUCB and TS **underperform** static templates.
 - Rich features:
-  - TS achieves **+20–30% GMV** vs static in this simulator configuration.
+  - TS achieves **+20--30% GMV** vs static in this simulator configuration.
 
 If this narrative flips, treat it as a red flag and investigate:
 
@@ -832,7 +832,7 @@ If this narrative flips, treat it as a red flag and investigate:
 - Seed misalignment
 - Code changes that alter the reward definition
 
-### Task 9.4 — Extend a Diagnostic
+### Task 9.4 --- Extend a Diagnostic
 
 Goal:
 
@@ -840,7 +840,7 @@ Goal:
 
 Ideas (pick one):
 
-- Log the average fraction of PL products in the top‑k under each template.
+- Log the average fraction of PL products in the top-k under each template.
 - Track the fraction of episodes where the bandit chooses the static best template.
 - Count how often each user segment sees an improvement vs static.
 
@@ -863,20 +863,20 @@ The intention is not to redesign the algorithm, but to:
 After this lab, you should be able to answer:
 
 1. **Why** did we move from the canonical CPU implementation to a GPU-accelerated one?
-   - Not because CPUs are “bad,” but because experiments need to scale.
+   - Not because CPUs are "bad," but because experiments need to scale.
 2. **What** changed in the GPU version?
    - Outer loops remain semantically the same.
    - Inner simulator steps are batched and moved to tensors on a device.
 3. **How** do we know we did not break the math?
    - Reward parity checks.
    - Seed alignment.
-   - Small‑N CPU vs GPU comparisons.
+   - Small-N CPU vs GPU comparisons.
 
-The deeper lesson is not “use GPUs.” It is:
+The deeper lesson is not "use GPUs." It is:
 
 - **Separate correctness from performance.**  
-  First, write a canonical implementation that you can reason about line‑by‑line.  
-  Then, and only then, introduce acceleration—while constantly checking that you have not changed the underlying problem.
+  First, write a canonical implementation that you can reason about line-by-line.  
+  Then, and only then, introduce acceleration---while constantly checking that you have not changed the underlying problem.
 
 When you later move to:
 
@@ -895,5 +895,5 @@ That is the level of care I expect from you as a practicing RL engineer.
 
 ---
 
-*Chapter 6 — Advanced Lab Draft — 2025*
+*Chapter 6 --- Advanced Lab Draft --- 2025*
 

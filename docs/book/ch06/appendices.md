@@ -1,6 +1,6 @@
 # Chapter 6 Appendices: Advanced Topics and Extensions
 
-**Navigation:** [← Back to Chapter 6 Main Text](discrete_template_bandits.md)
+**Navigation:** [Back to Chapter 6 Main Text](discrete_template_bandits.md)
 
 ---
 
@@ -10,7 +10,7 @@ This file contains advanced topics, theory-practice gap analysis, modern context
 - **Researchers** interested in theory-practice gaps and recent work (2020-2025)
 - **Advanced students** exploring neural extensions and modern bandit applications
 
-**Prerequisites:** Complete Chapter 6 core narrative (§§6.1-6.8) before reading these appendices.
+**Prerequisites:** Complete Chapter 6 core narrative (Sections 6.1--6.8) before reading these appendices.
 
 ---
 
@@ -40,15 +40,15 @@ where:
 **Why this design?**
 
 **Option A: Fully neural bandit** $\mu(x, a) = f_\theta(x, a)$
-- ✅ Maximum expressiveness
-- ❌ No closed-form posterior (requires MCMC or variational inference)
-- ❌ Slow uncertainty quantification
+- **Pro:** Maximum expressiveness
+- **Con:** No closed-form posterior (requires MCMC or variational inference)
+- **Con:** Slow uncertainty quantification
 
 **Option B: Neural Linear (our choice)**
-- ✅ Representation learning (neural net captures nonlinearity)
-- ✅ Fast uncertainty (linear head has Gaussian posterior)
-- ✅ Separates representation ($\psi$) from decision-making ($\theta_a$)
-- ❌ Still requires tuning representation network
+- **Pro:** Representation learning (neural net captures nonlinearity)
+- **Pro:** Fast uncertainty (linear head has Gaussian posterior)
+- **Pro:** Separates representation ($\psi$) from decision-making ($\theta_a$)
+- **Con:** Still requires tuning representation network
 
 **Training procedure:**
 
@@ -70,7 +70,7 @@ import torch.nn as nn
 class NeuralFeatureExtractor(nn.Module):
     """Neural network for representation learning.
 
-    Maps raw context x to learned features f_ψ(x).
+    Maps raw context x to learned features f_psi(x).
     """
     def __init__(self, input_dim: int, hidden_dim: int, output_dim: int):
         super().__init__()
@@ -83,7 +83,7 @@ class NeuralFeatureExtractor(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Compute learned features f_ψ(x).
+        """Compute learned features f_psi(x).
 
         Args:
             x: Raw context, shape (batch, input_dim)
@@ -114,7 +114,7 @@ def neural_linear_features(x):
         x_tensor = torch.tensor(x, dtype=torch.float32)
         return feature_extractor(x_tensor).numpy()
 
-# Now use LinUCB with neural_linear_features instead of hand-crafted φ(x)
+# Now use LinUCB with neural_linear_features instead of hand-crafted phi(x)
 policy = LinUCB(templates, feature_dim=20, config=LinUCBConfig())
 
 for t in range(T):
@@ -126,15 +126,15 @@ for t in range(T):
 
 **When to use Neural Linear:**
 
-- ✅ High-dimensional inputs (images, embeddings, raw text)
-- ✅ Sufficient logged data for pretraining (≥10k examples)
-- ✅ Nonlinear reward structure not captured by hand-crafted features
+- **Yes:** High-dimensional inputs (images, embeddings, raw text)
+- **Yes:** Sufficient logged data for pretraining ($\geq 10$k examples)
+- **Yes:** Nonlinear reward structure not captured by hand-crafted features
 
 **When to avoid:**
 
-- ❌ Limited data (<5k examples) → overfitting risk
-- ❌ Good hand-crafted features already exist → added complexity not justified
-- ❌ Interpretability critical → neural features are opaque
+- **Avoid:** Limited data (<5k examples) --- overfitting risk
+- **Avoid:** Good hand-crafted features already exist --- added complexity not justified
+- **Avoid:** Interpretability critical --- neural features are opaque
 
 For our search ranking problem, **hand-crafted features suffice** (Chapter 5 engineering). Neural Linear is overkill unless we have raw query text or product images.
 
@@ -161,21 +161,21 @@ $$
 
 **Practice:**
 
-- ✗ **Linearity**: True reward likely nonlinear in features (saturation, interactions)
-- ✓ **Bounded features**: We standardize features to $[-1, 1]$ range
-- ✗ **Bounded parameters**: No explicit bound on $\|\theta_a\|$, rely on regularization
-- ✓ **Sub-Gaussian noise**: Empirically observed (GMV variance finite)
+- **Violated:** (A1) Linearity: True reward likely nonlinear in features (saturation, interactions)
+- **Satisfied:** (A2) Bounded features: We standardize features to $[-1, 1]$ range
+- **Violated:** (A3) Bounded parameters: No explicit bound on $\|\theta_a\|$, rely on regularization
+- **Satisfied:** (A4) Sub-Gaussian noise: Empirically observed (GMV variance finite)
 
 ### Why It Works Anyway
 
 **1. Approximate linearity**
 
 While true $\mu(x, a)$ is nonlinear, our features $\phi(x)$ (Chapter 5) include:
-- Product-user interactions (margin × price sensitivity)
-- Category × query match
-- Popularity × discount interactions
+- Product-user interactions (margin $\times$ price sensitivity)
+- Category $\times$ query match
+- Popularity $\times$ discount interactions
 
-These **approximate nonlinearity** via explicit interaction features. Linear model with good features ≈ nonlinear model with simple features.
+These **approximate nonlinearity** via explicit interaction features. Linear model with good features $\approx$ nonlinear model with simple features.
 
 **2. Regularization bounds parameters**
 
@@ -311,19 +311,19 @@ Which features matter for which actions? Can bandits **prune** features online t
 ### Bandits vs. Offline RL (Chapter 13)
 
 **Contextual bandits assume online interaction:**
-- Bandit selects action → observes reward → updates policy
+- Bandit selects action $\rightarrow$ observes reward $\rightarrow$ updates policy
 - Requires live deployment (A/B testing, online learning)
 
 **Offline RL learns from logged data:**
 - No online interaction during training
-- Must handle **distribution shift** (logged policy ≠ target policy)
+- Must handle **distribution shift** (logged policy $\neq$ target policy)
 
 **Hybrid approach (used in practice):**
 1. **Phase 1 (Offline)**: Pretrain bandit on logged data from production system
 2. **Phase 2 (Online)**: Deploy with exploration, continue learning
 3. **Phase 3 (Refinement)**: Occasional offline updates from accumulated logs
 
-Our implementation (§6.6) is **purely online**. Chapter 13 adds offline pretraining.
+Our implementation (Section 6.6) is **purely online**. Chapter 13 adds offline pretraining.
 
 ---
 
@@ -341,7 +341,7 @@ Before deploying template bandits in production, verify:
     - [ ] Exploration parameter $\alpha \in [0.5, 2.0]$ (LinUCB) or $\sigma \in [0.5, 2.0]$ (TS)
 
     **Guardrails:**
-    - [ ] CM2 floor ≥60% enforced (Chapter 8 adds hard constraints)
+    - [ ] CM2 floor $\geq 60\%$ enforced (Chapter 8 adds hard constraints)
     - [ ] Rank stability: $\Delta \text{rank}@k < 3$ positions per episode
     - [ ] Fallback to best static template if bandit diverges (monitoring in Chapter 10)
 
@@ -359,9 +359,9 @@ Before deploying template bandits in production, verify:
     **Testing:**
     - [ ] Unit tests: `tests/ch06/test_templates.py`, `tests/ch06/test_linucb.py`
     - [ ] Integration test: Full training loop on simulator with fixed seed
-    - [ ] Regression test: Final reward ≥ best static template - 5% (tolerance)
+    - [ ] Regression test: Final reward $\geq$ best static template - 5% (tolerance)
     - [ ] Determinism test: LinUCB produces identical trajectory with same seed
 
 ---
 
-**Navigation:** [← Back to Chapter 6 Main Text](discrete_template_bandits.md)
+**Navigation:** [Back to Chapter 6 Main Text](discrete_template_bandits.md)

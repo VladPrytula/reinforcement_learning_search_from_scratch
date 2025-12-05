@@ -1,4 +1,4 @@
-# Chapter 6 — Exercises & Labs
+# Chapter 6 --- Exercises & Labs
 
 This file contains exercises and labs for **Chapter 6: Discrete Template Bandits**.
 
@@ -167,27 +167,27 @@ Thus both algorithms maintain the **same ridge regression estimate** for each ac
 
 ## Implementation Exercises (40 min total)
 
-### Exercise 6.4: ε-Greedy Baseline (15 min)
+### Exercise 6.4: $\varepsilon$-Greedy Baseline (15 min)
 
 **Problem:**
 
-Implement an ε-greedy policy for template selection:
+Implement an $\varepsilon$-greedy policy for template selection:
 
 1. With probability $\epsilon$: Select template uniformly at random
 2. With probability $1 - \epsilon$: Select template with highest estimated mean reward
 
-Use the same ridge regression updates as LinUCB, but replace UCB exploration with ε-greedy.
+Use the same ridge regression updates as LinUCB, but replace UCB exploration with $\varepsilon$-greedy.
 
 **Specification:**
 
 ```python
 class EpsilonGreedy:
-    """ε-greedy policy for contextual bandits.
+    """Epsilon-greedy policy for contextual bandits.
 
     Args:
         templates: List of M boost templates
         feature_dim: Feature dimension d
-        epsilon: Exploration rate ∈ [0, 1]
+        epsilon: Exploration rate in [0, 1]
         lambda_reg: Ridge regression regularization
         seed: Random seed
     """
@@ -196,10 +196,10 @@ class EpsilonGreedy:
         pass
 
     def select_action(self, features):
-        """Select template using ε-greedy.
+        """Select template using epsilon-greedy.
 
-        With probability ε: random action
-        With probability 1-ε: argmax_a θ̂_a^T φ
+        With probability epsilon: random action
+        With probability 1-epsilon: argmax_a theta_hat_a^T phi
         """
         # TODO: Implement
         pass
@@ -212,7 +212,7 @@ class EpsilonGreedy:
 
 Run on simulator for 50k episodes with $\epsilon \in \{0.05, 0.1, 0.2\}$. Compare cumulative regret to LinUCB.
 
-**Expected result:** ε-greedy has **linear regret** $O(\epsilon T)$ (constant exploration never stops), while LinUCB has **sublinear regret** $O(\sqrt{T})$.
+**Expected result:** $\varepsilon$-greedy has **linear regret** $O(\epsilon T)$ (constant exploration never stops), while LinUCB has **sublinear regret** $O(\sqrt{T})$.
 
 **Solution:**
 
@@ -268,7 +268,7 @@ class FastThompsonSampling:
             # Solve L_a^T v = z for v
             v = solve_triangular(self.cholesky_factors[a].T, z, lower=False)
 
-            # θ̃ = θ̂ + v
+            # theta_tilde = theta_hat + v
             theta_tilde = self.theta_hat[a] + v
             theta_samples.append(theta_tilde)
 
@@ -329,7 +329,7 @@ for d in [10, 50, 100, 500]:
 
 **Problem:**
 
-Extend the template library (§6.1.1) with a new template:
+Extend the template library (Section 6.1.1) with a new template:
 
 **Template ID 8: Category Diversity**
 
@@ -404,7 +404,7 @@ def create_diversity_template(catalog_stats, a_max=5.0):
 
 ### Lab 6.1: Reproducing the Simple-Feature Failure (20 min)
 
-**Objective:** Reproduce the §6.5 experiment showing that contextual bandits with simple features underperform a strong static baseline.
+**Objective:** Reproduce the Section 6.5 experiment showing that contextual bandits with simple features underperform a strong static baseline.
 
 **Procedure:**
 
@@ -416,19 +416,19 @@ def create_diversity_template(catalog_stats, a_max=5.0):
        --features simple
    ```
 2. Record:
-   - Best static template and its GMV (should be Premium with GMV ≈ 7.11)
-   - LinUCB GMV (target ≈ 5.12)
-   - Thompson Sampling GMV (target ≈ 6.18)
+   - Best static template and its GMV (should be Premium with GMV $\approx$ 7.11)
+   - LinUCB GMV (target $\approx$ 5.12)
+   - Thompson Sampling GMV (target $\approx$ 6.18)
 3. Compare LinUCB/TS to the best static template in terms of GMV and CM2.
 4. Inspect the per-segment table printed by the script and identify at least two segments where bandits hurt GMV relative to the static winner.
 
-**Expected result:** LinUCB ≈ −30 % GMV vs. static, TS ≈ −10 % GMV vs. static with clear per-segment losers. This is the §6.5 failure.
+**Expected result:** LinUCB $\approx$ -30 % GMV vs. static, TS $\approx$ -10 % GMV vs. static with clear per-segment losers. This is the Section 6.5 failure.
 
 ---
 
-### Lab 6.2a: Rich Features with Oracle Latents—Both Excel (15 min)
+### Lab 6.2a: Rich Features with Oracle Latents---Both Excel (15 min)
 
-**Objective:** Re-run the experiment with rich features containing **true (oracle) user latents** (§6.7.4) and observe both algorithms performing excellently.
+**Objective:** Re-run the experiment with rich features containing **true (oracle) user latents** (Section 6.7.4) and observe both algorithms performing excellently.
 
 **Procedure:**
 
@@ -444,18 +444,18 @@ def create_diversity_template(catalog_stats, a_max=5.0):
        --ts-sigma 0.5
    ```
 2. Record:
-   - Best static template and its GMV (Premium, GMV ≈ 7.11)
-   - LinUCB GMV (target ≈ 9.42)
-   - Thompson Sampling GMV (target ≈ 9.39)
+   - Best static template and its GMV (Premium, GMV $\approx$ 7.11)
+   - LinUCB GMV (target $\approx$ 9.42)
+   - Thompson Sampling GMV (target $\approx$ 9.39)
 3. Compute percentage lift vs. best static template for both algorithms.
 
-**Expected result:** LinUCB ≈ +32% GMV vs. static, TS ≈ +32%. With clean oracle features, both algorithms perform excellently—nearly tied. This is §6.7.4.
+**Expected result:** LinUCB $\approx$ +32% GMV vs. static, TS $\approx$ +32%. With clean oracle features, both algorithms perform excellently---nearly tied. This is Section 6.7.4.
 
 ---
 
-### Lab 6.2b: Rich Features with Estimated Latents—TS Wins (15 min)
+### Lab 6.2b: Rich Features with Estimated Latents---TS Wins (15 min)
 
-**Objective:** Re-run the experiment with rich features containing **estimated (noisy) user latents** (§6.7.5) and observe Thompson Sampling's dominance.
+**Objective:** Re-run the experiment with rich features containing **estimated (noisy) user latents** (Section 6.7.5) and observe Thompson Sampling's dominance.
 
 **Procedure:**
 
@@ -470,21 +470,21 @@ def create_diversity_template(catalog_stats, a_max=5.0):
        --ts-sigma 0.5
    ```
 2. Record:
-   - LinUCB GMV (target ≈ 7.52)
-   - Thompson Sampling GMV (target ≈ 9.31)
+   - LinUCB GMV (target $\approx$ 7.52)
+   - Thompson Sampling GMV (target $\approx$ 9.31)
 3. Compute percentage lift vs. best static template for both algorithms.
 
-**Expected result:** TS ≈ +31% GMV vs. static, LinUCB ≈ +6%. With noisy estimated features, Thompson Sampling's robust exploration wins. This is §6.7.5.
+**Expected result:** TS $\approx$ +31% GMV vs. static, LinUCB $\approx$ +6%. With noisy estimated features, Thompson Sampling's robust exploration wins. This is Section 6.7.5.
 
 ---
 
-### Lab 6.2c: Synthesis—The Algorithm Selection Principle (20 min)
+### Lab 6.2c: Synthesis---The Algorithm Selection Principle (20 min)
 
-**Objective:** Understand why the algorithm ranking reverses between oracle and estimated features, leading to the Algorithm Selection Principle (§6.7.6).
+**Objective:** Understand why the algorithm ranking reverses between oracle and estimated features, leading to the Algorithm Selection Principle (Section 6.7.6).
 
 **Procedure:**
 
-1. Create a 2×2 comparison table:
+1. Create a 2x2 comparison table:
 
    | Features | LinUCB GMV | TS GMV | Winner | Margin |
    |----------|------------|--------|--------|--------|
@@ -571,9 +571,9 @@ selection_matrix = np.zeros((M, num_windows))
 
 ---
 
-### Advanced Lab 6.A: From CPU Loops to GPU Batches (60–120 min)
+### Advanced Lab 6.A: From CPU Loops to GPU Batches (60--120 min)
 
-This is an advanced, end-to-end lab that teaches you how and why to move from the canonical but slow Chapter 6 implementation under `scripts/ch06/` to the GPU-accelerated path under `scripts/ch06/optimization_gpu/`. It assumes you have completed at least Labs 6.1–6.3.
+This is an advanced, end-to-end lab that teaches you how and why to move from the canonical but slow Chapter 6 implementation under `scripts/ch06/` to the GPU-accelerated path under `scripts/ch06/optimization_gpu/`. It assumes you have completed at least Labs 6.1--6.3.
 
 See the dedicated draft:
 
@@ -594,14 +594,14 @@ for w in range(num_windows):
 
 plt.figure(figsize=(12, 6))
 sns.heatmap(selection_matrix, cmap='viridis', cbar_kws={'label': 'Selection Frequency'})
-plt.xlabel('Episode Window (×1000)')
+plt.xlabel('Episode Window (x1000)')
 plt.ylabel('Template ID')
 plt.yticks(np.arange(M) + 0.5, [t.name for t in templates], rotation=0)
 plt.title('Template Selection Dynamics')
 plt.savefig('template_heatmap.png', dpi=150)
 
 # 2. Uncertainty evolution
-# [Implement: Plot trace(Σ_a) vs. episode for each template]
+# [Implement: Plot trace(Sigma_a) vs. episode for each template]
 
 # 3. Regret decomposition
 # [Implement: Stacked area chart of per-template regret]
@@ -626,12 +626,12 @@ plt.savefig('template_heatmap.png', dpi=150)
 
 - Mean final reward: $\approx 122$ GMV
 - Std: $\approx 2$-$3$ GMV
-- All seeds within $\pm 5\%$ of mean → robust
+- All seeds within $\pm 5\%$ of mean $\rightarrow$ robust
 
 **If variance is high (>5 GMV):**
 - Check: Are templates deterministic? (should be)
 - Check: Is environment seed fixed? (should be independent per trial)
-- Diagnosis: High variance suggests exploration randomness dominates → increase $T$ or decrease $\alpha$
+- Diagnosis: High variance suggests exploration randomness dominates $\rightarrow$ increase $T$ or decrease $\alpha$
 
 **Deliverable:** Box plot + robustness assessment
 
@@ -667,7 +667,7 @@ class HierarchicalBandit:
         """
         Args:
             meta_templates: List of 3 objectives
-            sub_templates_dict: Dict mapping objective_id → list of sub-templates
+            sub_templates_dict: Dict mapping objective_id -> list of sub-templates
             feature_dim: Context feature dimension
         """
         self.meta_bandit = LinUCB(meta_templates, feature_dim, ...)
@@ -702,7 +702,7 @@ class HierarchicalBandit:
 2. Sub-level selection distribution per objective
 3. Final GMV vs. flat LinUCB
 
-**Expected result:** Hierarchical bandit achieves similar GMV with **faster convergence** (fewer parameters to learn per level) and **better interpretability** (business can understand objective → tactic mapping).
+**Expected result:** Hierarchical bandit achieves similar GMV with **faster convergence** (fewer parameters to learn per level) and **better interpretability** (business can understand objective $\rightarrow$ tactic mapping).
 
 ---
 
@@ -724,7 +724,7 @@ Implement Neural Linear bandit as described in Appendix 6.A:
 
 1. **Representation network:**
    - Input: Raw features (100-dim)
-   - Architecture: [100 → 64 → 64 → 20]
+   - Architecture: [100 -> 64 -> 64 -> 20]
    - Activation: ReLU
 
 2. **Pretraining:**
@@ -848,4 +848,4 @@ Complete solutions with code, plots, and mathematical derivations are provided i
 
 ---
 
-*Chapter 6 Exercises & Labs — First Draft — 2025*
+*Chapter 6 Exercises & Labs --- First Draft --- 2025*

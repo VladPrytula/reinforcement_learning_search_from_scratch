@@ -3,8 +3,8 @@
 This document records the **Algorithm Selection Principle** discovered in Chapter 6:
 
 > **Algorithm selection depends on feature quality.**
-> - Clean/Oracle features → LinUCB (precise exploitation)
-> - Noisy/Estimated features → Thompson Sampling (robust exploration)
+> - Clean/Oracle features $\rightarrow$ LinUCB (precise exploitation)
+> - Noisy/Estimated features $\rightarrow$ Thompson Sampling (robust exploration)
 
 ## Configuration A: Rich Features + Oracle Latents (LinUCB Wins)
 
@@ -25,7 +25,7 @@ python scripts/ch06/template_bandits_demo.py \
 
 ### Expected Results (Oracle Latents)
 
-| Policy | GMV | ΔGMV vs Static |
+| Policy | GMV | $\Delta$GMV vs Static |
 |--------|-----|----------------|
 | Static-Premium | 7.11 | baseline |
 | **LinUCB** | **9.42** | **+32.5%** |
@@ -33,13 +33,13 @@ python scripts/ch06/template_bandits_demo.py \
 
 **Winner:** LinUCB (marginally, +0.4 percentage points)
 
-**Why LinUCB wins:** With clean oracle features, the linear model assumption holds nearly perfectly. LinUCB's UCB exploration bonus shrinks precisely as uncertainty decreases, enabling precise exploitation. Note that TS also performs excellently with oracle features—the real differentiation emerges under feature noise (see Estimated Latents below).
+**Why LinUCB wins:** With clean oracle features, the linear model assumption holds nearly perfectly. LinUCB's UCB exploration bonus shrinks precisely as uncertainty decreases, enabling precise exploitation. Note that TS also performs excellently with oracle features---the real differentiation emerges under feature noise (see Estimated Latents below).
 
 ---
 
 ## Configuration B: Rich Features + Estimated Latents (TS Wins)
 
-In production, you don't have oracle latents—you must estimate user preferences from behavior. With noisy estimated features, Thompson Sampling's robust exploration wins:
+In production, you don't have oracle latents---you must estimate user preferences from behavior. With noisy estimated features, Thompson Sampling's robust exploration wins:
 
 ```bash
 python scripts/ch06/template_bandits_demo.py \
@@ -55,7 +55,7 @@ python scripts/ch06/template_bandits_demo.py \
 
 ### Expected Results (Estimated Latents)
 
-| Policy | GMV | ΔGMV vs Static |
+| Policy | GMV | $\Delta$GMV vs Static |
 |--------|-----|----------------|
 | Static-Premium | 7.11 | baseline |
 | LinUCB | 7.52 | +5.8% |
@@ -74,9 +74,9 @@ python scripts/ch06/template_bandits_demo.py \
 | Oracle (clean) | LinUCB | +0.4 pts | Use when features are direct measurements or carefully validated |
 | Estimated (noisy) | TS | +25 pts | **Default for production** |
 
-**Key insight:** With oracle features, both algorithms perform nearly identically (LinUCB 9.42, TS 9.39). The dramatic differentiation emerges **only under feature noise**—TS maintains +31% lift while LinUCB drops to +6%.
+**Key insight:** With oracle features, both algorithms perform nearly identically (LinUCB 9.42, TS 9.39). The dramatic differentiation emerges **only under feature noise**---TS maintains +31% lift while LinUCB drops to +6%.
 
-**Production implication:** Real e-commerce systems have noisy estimated features—inferred from clicks, aggregated from proxies, delayed from behavior logs. **Default to Thompson Sampling in production.**
+**Production implication:** Real e-commerce systems have noisy estimated features---inferred from clicks, aggregated from proxies, delayed from behavior logs. **Default to Thompson Sampling in production.**
 
 ---
 

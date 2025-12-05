@@ -1,4 +1,4 @@
-# Chapter 6 — Lab Solutions
+# Chapter 6 --- Lab Solutions
 
 *Vlad Prytula*
 
@@ -77,25 +77,25 @@ Part (a): Boundedness verification
   Min observed: -0.664, Max observed: 0.673
 
 Part (b): Scale invariance verification
-  Testing α=2.5, β=-3.0
+  Testing alpha=2.5, beta=-3.0
   s(q, e) = 0.2224
-  s(αq, βe) = -0.2224
-  sign(αβ) · s(q, e) = -0.2224
+  s(alphaq, betae) = -0.2224
+  sign(alphabeta) * s(q, e) = -0.2224
   Equality holds: True (diff = 2.78e-17)
 
 Part (c): Non-additivity counterexample
   q = [1.0, 1.0], e1 = [1.0, 0.0], e2 = [0.0, 1.0]
-  e1 ⊥ e2: True (dot product = 0.0)
+  e1 perp e2: True (dot product = 0.0)
   s(q, e1 + e2) = 1.0000
   s(q, e1) + s(q, e2) = 1.4142
-  Non-additivity demonstrated: 1.0000 ≠ 1.4142
+  Non-additivity demonstrated: 1.0000 != 1.4142
 
-✓ All properties verified numerically.
+[OK] All properties verified numerically.
 ```
 
 #### Analysis
 
-The bounded range $[-1, 1]$ ensures that cosine-based features don't dominate other features in the context vector. The scale invariance means we can normalize embeddings without affecting similarity computations. Non-additivity implies that aggregating embeddings (e.g., averaging product embeddings) doesn't preserve similarity relationships—a key consideration when designing template features.
+The bounded range $[-1, 1]$ ensures that cosine-based features don't dominate other features in the context vector. The scale invariance means we can normalize embeddings without affecting similarity computations. Non-additivity implies that aggregating embeddings (e.g., averaging product embeddings) doesn't preserve similarity relationships---a key consideration when designing template features.
 
 ---
 
@@ -151,29 +151,29 @@ Exercise 6.2: Ridge Regression Equivalence
 Generating synthetic regression data (n=100, d=7)...
 
 Part (a): LinUCB vs explicit ridge regression
-  LinUCB weights (A⁻¹b): [0.296, -1.021, 0.731, 0.917, -1.944, -1.271, 0.117]
+  LinUCB weights (A^{-1}b): [0.296, -1.021, 0.731, 0.917, -1.944, -1.271, 0.117]
   Ridge regression (closed form): [0.296, -1.021, 0.731, 0.917, -1.944, -1.271, 0.117]
   Max difference: 0.00e+00
-  ✓ Equivalence verified (numerical precision)
+  [OK] Equivalence verified (numerical precision)
 
-Part (b): OLS limit as λ → 0
-  λ = 1.0e+00: ‖θ_ridge - θ_ols‖ = 0.0300
-  λ = 1.0e-01: ‖θ_ridge - θ_ols‖ = 0.0030
-  λ = 1.0e-02: ‖θ_ridge - θ_ols‖ = 0.0003
-  λ = 1.0e-03: ‖θ_ridge - θ_ols‖ = 0.0000
-  λ = 1.0e-04: ‖θ_ridge - θ_ols‖ = 0.0000
-  ✓ Convergence to OLS demonstrated
+Part (b): OLS limit as lambda -> 0
+  lambda = 1.0e+00: ||theta_ridge - theta_ols|| = 0.0300
+  lambda = 1.0e-01: ||theta_ridge - theta_ols|| = 0.0030
+  lambda = 1.0e-02: ||theta_ridge - theta_ols|| = 0.0003
+  lambda = 1.0e-03: ||theta_ridge - theta_ols|| = 0.0000
+  lambda = 1.0e-04: ||theta_ridge - theta_ols|| = 0.0000
+  [OK] Convergence to OLS demonstrated
 
 Part (c): Regularization and condition number
-  Without regularization (λ=0): κ(ΦᵀΦ) = 2.22e+00
-  With regularization (λ=1):    κ(A) = 2.20e+00
-  Condition number reduced by factor: 1×
+  Without regularization (lambda=0): kappa(Phi^TPhi) = 2.22e+00
+  With regularization (lambda=1):    kappa(A) = 2.20e+00
+  Condition number reduced by factor: 1x
 
   Why this matters:
   - Ill-conditioned matrices amplify numerical errors
-  - In early training, Σφφᵀ may be rank-deficient
-  - Regularization λI ensures A is always invertible
-  - Bounds condition number: κ(A) ≤ (λ_max + λ)/λ
+  - In early training, Sigmaphiphi^T may be rank-deficient
+  - Regularization lambdaI ensures A is always invertible
+  - Bounds condition number: kappa(A) <= (lambda_max + lambda)/lambda
 ```
 
 #### Analysis
@@ -183,7 +183,7 @@ The ridge regression interpretation is fundamental: LinUCB is simply online Baye
 1. **Statistical:** Acts as prior precision, shrinking weights toward zero (prevents overfitting)
 2. **Numerical:** Ensures matrix invertibility even with few samples
 
-Note: In this well-conditioned synthetic example, the condition number reduction is minimal. In real problems with collinear features or few samples, the reduction can be dramatic (100-1000×).
+Note: In this well-conditioned synthetic example, the condition number reduction is minimal. In real problems with collinear features or few samples, the reduction can be dramatic (100-1000x).
 
 ---
 
@@ -212,11 +212,11 @@ Exercise 6.3: Thompson Sampling vs LinUCB Posterior Equivalence
 ======================================================================
 
 Running 500 episodes with identical data streams...
-Episode 100: Max |θ_TS - θ_LinUCB| = 0.00e+00
-Episode 200: Max |θ_TS - θ_LinUCB| = 0.00e+00
-Episode 300: Max |θ_TS - θ_LinUCB| = 0.00e+00
-Episode 400: Max |θ_TS - θ_LinUCB| = 0.00e+00
-Episode 500: Max |θ_TS - θ_LinUCB| = 0.00e+00
+Episode 100: Max |theta_TS - theta_LinUCB| = 0.00e+00
+Episode 200: Max |theta_TS - theta_LinUCB| = 0.00e+00
+Episode 300: Max |theta_TS - theta_LinUCB| = 0.00e+00
+Episode 400: Max |theta_TS - theta_LinUCB| = 0.00e+00
+Episode 500: Max |theta_TS - theta_LinUCB| = 0.00e+00
 
 Final comparison (action 0):
   TS posterior mean: [-0.008, -0.087, -0.007...]
@@ -228,12 +228,12 @@ Final comparison (action 3):
   LinUCB weights:    [0.193, -0.096, -0.086...]
   Max difference: 0.00e+00 (numerical precision)
 
-✓ Posterior means are identical to numerical precision.
+[OK] Posterior means are identical to numerical precision.
 
 Key insight:
   TS and LinUCB learn the SAME model (ridge regression).
   They differ only in HOW they use uncertainty for exploration:
-  - LinUCB: Deterministic UCB bonus √(φᵀΣφ)
+  - LinUCB: Deterministic UCB bonus sqrt(phi^TSigmaphi)
   - TS: Stochastic sampling from posterior
 ```
 
@@ -248,17 +248,17 @@ This equivalence is important practically: you can switch between LinUCB and TS 
 
 ## Implementation Exercises
 
-### Exercise 6.4: ε-Greedy Baseline (15 min)
+### Exercise 6.4: epsilon-Greedy Baseline (15 min)
 
-**Problem:** Implement ε-greedy for template selection, compare to LinUCB.
+**Problem:** Implement epsilon-greedy for template selection, compare to LinUCB.
 
 #### Theoretical Foundation
 
-ε-greedy is the simplest exploration strategy:
+epsilon-greedy is the simplest exploration strategy:
 - With probability $\epsilon$: random action
 - With probability $1-\epsilon$: greedy action
 
-**Regret bound:** With constant $\epsilon$, regret is $O(\epsilon T)$ (linear), while LinUCB achieves $O(\sqrt{T})$ (sublinear). This fundamental difference emerges from ε-greedy's inability to focus exploration on uncertain actions.
+**Regret bound:** With constant $\epsilon$, regret is $O(\epsilon T)$ (linear), while LinUCB achieves $O(\sqrt{T})$ (sublinear). This fundamental difference emerges from epsilon-greedy's inability to focus exploration on uncertain actions.
 
 #### Solution
 
@@ -276,49 +276,49 @@ results = exercise_6_4_epsilon_greedy(
 **Actual Output:**
 ```
 ======================================================================
-Exercise 6.4: ε-Greedy Baseline Implementation
+Exercise 6.4: epsilon-Greedy Baseline Implementation
 ======================================================================
 
 Running experiments with n_episodes=20,000...
 
-Training ε-greedy (ε=0.05)...
+Training epsilon-greedy (epsilon=0.05)...
   Progress: 100% (20000/20000)
-Training ε-greedy (ε=0.1)...
+Training epsilon-greedy (epsilon=0.1)...
   Progress: 100% (20000/20000)
-Training ε-greedy (ε=0.2)...
+Training epsilon-greedy (epsilon=0.2)...
   Progress: 100% (20000/20000)
-Training LinUCB (α=1.0)...
+Training LinUCB (alpha=1.0)...
   Progress: 100% (20000/20000)
 
 Results (average reward over last 5000 episodes):
 
   Policy             | Avg Reward | Cumulative Regret
   -------------------|------------|------------------
-  ε-greedy (ε=0.05)  |       2.73 |             6,799
-  ε-greedy (ε=0.1)   |       2.56 |             9,270
-  ε-greedy (ε=0.2)   |       2.26 |            14,917
-  LinUCB (α=1.0)     |       2.89 |             4,133
+  epsilon-greedy (epsilon=0.05)  |       2.73 |             6,799
+  epsilon-greedy (epsilon=0.1)   |       2.56 |             9,270
+  epsilon-greedy (epsilon=0.2)   |       2.26 |            14,917
+  LinUCB (alpha=1.0)     |       2.89 |             4,133
 
 Regret Analysis:
 
   At T=20,000:
-  - ε-greedy (ε=0.05): Regret ≈ 6,799 ≈ 0.34 × T (linear)
-  - ε-greedy (ε=0.1): Regret ≈ 9,270 ≈ 0.46 × T (linear)
-  - ε-greedy (ε=0.2): Regret ≈ 14,917 ≈ 0.75 × T (linear)
-  - LinUCB: Regret ≈ 4,133 ≈ 29 × √T (sublinear)
+  - epsilon-greedy (epsilon=0.05): Regret $\approx$ 6,799 $\approx$ 0.34 x T (linear)
+  - epsilon-greedy (epsilon=0.1): Regret $\approx$ 9,270 $\approx$ 0.46 x T (linear)
+  - epsilon-greedy (epsilon=0.2): Regret $\approx$ 14,917 $\approx$ 0.75 x T (linear)
+  - LinUCB: Regret $\approx$ 4,133 $\approx$ 29 x sqrtT (sublinear)
 
   Theoretical prediction:
-  - ε-greedy: O(εT) because exploration never stops
-  - LinUCB: O(d√T log T) because uncertainty naturally decreases
+  - epsilon-greedy: O(epsilonT) because exploration never stops
+  - LinUCB: O(dsqrtT log T) because uncertainty naturally decreases
 
-✓ Demonstrated linear vs sublinear regret scaling.
+[OK] Demonstrated linear vs sublinear regret scaling.
 ```
 
 #### Analysis
 
-The ε-greedy regret scales linearly with $T$ because it wastes samples exploring uniformly even after the optimal action is identified. LinUCB's UCB-based exploration naturally diminishes as uncertainty decreases, achieving sublinear regret.
+The epsilon-greedy regret scales linearly with $T$ because it wastes samples exploring uniformly even after the optimal action is identified. LinUCB's UCB-based exploration naturally diminishes as uncertainty decreases, achieving sublinear regret.
 
-**Practical implication:** ε-greedy is acceptable for short horizons or when $\epsilon$ is decayed, but for long-running production systems, UCB or Thompson Sampling is preferred.
+**Practical implication:** epsilon-greedy is acceptable for short horizons or when $\epsilon$ is decayed, but for long-running production systems, UCB or Thompson Sampling is preferred.
 
 ---
 
@@ -357,32 +357,32 @@ Benchmarking naive vs Cholesky TS for varying feature dimensions...
 
 Feature Dim | Naive Time | Cholesky Time |  Speedup
 ------------|------------|---------------|---------
-     d=10   |     0.074s |        0.038s |     1.9×
-     d=50   |     0.830s |        0.062s |    13.3×
-     d=100  |     2.343s |        0.108s |    21.8×
-     d=500  |    48.610s |        0.920s |    52.8×
+     d=10   |     0.074s |        0.038s |     1.9x
+     d=50   |     0.830s |        0.062s |    13.3x
+     d=100  |     2.343s |        0.108s |    21.8x
+     d=500  |    48.610s |        0.920s |    52.8x
 
 Correctness verification (d=50):
   Same posterior mean: True (max diff = 2.22e-16)
-  Sample covariance matches Σ: True (Frobenius diff = 0.0032)
+  Sample covariance matches Sigma: True (Frobenius diff = 0.0032)
 
 Why it works:
-  If A = LLᵀ (Cholesky), then Σ = A⁻¹ = L⁻ᵀL⁻¹.
-  To sample θ ~ N(μ, Σ):
+  If A = LL^T (Cholesky), then Sigma = A^{-1} = L^-^TL^{-1}.
+  To sample theta ~ N(mu, Sigma):
     z ~ N(0, I)
-    θ = μ + L⁻ᵀz  [since Cov(L⁻ᵀz) = L⁻ᵀL⁻¹ = Σ]
+    theta = mu + L^-^Tz  [since Cov(L^-^Tz) = L^-^TL^{-1} = Sigma]
 
   Cost comparison:
-    Naive: O(d³) for matrix inverse per sample
-    Cholesky: O(d²) for triangular solve per sample
-              + O(d²) Cholesky update (amortized)
+    Naive: O(d^3) for matrix inverse per sample
+    Cholesky: O(d^2) for triangular solve per sample
+              + O(d^2) Cholesky update (amortized)
 
-✓ Cholesky optimization provides 5-11× speedup for d ≥ 50.
+[OK] Cholesky optimization provides 5-11x speedup for d >= 50.
 ```
 
 #### Analysis
 
-The Cholesky optimization is essential for production Thompson Sampling with rich features. At $d = 500$, naive implementation takes 48.6 seconds per 1000 episodes—unacceptable for real-time serving. The Cholesky approach reduces this to under 1 second, achieving a **52.8× speedup**.
+The Cholesky optimization is essential for production Thompson Sampling with rich features. At $d = 500$, naive implementation takes 48.6 seconds per 1000 episodes---unacceptable for real-time serving. The Cholesky approach reduces this to under 1 second, achieving a **52.8x speedup**.
 
 **Advanced optimization:** For truly large $d$, use rank-1 Cholesky updates (`scipy.linalg.cho_solve` + incremental updates) to achieve $O(d^2)$ per update instead of $O(d^3)$ for full refactorization.
 
@@ -435,11 +435,11 @@ Diversity Metrics (top-10 results):
   ---------------------------|-------------------|---------------
   Entropy H (nats)           |              1.23 |           1.23
 
-  ΔH ≈ 0 nats (no significant change)
+  DeltaH $\approx$ 0 nats (no significant change)
 
-⚠ Diversity template selected only 0.2% of the time.
+WARNING: Diversity template selected only 0.2% of the time.
   The bandit learned it provides lower expected reward in this environment.
-  This is correct behavior—not all templates are useful in all contexts.
+  This is correct behavior---not all templates are useful in all contexts.
 ```
 
 #### Analysis
@@ -447,9 +447,9 @@ Diversity Metrics (top-10 results):
 This result is pedagogically valuable: **the bandit correctly learns that the diversity template is not useful in this environment**.
 
 Key observations:
-- **Selection frequency: 0.2%** — Nearly the lowest of all templates
-- **Average reward: 0.74** — Below the best templates (Premium: 1.31, Popular: 1.29)
-- **No entropy improvement** — The low selection rate means diversity has negligible impact
+- **Selection frequency: 0.2%** --- Nearly the lowest of all templates
+- **Average reward: 0.74** --- Below the best templates (Premium: 1.31, Popular: 1.29)
+- **No entropy improvement** --- The low selection rate means diversity has negligible impact
 
 This demonstrates an important lesson: **not all templates are useful in all contexts**. The diversity template may shine in scenarios with:
 
@@ -457,7 +457,7 @@ This demonstrates an important lesson: **not all templates are useful in all con
 - Users who explicitly value variety (not modeled here)
 - Category-imbalanced rankings where diversity provides novelty value
 
-The bandit correctly learns to suppress low-value templates. This is feature, not a bug—the algorithm is doing exactly what it should: maximizing expected reward by avoiding templates that don't help.
+The bandit correctly learns to suppress low-value templates. This is feature, not a bug---the algorithm is doing exactly what it should: maximizing expected reward by avoiding templates that don't help.
 
 ---
 
@@ -511,9 +511,9 @@ Running 3-way comparison...
 Results (average over last 5,000 episodes)
 ======================================================================
 
-  Policy               |   Avg Reward | Entropy (nats) |   Δ Reward
+  Policy               |   Avg Reward | Entropy (nats) |   Delta Reward
   ---------------------|--------------|----------------|-----------
-  Biased Baseline      |        0.354 |           0.00 |          —
+  Biased Baseline      |        0.354 |           0.00 |          ---
   Always Diversity     |        0.689 |           0.94 |     +0.335 (+94.4%)
   Bandit (learned)     |        0.690 |           0.94 |     +0.335 (+94.5%)
 
@@ -547,10 +547,10 @@ Analysis: Why Diversity Helps Here
     - 60% of users want B/C/D but rarely see them
 
   Diversity fixes this:
-    - Entropy: 0.00 → 0.94 (massive increase)
-    - Reward:  0.354 → 0.689 (+94.4%)
+    - Entropy: 0.00 -> 0.94 (massive increase)
+    - Reward:  0.354 -> 0.689 (+94.4%)
 
-✓ Diversity improves reward by +94.4% in this biased-ranker scenario!
+[OK] Diversity improves reward by +94.4% in this biased-ranker scenario!
   The bandit learns to select diversity 99% of the time.
 ```
 
@@ -560,10 +560,10 @@ This is a dramatic result: **+94.4% reward improvement** from diversity. The mec
 
 | User Type | % of Traffic | Biased Ranker | Diverse Ranker |
 |-----------|--------------|---------------|----------------|
-| Prefers A | 40% | Sees A, converts ✓ | Sees A, converts ✓ |
-| Prefers B | 20% | Sees NO B, doesn't convert ✗ | Sees B, converts ✓ |
-| Prefers C | 20% | Sees NO C, doesn't convert ✗ | Sees C, converts ✓ |
-| Prefers D | 20% | Sees NO D, doesn't convert ✗ | Sees D, converts ✓ |
+| Prefers A | 40% | Sees A, converts [OK] | Sees A, converts [OK] |
+| Prefers B | 20% | Sees NO B, doesn't convert [X] | Sees B, converts [OK] |
+| Prefers C | 20% | Sees NO C, doesn't convert [X] | Sees C, converts [OK] |
+| Prefers D | 20% | Sees NO D, doesn't convert [X] | Sees D, converts [OK] |
 
 The biased ranker **completely ignores** 60% of user preferences. Diversity fixes this by ensuring each category appears at least once in top-K.
 
@@ -581,7 +581,7 @@ The biased ranker **completely ignores** 60% of user preferences. Diversity fixe
 
 ### Lab 6.1: Simple-Feature Baseline (20 min)
 
-**Objective:** Reproduce the §6.5 experiment showing contextual bandits with simple features compared to static baselines.
+**Objective:** Reproduce the Section 6.5 experiment showing contextual bandits with simple features compared to static baselines.
 
 #### Theoretical Foundation
 
@@ -613,7 +613,7 @@ results = lab_6_1_simple_feature_baseline(
 
 Based on experiments with the full zoosim simulator (`parity_cpu_20251119T051440Z.json`):
 
-| Policy | GMV | CM2 | ΔGMV vs Static |
+| Policy | GMV | CM2 | DeltaGMV vs Static |
 |--------|-----|-----|----------------|
 | Best Static | 6.68 | 2.89 | 0.0% |
 | LinUCB (simple) | 6.94 | 2.85 | **+3.9%** |
@@ -624,7 +624,7 @@ Based on experiments with the full zoosim simulator (`parity_cpu_20251119T051440
 - Thompson Sampling underperforms (-7.2%)
 - Neither catastrophic failure nor dramatic improvement
 
-This is more realistic than the "-30% failure" narrative—the actual story is that simple features provide *limited* contextual information, leading to inconsistent results depending on algorithm and hyperparameters.
+This is more realistic than the "-30% failure" narrative---the actual story is that simple features provide *limited* contextual information, leading to inconsistent results depending on algorithm and hyperparameters.
 
 ---
 
@@ -660,7 +660,7 @@ Based on experiments with the full zoosim simulator:
 
 **Rich features with blend regularization:**
 
-| Policy | GMV | CM2 | ΔGMV vs Static |
+| Policy | GMV | CM2 | DeltaGMV vs Static |
 |--------|-----|-----|----------------|
 | Best Static | 6.88 | 2.78 | 0.0% |
 | LinUCB (rich+blend) | 6.71 | 2.72 | **-2.4%** |
@@ -668,13 +668,13 @@ Based on experiments with the full zoosim simulator:
 
 **Rich features with quantized regularization:**
 
-| Policy | GMV | CM2 | ΔGMV vs Static |
+| Policy | GMV | CM2 | DeltaGMV vs Static |
 |--------|-----|-----|----------------|
 | Best Static | 6.88 | 2.78 | 0.0% |
 | LinUCB (rich+quant) | 9.08 | 3.58 | **+31.9%** |
 | Thompson Sampling | 6.81 | 2.75 | **-1.0%** |
 
-**Key insight:** The real story is more nuanced than a simple "-30% → +27%" narrative:
+**Key insight:** The real story is more nuanced than a simple "-30% -> +27%" narrative:
 
 1. **Regularization matters:** The regularization mode (`blend` vs `quantized`) dramatically affects which algorithm wins
 2. **Algorithm-specific strengths:** LinUCB excels with quantized features; TS excels with blended features
@@ -706,22 +706,22 @@ results = lab_6_3_hyperparameter_sensitivity(
 Lab 6.3: Hyperparameter Sensitivity Analysis
 ======================================================================
 
-Grid: λ ∈ [0.1, 1.0, 10.0] × α ∈ [0.5, 1.0, 2.0]
+Grid: lambda  in  [0.1, 1.0, 10.0] x alpha  in  [0.5, 1.0, 2.0]
 Episodes per config: 10,000
 
 Results (average reward, last 2,500 episodes):
 
-         | α=0.5  | α=1.0  | α=2.0
+         | alpha=0.5  | alpha=1.0  | alpha=2.0
 -----------------------------------
-λ=0.1   |  0.51 |  0.52 |  0.51
-λ=1.0   |  0.51 |  0.52 |  0.51
-λ=10.0  |  0.49 |  0.52 |  0.52
+lambda=0.1   |  0.51 |  0.52 |  0.51
+lambda=1.0   |  0.51 |  0.52 |  0.51
+lambda=10.0  |  0.49 |  0.52 |  0.52
 
-Best: λ=1.0, α=1.0 → 0.52
+Best: lambda=1.0, alpha=1.0 -> 0.52
 
 Insights:
-  - Higher λ provides stronger regularization (prevents overfitting)
-  - Higher α increases exploration (helps with uncertain arms)
+  - Higher lambda provides stronger regularization (prevents overfitting)
+  - Higher alpha increases exploration (helps with uncertain arms)
   - Optimal tradeoff depends on problem structure and horizon
 ```
 
@@ -788,7 +788,7 @@ Episode 5,000:
 Summary
 ======================================================================
 
-Uncertainty reduction: 15.50 → 1.25
+Uncertainty reduction: 15.50 -> 1.25
 Reduction ratio: 12.4x
 
 Final selection distribution (last 1000):
@@ -803,10 +803,10 @@ Final selection distribution (last 1000):
 The exploration dynamics reveal the classic bandit learning phases:
 
 1. **Early exploration (0-100):** High uncertainty (3.47), uniform-ish selection, low reward (0.607)
-2. **Learning (100-2000):** Uncertainty decreases (3.47 → 1.45), reward improves (0.607 → 0.988)
+2. **Learning (100-2000):** Uncertainty decreases (3.47 -> 1.45), reward improves (0.607 -> 0.988)
 3. **Exploitation (2000-5000):** Low uncertainty (1.25), stable selection, near-optimal reward (0.992)
 
-The **12.4× uncertainty reduction** demonstrates how Thompson Sampling naturally transitions from exploration to exploitation as it learns the reward structure.
+The **12.4x uncertainty reduction** demonstrates how Thompson Sampling naturally transitions from exploration to exploitation as it learns the reward structure.
 
 ---
 
@@ -941,7 +941,7 @@ Comparison to Flat LinUCB:
 
 Convergence speedup: 33% faster (8k vs 12k episodes)
 
-✓ Hierarchical bandits converge faster with similar final performance.
+[OK] Hierarchical bandits converge faster with similar final performance.
 ```
 
 #### Analysis
@@ -981,7 +981,7 @@ Exercise 6.9: Query-Conditional Templates
 ======================================================================
 
 Query-conditional template design:
-  t(p, q) = w_base · f(p) + w_query · g(q, p)
+  t(p, q) = w_base * f(p) + w_query * g(q, p)
 
   where g(q, p) captures query-product interaction
 
@@ -992,24 +992,24 @@ Training comparison (30,000 episodes):
   Product-only templates   |         0.81
   Query-conditional        |         0.98
 
-  ΔReward: +0.16 (+20.1%)
+  DeltaReward: +0.16 (+20.1%)
 
 Insight:
   Query-conditional templates learn to AMPLIFY templates when
   query content suggests they'll be effective, and SUPPRESS
   templates when query content suggests they'll hurt.
 
-  This is learned automatically from reward feedback—
-  no manual query→template rules needed.
+  This is learned automatically from reward feedback---
+  no manual query->template rules needed.
 
-✓ Query-conditional templates achieve +20.1% improvement.
+[OK] Query-conditional templates achieve +20.1% improvement.
 ```
 
 #### Analysis
 
 Query-conditional templates demonstrate the value of incorporating additional context. The **+20.1% improvement** comes from better matching templates to user intent signals in the query.
 
-**Key insight:** When query says "deals," boosting discounted products is obviously good. When query says "premium," boosting discounts actively hurts. Query-conditional templates learn this automatically from reward signals—no manual rules needed.
+**Key insight:** When query says "deals," boosting discounted products is obviously good. When query says "premium," boosting discounts actively hurts. Query-conditional templates learn this automatically from reward signals---no manual rules needed.
 
 ---
 
@@ -1023,13 +1023,13 @@ These lab solutions demonstrate the core lessons of Chapter 6:
 
 3. **Bandits learn segment policies automatically:** Given good features, LinUCB/TS discover which templates work for which users without manual rules.
 
-4. **Exploration has a cost:** Early regret is the price of learning. The 12.4× uncertainty reduction shows how this cost diminishes over time.
+4. **Exploration has a cost:** Early regret is the price of learning. The 12.4x uncertainty reduction shows how this cost diminishes over time.
 
 5. **Hyperparameters have sensible defaults:** $\lambda=1.0$, $\alpha=1.0$ work across a wide range of conditions.
 
 6. **Variance is real:** The 18.7% CV across seeds reminds us that bandit results should be reported with confidence intervals.
 
-7. **Production requires engineering:** Cholesky optimization (52.8× speedup), robust seed handling, and interpretable hierarchies matter as much as theoretical elegance.
+7. **Production requires engineering:** Cholesky optimization (52.8x speedup), robust seed handling, and interpretable hierarchies matter as much as theoretical elegance.
 
 8. **Diversity depends on context:** Exercise 6.6 showed diversity failing (0% improvement), while Exercise 6.6b showed it succeeding (+94.4% improvement). The difference? Whether the base ranker's bias misses user preferences.
 
@@ -1064,4 +1064,4 @@ python scripts/ch06/template_bandits_demo.py \
 
 ---
 
-*Chapter 6 Lab Solutions — 2025*
+*Chapter 6 Lab Solutions --- 2025*
