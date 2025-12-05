@@ -416,9 +416,9 @@ def create_diversity_template(catalog_stats, a_max=5.0):
        --features simple
    ```
 2. Record:
-   - Best static template and its GMV (should be CM2 Boost with GMV ≈ 6.68)
-   - LinUCB GMV (target ≈ 4.64)
-   - Thompson Sampling GMV (target ≈ 6.03)
+   - Best static template and its GMV (should be Premium with GMV ≈ 7.11)
+   - LinUCB GMV (target ≈ 5.12)
+   - Thompson Sampling GMV (target ≈ 6.18)
 3. Compare LinUCB/TS to the best static template in terms of GMV and CM2.
 4. Inspect the per-segment table printed by the script and identify at least two segments where bandits hurt GMV relative to the static winner.
 
@@ -426,9 +426,9 @@ def create_diversity_template(catalog_stats, a_max=5.0):
 
 ---
 
-### Lab 6.2a: Rich Features with Oracle Latents—LinUCB Wins (15 min)
+### Lab 6.2a: Rich Features with Oracle Latents—Both Excel (15 min)
 
-**Objective:** Re-run the experiment with rich features containing **true (oracle) user latents** (§6.7.4) and observe LinUCB's dominance.
+**Objective:** Re-run the experiment with rich features containing **true (oracle) user latents** (§6.7.4) and observe both algorithms performing excellently.
 
 **Procedure:**
 
@@ -444,12 +444,12 @@ def create_diversity_template(catalog_stats, a_max=5.0):
        --ts-sigma 0.5
    ```
 2. Record:
-   - Best static template and its GMV (Premium, GMV ≈ 6.88)
-   - LinUCB GMV (target ≈ 9.03)
-   - Thompson Sampling GMV (target ≈ 7.23)
+   - Best static template and its GMV (Premium, GMV ≈ 7.11)
+   - LinUCB GMV (target ≈ 9.42)
+   - Thompson Sampling GMV (target ≈ 9.39)
 3. Compute percentage lift vs. best static template for both algorithms.
 
-**Expected result:** LinUCB ≈ +31% GMV vs. static, TS ≈ +5%. With clean oracle features, LinUCB's precise exploitation wins. This is §6.7.4.
+**Expected result:** LinUCB ≈ +32% GMV vs. static, TS ≈ +32%. With clean oracle features, both algorithms perform excellently—nearly tied. This is §6.7.4.
 
 ---
 
@@ -470,8 +470,8 @@ def create_diversity_template(catalog_stats, a_max=5.0):
        --ts-sigma 0.5
    ```
 2. Record:
-   - LinUCB GMV (target ≈ 7.28)
-   - Thompson Sampling GMV (target ≈ 9.00)
+   - LinUCB GMV (target ≈ 7.52)
+   - Thompson Sampling GMV (target ≈ 9.31)
 3. Compute percentage lift vs. best static template for both algorithms.
 
 **Expected result:** TS ≈ +31% GMV vs. static, LinUCB ≈ +6%. With noisy estimated features, Thompson Sampling's robust exploration wins. This is §6.7.5.
@@ -488,8 +488,8 @@ def create_diversity_template(catalog_stats, a_max=5.0):
 
    | Features | LinUCB GMV | TS GMV | Winner | Margin |
    |----------|------------|--------|--------|--------|
-   | Oracle   | ~9.03      | ~7.23  | LinUCB | +26 pts |
-   | Estimated| ~7.28      | ~9.00  | TS     | +24 pts |
+   | Oracle   | ~9.42      | ~9.39  | LinUCB | +0.4 pts |
+   | Estimated| ~7.52      | ~9.31  | TS     | +25 pts |
 
 2. Compute the "reversal magnitude": How many GMV points does the winner advantage change by?
 3. **Key insight question:** Why does feature noise favor Thompson Sampling?
@@ -848,5 +848,4 @@ Complete solutions with code, plots, and mathematical derivations are provided i
 
 ---
 
-**Vlad Prytula**,
 *Chapter 6 Exercises & Labs — First Draft — 2025*

@@ -27,13 +27,13 @@ python scripts/ch06/template_bandits_demo.py \
 
 | Policy | GMV | ΔGMV vs Static |
 |--------|-----|----------------|
-| Static-Premium | 6.88 | baseline |
-| **LinUCB** | **9.03** | **+31.3%** |
-| Thompson Sampling | 7.23 | +5.1% |
+| Static-Premium | 7.11 | baseline |
+| **LinUCB** | **9.42** | **+32.5%** |
+| Thompson Sampling | 9.39 | +32.1% |
 
-**Winner:** LinUCB by 26 percentage points
+**Winner:** LinUCB (marginally, +0.4 percentage points)
 
-**Why LinUCB wins:** With clean oracle features, the linear model assumption holds nearly perfectly. LinUCB's UCB exploration bonus shrinks precisely as uncertainty decreases, converging quickly to the optimal policy without wasting rounds on unnecessary exploration.
+**Why LinUCB wins:** With clean oracle features, the linear model assumption holds nearly perfectly. LinUCB's UCB exploration bonus shrinks precisely as uncertainty decreases, enabling precise exploitation. Note that TS also performs excellently with oracle features—the real differentiation emerges under feature noise (see Estimated Latents below).
 
 ---
 
@@ -57,11 +57,11 @@ python scripts/ch06/template_bandits_demo.py \
 
 | Policy | GMV | ΔGMV vs Static |
 |--------|-----|----------------|
-| Static-Premium | 6.88 | baseline |
-| LinUCB | 7.28 | +5.8% |
-| **Thompson Sampling** | **9.00** | **+30.8%** |
+| Static-Premium | 7.11 | baseline |
+| LinUCB | 7.52 | +5.8% |
+| **Thompson Sampling** | **9.31** | **+31.0%** |
 
-**Winner:** Thompson Sampling by 24 percentage points
+**Winner:** Thompson Sampling by 25 percentage points
 
 **Why TS wins:** With noisy estimated features, LinUCB can lock into suboptimal templates based on spurious correlations. Thompson Sampling's posterior sampling maintains perpetual exploration variance, hedging against feature noise and avoiding premature convergence.
 
@@ -71,8 +71,10 @@ python scripts/ch06/template_bandits_demo.py \
 
 | Feature Quality | Winner | Margin | Recommendation |
 |----------------|--------|--------|----------------|
-| Oracle (clean) | LinUCB | +26 pts | Use when features are direct measurements or carefully validated |
-| Estimated (noisy) | TS | +24 pts | **Default for production** |
+| Oracle (clean) | LinUCB | +0.4 pts | Use when features are direct measurements or carefully validated |
+| Estimated (noisy) | TS | +25 pts | **Default for production** |
+
+**Key insight:** With oracle features, both algorithms perform nearly identically (LinUCB 9.42, TS 9.39). The dramatic differentiation emerges **only under feature noise**—TS maintains +31% lift while LinUCB drops to +6%.
 
 **Production implication:** Real e-commerce systems have noisy estimated features—inferred from clicks, aggregated from proxies, delayed from behavior logs. **Default to Thompson Sampling in production.**
 

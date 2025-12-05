@@ -69,21 +69,21 @@ Here's what that looks like:
 **Act IV: The Fix (§6.7)**
 - We'll re-engineer features to include user preferences and product aggregates
 - Same algorithms. Same data. Different features.
-- Thompson Sampling achieves **+27% GMV** over the best static template
-- A 57 percentage point swing from changing features alone
-- Feature engineering determines your performance ceiling
+- **With oracle (perfect) features**: Both LinUCB and TS achieve **+32% GMV**—the "scalpel" and the "Swiss Army knife" are equally sharp
+- **With estimated (noisy) features**: Thompson Sampling wins decisively at **+31% GMV** while LinUCB drops to +6%
+- The deepest lesson: **Algorithm selection depends on feature quality**
 
 **Act V: Reflection (§6.8)**
 - What we learned about regret bounds (conditional guarantees, not promises)
 - Why simple baselines encode domain knowledge that's hard to discover
-- How to diagnose failures in production RL systems
+- The Algorithm Selection Principle: Use LinUCB when data is perfect; use TS when data is noisy (which is almost always)
 - The bridge to Chapter 7: continuous actions and neural function approximation
 
 ---
 
 ## Why Show the Failure?
 
-I could have written this chapter the easy way: start with rich features, show you +27% GMV, declare victory, move on.
+I could have written this chapter the easy way: start with rich features, show you +31% GMV, declare victory, move on.
 
 You'd learn that rich features work. But you wouldn't learn **why** they matter.
 
@@ -125,11 +125,11 @@ Honest empiricism. That's what separates RL practitioners who can deploy systems
 
 **Part II: The Empirical Journey**
 
-§6.5 — **First Experiment (Simple Features)**: Deploy bandits with segment + query type → **30% GMV loss**
+§6.5 — **First Experiment (Simple Features)**: Deploy bandits with segment + query type → **28% GMV loss**
 
 §6.6 — **Diagnosis**: Identify feature poverty, model misspecification, and nonlinearity
 
-§6.7 — **Rich Features Retry**: Re-engineer features with product aggregates → **+27% GMV gain**
+§6.7 — **Rich Features (Oracle vs. Estimated)**: Re-engineer features, discover the Algorithm Selection Principle
 
 §6.8 — **Summary & What's Next**: Lessons learned, limitations, bridge to continuous Q(x,a) in Chapter 7
 
@@ -137,7 +137,7 @@ Honest empiricism. That's what separates RL practitioners who can deploy systems
 
 §6.8.1 — **What We Built**: Technical artifacts and empirical results
 
-§6.8.2 — **Four Lessons**: Conditional guarantees, feature engineering ceiling, baseline value, failure as design signal
+§6.8.2 — **Five Lessons**: Conditional guarantees, feature engineering ceiling, baseline value, failure as signal, algorithm selection
 
 §6.8.3 — **Where to Go Next**: Exercises, labs, and GPU scaling
 
@@ -158,9 +158,9 @@ By the end of this chapter, you will have:
 - ✅ Diagnostic tools for analyzing per-segment performance
 
 **Empirical understanding:**
-- ✅ You'll experience a 30% GMV failure with simple features
+- ✅ You'll experience a 28% GMV failure with simple features
 - ✅ You'll diagnose feature poverty as the root cause
-- ✅ You'll achieve a 57-point GMV swing with better features
+- ✅ You'll achieve a 44-point GMV swing with better features
 - ✅ You'll understand when linear models work and when they fail
 
 **Production skills:**
@@ -1941,31 +1941,31 @@ Static templates (per-episode averages):
 ID  Template             Reward         GMV         CM2
  0  Neutral                5.34        4.92        0.50
  1  High Margin            5.15        4.78        0.58
- 2  CM2 Boost              7.26        6.68        0.67  ← Best static
+ 2  CM2 Boost              7.26        6.68        0.67
  3  Popular                4.05        3.84        0.40
- 4  Premium                7.20        6.80        0.72
+ 4  Premium                7.56        7.11        0.74  ← Best static
  5  Budget                 3.07        2.72        0.26
  6  Discount               4.77        4.39        0.42
  7  Strategic              4.92        4.05       -0.12
 
-Best static template: ID=2 (CM2 Boost) with avg reward=7.26, GMV=6.68
+Best static template: ID=4 (Premium) with avg reward=7.56, GMV=7.11
 
 LinUCB (20000 episodes, simple features):
-  Global avg:  Reward=5.04, GMV=4.64, CM2=0.48
+  Global avg:  Reward=5.62, GMV=5.12, CM2=0.51
 
 Thompson Sampling (20000 episodes, simple features):
-  Global avg:  Reward=6.59, GMV=6.03, CM2=0.59
+  Global avg:  Reward=6.69, GMV=6.18, CM2=0.61
 ```
 
 Read those lines carefully:
 
-- Best static template (CM2 Boost): **6.68 GMV**
+- Best static template (Premium): **7.11 GMV**
 - LinUCB with $\phi_{\text{simple}}$: **4.64 GMV** (≈ −30 %)
 - Thompson Sampling with $\phi_{\text{simple}}$: **6.03 GMV** (≈ −10 %)
 
 The bandits lose. Not by a rounding error, not by a noisy ±1 % wobble, but by **double‑digit percentages** against a one‑line static rule.
 
-We rerun the script with different seeds; the qualitative pattern is stable. (The exact numbers jitter by a few hundredths, but LinUCB stays roughly −30 %, TS roughly −10 %.) The elegant algorithms with clean regret bounds underperform a static CM2 Boost rule that simply gives +5 to own‑brand products.
+We rerun the script with different seeds; the qualitative pattern is stable. (The exact numbers jitter by a few hundredths, but LinUCB stays roughly −30 %, TS roughly −10 %.) The elegant algorithms with clean regret bounds underperform a static Premium template that favours products matching the premium segment's preferences.
 
 ### 6.5.3 Cognitive Dissonance and Per‑Segment Heterogeneity
 
@@ -2267,24 +2267,24 @@ ID  Template             Reward         GMV         CM2
  6  Discount               4.77        4.39        0.42
  7  Strategic              4.92        4.05       -0.12
 
-Best static template: ID=4 (Premium) with avg reward=7.30, GMV=6.88
+Best static template: ID=4 (Premium) with avg reward=7.56, GMV=7.11
 
 LinUCB (20000 episodes, rich oracle features):
-  Global avg:  Reward=9.83, GMV=9.03, CM2=0.97
+  Global avg:  Reward=10.19, GMV=9.42, CM2=0.97
 
 Thompson Sampling (20000 episodes, rich oracle features):
-  Global avg:  Reward=7.88, GMV=7.23, CM2=0.76
+  Global avg:  Reward=10.15, GMV=9.39, CM2=0.97
 ```
 
 Read these numbers carefully—the **algorithm ranking has reversed**:
 
 | Algorithm | GMV | vs. Static Best |
 |-----------|-----|-----------------|
-| Static (Premium) | 6.88 | baseline |
-| **LinUCB** | **9.03** | **+31.3%** |
-| Thompson Sampling | 7.23 | +5.1% |
+| Static (Premium) | 7.11 | baseline |
+| **LinUCB** | **9.42** | **+32.5%** |
+| Thompson Sampling | 9.39 | +32.1% |
 
-With oracle user latents, **LinUCB wins decisively**. The clean features allow LinUCB's UCB exploration bonus to shrink precisely as uncertainty decreases, converging quickly to the optimal policy. Thompson Sampling's posterior sampling adds unnecessary variance when the linear model fits nearly perfectly.
+With oracle user latents, **both algorithms perform excellently**—and nearly identically! The clean features allow both LinUCB's UCB bonus and Thompson Sampling's posterior sampling to converge efficiently to the optimal policy. LinUCB edges out TS by a razor-thin margin (+0.4 percentage points), but the practical difference is negligible.
 
 This makes theoretical sense: LinUCB's regret bound [THM-6.2] assumes the reward function is *exactly* linear in features. With oracle latents providing the true user preferences, the linear assumption holds nearly perfectly, and LinUCB's exploitation becomes a virtue rather than a liability.
 
@@ -2308,21 +2308,21 @@ The output reveals the production reality:
 
 ```
 LinUCB (20000 episodes, rich estimated features):
-  Global avg:  Reward=7.48, GMV=7.28, CM2=0.76
+  Global avg:  Reward=8.20, GMV=7.52, CM2=0.76
 
 Thompson Sampling (20000 episodes, rich estimated features):
-  Global avg:  Reward=9.79, GMV=9.00, CM2=0.97
+  Global avg:  Reward=10.08, GMV=9.31, CM2=0.97
 ```
 
-Now the algorithm ranking **reverses again**:
+Now the algorithm ranking **diverges dramatically**:
 
 | Algorithm | GMV | vs. Static Best |
 |-----------|-----|-----------------|
-| Static (Premium) | 6.88 | baseline |
-| LinUCB | 7.28 | +5.8% |
-| **Thompson Sampling** | **9.00** | **+30.8%** |
+| Static (Premium) | 7.11 | baseline |
+| LinUCB | 7.52 | +5.8% |
+| **Thompson Sampling** | **9.31** | **+31.0%** |
 
-With estimated (noisy) features, **Thompson Sampling wins decisively**—by the same margin LinUCB won with oracle features!
+With estimated (noisy) features, **Thompson Sampling wins decisively**—by 25 percentage points!
 
 ### 6.7.6 The Algorithm Selection Principle
 
@@ -2390,10 +2390,10 @@ On the technical side:
 
 On the empirical side (the three-stage compute arc):
 
-- **Stage 1: Simple-feature experiment** (§6.5): with $\phi_{\text{simple}}$ (segment + query type, $d=8$), both bandits fail. LinUCB lands at 4.96 GMV (−28%), TS at 5.98 GMV (−13%).
+- **Stage 1: Simple-feature experiment** (§6.5): with $\phi_{\text{simple}}$ (segment + query type, $d=8$), both bandits fail. LinUCB lands at 5.12 GMV (−28%), TS at 6.18 GMV (−13%).
 - **Stage 2: Diagnosis** (§6.6): we locate the culprit in violated assumptions—feature poverty and linear model misspecification—not in bugs or lack of data.
-- **Stage 3a: Rich features + oracle latents** (§6.7.4): with $\phi_{\text{rich}}$ containing true user latents ($d=17$), **LinUCB wins** at 9.03 GMV (+31.3%), TS at 7.23 GMV (+5.1%).
-- **Stage 3b: Rich features + estimated latents** (§6.7.5): same rich features but with estimated (noisy) latents, **TS wins** at 9.00 GMV (+30.8%), LinUCB at 7.28 GMV (+5.8%).
+- **Stage 3a: Rich features + oracle latents** (§6.7.4): with $\phi_{\text{rich}}$ containing true user latents ($d=18$), **both algorithms excel**—LinUCB at 9.42 GMV (+32.5%), TS at 9.39 GMV (+32.1%). Near-perfect tie.
+- **Stage 3b: Rich features + estimated latents** (§6.7.5): same rich features but with estimated (noisy) latents, **TS wins decisively** at 9.31 GMV (+31.0%), LinUCB at 7.52 GMV (+5.8%).
 
 ### 6.8.2 Five Lessons You Should Remember
 
@@ -2407,19 +2407,19 @@ It does **not** say that LinUCB discovers the globally optimal policy for the en
 
 **Lesson 2 — Feature engineering sets your performance ceiling.**
 
-We changed nothing about the environment, templates, or algorithms between §§6.5 and 6.7. Only the features changed. Yet the GMV numbers swung from “−10 % vs. static” to “+27 % vs. static”.
+We changed nothing about the environment, templates, or algorithms between §§6.5 and 6.7. Only the features changed. Yet the GMV numbers swung from "−13% vs. static" to "+31% vs. static".
 
 You cannot learn what your features do not expose. In contextual bandits (and in deep RL, despite the flexibility of neural networks) **representation design is policy design**.
 
 **Lesson 3 — Simple baselines encode valuable domain knowledge.**
 
-The CM2 Boost template is a one‑line heuristic that captures a deep business insight: own‑brand products have high margins without sacrificing too much conversion. It wins by default in the simple‑feature regime and remains competitive even with rich features.
+The Premium template is a one‑line heuristic that captures a deep business insight: boosting premium products maximizes revenue per purchase. It wins by default in the simple‑feature regime and remains competitive even with rich features.
 
-Hand‑crafted baselines like CM2 Boost define a **safe lower bound** and a **warm start** for learning. Bandits should be evaluated relative to them, not in isolation.
+Hand‑crafted baselines like Premium define a **safe lower bound** and a **warm start** for learning. Bandits should be evaluated relative to them, not in isolation.
 
 **Lesson 4 — Failure is a design signal, not an embarrassment.**
 
-The −30 %/−10 % GMV numbers in §6.5 are not a sign that bandits are useless. They are a sign that **your modelling choices are wrong**. Because we looked at the failure honestly, we discovered precisely which assumptions broke and how to correct them.
+The −28%/−13% GMV numbers in §6.5 are not a sign that bandits are useless. They are a sign that **your modelling choices are wrong**. Because we looked at the failure honestly, we discovered precisely which assumptions broke and how to correct them.
 
 In production RL, you will experience many such failures. The playbook from this chapter is:
 
@@ -2432,8 +2432,8 @@ In production RL, you will experience many such failures. The playbook from this
 
 The contrast between §6.7.4 (oracle latents) and §6.7.5 (estimated latents) reveals the chapter's deepest insight: **the same features can favor different algorithms depending on noise level**.
 
-- With *clean, oracle features*, LinUCB's precise exploitation wins (+31% vs. TS's +5%).
-- With *noisy, estimated features*, Thompson Sampling's robust exploration wins (+31% vs. LinUCB's +6%).
+- With *clean, oracle features*, both algorithms excel equally (~+32% each)—the "scalpel" and the "Swiss Army knife" are equally sharp when data is perfect.
+- With *noisy, estimated features*, Thompson Sampling's robust exploration wins decisively (+31% vs. LinUCB's +6%).
 
 Production systems invariably have noisy features—estimated from clicks, inferred from behavior, aggregated from proxies. **Default to Thompson Sampling in production.** Use LinUCB when you're confident your features are accurate (e.g., direct measurements, A/B test signals, or carefully validated latent estimates).
 
@@ -2444,7 +2444,7 @@ Production systems invariably have noisy features—estimated from clicks, infer
 `docs/book/drafts/ch06/exercises_labs.md` contains exercises and labs that walk you through:
 
 - **Lab 6.1**: Reproducing the simple-feature failure (Stage 1)
-- **Lab 6.2a**: Rich features with oracle latents—LinUCB wins (Stage 3a)
+- **Lab 6.2a**: Rich features with oracle latents—Both excel (Stage 3a)
 - **Lab 6.2b**: Rich features with estimated latents—TS wins (Stage 3b)
 - **Lab 6.2c**: Synthesis—understanding the algorithm selection principle
 - **Labs 6.3-6.5**: Hyperparameter sensitivity, exploration dynamics, multi-seed robustness
@@ -2577,5 +2577,5 @@ Knowledge Graph entries:
 
 ---
 
-**Vlad Prytula**,
+
 *Chapter 6 — First Draft — 2025*
