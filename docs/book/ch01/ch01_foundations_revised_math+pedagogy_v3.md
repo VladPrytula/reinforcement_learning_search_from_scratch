@@ -13,15 +13,33 @@
 - **Strategic goals (STRAT)**: Expose new products, house brands, or inventory to clear
 - **User experience**: Maintain relevance, diversity, and satisfaction
 
-Traditional search systems rely on **manually tuned boost parameters**: category multipliers, price/discount bonuses, profit margins, strategic product flags. A typical scoring function looks like:
+Traditional search systems rely on **manually tuned boost parameters**: category multipliers, price/discount bonuses, profit margins, strategic product flags. Before writing the scoring function, we fix our spaces.
+
+**Spaces (Working Definitions).** {#DEF-1.1.0}
+
+- $\mathcal{P}$: **Product catalog**, a finite set of $M$ products. Each $p \in \mathcal{P}$ carries attributes (price, category, margin, embedding).
+- $\mathcal{Q}$: **Query space**, the set of possible search queries. In practice, a finite vocabulary or embedding space $\mathcal{Q} \subset \mathbb{R}^{d_q}$.
+- $\mathcal{U}$: **User space**, characterizing users by segment, purchase history, and preferences. Finite segments or embedding space $\mathcal{U} \subset \mathbb{R}^{d_u}$.
+- $\mathcal{X}$: **Context space**, typically $\mathcal{X} \subseteq \mathcal{U} \times \mathcal{Q} \times \mathcal{H} \times \mathcal{T}$ where $\mathcal{H}$ is session history and $\mathcal{T}$ is time features. We assume $\mathcal{X}$ is a compact subset of $\mathbb{R}^{d_x}$ for some $d_x$ (verified in Chapter 4).
+- $\mathcal{A} = [-a_{\max}, +a_{\max}]^K$: **Action space**, a compact subset of $\mathbb{R}^K$ (boost weights bounded by $a_{\max} > 0$).
+- $\Omega$: **Outcome space**, the sample space for stochastic user behavior (clicks, purchases, abandonment). Equipped with probability measure $\mathbb{P}$ (formalized in Chapter 2).
+
+*Measure-theoretic structure ($\sigma$-algebras, probability kernels, conditional distributions) is developed in Chapter 2. For this chapter, we work with these as sets supporting the functions and expectations below.*
+
+A typical scoring function looks like:
 
 $$
-s(p, q, u) = r_{\text{ES}}(q, p) + \sum_{k=1}^{K} w_k \phi_k(p, u, q)
+s: \mathcal{P} \times \mathcal{Q} \times \mathcal{U} \to \mathbb{R}, \quad s(p, q, u) = r_{\text{ES}}(q, p) + \sum_{k=1}^{K} w_k \phi_k(p, u, q)
 \tag{1.1}
 $$
 {#EQ-1.1}
 
-where $r_{\text{ES}}: \mathcal{Q} \times \mathcal{P} \to \mathbb{R}_+$ is a **base relevance score** function (e.g., BM25 from Elasticsearch or neural embeddings) mapping query-product pairs to non-negative reals, $\phi_k: \mathcal{P} \times \mathcal{U} \times \mathcal{Q} \to \mathbb{R}$ are **engineered features** (margin, discount, bestseller status, category match), and $w_k \in \mathbb{R}$ are **manually tuned weights**. Note that we've made the user dependence explicit: $s(p, q, u)$ depends on product $p$, query $q$, **and user** $u$ through the feature functions $\phi_k$.
+where:
+- $r_{\text{ES}}: \mathcal{Q} \times \mathcal{P} \to \mathbb{R}_+$ is a **base relevance score** (e.g., BM25 or neural embeddings)
+- $\phi_k: \mathcal{P} \times \mathcal{U} \times \mathcal{Q} \to \mathbb{R}$ are **engineered features** (margin, discount, bestseller status, category match)
+- $w_k \in \mathbb{R}$ are **manually tuned weights**, collected as $\mathbf{w} = (w_1, \ldots, w_K) \in \mathbb{R}^K$
+
+Note that we've made the user dependence explicit: $s(p, q, u)$ depends on product $p \in \mathcal{P}$, query $q \in \mathcal{Q}$, **and user** $u \in \mathcal{U}$ through the feature functions $\phi_k$.
 
 **Why manual tuning fails.** The core problem: $w_k$ cannot adapt to context. The "price hunter" (User A) cares about bulk pricing and discounts. The "premium shopper" (User B) values quality over price. A generic query ("cat food") tolerates exploration; a specific query ("Royal Canin Veterinary Diet Renal Support") demands precision.
 
@@ -45,6 +63,10 @@ In Chapter 0 (Motivation: Your First RL Experiment), we built a tiny, code-first
 >
 > We index equations as EQ-X.Y, theorems as THM-X.Y, definitions as DEF-X.Y, remarks as REM-X.Y, and assumptions as ASM-X.Y for cross-reference. Anchors like `{#THM-1.7.2}` enable internal linking.
 
+> **On Mathematical Rigor**
+>
+> This chapter provides **working definitions** and builds intuition for the RL formulation. We specify function signatures (domains, codomains, types) but defer **measure-theoretic foundations**---$\sigma$-algebras on $\mathcal{X}$ and $\Omega$, measurability conditions, integrability requirements---to **Chapters 2--3**. Key results (THM-1.7.2, THM-1.7.3) state their assumptions explicitly; verification that our search setting satisfies these assumptions appears in later chapters. Readers seeking Bourbaki-level rigor should treat this chapter as motivation and roadmap; the rigorous development begins in Chapter 2.
+
 This chapter establishes the mathematical foundation: we formulate search ranking as a **constrained optimization problem**, then show why it requires **contextual decision-making** (bandits), and finally preview the RL framework we'll develop.
 
 ---
@@ -66,9 +88,11 @@ R(\mathbf{w}, u, q, \omega) = \alpha \cdot \text{GMV}(\mathbf{w}, u, q, \omega) 
 $$
 {#EQ-1.2}
 
-where $\omega$ represents the stochastic user behavior conditioned on the ranking $\pi_{\mathbf{w}}(u, q)$ induced by boost weights $\mathbf{w}$, and $(\alpha, \beta, \gamma, \delta)$ are **business weight parameters** reflecting strategic priorities. The outcome components (GMV, CM2, STRAT, CLICKS) depend on the full context $(\mathbf{w}, u, q)$ through the ranking, though we often abbreviate this dependence when clear from context.
+where $\omega \in \Omega$ represents the stochastic user behavior conditioned on the ranking $\pi_{\mathbf{w}}(u, q)$ induced by boost weights $\mathbf{w}$, and $(\alpha, \beta, \gamma, \delta) \in \mathbb{R}_+^4$ are **business weight parameters** reflecting strategic priorities. The outcome components (GMV, CM2, STRAT, CLICKS) depend on the full context $(\mathbf{w}, u, q)$ through the ranking, though we often abbreviate this dependence when clear from context.
 
-Remark (connection to Chapter 0). The Chapter 0 toy used a simplified instance of this reward with $(\alpha,\beta,\gamma,\delta) \approx (0.6, 0.3, 0, 0.1)$ and no explicit STRAT term. All analysis in this chapter applies to that setting.
+**Standing assumption (Integrability).** Throughout this chapter, we assume $R: \mathcal{A} \times \mathcal{U} \times \mathcal{Q} \times \Omega \to \mathbb{R}$ is measurable in $\omega$ and $\mathbb{E}[|R(\mathbf{w}, u, q, \omega)|] < \infty$ for all $(\mathbf{w}, u, q)$. This ensures expectations like $\mathbb{E}[R \mid \mathbf{w}]$ are well-defined. The formal statement appears as ASM-1.7.1; verification for our bounded-reward setting is in Chapter 2.
+
+**Remark** (connection to Chapter 0). The Chapter 0 toy used a simplified instance of this reward with $(\alpha,\beta,\gamma,\delta) \approx (0.6, 0.3, 0, 0.1)$ and no explicit STRAT term. All analysis in this chapter applies to that setting.
 
 **Key insight**: $R$ depends on $\mathbf{w}$ **indirectly** through the ranking $\pi$ induced by scores from #EQ-1.1. A product ranked higher gets more exposure, more clicks, and influences downstream purchases. This is **not a simple function**—it's stochastic, nonlinear, and noisy.
 
@@ -97,9 +121,15 @@ High GMV alone is insufficient. A retailer must enforce **guardrails**:
 
 where the notation $\mathbb{E}[\cdot \mid \mathbf{w}]$ denotes expectation over stochastic user behavior $\omega$ and context distribution $\rho(x)$ when action (boost weights) $\mathbf{w}$ is applied, i.e., $\mathbb{E}[\text{CM2} \mid \mathbf{w}] := \mathbb{E}_{x \sim \rho, \omega \sim P(\cdot \mid x, \mathbf{w})}[\text{CM2}(\mathbf{w}, x, \omega)]$.
 
+**Definition** ($\Delta\text{rank@}k$). Let $\pi_{\mathbf{w}}(q) = (p_1, \ldots, p_M)$ be the ranking induced by boost weights $\mathbf{w}$ for query $q$, and let $\pi_{\text{base}}(q)$ be a reference ranking (e.g., the production baseline). Define:
+$$
+\Delta\text{rank@}k(\mathbf{w}, q) := \frac{1}{k} \sum_{i=1}^{k} \mathbf{1}[\pi_{\mathbf{w}}(q)_i \neq \pi_{\text{base}}(q)_i]
+$$
+the fraction of top-$k$ positions where the rankings differ. Values range in $[0, 1]$; $\Delta\text{rank@}k = 0$ means identical top-$k$, and $\Delta\text{rank@}k = 1$ means completely different.
+
 - **CM2 floor** (1.3a): Prevent sacrificing profitability for revenue
 - **Exposure floor** (1.3b): Ensure strategic products (new launches, house brands) get visibility
-- **Rank stability** (1.3c): Limit reordering volatility (users expect consistency)
+- **Rank stability** (1.3c): Limit reordering volatility (users expect consistency); $\tau_{\text{stability}} \approx 0.2$ is typical
 
 This is a **constrained Markov decision process (CMDP)**, though we'll start with the simpler **contextual bandit** (single-step) formulation.
 
@@ -489,12 +519,16 @@ Now we can formalize this as a mathematical object.
 
 ### Problem Setup {#DEF-1.4.1}
 
-**Definition 1.4.1** (Contextual Bandit for Search Ranking). A contextual bandit consists of:
+**Working Definition 1.4.1** (Contextual Bandit for Search Ranking). {#WDEF-1.4.1}
 
-1. **Context space** $\mathcal{X}$: User-query features (see #EQ-1.4)
-2. **Action space** $\mathcal{A} = [-a_{\max}, +a_{\max}]^K$: Bounded boost weights
-3. **Reward function** $R: \mathcal{X} \times \mathcal{A} \times \Omega \to \mathbb{R}$: Stochastic outcomes (see #EQ-1.2)
-4. **Context distribution** $\rho(\cdot)$: Distribution over incoming queries/users
+A contextual bandit is a tuple $(\mathcal{X}, \mathcal{A}, R, \rho)$ where:
+
+1. **Context space** $\mathcal{X} \subset \mathbb{R}^{d_x}$: Compact space of user-query features (see DEF-1.1.0, EQ-1.4)
+2. **Action space** $\mathcal{A} = [-a_{\max}, +a_{\max}]^K \subset \mathbb{R}^K$: Compact set of bounded boost weights
+3. **Reward function** $R: \mathcal{X} \times \mathcal{A} \times \Omega \to \mathbb{R}$: Measurable in $\omega$, integrable (see EQ-1.2, Standing Assumption)
+4. **Context distribution** $\rho$: Probability measure on $\mathcal{X}$ (the query/user arrival distribution)
+
+*This is a working definition. The measure-theoretic formalization (Borel $\sigma$-algebras on $\mathcal{X}$ and $\mathcal{A}$, probability kernel $P(\omega \mid x, a)$, measurable policy class) appears in Chapter 2.*
 
 At each round $t = 1, 2, \ldots$:
 - Observe context $x_t \sim \rho$
@@ -987,18 +1021,38 @@ w(x,a) = \frac{d\pi_{\text{eval}}}{d\pi_{\text{log}}}(a \mid x)
 $$
 which requires $\pi_{\text{log}}(a \mid x) > 0$ whenever $\pi_{\text{eval}}(a \mid x) > 0$ (absolute continuity $\pi_{\text{eval}} \ll \pi_{\text{log}}$). Without this, we cannot correct for distribution shift, and off-policy estimates are undefined. See [@precup:eligibility_traces:2000] for the foundation of importance-sampled RL estimators. We verify this condition holds in our simulator by design: the logging policy is $\varepsilon$-greedy with $\varepsilon > 0$, ensuring all actions have positive probability.
 
+**Remark 1.7.1b** (Verifying Hypotheses for Our Setting). {#REM-1.7.1b}
+
+The theorem below requires metrizability, compactness, and semicontinuity. In our search ranking setup:
+
+- **$\mathcal{A}$ compact metrizable**: By definition, $\mathcal{A} = [-a_{\max}, +a_{\max}]^K \subset \mathbb{R}^K$ is closed and bounded, hence compact by Heine-Borel, and metrizable as a subset of Euclidean space.
+
+- **$\mathcal{X}$ metrizable**: For finite user segments and discrete query types, $\mathcal{X}$ is finite (hence metrizable). For embedding-based contexts with bounded features, $\mathcal{X} \subset \mathbb{R}^{d_x}$ inherits the Euclidean metric.
+
+- **$Q(x,a)$ upper semicontinuous in $a$**: Scores $s(p,q,u) = r_{\text{ES}}(q,p) + a^\top \phi(p,u,q)$ are **continuous** (linear) in $a$. Click probabilities under sigmoid models are **smooth** in scores. Continuity implies upper semicontinuity. For discrete templates (Chapter 6), the condition is automatic.
+
 **Theorem 1.7.2** (Existence of Optimal Policy). {#THM-1.7.2}
-If $\mathcal{X}$ and $\mathcal{A}$ are compact metric spaces and $Q(x, a)$ is continuous, then there exists $\pi^*: \mathcal{X} \to \mathcal{A}$ such that:
+Let $\mathcal{X}$ be a metrizable space and $\mathcal{A}$ a compact metrizable space. If $Q: \mathcal{X} \times \mathcal{A} \to \mathbb{R}$ is jointly measurable and upper semicontinuous in $a$ for each $x$, then there exists a Borel measurable $\pi^*: \mathcal{X} \to \mathcal{A}$ such that:
 
 $$
 V(\pi^*) = \max_{\pi} V(\pi) = V^*
 $$
 
-*Proof.* For each $x \in \mathcal{X}$, the function $a \mapsto Q(x, a)$ is continuous on the compact set $\mathcal{A}$, hence attains its maximum. By the measurable selection theorem ([@bertsekas:dp:2019, Proposition 7.3.3]; informally: if $\arg\max_a Q(x,a)$ exists for each $x$, we can choose it in a measurable way), there exists a measurable $\pi^*$ such that $\pi^*(x) \in \arg\max_a Q(x, a)$ for all $x$. The argmax set $\{a \in \mathcal{A}: Q(x,a) = \max_{a'} Q(x,a')\}$ is non-empty by continuity and compactness.
+*Proof.* For each $x \in \mathcal{X}$, the function $a \mapsto Q(x, a)$ is upper semicontinuous on the compact set $\mathcal{A}$, hence attains its maximum (Weierstrass). Define $f(x,a) = -Q(x,a)$, which is lower semicontinuous in $a$. By the measurable selection theorem ([@bertsekas_shreve:stochastic_optimal_control:1978, Proposition 7.33]), there exists a Borel measurable $\pi^*: \mathcal{X} \to \mathcal{A}$ such that $f(x, \pi^*(x)) = \min_a f(x,a)$, equivalently $\pi^*(x) \in \arg\max_a Q(x, a)$ for all $x$.
 
 $\square$
 
-**Remark 1.7.2a** (Measurable Selection). The existence of a measurable optimal policy $\pi^*(x) \in \arg\max_a Q(x,a)$ follows from Bertsekas' measurable selection theorem [Proposition 7.3.3]. The key requirement is that $Q(x,a)$ is jointly measurable and $\mathcal{A}$ is compact—both satisfied by our bounded action space assumption $\mathcal{A} = [-a_{\max}, +a_{\max}]^K$. For completeness, see [@bertsekas:dp:2019, Section 7.3] for the general theorem and technical conditions.
+**Remark 1.7.2a** (Measurable Selection). The existence of a measurable optimal policy $\pi^*(x) \in \arg\max_a Q(x,a)$ follows from Bertsekas-Shreve's measurable selection theorem [@bertsekas_shreve:stochastic_optimal_control:1978, Proposition 7.33]: *If $\mathcal{X}$ is metrizable, $\mathcal{A}$ is compact metrizable, and $f: \mathcal{X} \times \mathcal{A} \to \mathbb{R}$ is lower semicontinuous in $a$, then the minimizer $\varphi(x) \in \arg\min_a f(x,a)$ can be chosen Borel measurably.* We apply this with $f = -Q$ (converting max to min). The key requirements—$\mathcal{A}$ compact (by construction) and $Q$ upper semicontinuous in $a$ (see REM-1.7.1b)—are satisfied in our setting.
+
+**Remark 1.7.2b** (Why This Theorem Matters). {#REM-1.7.2b}
+
+In finite state spaces, finding an optimal policy is straightforward: enumerate states, pick the best action for each, done. In **continuous** state spaces, a subtle crisis emerges. The pointwise $\arg\max$ exists for each $x$ (by compactness), but the resulting *function* $\pi^*: \mathcal{X} \to \mathcal{A}$ may fail to be **measurable**. Without measurability:
+
+- We cannot compute $\mathbb{E}[R(X, \pi^*(X))]$ (the integral is undefined)
+- The Bellman equation becomes meaningless (the "max" inside an expectation is ill-posed)
+- The entire theory of stochastic optimal control collapses
+
+Proposition 7.33 is the **safety net**: it guarantees that a measurable selector exists under weak assumptions (lower semicontinuity, not full continuity). This covers most practical cost functions, including those with constraint boundaries where costs jump to $+\infty$. The theorem allows researchers to treat continuous spaces almost as simply as discrete ones, confident that the measure theory "just works." This is why [@bertsekas_shreve:stochastic_optimal_control:1978] remains the canonical citation for rigorous continuous-state dynamic programming.
 
 **RL Payoff:** This theorem guarantees that our optimization problem **has a solution**—there exists a best policy $\pi^*$. Without compactness (e.g., unbounded action spaces), we might only have a supremum that's never achieved, making learning algorithms chase a moving target. Bounded actions $\mathcal{A} = [-a_{\max}, +a_{\max}]^K$ ensure $\pi^*$ exists, giving algorithms a well-defined target.
 
@@ -1359,6 +1413,12 @@ which is **affine** in the mixture weights $\{\alpha_i\}$. Similarly, each const
 The feasible set $\{\boldsymbol{\alpha} \in \Delta_N : \text{constraints hold}\}$ is a polytope (convex), and the objective is linear. By Slater's condition (strict feasibility: $\exists \tilde{\pi}$ with $\mathbb{E}[\text{CM2}(\tilde{\pi})] > \tau$), strong duality holds for the Lagrangian saddle-point problem. See [@boyd:convex_optimization:2004, Section 5.2.3].
 
 $\square$
+
+**What this tells us:**
+
+Strong duality means we can solve the constrained problem #EQ-1.18 by solving the unconstrained Lagrangian #EQ-1.19---no duality gap. Practically, this justifies **primal-dual algorithms**: alternate between improving the policy (primal) and adjusting constraint penalties (dual), confident that convergence to the saddle point yields the constrained optimum.
+
+The strict feasibility requirement ($\exists \tilde{\pi}$ with slack in the CM2 constraint) is typically easy to verify: the baseline production policy usually satisfies constraints with margin. If no such policy exists, the constraints may be infeasible---you're asking for profitability floors that no ranking can achieve. Chapter 8 develops diagnostics for detecting infeasible constraint configurations.
 
 **Implementation preview**: In Chapter 8, we'll implement constraint-aware RL using primal-dual optimization:
 1. **Primal step**: $\theta \leftarrow \theta + \eta \nabla_\theta \mathcal{L}(\theta, \boldsymbol{\lambda})$ (improve policy toward higher reward and constraint satisfaction)
