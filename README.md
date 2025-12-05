@@ -1,7 +1,17 @@
 # RL Search From Scratch
 
-**Author:** Vlad Prytula  
-**Status:** Active Development (Chapters 0–7 Complete)
+[![Read the Book](https://img.shields.io/badge/Read%20the%20Book-Online-brightgreen?style=for-the-badge)](https://vladprytula.github.io/reinforcement_learning_search_from_scratch/)
+
+[![Made with Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Powered by PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![NumPy](https://img.shields.io/badge/NumPy-013243?logo=numpy&logoColor=white)](https://numpy.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![Gymnasium](https://img.shields.io/badge/Gymnasium-0081A5?logo=openaigym&logoColor=white)](https://gymnasium.farama.org/)
+[![MkDocs](https://img.shields.io/badge/MkDocs-526CFE?logo=materialformkdocs&logoColor=white)](https://www.mkdocs.org/)
+[![LaTeX](https://img.shields.io/badge/LaTeX-008080?logo=latex&logoColor=white)](https://www.latex-project.org/)
+
+**Author:** Vlad Prytula
+**Status:** Active Development (Chapters 0--7 Complete)
 
 ## Project Overview
 
