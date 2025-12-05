@@ -379,7 +379,7 @@ print("Saved learning curve to toy_problem_learning_curves.png")
 
 **Expected output:**
 
-![Learning Curves](learning_curves.png)
+![Learning Curves](docs/book/ch00/learning_curves.png)
 
 - **Random policy** (red dashed): ~0.0 average reward (baseline---random actions average out)
 - **Static best** (orange dashed): ~0.3 (one-size-fits-all `(2,2)` helps bulk buyers but hurts price hunters and premium)
