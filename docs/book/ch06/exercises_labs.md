@@ -848,5 +848,5 @@ Complete solutions with code, plots, and mathematical derivations are provided i
 
 ---
 
-**Vlad Prytula**, Research Scientist, Physical Intelligence
+**Vlad Prytula**,
 *Chapter 6 Exercises & Labs — First Draft — 2025*

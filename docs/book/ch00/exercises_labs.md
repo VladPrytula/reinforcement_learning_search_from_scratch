@@ -1,6 +1,6 @@
 # Chapter 0 — Exercises & Labs (Application Mode)
 
-Vlad keeps every experiment executable. These warm-ups extend the Chapter 0 toy environment and force you to compare learning curves against the analytical expectations stated in the draft.
+We keep every experiment executable. These warm-ups extend the Chapter 0 toy environment and force you to compare learning curves against the analytical expectations stated in the draft.
 
 ## Lab 0.1 — Tabular Boost Search (Toy World)
 

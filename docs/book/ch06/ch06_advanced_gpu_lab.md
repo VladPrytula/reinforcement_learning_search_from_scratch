@@ -894,7 +894,5 @@ You now have your first serious experience with:
 That is the level of care I expect from you as a practicing RL engineer.
 
 ---
-
-**Vlad Prytula**, Research Scientist, Physical Intelligence  
 *Chapter 6 — Advanced Lab Draft — 2025*
 

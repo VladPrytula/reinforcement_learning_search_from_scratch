@@ -105,7 +105,7 @@ Sometimes. But more often, the problem is:
 
 This chapter teaches you to diagnose the **real** problem by walking through an authentic failure.
 
-**Vlad Prytula's method:** "Theory assumes X. Practice violates X. Here's why it works (or doesn't)."
+**Our method:** "Theory assumes X. Practice violates X. Here's why it works (or doesn't)."
 
 Honest empiricism. That's what separates RL practitioners who can deploy systems from those who can only run tutorials.
 
@@ -2577,5 +2577,5 @@ Knowledge Graph entries:
 
 ---
 
-**Vlad Prytula**, Research Scientist, Physical Intelligence
+**Vlad Prytula**,
 *Chapter 6 — First Draft — 2025*

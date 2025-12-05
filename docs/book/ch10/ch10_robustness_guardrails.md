@@ -5,7 +5,6 @@
 ---
 
 > "A ranking system that maximizes clicks but destroys user trust is not optimal; it is merely extracting value faster than it creates it. True optimization requires safety constraints."
-> — Vlad Prytula
 
 ## Introduction: When the World Shifts Beneath Your Feet
 

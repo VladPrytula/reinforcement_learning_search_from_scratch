@@ -689,7 +689,7 @@ This validates both Q-learning and CEM optimization in a controlled setting befo
 
 ## 7.5 Theory-Practice Gap: When Q-Ensembles and CEM Fail
 
-This section examines the **gap between theoretical guarantees and empirical reality**. Q-regression + CEM sounds elegant on paper, but production deployment reveals three classes of failures. Vlad's honest empiricism principle demands we diagnose these issues before claiming success.
+This section examines the **gap between theoretical guarantees and empirical reality**. Q-regression + CEM sounds elegant on paper, but production deployment reveals three classes of failures. Our's honest empiricism principle demands we diagnose these issues before claiming success.
 
 ### 7.5.1 The Overestimation Problem (and Why Ensembles Help)
 
@@ -929,4 +929,4 @@ This chapter extended Chapter 6's discrete template bandits to continuous boost 
 - **Chapter 12**: Actor-critic methods (amortized inference via differentiable policies)
 - **Chapter 13**: Offline RL (CQL, IQL for learning from logged data)
 
-This chapter represents the foundation of model-based continuous RL for ranking—learning a critic $Q(x,a)$ and optimizing it per-query. The architecture mirrors modern production systems (QT-Opt for robotics, recommendation systems at scale) while maintaining the honest theory-practice dialogue that defines Vlad's approach.
+This chapter represents the foundation of model-based continuous RL for ranking—learning a critic $Q(x,a)$ and optimizing it per-query. The architecture mirrors modern production systems (QT-Opt for robotics, recommendation systems at scale) while maintaining the honest theory-practice dialogue that try to maintain along the book.

@@ -1064,5 +1064,4 @@ python scripts/ch06/template_bandits_demo.py \
 
 ---
 
-*Vlad Prytula*, Research Scientist, Physical Intelligence
 *Chapter 6 Lab Solutions — 2025*

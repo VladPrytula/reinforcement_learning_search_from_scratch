@@ -157,8 +157,3 @@ Output (representative):
 ```
 
 - Viz example: reuse the listing embedded in Chapter 5 (seed 42) to reproduce the scatter/histogram plots referenced in the text.
-
-## Notes on Persona and Style
-
-- All drafts should speak in Vlad Prytula’s unified voice (rigor + production code), per `vlad_prytula.md`.
-- Archived personas and specs under `docs/problem_statement/archive/` are read-only references; the active spec is `docs/problem_statement/full_plan.md`.
