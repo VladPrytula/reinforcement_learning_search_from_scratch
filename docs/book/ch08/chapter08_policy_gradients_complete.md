@@ -1,9 +1,6 @@
 # Chapter 8: Policy Gradient Methods — Direct Optimization of Search Performance
 
 **Vlad Prytula**
-*Research Scientist, Physical Intelligence*
-*Visiting Professor, UC Berkeley*
-
 ---
 
 ## Introduction: The Value-Function Detour

@@ -1,8 +1,6 @@
 # Chapter 10: Robustness to Drift and Guardrails
 
 **Vlad Prytula**
-*Research Scientist, Physical Intelligence*
-*Visiting Professor, UC Berkeley*
 
 ---
 

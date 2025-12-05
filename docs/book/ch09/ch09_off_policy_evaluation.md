@@ -1,8 +1,6 @@
 # Chapter 9 — Off-Policy Evaluation: Learning from Logged Data
 
 **Vlad Prytula**
-*Research Scientist, Physical Intelligence*
-*Visiting Professor, UC Berkeley*
 
 ---
 
