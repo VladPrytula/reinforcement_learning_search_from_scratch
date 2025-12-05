@@ -1,5 +1,5 @@
 """
-Chapter 0 Lab Solutions — Complete Runnable Code
+Chapter 0 Lab Solutions -- Complete Runnable Code
 
 Author: Vlad Prytula
 
@@ -7,7 +7,7 @@ This module implements all lab exercises from Chapter 0, demonstrating the
 seamless integration of mathematical theory and production-quality code.
 
 Solutions included:
-- Lab 0.1: Tabular Boost Search (reproduce ≥90% oracle)
+- Lab 0.1: Tabular Boost Search (reproduce >=90% oracle)
 - Exercise 0.2 (from exercises_labs.md): Stress-Testing Reward Weights
 - Exercise 0.1: Reward Sensitivity Analysis
 - Exercise 0.2: Action Geometry (Exploration Strategies)
@@ -60,7 +60,7 @@ def lab_0_1_tabular_boost_search(seed: int = 314, verbose: bool = True) -> dict:
     """
     Lab 0.1 Solution: Tabular Boost Search
 
-    Reproduces the ≥90% oracle guarantee using Q-learning on the toy world.
+    Reproduces the >=90% oracle guarantee using Q-learning on the toy world.
     Uses exact parameters from exercises_labs.md.
 
     Returns:
@@ -74,7 +74,7 @@ def lab_0_1_tabular_boost_search(seed: int = 314, verbose: bool = True) -> dict:
     # Configure experiment (exact params from exercises_labs.md)
     actions = discretize_action_space(n_bins=5, a_min=-1.0, a_max=1.0)
     if verbose:
-        print(f"Action space: {len(actions)} discrete templates (5×5 grid)")
+        print(f"Action space: {len(actions)} discrete templates (5x5 grid)")
 
     agent = TabularQLearning(
         actions,
@@ -106,9 +106,9 @@ def lab_0_1_tabular_boost_search(seed: int = 314, verbose: bool = True) -> dict:
         print(f"Percentage of oracle: {pct_oracle:.1f}%")
 
         if pct_oracle >= 90:
-            print(f"\n✓ SUCCESS: Q-learning achieves ≥90% of oracle!")
+            print(f"\nSUCCESS: Q-learning achieves >=90% of oracle!")
         else:
-            print(f"\n✗ Below target: {pct_oracle:.1f}% < 90%")
+            print(f"\nBelow target: {pct_oracle:.1f}% < 90%")
 
         # Show learned policy
         print("\nLearned policy:")
@@ -134,7 +134,7 @@ def exercise_stress_test_reward_weights(seed: int = 7, verbose: bool = True) -> 
     """
     Exercise 0.2 (from exercises_labs.md): Stress-Testing Reward Weights
 
-    Validates that oversized δ inflates reward despite unchanged GMV.
+    Validates that oversized delta inflates reward despite unchanged GMV.
     """
     if verbose:
         print("=" * 70)
@@ -179,14 +179,14 @@ def exercise_stress_test_reward_weights(seed: int = 7, verbose: bool = True) -> 
     oversized = analyze_config(0.6, 0.3, 0.3)
 
     if verbose:
-        print(f"\nStandard weights (α=0.6, β=0.3, δ=0.1):")
-        print(f"  Ratio δ/α = {0.1/0.6:.3f}")
+        print(f"\nStandard weights (alpha=0.6, beta=0.3, delta=0.1):")
+        print(f"  Ratio delta/alpha = {0.1/0.6:.3f}")
         for user, data in standard.items():
             print(f"  {user:15s}: R={data['mean_reward']:.2f}, GMV={data['mean_gmv']:.2f}, "
                   f"CM2={data['mean_cm2']:.2f}, Clicks={data['mean_clicks']:.2f}")
 
-        print(f"\nOversized δ (α=0.6, β=0.3, δ=0.3):")
-        print(f"  Ratio δ/α = {0.3/0.6:.3f} (5× above guideline!)")
+        print(f"\nOversized delta (alpha=0.6, beta=0.3, delta=0.3):")
+        print(f"  Ratio delta/alpha = {0.3/0.6:.3f} (5x above guideline!)")
         for user, data in oversized.items():
             std_r = standard[user]["mean_reward"]
             pct = 100 * (data["mean_reward"] - std_r) / std_r if std_r else 0
@@ -259,12 +259,12 @@ def exercise_0_1_reward_sensitivity(seed: int = 42, verbose: bool = True) -> dic
         result = run_experiment(weights, label)
         results[label] = result
         if verbose:
-            print(f"\n{label} (α={weights[0]}, β={weights[1]}, δ={weights[2]}):")
+            print(f"\n{label} (alpha={weights[0]}, beta={weights[1]}, delta={weights[2]}):")
             print(f"  Final reward: {result['final_reward']:.2f}")
             print(f"  Final GMV: {result['final_gmv']:.2f}")
             print("  Learned policy:")
             for user, action in result["learned_policy"].items():
-                print(f"    {user:15s} → w_discount={float(action[0]):+.1f}, "
+                print(f"    {user:15s} -> w_discount={float(action[0]):+.1f}, "
                       f"w_quality={float(action[1]):+.1f}")
 
     return results
@@ -312,7 +312,7 @@ def exercise_0_2_action_geometry(
     # -------------------------------------------------------------------------
 
     class UniformExplorationAgent:
-        """ε-greedy agent with uniform random exploration."""
+        """Epsilon-greedy agent with uniform random exploration."""
 
         def __init__(self):
             self.Q: dict = defaultdict(float)
@@ -340,7 +340,7 @@ def exercise_0_2_action_geometry(
             self.counts = defaultdict(int, other.counts)
 
     class LocalExplorationAgent:
-        """ε-greedy agent with LOCAL perturbation exploration (neighbors only)."""
+        """Epsilon-greedy agent with LOCAL perturbation exploration (neighbors only)."""
 
         def __init__(self):
             self.Q: dict = defaultdict(float)
@@ -398,16 +398,16 @@ def exercise_0_2_action_geometry(
 
     if verbose:
         print("\n" + "─" * 70)
-        print("📝 PART A — Hypothesis")
+        print("PART A -- Hypothesis")
         print("─" * 70)
         print("""
-Intuition suggests that local exploration—small perturbations around
-our current best action—should be more efficient than uniform random
+Intuition suggests that local exploration--small perturbations around
+our current best action--should be more efficient than uniform random
 sampling. After all, once we find a good region of action space, why
 waste samples exploring far away?
 
-  • Uniform exploration: When exploring, sample ANY action uniformly
-  • Local exploration:   When exploring, sample NEIGHBORS of current best
+  - Uniform exploration: When exploring, sample ANY action uniformly
+  - Local exploration:   When exploring, sample NEIGHBORS of current best
 
 Hypothesis: Local exploration converges faster because it exploits
             structure near good solutions (gradient descent intuition).
@@ -421,7 +421,7 @@ Let's test this.
 
     if verbose:
         print("─" * 70)
-        print("🧊 PART B — Cold Start Experiment")
+        print("PART B -- Cold Start Experiment")
         print("─" * 70)
         print(f"\nStarting BOTH agents from random initialization (Q=0 everywhere).")
         print(f"Training each for {n_episodes_cold} episodes...\n")
@@ -465,27 +465,27 @@ Let's test this.
 
         if cold_u_final > cold_l_final:
             print("""
-  ⚠️  SURPRISE! Uniform exploration wins decisively.
+  ** SURPRISE! Uniform exploration wins decisively.
       Our hypothesis was WRONG. But why?
 """)
 
     # =========================================================================
-    # Part C: Diagnosis — The Cold Start Problem
+    # Part C: Diagnosis -- The Cold Start Problem
     # =========================================================================
 
     if verbose:
         print("─" * 70)
-        print("🔍 PART C — Diagnosis: The Cold Start Problem")
+        print("PART C -- Diagnosis: The Cold Start Problem")
         print("─" * 70)
         print("""
 Why does local exploration fail from cold start?
 
 The problem is INITIALIZATION. With Q=0 everywhere:
-  • Uniform agent: Explores the ENTIRE action space randomly
-  • Local agent:   Starts at action index 0 (the corner: w=(-1,-1))
+  - Uniform agent: Explores the ENTIRE action space randomly
+  - Local agent:   Starts at action index 0 (the corner: w=(-1,-1))
                    and only explores NEIGHBORS of that corner!
 
-The local agent is doing "local refinement of garbage"—there's no
+The local agent is doing "local refinement of garbage"--there's no
 good region nearby to refine. It's stuck in a bad neighborhood.
 
 This is the COLD START PROBLEM:
@@ -518,7 +518,7 @@ Let's visualize which actions each agent tried (one run):
 
     if verbose:
         print("\n" + "─" * 70)
-        print("🔥 PART D — Warm Start Experiment")
+        print("PART D -- Warm Start Experiment")
         print("─" * 70)
         print(f"""
 If local exploration fails from cold start, when SHOULD it work?
@@ -578,7 +578,7 @@ Experiment design:
 
         if warm_l_final >= warm_u_final * 0.95:  # Local is competitive or wins
             print("""
-  ✓ Local exploration is now COMPETITIVE (or wins)!
+  Local exploration is now COMPETITIVE (or wins)!
     Once we're in a good basin, local refinement works.
 """)
         else:
@@ -588,47 +588,47 @@ Experiment design:
 """)
 
     # =========================================================================
-    # Part E: Synthesis — Adaptive Exploration
+    # Part E: Synthesis -- Adaptive Exploration
     # =========================================================================
 
     if verbose:
         print("─" * 70)
-        print("🎯 PART E — Synthesis: Adaptive Exploration")
+        print("PART E -- Synthesis: Adaptive Exploration")
         print("─" * 70)
         print("""
 The key insight: EXPLORATION STRATEGY SHOULD ADAPT TO POLICY MATURITY.
 
 Optimal approach:
-  • Early training:  Uniform/global exploration (find good regions)
-  • Late training:   Local exploration (refine within good regions)
+  - Early training:  Uniform/global exploration (find good regions)
+  - Late training:   Local exploration (refine within good regions)
 
 This is exactly what sophisticated algorithms implement:
 
-  • SAC (Soft Actor-Critic):
-    Entropy bonus α·H(π) encourages broad exploration early.
-    As policy improves, entropy naturally decreases → local refinement.
+  - SAC (Soft Actor-Critic):
+    Entropy bonus alpha*H(pi) encourages broad exploration early.
+    As policy improves, entropy naturally decreases -> local refinement.
 
-  • PPO (Proximal Policy Optimization):
+  - PPO (Proximal Policy Optimization):
     Entropy coefficient often DECAYED during training.
-    High entropy early (explore) → low entropy late (exploit).
+    High entropy early (explore) -> low entropy late (exploit).
 
-  • ε-greedy schedules:
-    ε decreases over time (e.g., 0.9 → 0.05).
+  - epsilon-greedy schedules:
+    epsilon decreases over time (e.g., 0.9 -> 0.05).
     Same principle: global early, local late.
 
-  • Boltzmann exploration:
-    Temperature τ decreases over training.
-    High τ = uniform, low τ = local around best action.
+  - Boltzmann exploration:
+    Temperature tau decreases over training.
+    High tau = uniform, low tau = local around best action.
 
 CONNECTION TO THEORY:
   The cold start problem explains why "optimistic initialization"
-  (starting with high Q-values) helps—it forces global exploration
+  (starting with high Q-values) helps--it forces global exploration
   before settling into local refinement.
 
 PRACTICAL GUIDELINE:
   When designing exploration strategies, ask:
   "Is my policy already in a good region?"
-  If yes → local refinement. If no → global exploration first.
+  If yes -> local refinement. If no -> global exploration first.
 """)
 
     # =========================================================================
@@ -655,7 +655,7 @@ PRACTICAL GUIDELINE:
 
     if verbose:
         print("─" * 70)
-        print("📊 SUMMARY")
+        print("SUMMARY")
         print("─" * 70)
         print(f"""
   | Experiment   | Uniform      | Local        | Winner  |
@@ -666,7 +666,7 @@ PRACTICAL GUIDELINE:
 Key lesson: The same exploration strategy can WIN or LOSE depending
 on whether the policy is cold (random) or warm (trained).
 
-This is not a bug—it's a fundamental insight about RL exploration.
+This is not a bug--it's a fundamental insight about RL exploration.
 """)
 
     return results
@@ -681,7 +681,12 @@ def exercise_0_3_regret_analysis(
     n_train: int = 2000, seed: int = 42, verbose: bool = True
 ) -> dict:
     """
-    Exercise 0.3: Track cumulative regret and verify sublinear scaling.
+    Exercise 0.3: Track cumulative regret and understand what it tells us.
+
+    Key insights:
+    - Sublinear regret (average regret per episode decreases) confirms learning
+    - Empirical power-law fits should NOT be conflated with asymptotic Big-O bounds
+    - Our geometric decay (eps * 0.998^t) is summable, so regret should plateau eventually
     """
     if verbose:
         print("=" * 70)
@@ -692,9 +697,12 @@ def exercise_0_3_regret_analysis(
     actions = discretize_action_space(n_bins=5)
 
     if verbose:
-        print("Computing oracle policy...")
+        print("\nComputing oracle policy...")
     oracle = OraclePolicy(actions, n_eval=200, seed=seed)
 
+    # Geometric decay: eps_t = 1.0 * 0.998^t
+    # This is SUMMABLE: sum(0.998^t) = 1/(1-0.998) = 500
+    # So total exploration is bounded -> regret should plateau asymptotically
     agent = TabularQLearning(actions, epsilon_init=1.0, epsilon_decay=0.998,
                               epsilon_min=0.02, learning_rate=0.1)
 
@@ -726,7 +734,7 @@ def exercise_0_3_regret_analysis(
     T = len(regrets)
     episodes = np.arange(1, T + 1)
 
-    # Curve fitting
+    # Curve fitting (for illustration -- NOT asymptotic bounds!)
     try:
         from scipy.optimize import curve_fit
 
@@ -742,21 +750,39 @@ def exercise_0_3_regret_analysis(
 
     C_sqrt = regrets[-1] / np.sqrt(T)
 
+    # Check if regret growth is slowing (sublinear)
+    avg_regret_early = regrets[T//10] / (T//10) if T > 10 else regrets[-1]/T
+    avg_regret_late = regrets[-1] / T
+    is_sublinear = avg_regret_late < avg_regret_early
+
     if verbose:
         print(f"\nRegret Analysis Summary:")
         print(f"  Total episodes: {T}")
         print(f"  Final cumulative regret: {regrets[-1]:.1f}")
-        print(f"  Average regret per episode: {regrets[-1]/T:.3f}")
-        print(f"  Is regret sublinear? {regrets[-1]/T < regrets[T//10]/(T//10)}")
-        print(f"\nCurve fitting:")
-        print(f"  √T model: Regret(T) ≈ {C_sqrt:.1f} × √T")
-        print(f"  Power model: Regret(T) ≈ {C_power:.1f} × T^{alpha_power:.2f}")
-        print(f"\nTheory comparison:")
-        print(f"  ε-greedy (constant ε): O(T^0.67)")
-        print(f"  ε-greedy (decaying ε): O(√T log T) → α ≈ 0.50")
-        print(f"  Empirical α: {alpha_power:.2f}")
+        print(f"  Average regret per episode: {avg_regret_late:.3f}")
+        print(f"  Regret growth slowing? {is_sublinear} (avg regret: {avg_regret_early:.3f} early -> {avg_regret_late:.3f} late)")
+        print(f"\nEmpirical curve fitting (for illustration only):")
+        print(f"  sqrt(T) model: Regret(T) ~ {C_sqrt:.1f} * sqrt(T)")
+        print(f"  Power model: Regret(T) ~ {C_power:.1f} * T^{alpha_power:.2f}")
+        print(f"\nWARNING: Don't conflate empirical fits with asymptotic bounds!")
+        print(f"  The exponent alpha={alpha_power:.2f} describes the learning TRANSIENT,")
+        print(f"  not a fundamental asymptotic rate.")
+        print(f"\nTheoretical expectations (for reference):")
+        print(f"  Constant epsilon-greedy:  Theta(T) -- LINEAR regret (explores forever)")
+        print(f"  Geometric decay epsilon:  O(1) -- BOUNDED regret (sum of eps_t converges)")
+        print(f"  UCB:                      O(sqrt(KT log T))")
+        print(f"\nOur schedule (eps=0.998^t) is geometric -> regret should plateau eventually.")
+        print(f"The T^{alpha_power:.2f} fit captures the transient, not the asymptote.")
 
-    return {"regrets": regrets, "C_sqrt": C_sqrt, "C_power": C_power, "alpha": alpha_power}
+    return {
+        "regrets": regrets,
+        "C_sqrt": C_sqrt,
+        "C_power": C_power,
+        "alpha": alpha_power,
+        "is_sublinear": is_sublinear,
+        "avg_regret_early": avg_regret_early,
+        "avg_regret_late": avg_regret_late,
+    }
 
 
 # =============================================================================
@@ -847,7 +873,7 @@ def exercise_0_4_constrained_qlearning(seed: int = 42, verbose: bool = True) -> 
 
 def exercise_0_5_bandit_bellman_bridge(verbose: bool = True) -> dict:
     """
-    Exercise 0.5: Verify that bandit Q-update equals MDP Q-update with γ=0.
+    Exercise 0.5: Verify that bandit Q-update equals MDP Q-update with gamma=0.
     """
     if verbose:
         print("=" * 70)
@@ -877,16 +903,16 @@ def exercise_0_5_bandit_bellman_bridge(verbose: bool = True) -> dict:
 
         if verbose:
             print(f"\nTest {i+1}:")
-            print(f"  Initial Q: {tc['Q']}, Reward: {tc['r']}, α: {tc['alpha']}")
+            print(f"  Initial Q: {tc['Q']}, Reward: {tc['r']}, alpha: {tc['alpha']}")
             print(f"  Bandit update: {Q_b:.6f}")
-            print(f"  MDP update (γ=0): {Q_m:.6f}")
+            print(f"  MDP update (gamma=0): {Q_m:.6f}")
             print(f"  Difference: {diff:.2e}")
-            print(f"  {'✓ PASSED' if passed else '✗ FAILED'}")
+            print(f"  {'PASSED' if passed else 'FAILED'}")
 
     if verbose:
         print("\n" + "=" * 70)
-        print("✓ Verified: Bandit Q-update = MDP Q-update with γ=0" if all_passed
-              else "✗ Verification failed!")
+        print("Verified: Bandit Q-update = MDP Q-update with gamma=0" if all_passed
+              else "Verification failed!")
         print("=" * 70)
 
     return {"all_passed": all_passed}
@@ -900,7 +926,7 @@ def exercise_0_5_bandit_bellman_bridge(verbose: bool = True) -> dict:
 def run_all_exercises(verbose: bool = True) -> dict:
     """Run all exercises sequentially."""
     print("\n" + "=" * 70)
-    print("CHAPTER 0 LAB SOLUTIONS — COMPLETE RUN")
+    print("CHAPTER 0 LAB SOLUTIONS -- COMPLETE RUN")
     print("=" * 70 + "\n")
 
     results = {

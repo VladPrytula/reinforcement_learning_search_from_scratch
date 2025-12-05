@@ -8,7 +8,8 @@ Implements:
 4. Verification of 90% optimality claim
 
 Author: Vlad Prytula
-Based on: ch01_foundations_revised_pedagogy_v2.md
+
+Run: uv run python scripts/ch00/toy_problem_solution.py --all
 """
 
 import numpy as np
