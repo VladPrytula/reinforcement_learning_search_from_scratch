@@ -51,8 +51,8 @@ Session simulation (seed=11):
   Query: "cat food"
 
 Outcome breakdown:
-  GMV:    €124.46 (gross merchandise value)
-  CM2:    € 18.67 (contribution margin 2)
+  GMV:    EUR 124.46 (gross merchandise value)
+  CM2:    EUR  18.67 (contribution margin 2)
   STRAT:  3 items  (strategic products in top-10)
   CLICKS: 3        (total clicks)
 
@@ -62,14 +62,14 @@ Reward weights (from RewardConfig):
   gamma (gamma_strat):   0.20
   delta (delta_clicks):  0.10
 
-Manual computation of R = alpha·GMV + beta·CM2 + gamma·STRAT + delta·CLICKS:
-  = 1.00 × 124.46 + 0.50 × 18.67 + 0.20 × 3 + 0.10 × 3
+Manual computation of R = alpha*GMV + beta*CM2 + gamma*STRAT + delta*CLICKS:
+  = 1.00 x 124.46 + 0.50 x 18.67 + 0.20 x 3 + 0.10 x 3
   = 124.46 + 9.34 + 0.60 + 0.30
   = 134.69
 
 Simulator-reported reward: 134.69
 
-Verification: |computed - reported| = 0.00 < 0.01 ✓
+Verification: |computed - reported| = 0.00 < 0.01 [PASS]
 
 The simulator correctly implements [EQ-1.2].
 ```
@@ -118,23 +118,23 @@ test_ratios = [0.08, 0.10, 0.11, 0.12, 0.15, 0.20]
 for ratio in test_ratios:
     cfg = RewardConfig(alpha_gmv=1.0, delta_clicks=ratio)
     is_valid, message = validate_delta_alpha_bound(cfg)
-    status = "✓ VALID" if is_valid else "✗ VIOLATION"
-    print(f"δ/α = {ratio:.2f}: {status}")
+    status = "[PASS] VALID" if is_valid else "[FAIL] VIOLATION"
+    print(f"delta/alpha = {ratio:.2f}: {status}")
 ```
 
 **Actual Output:**
 ```
-δ/α = 0.08: ✓ VALID
-δ/α = 0.10: ✓ VALID (at boundary)
-δ/α = 0.11: ✗ VIOLATION - δ/α = 0.110 exceeds bound of 0.10
-δ/α = 0.12: ✗ VIOLATION - δ/α = 0.120 exceeds bound of 0.10
-δ/α = 0.15: ✗ VIOLATION - δ/α = 0.150 exceeds bound of 0.10
-δ/α = 0.20: ✗ VIOLATION - δ/α = 0.200 exceeds bound of 0.10
+delta/alpha = 0.08: [PASS] VALID
+delta/alpha = 0.10: [PASS] VALID (at boundary)
+delta/alpha = 0.11: [FAIL] VIOLATION - delta/alpha = 0.110 exceeds bound of 0.10
+delta/alpha = 0.12: [FAIL] VIOLATION - delta/alpha = 0.120 exceeds bound of 0.10
+delta/alpha = 0.15: [FAIL] VIOLATION - delta/alpha = 0.150 exceeds bound of 0.10
+delta/alpha = 0.20: [FAIL] VIOLATION - delta/alpha = 0.200 exceeds bound of 0.10
 
-Smallest violation: δ/α = 0.11 (1.10× the bound)
+Smallest violation: delta/alpha = 0.11 (1.10x the bound)
 ```
 
-**Why this matters:** At $\delta/\alpha = 0.11$, the engagement term contributes 11% of the GMV weight per click. With typical sessions generating 3-5 clicks vs. €100-200 GMV, this can shift 1-3% of total reward toward engagement—enough for gradient-based optimizers to find clickbait strategies that inflate CTR at the expense of conversion.
+**Why this matters:** At $\delta/\alpha = 0.11$, the engagement term contributes 11% of the GMV weight per click. With typical sessions generating 3-5 clicks vs. EUR 100-200 GMV, this can shift 1-3% of total reward toward engagement—enough for gradient-based optimizers to find clickbait strategies that inflate CTR at the expense of conversion.
 
 ### Task 3: Connection to Remark 1.2.1
 
@@ -154,7 +154,7 @@ def compute_reward(outcome: SessionOutcome, cfg: RewardConfig) -> float:
     delta_alpha = cfg.delta_clicks / cfg.alpha_gmv
     if delta_alpha > 0.10:
         raise ValueError(
-            f"δ/α = {delta_alpha:.3f} exceeds [REM-1.2.1] bound of 0.10. "
+            f"delta/alpha = {delta_alpha:.3f} exceeds [REM-1.2.1] bound of 0.10. "
             f"Risk of clickbait strategies. Reduce delta_clicks."
         )
 
@@ -227,8 +227,8 @@ def test_strategic_exposure_violation():
     violates_constraint = outcome_low_strat.strat_exposure < tau_strat
     assert violates_constraint, "Low-strat outcome should violate tau_strat=2"
 
-    print(f"\n✓ Constraint violation detected: STRAT={outcome_low_strat.strat_exposure} < τ={tau_strat}")
-    print("  → In Chapter 8, we'll handle this via Lagrangian constraint optimization")
+    print(f"\n[PASS] Constraint violation detected: STRAT={outcome_low_strat.strat_exposure} < tau={tau_strat}")
+    print("  -> In Chapter 8, we'll handle this via Lagrangian constraint optimization")
 
 
 def test_clickbait_detection_via_cvr():
@@ -238,17 +238,17 @@ def test_clickbait_detection_via_cvr():
     """
     # Baseline: healthy engagement
     baseline = SessionOutcome(gmv=100.0, cm2=25.0, strat_exposure=2, clicks=4)
-    cvr_baseline = compute_conversion_quality(baseline)  # €25/click
+    cvr_baseline = compute_conversion_quality(baseline)  # EUR 25/click
 
     # After training: clicks up, GMV down (clickbait!)
     clickbait = SessionOutcome(gmv=80.0, cm2=20.0, strat_exposure=2, clicks=8)
-    cvr_clickbait = compute_conversion_quality(clickbait)  # €10/click
+    cvr_clickbait = compute_conversion_quality(clickbait)  # EUR 10/click
 
     # Compute CVR degradation
     cvr_drop_pct = 100 * (cvr_baseline - cvr_clickbait) / cvr_baseline
 
-    print(f"Baseline CVR:  €{cvr_baseline:.2f}/click")
-    print(f"Clickbait CVR: €{cvr_clickbait:.2f}/click")
+    print(f"Baseline CVR:  EUR {cvr_baseline:.2f}/click")
+    print(f"Clickbait CVR: EUR {cvr_clickbait:.2f}/click")
     print(f"CVR drop: {cvr_drop_pct:.1f}%")
 
     # Assert clickbait threshold
@@ -256,8 +256,8 @@ def test_clickbait_detection_via_cvr():
     is_clickbait = cvr_drop_pct > CLICKBAIT_THRESHOLD
 
     assert is_clickbait, f"CVR drop of {cvr_drop_pct:.1f}% should trigger clickbait alert"
-    print(f"\n✓ Clickbait detected: CVR dropped {cvr_drop_pct:.1f}% > {CLICKBAIT_THRESHOLD}% threshold")
-    print("  → Recommendation: Reduce δ by 30-50% per [REM-1.2.1]")
+    print(f"\n[PASS] Clickbait detected: CVR dropped {cvr_drop_pct:.1f}% > {CLICKBAIT_THRESHOLD}% threshold")
+    print("  -> Recommendation: Reduce delta by 30-50% per [REM-1.2.1]")
 
 
 def test_eq_1_2_component_isolation():
@@ -296,8 +296,8 @@ def test_eq_1_2_component_isolation():
     print(f"  CM2:    {R_cm2:.2f}")
     print(f"  STRAT:  {R_strat:.2f}")
     print(f"  CLICKS: {R_clicks:.2f}")
-    print(f"  Full:   {R_full:.2f} = 0.6×{R_gmv:.0f} + 0.3×{R_cm2:.0f} + 0.2×{R_strat:.0f} + 0.1×{R_clicks:.0f}")
-    print(f"\n✓ [EQ-1.2] linearity verified: reward is sum of weighted components")
+    print(f"  Full:   {R_full:.2f} = 0.6x{R_gmv:.0f} + 0.3x{R_cm2:.0f} + 0.2x{R_strat:.0f} + 0.1x{R_clicks:.0f}")
+    print(f"\n[PASS] [EQ-1.2] linearity verified: reward is sum of weighted components")
 
 
 # Run with pytest
@@ -356,37 +356,37 @@ Weight Sensitivity Analysis
 
 Simulating 500 sessions across 4 weight configurations...
 
-Configuration 1: Balanced (α=1.0, β=0.5, γ=0.2, δ=0.1)
-  Mean reward:     €127.34 ± 45.21
-  Mean GMV:        €108.92 ± 42.18
-  Mean CM2:        € 23.45 ± 12.31
-  Mean STRAT:        2.34 ± 1.21
-  Mean CLICKS:       3.87 ± 1.54
-  CVR (GMV/click): €28.14
+Configuration: Balanced (alpha=1.0, beta=0.5, gamma=0.2, delta=0.1)
+  Mean reward:     EUR 235.70 +/- 225.34
+  Mean GMV:        EUR 212.05
+  Mean CM2:        EUR  45.80
+  Mean STRAT:        1.85
+  Mean CLICKS:       3.80
+  CVR (GMV/click): EUR 55.86
 
-Configuration 2: GMV-Focused (α=1.0, β=0.2, γ=0.1, δ=0.05)
-  Mean reward:     €115.23 ± 43.87
-  Mean GMV:        €108.92 ± 42.18
-  Mean CM2:        € 23.45 ± 12.31
-  Mean STRAT:        2.34 ± 1.21
-  Mean CLICKS:       3.87 ± 1.54
-  CVR (GMV/click): €28.14
+Configuration: GMV-Focused (alpha=1.0, beta=0.2, gamma=0.1, delta=0.05)
+  Mean reward:     EUR 221.59 +/- 212.35
+  Mean GMV:        EUR 212.05
+  Mean CM2:        EUR  45.80
+  Mean STRAT:        1.85
+  Mean CLICKS:       3.80
+  CVR (GMV/click): EUR 55.86
 
-Configuration 3: Profit-Focused (α=0.5, β=1.0, γ=0.3, δ=0.05)
-  Mean reward:     € 83.12 ± 28.94
-  Mean GMV:        €108.92 ± 42.18
-  Mean CM2:        € 23.45 ± 12.31
-  Mean STRAT:        2.34 ± 1.21
-  Mean CLICKS:       3.87 ± 1.54
-  CVR (GMV/click): €28.14
+Configuration: Profit-Focused (alpha=0.5, beta=1.0, gamma=0.3, delta=0.05)
+  Mean reward:     EUR 152.57 +/- 145.35
+  Mean GMV:        EUR 212.05
+  Mean CM2:        EUR  45.80
+  Mean STRAT:        1.85
+  Mean CLICKS:       3.80
+  CVR (GMV/click): EUR 55.86
 
-Configuration 4: Engagement-Heavy (α=1.0, β=0.3, γ=0.2, δ=0.09)
-  Mean reward:     €123.87 ± 44.56
-  Mean GMV:        €108.92 ± 42.18
-  Mean CM2:        € 23.45 ± 12.31
-  Mean STRAT:        2.34 ± 1.21
-  Mean CLICKS:       3.87 ± 1.54
-  CVR (GMV/click): €28.14
+Configuration: Engagement-Heavy (alpha=1.0, beta=0.3, gamma=0.2, delta=0.09)
+  Mean reward:     EUR 226.50 +/- 216.70
+  Mean GMV:        EUR 212.05
+  Mean CM2:        EUR  45.80
+  Mean STRAT:        1.85
+  Mean CLICKS:       3.80
+  CVR (GMV/click): EUR 55.86
 
 Key Insight:
   Same outcomes, different rewards! The underlying user behavior
@@ -395,10 +395,10 @@ Key Insight:
   Only the WEIGHTING changes how we value those outcomes.
 
   This is why weight calibration is critical:
-  • An RL agent will optimize whatever the weights incentivize
-  • Poorly chosen weights → agent learns wrong behavior
-  • [REM-1.2.1] bounds prevent one failure mode (clickbait)
-  • [EQ-1.3] constraints prevent others (margin collapse, etc.)
+  - An RL agent will optimize whatever the weights incentivize
+  - Poorly chosen weights -> agent learns wrong behavior
+  - [REM-1.2.1] bounds prevent one failure mode (clickbait)
+  - [EQ-1.3] constraints prevent others (margin collapse, etc.)
 ```
 
 ### Interpretation
@@ -439,20 +439,20 @@ Simulating different user segments with same boost configuration...
 Static boost weights: w_discount=0.5, w_quality=0.3
 
 Results by user segment (static policy):
-  price_hunter:  Mean R = €136.96 ± 95.39 (n=100)
-  premium:       Mean R = €317.67 ± 230.68 (n=100)
-  bulk_buyer:    Mean R = €386.63 ± 302.66 (n=100)
-  pl_lover:      Mean R = €165.93 ± 121.15 (n=100)
+  price_hunter:  Mean R = EUR 136.96 +/- 95.39 (n=100)
+  premium:       Mean R = EUR 317.67 +/- 230.68 (n=100)
+  bulk_buyer:    Mean R = EUR 386.63 +/- 302.66 (n=100)
+  pl_lover:      Mean R = EUR 165.93 +/- 121.15 (n=100)
 
 Optimal boost per segment (grid search):
-  price_hunter:  w_discount=+0.8, w_quality=+1.0 → R = €174.32
-  premium:       w_discount=+0.0, w_quality=+1.0 → R = €424.47
-  bulk_buyer:    w_discount=+0.5, w_quality=+0.8 → R = €444.56
-  pl_lover:      w_discount=+0.8, w_quality=+0.8 → R = €273.59
+  price_hunter:  w_discount=+0.8, w_quality=+1.0 -> R = EUR 174.32
+  premium:       w_discount=+0.0, w_quality=+1.0 -> R = EUR 424.47
+  bulk_buyer:    w_discount=+0.5, w_quality=+0.8 -> R = EUR 444.56
+  pl_lover:      w_discount=+0.8, w_quality=+0.8 -> R = EUR 273.59
 
 Static vs Contextual Comparison:
-  Static (best single w):    Mean R = €251.80 across all segments
-  Contextual (w per segment): Mean R = €329.24 across all segments
+  Static (best single w):    Mean R = EUR 251.80 across all segments
+  Contextual (w per segment): Mean R = EUR 329.24 across all segments
 
   Improvement: +30.8% by adapting to context!
 

@@ -162,7 +162,7 @@ However, the **single-step contextual bandit** (our MVP formulation) cannot mode
 **The honest assessment**: This is a **theory-practice tradeoff**. The "correct" formulation is #EQ-1.2-prime (multi-episode MDP), but it requires modeling complex user dynamics (churn, seasonality, cross-session preferences) that are expensive to simulate and hard to learn from. The single-step approximation #EQ-1.2 with $\delta \cdot \text{CLICKS}$ is **pragmatic**: it captures 80% of the value with 20% of the complexity. For the MVP, this is the right tradeoff. Chapter 11 extends to multi-episode settings where engagement is properly modeled as state dynamics.
 
 ::: {.note title="Cross-reference — Chapter 11"}
-The full multi‑episode treatment and implementation live in `Chapter 11 — Multi‑Episode Inter‑Session MDP` (see `docs/book/drafts/syllabus.md`). There we add `zoosim/multi_episode/session_env.py` and `zoosim/multi_episode/retention.py` to operationalize #EQ-1.2-prime with a retention/hazard state and validate that engagement raises long‑term value without needing an explicit $\delta \cdot \text{CLICKS}$ term.
+The full multi-episode treatment and implementation live in `Chapter 11 — Multi-Episode Inter-Session MDP` (see `docs/book/drafts/syllabus.md`). There we add `zoosim/multi_episode/session_env.py` and `zoosim/multi_episode/retention.py` to operationalize #EQ-1.2-prime with a retention/hazard state and validate that engagement raises long-term value without needing an explicit $\delta \cdot \text{CLICKS}$ term.
 :::
 
 ::: {.note title="Code $\leftrightarrow$ Config (reward weights)"}
@@ -184,7 +184,7 @@ Diagnostic: Compute $\text{CVR}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i$ af
 - `zoosim/ranking/{relevance,features}.py`: base relevance and boost feature engineering (Chapter 5)
 - `zoosim/dynamics/{behavior,reward}.py` (`MOD-zoosim.behavior`, `MOD-zoosim.reward`): click/abandonment dynamics + reward aggregation for #EQ-1.2
 - `zoosim/envs/{search_env.py,gym_env.py}` (`MOD-zoosim.env`): single-step environment and Gym wrapper wiring the simulator together
-- `zoosim/multi_episode/{session_env.py,retention.py}`: Chapter 11’s retention-aware MDP implementing #EQ-1.2-prime
+- `zoosim/multi_episode/{session_env.py,retention.py}`: Chapter 11's retention-aware MDP implementing #EQ-1.2-prime
 :::
 
 ### Let's Verify the Reward Function with Code
@@ -202,8 +202,8 @@ class SessionOutcome(NamedTuple):
     Mathematical correspondence: realization omega in Omega of random variables
     (GMV, CM2, STRAT, CLICKS).
     """
-    gmv: float          # Gross merchandise value (€)
-    cm2: float          # Contribution margin 2 (€)
+    gmv: float          # Gross merchandise value (EUR)
+    cm2: float          # Contribution margin 2 (EUR)
     strat_exposure: int # Number of strategic products in top-10
     clicks: int         # Total clicks
 
@@ -243,14 +243,14 @@ R_B = compute_reward(outcome_B, weights)
 
 print(f"Strategy A (GMV-focused): R = {R_A:.2f}")
 print(f"Strategy B (Balanced):    R = {R_B:.2f}")
-print(f"Δ = {R_B - R_A:.2f} (Strategy {'B' if R_B > R_A else 'A'} wins!)")
+print(f"Delta = {R_B - R_A:.2f} (Strategy {'B' if R_B > R_A else 'A'} wins!)")
 ```
 
 **Output:**
 ```
 Strategy A (GMV-focused): R = 128.00
 Strategy B (Balanced):    R = 118.50
-Δ = -9.50 (Strategy A wins!)
+Delta = -9.50 (Strategy A wins!)
 ```
 
 Wait—Strategy A won? Let's recalibrate weights to prioritize profitability:
@@ -263,7 +263,7 @@ R_B_profit = compute_reward(outcome_B, weights_profit)
 print(f"\nWith profitability weighting:")
 print(f"Strategy A: R = {R_A_profit:.2f}")
 print(f"Strategy B: R = {R_B_profit:.2f}")
-print(f"Δ = {R_B_profit - R_A_profit:.2f} (Strategy {'B' if R_B_profit > R_A_profit else 'A'} wins!)")
+print(f"Delta = {R_B_profit - R_A_profit:.2f} (Strategy {'B' if R_B_profit > R_A_profit else 'A'} wins!)")
 ```
 
 **Output:**
@@ -271,7 +271,7 @@ print(f"Δ = {R_B_profit - R_A_profit:.2f} (Strategy {'B' if R_B_profit > R_A_pr
 With profitability weighting:
 Strategy A: R = 75.80
 Strategy B: R = 86.90
-Δ = 11.10 (Strategy B wins!)
+Delta = 11.10 (Strategy B wins!)
 ```
 
 Now let's add the **diagnostic metric** from Section 1.2.1 to detect clickbait risk:
@@ -290,9 +290,9 @@ cvr_A = compute_conversion_quality(outcome_A)
 cvr_B = compute_conversion_quality(outcome_B)
 
 print(f"\nConversion quality (GMV per click):")
-print(f"Strategy A: €{cvr_A:.2f}/click ({outcome_A.clicks} clicks → €{outcome_A.gmv:.0f} GMV)")
-print(f"Strategy B: €{cvr_B:.2f}/click ({outcome_B.clicks} clicks → €{outcome_B.gmv:.0f} GMV)")
-print(f"→ Strategy {'A' if cvr_A > cvr_B else 'B'} has higher-quality engagement")
+print(f"Strategy A: EUR {cvr_A:.2f}/click ({outcome_A.clicks} clicks -> EUR {outcome_A.gmv:.0f} GMV)")
+print(f"Strategy B: EUR {cvr_B:.2f}/click ({outcome_B.clicks} clicks -> EUR {outcome_B.gmv:.0f} GMV)")
+print(f"-> Strategy {'A' if cvr_A > cvr_B else 'B'} has higher-quality engagement")
 
 # Verify delta/alpha bound from Section 1.2.1
 print(f"\n[Validation] delta/alpha = {weights.delta_clicks / weights.alpha_gmv:.3f}")
@@ -302,15 +302,15 @@ print(f"             Bound check: {'PASS' if weights.delta_clicks / weights.alph
 **Output:**
 ```
 Conversion quality (GMV per click):
-Strategy A: €40.00/click (3 clicks → €120 GMV)
-Strategy B: €25.00/click (4 clicks → €100 GMV)
-→ Strategy A has higher-quality engagement
+Strategy A: EUR 40.00/click (3 clicks -> EUR 120 GMV)
+Strategy B: EUR 25.00/click (4 clicks -> EUR 100 GMV)
+-> Strategy A has higher-quality engagement
 
 [Validation] delta/alpha = 0.100
              Bound check: PASS (must be <= 0.10)
 ```
 
-**Analysis**: Strategy A gets **fewer clicks** (3 vs 4) but **60% higher GMV per click** (€40 vs €25)—this is *quality over quantity*. If you observe CVR dropping during training while CTR rises, that's your signal to reduce $\delta$ (see Section 1.2.1).
+**Analysis**: Strategy A gets **fewer clicks** (3 vs 4) but **60% higher GMV per click** (EUR 40 vs EUR 25)—this is *quality over quantity*. If you observe CVR dropping during training while CTR rises, that's your signal to reduce $\delta$ (see Section 1.2.1).
 
 The bound $\delta/\alpha = 0.10$ is at the upper limit. For initial experiments, I recommend starting with $\delta/\alpha = 0.05$ (half the bound) and monitoring CVR over time. If CVR remains stable as the agent learns, you can cautiously increase $\delta$. If CVR degrades, reduce $\delta$ immediately—the agent has learned to exploit the engagement term.
 
@@ -343,7 +343,7 @@ The simplified click function below models position bias as `1/k`. Production (`
 - Position bias: `_position_bias()` (see `zoosim/dynamics/behavior.py`) using `BehaviorConfig.pos_bias` in `zoosim/core/config.py`
 - Purchase: `buy_logit = ...` then `sigmoid(buy_logit)` (see `zoosim/dynamics/behavior.py`)
 
-Chapter 2 formalizes click models and position bias; Chapter 5 connects these to off‑policy evaluation for counterfactual testing.
+Chapter 2 formalizes click models and position bias; Chapter 5 connects these to off-policy evaluation for counterfactual testing.
 :::
 
 ```python
@@ -742,7 +742,7 @@ This is **expensive and risky**:
 - Cost: $T \sim 10^4$ sessions total (across all contexts, amortized)
 - Wallclock: **3 hours** at 1 session/second
 
-This **1000× speedup** is why we use RL for search ranking.
+This **1000x speedup** is why we use RL for search ranking.
 
 **Gradient-based optimization** would require:
 - Thousands of evaluations per context $x$
@@ -872,15 +872,15 @@ Here's a toy example showing why absolute continuity matters:
 ```python
 import numpy as np
 
-# Scenario: We logged 5 sessions under π_log (uniform random policy)
-logged_actions = np.array([0, 1, 0, 1, 1])  # Actions chosen by π_log
+# Scenario: We logged 5 sessions under pi_log (uniform random policy)
+logged_actions = np.array([0, 1, 0, 1, 1])  # Actions chosen by pi_log
 logged_rewards = np.array([1.0, 0.5, 1.2, 0.3, 0.6])  # Observed rewards
 
-# π_log is uniform: each action has probability 0.5
+# pi_log is uniform: each action has probability 0.5
 def pi_log(a):
     return 0.5  # Uniform over {0, 1}
 
-# New policy π_eval: deterministic, always chooses action 0
+# New policy pi_eval: deterministic, always chooses action 0
 def pi_eval(a):
     return 1.0 if a == 0 else 0.0
 
@@ -892,14 +892,14 @@ print(f"Naive estimate (ignores policy shift): {naive_estimate:.3f}")
 weights = np.array([pi_eval(a) / pi_log(a) for a in logged_actions])
 print(f"Importance weights: {weights}")
 
-# Only sessions where π_eval would take the same action contribute
+# Only sessions where pi_eval would take the same action contribute
 ope_estimate = np.average(logged_rewards, weights=weights)
 print(f"OPE estimate (importance sampling): {ope_estimate:.3f}")
 
 # Analysis: Which sessions contributed?
 for i, (a, r, w) in enumerate(zip(logged_actions, logged_rewards, weights)):
-    status = "contributes (π_eval agrees)" if w > 0 else "discarded (π_eval disagrees)"
-    print(f"  Session {i}: action={a}, reward={r:.1f}, weight={w:.1f} → {status}")
+    status = "contributes (pi_eval agrees)" if w > 0 else "discarded (pi_eval disagrees)"
+    print(f"  Session {i}: action={a}, reward={r:.1f}, weight={w:.1f} -> {status}")
 ```
 
 **Output:**
@@ -907,11 +907,11 @@ for i, (a, r, w) in enumerate(zip(logged_actions, logged_rewards, weights)):
 Naive estimate (ignores policy shift): 0.720
 Importance weights: [2. 0. 2. 0. 0.]
 OPE estimate (importance sampling): 1.100
-  Session 0: action=0, reward=1.0, weight=2.0 → contributes (π_eval agrees)
-  Session 1: action=1, reward=0.5, weight=0.0 → discarded (π_eval disagrees)
-  Session 2: action=0, reward=1.2, weight=2.0 → contributes (π_eval agrees)
-  Session 3: action=1, reward=0.3, weight=0.0 → discarded (π_eval disagrees)
-  Session 4: action=1, reward=0.6, weight=0.0 → discarded (π_eval disagrees)
+  Session 0: action=0, reward=1.0, weight=2.0 -> contributes (pi_eval agrees)
+  Session 1: action=1, reward=0.5, weight=0.0 -> discarded (pi_eval disagrees)
+  Session 2: action=0, reward=1.2, weight=2.0 -> contributes (pi_eval agrees)
+  Session 3: action=1, reward=0.3, weight=0.0 -> discarded (pi_eval disagrees)
+  Session 4: action=1, reward=0.6, weight=0.0 -> discarded (pi_eval disagrees)
 ```
 
 **Analysis**: The naive estimate (0.72) averages all rewards equally, but $\pi_{\text{eval}}$ would **never choose action 1**. The correct OPE estimate (1.10) upweights sessions where $\pi_{\text{log}}$ happened to choose action 0 (which $\pi_{\text{eval}}$ prefers), and zeros out the rest. The weight factor 2.0 = $\pi_{\text{eval}}(0) / \pi_{\text{log}}(0)$ = 1.0 / 0.5 corrects for the fact that $\pi_{\text{log}}$ chose action 0 only 50% of the time, but $\pi_{\text{eval}}$ would choose it 100% of the time.
@@ -923,7 +923,7 @@ OPE estimate (importance sampling): 1.100
 The example above was benign: uniform $\pi_{\text{log}}$ with 50% coverage. Real systems face **sparse logging**:
 
 ```python
-# Dangerous scenario: π_log rarely explores the action π_eval prefers
+# Dangerous scenario: pi_log rarely explores the action pi_eval prefers
 def pi_log_sparse(a):
     return 0.95 if a == 1 else 0.05  # Rarely tries action 0
 
@@ -947,7 +947,7 @@ rewards = np.where(actions == 0, 1.0, 0.3)  # Action 0 has higher reward
 n_action_0 = np.sum(actions == 0)
 print(f"\nWith {n_samples} samples, action 0 appears {n_action_0} times")
 print(f"Effective sample size for OPE: ~{n_action_0} observations")
-print(f"Each weighted by {w_action_0}x → massive variance!")
+print(f"Each weighted by {w_action_0}x -> massive variance!")
 
 # Compute OPE estimate with high variance
 weights = np.where(actions == 0, w_action_0, 0)
@@ -964,7 +964,7 @@ Importance weight for action 1: 0.0
 
 With 100 samples, action 0 appears 4 times
 Effective sample size for OPE: ~4 observations
-Each weighted by 20.0x → massive variance!
+Each weighted by 20.0x -> massive variance!
 
 OPE estimate: 1.000
 (Dominated by a handful of heavily-weighted samples)
@@ -998,7 +998,7 @@ $$
 
 $\square$
 
-**Remark 1.7.2a** (Measurable Selection). The existence of a measurable optimal policy $\pi^*(x) \in \arg\max_a Q(x,a)$ follows from Bertsekas' measurable selection theorem [Proposition 7.3.3]. The key requirement is that $Q(x,a)$ is jointly measurable and $\mathcal{A}$ is compact—both satisfied by our bounded action space assumption $\mathcal{A} = [-a_{\max}, +a_{\max}]^K$. For completeness, see [@bertsekas:dp:2019, §7.3] for the general theorem and technical conditions.
+**Remark 1.7.2a** (Measurable Selection). The existence of a measurable optimal policy $\pi^*(x) \in \arg\max_a Q(x,a)$ follows from Bertsekas' measurable selection theorem [Proposition 7.3.3]. The key requirement is that $Q(x,a)$ is jointly measurable and $\mathcal{A}$ is compact—both satisfied by our bounded action space assumption $\mathcal{A} = [-a_{\max}, +a_{\max}]^K$. For completeness, see [@bertsekas:dp:2019, Section 7.3] for the general theorem and technical conditions.
 
 **RL Payoff:** This theorem guarantees that our optimization problem **has a solution**—there exists a best policy $\pi^*$. Without compactness (e.g., unbounded action spaces), we might only have a supremum that's never achieved, making learning algorithms chase a moving target. Bounded actions $\mathcal{A} = [-a_{\max}, +a_{\max}]^K$ ensure $\pi^*$ exists, giving algorithms a well-defined target.
 
@@ -1094,14 +1094,14 @@ plt.plot(theoretical_scaling * 0.3, 'k--', label=r'$0.3\sqrt{KT}$ (theory)', lin
 plt.xlabel('Time t')
 plt.ylabel('Regret')
 plt.legend()
-plt.title('Regret grows as O(√T)')
+plt.title('Regret grows as O(sqrt(T))')
 plt.grid(alpha=0.3)
 
 plt.subplot(1, 3, 2)
 plt.plot(normalized_regret, linewidth=1.5)
 plt.xlabel('Time t')
-plt.ylabel('Regret / √(Kt)')
-plt.title('Normalized regret stabilizes\n(confirms √T scaling)')
+plt.ylabel('Regret / sqrt(Kt)')
+plt.title('Normalized regret stabilizes\n(confirms sqrt(T) scaling)')
 plt.grid(alpha=0.3)
 
 plt.subplot(1, 3, 3)
@@ -1110,7 +1110,7 @@ plt.loglog(np.arange(1, T+1), theoretical_scaling * 0.3, 'k--',
            label=r'$0.3\sqrt{KT}$', linewidth=1.5)
 plt.xlabel('Time t (log scale)')
 plt.ylabel('Regret (log scale)')
-plt.title('Log-log plot:\nslope = 0.5 confirms √T')
+plt.title('Log-log plot:\nslope = 0.5 confirms sqrt(T)')
 plt.legend()
 plt.grid(alpha=0.3, which='both')
 plt.tight_layout()
@@ -1118,14 +1118,14 @@ plt.show()
 
 print(f"Final regret: {cumulative_regret:.1f}")
 print(f"Normalized: {cumulative_regret / np.sqrt(K*T):.3f}")
-print(f"Theoretical lower bound confirmed: regret scales as Ω(√KT)")
+print(f"Theoretical lower bound confirmed: regret scales as Omega(sqrt(KT))")
 ```
 
 **Output:**
 ```
 Final regret: 1897.3
 Normalized: 0.268
-Theoretical lower bound confirmed: regret scales as Ω(√KT)
+Theoretical lower bound confirmed: regret scales as Omega(sqrt(KT))
 ```
 
 **Analysis**: The cumulative regret grows linearly with $\sqrt{T}$, as predicted by THM-1.7.3. The normalized regret (cumulative regret divided by $\sqrt{KT}$) stabilizes around a constant ($\approx 0.27$ in this run), confirming the $\Omega(\sqrt{KT})$ lower bound. The log-log plot shows slope $\approx 0.5$, confirming the square-root scaling.
@@ -1188,7 +1188,7 @@ class TabularQFunction:
     def update(self, x: int, a: int, target: float, lr: float = 0.1):
         """Update Q(x, a) <- (1 - alpha) * Q(x, a) + alpha * target.
 
-        This implements stochastic gradient descent on loss (Q - target)².
+        This implements stochastic gradient descent on loss (Q - target)^2.
         """
         current = self.get(x, a)
         self.Q[(x, a)] = (1 - lr) * current + lr * target
@@ -1239,7 +1239,7 @@ Context 2: Q-values = ['1.89', '3.15', '4.01', '4.94']
 **Scalability problem**: With $|\mathcal{X}| = 10^6$ contexts and $|\mathcal{A}| = 100$ actions, we'd need $10^8$ table entries. **Function approximation** (neural nets) solves this by **generalizing** across similar $(x, a)$ pairs.
 
 !!! warning "The Deadly Triad (Sutton-Barto)"
-    Neural Q-functions introduce **the deadly triad** [@sutton:rl_book:2018, §11.3]:
+    Neural Q-functions introduce **the deadly triad** [@sutton:rl_book:2018, Section 11.3]:
 
     1. **Function approximation**: $Q_\theta$ cannot represent all value functions perfectly
     2. **Bootstrapping**: TD targets $r + \gamma Q_\theta(x', a')$ use the same network being trained
@@ -1356,7 +1356,7 @@ $$
 $$
 which is **affine** in the mixture weights $\{\alpha_i\}$. Similarly, each constraint $\mathbb{E}[\text{CM2}(\pi_{\text{rand}})] \geq \tau$ is affine in $\{\alpha_i\}$.
 
-The feasible set $\{\boldsymbol{\alpha} \in \Delta_N : \text{constraints hold}\}$ is a polytope (convex), and the objective is linear. By Slater's condition (strict feasibility: $\exists \tilde{\pi}$ with $\mathbb{E}[\text{CM2}(\tilde{\pi})] > \tau$), strong duality holds for the Lagrangian saddle-point problem. See [@boyd:convex_optimization:2004, §5.2.3].
+The feasible set $\{\boldsymbol{\alpha} \in \Delta_N : \text{constraints hold}\}$ is a polytope (convex), and the objective is linear. By Slater's condition (strict feasibility: $\exists \tilde{\pi}$ with $\mathbb{E}[\text{CM2}(\tilde{\pi})] > \tau$), strong duality holds for the Lagrangian saddle-point problem. See [@boyd:convex_optimization:2004, Section 5.2.3].
 
 $\square$
 
@@ -1495,7 +1495,7 @@ Let's build.
 
 ## Exercises
 
-Note. If you completed Chapter 0's toy bandit experiment: (i) compare your regret curves from Exercise 0.3 to the $\tilde{\Omega}(\sqrt{KT})$ lower bound in THM‑1.7.3; (ii) restate the Chapter 0 environment in this chapter’s notation by identifying $(\mathcal{X}, \mathcal{A}, \rho, R)$.
+Note. If you completed Chapter 0's toy bandit experiment: (i) compare your regret curves from Exercise 0.3 to the $\tilde{\Omega}(\sqrt{KT})$ lower bound in THM-1.7.3; (ii) restate the Chapter 0 environment in this chapter's notation by identifying $(\mathcal{X}, \mathcal{A}, \rho, R)$.
 
 !!! tip "Production Checklist (Chapter 1)"
     - **Seed deterministically**: `SimulatorConfig.seed` in `zoosim/core/config.py:231` and module-level RNGs.
