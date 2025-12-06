@@ -1700,7 +1700,7 @@ nodes:
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     summary: Measure-theoretic foundations for click models and OPE; PBM/DBN, conditional expectation, filtrations, IPS.
-    defines: [DEF-2.2.1, DEF-2.2.2, DEF-2.2.3, DEF-2.2.4, DEF-2.2.5, THM-2.2.1, THM-2.2.2, THM-2.2.3, DEF-2.3.1, DEF-2.3.2, THM-2.3.1, THM-2.3.2, THM-2.3.3, DEF-2.4.1, DEF-2.4.2, DEF-2.4.3, THM-2.4.1, DEF-2.5.1, DEF-2.5.2, THM-2.5.1, EQ-2.1, EQ-2.2, EQ-2.3, DEF-2.6.1, DEF-2.6.2, THM-2.6.1, EQ-2.5, EQ-2.6, EQ-2.7, THM-2.6.2, EQ-2.8, THM-2.8.1, REM-2.8.2, EQ-2.9]
+    defines: [DEF-2.2.1, DEF-2.2.2, DEF-2.2.3, DEF-2.2.4, DEF-2.2.5, THM-2.2.1, THM-2.2.2, THM-2.2.3, DEF-2.3.1, DEF-2.3.2, THM-2.3.1, THM-2.3.2, THM-2.3.3, DEF-2.4.1, DEF-2.4.2, DEF-2.4.3, THM-2.4.1, DEF-2.5.1, DEF-2.5.2, THM-2.5.1, DEF-2.5.3, PROP-2.5.4, PROP-2.5.5, EQ-2.1, EQ-2.2, EQ-2.3, EQ-2.10, EQ-2.11, EQ-2.12, EQ-2.13, EQ-2.14, DEF-2.6.1, DEF-2.6.2, THM-2.6.1, EQ-2.5, EQ-2.6, EQ-2.7, THM-2.6.2, EQ-2.8, THM-2.8.1, REM-2.8.2, EQ-2.9]
 
   - id: DEF-2.2.1
     kind: definition
@@ -1987,6 +1987,79 @@ nodes:
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     anchor: "{#THM-2.5.1}"
     summary: 𝔓(E_k=1)=∏_{j<k}(1−rel(p_j)·s(p_j)) under cascade.
+
+  - id: DEF-2.5.3
+    kind: definition
+    title: Utility-Based Cascade Model
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.5.3}"
+    summary: Production click model extending DBN with position decay, utility-driven click probabilities, satisfaction dynamics, and stopping conditions.
+    depends_on: [DEF-2.5.1, DEF-2.5.2]
+    see_also: [EQ-2.10, EQ-2.11, EQ-2.12, EQ-2.13, EQ-2.14, MOD-zoosim.behavior]
+
+  - id: EQ-2.10
+    kind: equation
+    title: Utility function
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.10}"
+    summary: U(p,q) = alpha_rel*rel(p,q) - alpha_price*price(p) + alpha_pl*is_pl(p) + alpha_cat*cat_match(p,q) + epsilon.
+    depends_on: [DEF-2.5.3]
+
+  - id: EQ-2.11
+    kind: equation
+    title: Click probability given examination
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.11}"
+    summary: P(C_k=1 | E_k=1, U_k) = sigmoid(U_k); click probability given examination is logistic transform of utility.
+    depends_on: [DEF-2.5.3, EQ-2.10]
+
+  - id: EQ-2.12
+    kind: equation
+    title: Examination probability
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.12}"
+    summary: P(E_k=1 | F_{k-1}) = sigmoid(pos_bias_k + beta_exam * S_{k-1}); examination depends on position bias and running satisfaction.
+    depends_on: [DEF-2.5.3, DEF-2.5.1]
+
+  - id: EQ-2.13
+    kind: equation
+    title: Satisfaction dynamics
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.13}"
+    summary: S_k = S_{k-1} + gain*U_k*C_k - decay*(1-C_k) - fatigue*B_k; satisfaction evolves with clicks and purchases.
+    depends_on: [DEF-2.5.3, EQ-2.10]
+
+  - id: EQ-2.14
+    kind: equation
+    title: Stopping time
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.14}"
+    summary: "tau = min{k : E_k=0 or S_k < theta_abandon or sum B_j >= n_max}; session ends via examination failure, satisfaction threshold, or purchase limit."
+    depends_on: [DEF-2.5.3, EQ-2.12, EQ-2.13]
+
+  - id: PROP-2.5.4
+    kind: proposition
+    title: Nesting Property (Utility-Based to PBM)
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#PROP-2.5.4}"
+    summary: When utility weights alpha_price, alpha_pl, alpha_cat are zeroed and satisfaction dynamics disabled, the Utility-Based Cascade reduces to PBM with position-independent click probabilities (given examination).
+    depends_on: [DEF-2.5.3, DEF-2.5.1]
+
+  - id: PROP-2.5.5
+    kind: proposition
+    title: Stopping Time Validity
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#PROP-2.5.5}"
+    summary: The session stopping time tau from [EQ-2.14] is a valid stopping time with respect to the natural filtration; measurable at each position.
+    depends_on: [DEF-2.5.3, EQ-2.14, DEF-2.4.1]
 
   - id: CH-3
     kind: chapter
@@ -3650,6 +3723,15 @@ edges:
   - {src: CH-2, dst: DEF-2.5.2, rel: defines, status: in_progress}
   - {src: CH-2, dst: EQ-2.2, rel: defines, status: in_progress}
   - {src: CH-2, dst: EQ-2.3, rel: defines, status: in_progress}
+  - {src: CH-2, dst: DEF-2.5.3, rel: defines, status: in_progress}
+  - {src: CH-2, dst: PROP-2.5.4, rel: defines, status: in_progress}
+  - {src: CH-2, dst: PROP-2.5.5, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.10, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.11, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.12, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.13, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.14, rel: defines, status: in_progress}
+  - {src: MOD-zoosim.behavior, dst: DEF-2.5.3, rel: implements, status: in_progress}
   - {src: CH-2, dst: DEF-2.6.1, rel: defines, status: in_progress}
   - {src: CH-2, dst: DEF-2.6.2, rel: defines, status: in_progress}
   - {src: CH-2, dst: THM-2.6.1, rel: defines, status: in_progress}
