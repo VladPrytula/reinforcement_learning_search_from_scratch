@@ -62,7 +62,7 @@ Base score std : 0.207
 ```
 
 **Tasks**
-1. Replace the placeholder `user` with an actual draw from `users.sample_user` and confirm the statistics remain bounded as predicted by Proposition 2.8 on score integrability.
+1. Replace the placeholder `user` with an actual draw from `users.sample_user` and confirm the statistics remain bounded as predicted by Proposition 2.8.1 on score integrability.
 2. Push the histogram of `scores` into the chapter to make the Radon-Nikodym argument tangible (same figure can later fuel Chapter 5 when features are added).
 
 ## Lab 2.3 -- Textbook Click Model Verification

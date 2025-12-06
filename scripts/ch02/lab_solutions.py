@@ -495,7 +495,7 @@ def compute_base_score(query_type: str, query_intent: str, product_category: str
     Compute base relevance score for query-product pair.
 
     Mathematical correspondence: Implements score function s: Q × P → [0,1]
-    satisfying Proposition 2.8 (boundedness and integrability).
+    satisfying Proposition 2.8.1 (boundedness and integrability).
 
     Args:
         query_type: Type of query ('category', 'brand', 'generic')
@@ -526,7 +526,7 @@ def lab_2_2_base_score_integration(seed: int = 3, verbose: bool = True) -> dict:
     Lab 2.2 Solution: Query Measure and Base Score Integration.
 
     Links click-model measure P to simulator code paths and verifies
-    that base scores are bounded as predicted by Proposition 2.8.
+    that base scores are bounded as predicted by Proposition 2.8.1.
 
     Args:
         seed: Random seed
@@ -598,7 +598,7 @@ def lab_2_2_base_score_integration(seed: int = 3, verbose: bool = True) -> dict:
 
         # Verify boundedness
         bounded = np.all(all_scores >= 0) and np.all(all_scores <= 1)
-        print(f"\n✓ All scores bounded in [0, 1] as required by Proposition 2.8" if bounded else "✗ Score bounds violated!")
+        print(f"\n✓ All scores bounded in [0, 1] as required by Proposition 2.8.1" if bounded else "✗ Score bounds violated!")
         print(f"✓ Score mean ≈ 0.5 (expected for random query-product pairs)")
         print(f"✓ Score std ≈ 0.19 (reasonable spread without pathological concentration)")
 
@@ -683,10 +683,10 @@ def lab_2_2_user_sampling_verification(seed: int = 42, n_users: int = 500, verbo
         print("  → No significant difference in score distributions across segments")
         print("  → Base scores are segment-independent (as expected from [DEF-5.2])")
 
-        # Verify Proposition 2.8
+        # Verify Proposition 2.8.1
         all_scores = np.concatenate([np.array(segment_scores[seg]) for seg in config.segments])
         n_total = len(all_scores)
-        print(f"\nProposition 2.8 verification:")
+        print(f"\nProposition 2.8.1 verification:")
         print(f"  ✓ All {n_users} × 100 = {n_total:,} scores in [0, 1]")
         print(f"  ✓ No infinite or NaN values")
         print(f"  ✓ Score integrability confirmed")
@@ -741,7 +741,7 @@ def lab_2_2_score_histogram(seed: int = 42, n_samples: int = 10_000, verbose: bo
     if verbose:
         print(f"\nScore distribution summary:")
         print("  Shape: Approximately beta-distributed (peaked near 0.5)")
-        print("  This matches the assumption in Proposition 2.8")
+        print("  This matches the assumption in Proposition 2.8.1")
 
         # ASCII histogram
         print("\nHistogram (ASCII representation):\n")
