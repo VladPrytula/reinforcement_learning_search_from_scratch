@@ -1458,7 +1458,7 @@ This chapter has developed rigorous drift detection algorithms, implemented prod
 
     **Difficulty.** Estimating a full covariance matrix $\boldsymbol{\Sigma}_t$ from streaming data requires $O(d^2)$ samples per update, but production systems need $O(1)$ online algorithms.
 
-    **Partial solutions.** [@ross:nonparametric_changepoint:2012] uses kernel methods, but computational cost is $O(t^2)$. [@liu:adaptive_covariance:2020] proposes recursive covariance estimation but assumes a stationary pre-drift regime.
+    **Partial solutions.** [@ross:nonparametric_changepoint:2012] uses kernel methods, but computational cost is $O(t^2)$. [@keshavarz:sequential_changepoint_ggm:2020] provides an online algorithm for detecting changes in sparse inverse covariance (Gaussian graphical models) but assumes piecewise stationarity between change points.
 
 ### 10.7.2 Modern Context: MLOps and Continuous Learning
 

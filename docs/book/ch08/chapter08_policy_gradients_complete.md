@@ -1088,7 +1088,7 @@ $$
 $$
 {#EQ-8.21}
 
-**Connection to Policy Gradients.** The costate $\lambda$ is precisely the gradient of the value function $\lambda = \nabla_s V$. When we compute $\nabla_\theta J(\theta)$ in [THM-8.2], we are implicitly solving the adjoint equation backward through the trajectory. This connection is made rigorous in [@li:relation_between:2017].
+**Connection to Policy Gradients.** The costate $\lambda$ is precisely the gradient of the value function $\lambda = \nabla_s V$. When we compute $\nabla_\theta J(\theta)$ in [THM-8.2], we are implicitly solving the adjoint equation backward through the trajectory. This connection between optimal control and gradient-based learning is the classical insight of [@bryson_ho:applied_optimal_control:1975, Ch. 2].
 
 ### 8.6.3 Linear-Quadratic Regulator (LQR) as Policy Gradient
 

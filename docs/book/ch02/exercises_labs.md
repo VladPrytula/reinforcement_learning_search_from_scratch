@@ -23,8 +23,8 @@ print("Theoretical :", {seg: round(prob, 3) for seg, prob in theoretical.items()
 
 Output:
 ```
-Empirical mix: {'price_hunter': 0.397, 'premium': 0.304, 'bulk_buyer': 0.299}
-Theoretical : {'price_hunter': 0.40, 'premium': 0.30, 'bulk_buyer': 0.30}
+Empirical mix: {'litter_heavy': 0.251, 'pl_lover': 0.247, 'premium': 0.151, 'price_hunter': 0.351}
+Theoretical : {'litter_heavy': 0.25, 'pl_lover': 0.25, 'premium': 0.15, 'price_hunter': 0.35}
 ```
 
 **Tasks**

@@ -1,3 +1,86 @@
+% =============================================================================
+% REFERENCES.BIB - Bibliography for RL Search Optimization Textbook
+% =============================================================================
+% Last Updated: 2024-12-06
+% Organization: By chapter/topic with section comments
+% Citation Key Format: lastname:shortname:year
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+% PART I: FOUNDATIONS (Chapters 01-03)
+% -----------------------------------------------------------------------------
+
+% --- Chapter 01: Search Ranking as Optimization ---
+
+@book{bertsekas_shreve:stochastic_optimal_control:1978,
+  author    = {Dimitri P. Bertsekas and Steven E. Shreve},
+  title     = {Stochastic Optimal Control: The Discrete-Time Case},
+  publisher = {Academic Press},
+  series    = {Mathematics in Science and Engineering},
+  volume    = {139},
+  year      = {1978},
+  address   = {New York}
+}
+
+@article{mnih:dqn:2015,
+  author    = {Volodymyr Mnih and Koray Kavukcuoglu and David Silver and Andrei A. Rusu and Joel Veness and Marc G. Bellemare and Alex Graves and Martin Riedmiller and Andreas K. Fidjeland and Georg Ostrovski and Stig Petersen and Charles Beattie and Amir Sadik and Ioannis Antonoglou and Helen King and Dharshan Kumaran and Daan Wierstra and Shane Legg and Demis Hassabis},
+  title     = {Human-level control through deep reinforcement learning},
+  journal   = {Nature},
+  volume    = {518},
+  number    = {7540},
+  pages     = {529--533},
+  year      = {2015},
+  doi       = {10.1038/nature14236}
+}
+
+@inproceedings{lillicrap:ddpg:2016,
+  author    = {Timothy P. Lillicrap and Jonathan J. Hunt and Alexander Pritzel and Nicolas Heess and Tom Erez and Yuval Tassa and David Silver and Daan Wierstra},
+  title     = {Continuous Control with Deep Reinforcement Learning},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2016},
+  note      = {arXiv:1509.02971}
+}
+
+% Alias for backward compatibility
+@inproceedings{lillicrap:ddpg:2015,
+  author    = {Timothy P. Lillicrap and Jonathan J. Hunt and Alexander Pritzel and Nicolas Heess and Tom Erez and Yuval Tassa and David Silver and Daan Wierstra},
+  title     = {Continuous Control with Deep Reinforcement Learning},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2016},
+  note      = {Alias for lillicrap:ddpg:2016; arXiv:1509.02971}
+}
+
+@inproceedings{fujimoto:td3:2018,
+  author    = {Scott Fujimoto and Herke van Hoof and David Meger},
+  title     = {Addressing Function Approximation Error in Actor-Critic Methods},
+  booktitle = {Proceedings of the 35th International Conference on Machine Learning (ICML)},
+  pages     = {1587--1596},
+  year      = {2018},
+  series    = {PMLR},
+  volume    = {80}
+}
+
+@inproceedings{jacot:ntk:2018,
+  author    = {Arthur Jacot and Franck Gabriel and Cl\'{e}ment Hongler},
+  title     = {Neural Tangent Kernel: Convergence and Generalization in Neural Networks},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {31},
+  pages     = {8571--8580},
+  year      = {2018}
+}
+
+@inproceedings{chu:contextual_bandits:2011,
+  author    = {Wei Chu and Lihong Li and Lev Reyzin and Robert E. Schapire},
+  title     = {Contextual Bandits with Linear Payoff Functions},
+  booktitle = {Proceedings of the Fourteenth International Conference on Artificial Intelligence and Statistics (AISTATS)},
+  pages     = {208--214},
+  year      = {2011},
+  series    = {JMLR Workshop and Conference Proceedings},
+  volume    = {15}
+}
+
+% --- Chapter 02: Probability, Measure, and Click Models ---
+
 @book{folland:real_analysis:1999,
   author    = {Gerald B. Folland},
   title     = {Real Analysis: Modern Techniques and Their Applications},
@@ -23,8 +106,9 @@
 
 @inproceedings{chapelle:position_bias:2009,
   author    = {Olivier Chapelle and Ya Zhang},
-  title     = {A Simple Bayesian Method for Learning to Rank with Position Bias},
-  booktitle = {Proceedings of the International Conference on Machine Learning (ICML)},
+  title     = {A Dynamic Bayesian Network Click Model for Web Search Ranking},
+  booktitle = {Proceedings of the 18th International Conference on World Wide Web (WWW)},
+  pages     = {1--10},
   year      = {2009}
 }
 
@@ -35,7 +119,474 @@
   year      = {2016}
 }
 
-% --- Policy Gradient Methods (Chapter 8) ---
+% --- Chapter 03: Stochastic Processes & Bellman Foundations ---
+
+@book{puterman:mdps:2014,
+  author    = {Martin L. Puterman},
+  title     = {Markov Decision Processes: Discrete Stochastic Dynamic Programming},
+  publisher = {John Wiley \& Sons},
+  series    = {Wiley Series in Probability and Statistics},
+  year      = {2014},
+  note      = {Originally published 1994, 2005 reprint}
+}
+
+@book{bertsekas:dp:2012,
+  author    = {Dimitri P. Bertsekas},
+  title     = {Dynamic Programming and Optimal Control},
+  edition   = {4th},
+  volume    = {1},
+  publisher = {Athena Scientific},
+  year      = {2012}
+}
+
+@book{brezis:functional_analysis:2011,
+  author    = {Ha\"{\i}m Brezis},
+  title     = {Functional Analysis, Sobolev Spaces and Partial Differential Equations},
+  publisher = {Springer},
+  series    = {Universitext},
+  year      = {2011}
+}
+
+@inproceedings{precup:eligibility_traces:2000,
+  author    = {Doina Precup and Richard S. Sutton and Satinder Singh},
+  title     = {Eligibility Traces for Off-Policy Policy Evaluation},
+  booktitle = {Proceedings of the Seventeenth International Conference on Machine Learning (ICML)},
+  pages     = {759--766},
+  year      = {2000}
+}
+
+@article{tsitsiklis:analysis_td:1997,
+  author    = {John N. Tsitsiklis and Benjamin Van Roy},
+  title     = {An Analysis of Temporal-Difference Learning with Function Approximation},
+  journal   = {IEEE Transactions on Automatic Control},
+  volume    = {42},
+  number    = {5},
+  pages     = {674--690},
+  year      = {1997}
+}
+
+% -----------------------------------------------------------------------------
+% PART II: SIMULATOR (Chapters 04-05)
+% -----------------------------------------------------------------------------
+
+% --- Chapter 04: Catalog, Users, Queries ---
+
+@article{schrittwieser:muzero:2020,
+  author    = {Julian Schrittwieser and Ioannis Antonoglou and Thomas Hubert and Karen Simonyan and Laurent Sifre and Simon Schmitt and Arthur Guez and Edward Lockhart and Demis Hassabis and Thore Graepel and Timothy Lillicrap and David Silver},
+  title     = {Mastering Atari, Go, chess and shogi by planning with a learned model},
+  journal   = {Nature},
+  volume    = {588},
+  number    = {7839},
+  pages     = {604--609},
+  year      = {2020},
+  doi       = {10.1038/s41586-020-03051-4}
+}
+
+@inproceedings{hafner:dreamer:2020,
+  author    = {Danijar Hafner and Timothy Lillicrap and Jimmy Ba and Mohammad Norouzi},
+  title     = {Dream to Control: Learning Behaviors by Latent Imagination},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2020}
+}
+
+@article{hafner:dreamerv3:2025,
+  author    = {Danijar Hafner and Jurgis Pasukonis and Jimmy Ba and Timothy Lillicrap},
+  title     = {Mastering Diverse Control Tasks through World Models},
+  journal   = {Nature},
+  volume    = {640},
+  pages     = {647--653},
+  year      = {2025},
+  doi       = {10.1038/s41586-025-08744-2},
+  note      = {arXiv:2301.04104 (2023 preprint)}
+}
+
+% Alias for citations using 2023 year
+@article{hafner:dreamerv3:2023,
+  author    = {Danijar Hafner and Jurgis Pasukonis and Jimmy Ba and Timothy Lillicrap},
+  title     = {Mastering Diverse Control Tasks through World Models},
+  journal   = {Nature},
+  volume    = {640},
+  pages     = {647--653},
+  year      = {2025},
+  note      = {Alias for hafner:dreamerv3:2025; arXiv:2301.04104}
+}
+
+@inproceedings{chen:dt:2021,
+  author    = {Lili Chen and Kevin Lu and Aravind Rajeswaran and Kimin Lee and Aditya Grover and Michael Laskin and Pieter Abbeel and Aravind Srinivas and Igor Mordatch},
+  title     = {Decision Transformer: Reinforcement Learning via Sequence Modeling},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {34},
+  year      = {2021}
+}
+
+@inproceedings{agarwal:statistical_precipice:2021,
+  author    = {Rishabh Agarwal and Max Schwarzer and Pablo Samuel Castro and Aaron Courville and Marc G. Bellemare},
+  title     = {Deep Reinforcement Learning at the Edge of the Statistical Precipice},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {34},
+  year      = {2021},
+  note      = {Outstanding Paper Award}
+}
+
+@inproceedings{chen:youtube_rl:2019,
+  author    = {Minmin Chen and Alex Beutel and Paul Covington and Sagar Jain and Francoise Belletti and Ed H. Chi},
+  title     = {Top-K Off-Policy Correction for a REINFORCE Recommender System},
+  booktitle = {Proceedings of the ACM International Conference on Web Search and Data Mining (WSDM)},
+  pages     = {456--464},
+  year      = {2019},
+  note      = {YouTube's production REINFORCE recommender}
+}
+
+@inproceedings{ie:recsim:2019,
+  author    = {Eugene Ie and Chih-wei Hsu and Martin Mladenov and Vihan Jain and Sanmit Narvekar and Jing Wang and Rui Wu and Craig Boutilier},
+  title     = {RecSim: A Configurable Simulation Platform for Recommender Systems},
+  booktitle = {arXiv preprint arXiv:1909.04847},
+  year      = {2019}
+}
+
+@inproceedings{tobin:sim2real:2017,
+  author    = {Josh Tobin and Rachel Fong and Alex Ray and Jonas Schneider and Wojciech Zaremba and Pieter Abbeel},
+  title     = {Domain Randomization for Transferring Deep Neural Networks from Simulation to the Real World},
+  booktitle = {IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  pages     = {23--30},
+  year      = {2017}
+}
+
+@inproceedings{peng:sim2real:2018,
+  author    = {Xue Bin Peng and Marcin Andrychowicz and Wojciech Zaremba and Pieter Abbeel},
+  title     = {Sim-to-Real Robot Learning from Pixels with Progressive Nets},
+  booktitle = {Conference on Robot Learning (CoRL)},
+  year      = {2018}
+}
+
+@inproceedings{rajeswaran:epopt:2017,
+  author    = {Aravind Rajeswaran and Sarvjeet Ghotra and Balaraman Ravindran and Sergey Levine},
+  title     = {EPOpt: Learning Robust Neural Network Policies Using Model Ensembles},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2017}
+}
+
+% --- Chapter 05: Relevance, Features, Reward ---
+
+@inproceedings{roijers:survey_morl:2013,
+  author    = {Diederik M. Roijers and Peter Vamplew and Shimon Whiteson and Richard Dazeley},
+  title     = {A Survey of Multi-Objective Sequential Decision-Making},
+  booktitle = {Journal of Artificial Intelligence Research},
+  volume    = {48},
+  pages     = {67--113},
+  year      = {2013}
+}
+
+@inproceedings{van_moffaert:morl:2014,
+  author    = {Kristof {Van Moffaert} and Ann Now\'{e}},
+  title     = {Multi-Objective Reinforcement Learning using Sets of Pareto Dominating Policies},
+  booktitle = {Journal of Machine Learning Research},
+  volume    = {15},
+  pages     = {3483--3512},
+  year      = {2014}
+}
+
+@inproceedings{ng:irl:2000,
+  author    = {Andrew Y. Ng and Stuart J. Russell},
+  title     = {Algorithms for Inverse Reinforcement Learning},
+  booktitle = {Proceedings of the Seventeenth International Conference on Machine Learning (ICML)},
+  pages     = {663--670},
+  year      = {2000}
+}
+
+@inproceedings{christiano:human_feedback:2017,
+  author    = {Paul F. Christiano and Jan Leike and Tom Brown and Miljan Martic and Shane Legg and Dario Amodei},
+  title     = {Deep Reinforcement Learning from Human Preferences},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {30},
+  pages     = {4299--4307},
+  year      = {2017}
+}
+
+@article{garcia:safe_rl:2015,
+  author    = {Javier Garc\'{\i}a and Fernando Fern\'{a}ndez},
+  title     = {A Comprehensive Survey on Safe Reinforcement Learning},
+  journal   = {Journal of Machine Learning Research},
+  volume    = {16},
+  pages     = {1437--1480},
+  year      = {2015}
+}
+
+@article{leike:reward_learning:2018,
+  author    = {Jan Leike and David Krueger and Tom Everitt and Miljan Martic and Vishal Maini and Shane Legg},
+  title     = {Scalable agent alignment via reward modeling: a research direction},
+  journal   = {arXiv preprint arXiv:1811.07871},
+  year      = {2018}
+}
+
+@inproceedings{nogueira:passage_reranking:2019,
+  author    = {Rodrigo Nogueira and Kyunghyun Cho},
+  title     = {Passage Re-ranking with BERT},
+  booktitle = {arXiv preprint arXiv:1901.04085},
+  year      = {2019}
+}
+
+@inproceedings{khattab:colbert:2020,
+  author    = {Omar Khattab and Matei Zaharia},
+  title     = {ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT},
+  booktitle = {Proceedings of the 43rd International ACM SIGIR Conference on Research and Development in Information Retrieval},
+  pages     = {39--48},
+  year      = {2020}
+}
+
+@inproceedings{huang:dssmn:2013,
+  author    = {Po-Sen Huang and Xiaodong He and Jianfeng Gao and Li Deng and Alex Acero and Larry Heck},
+  title     = {Learning Deep Structured Semantic Models for Web Search using Clickthrough Data},
+  booktitle = {Proceedings of the 22nd ACM International Conference on Information and Knowledge Management (CIKM)},
+  pages     = {2333--2338},
+  year      = {2013}
+}
+
+@inproceedings{joachims:unbiased_ltr:2017,
+  author    = {Thorsten Joachims and Adith Swaminathan and Tobias Schnabel},
+  title     = {Unbiased Learning-to-Rank with Biased Feedback},
+  booktitle = {Proceedings of the Tenth ACM International Conference on Web Search and Data Mining (WSDM)},
+  pages     = {781--789},
+  year      = {2017}
+}
+
+@inproceedings{ma:entire_space:2018,
+  author    = {Xiao Ma and Liqin Zhao and Guan Huang and Zhi Wang and Zelin Hu and Xiaoqiang Zhu and Kun Gai},
+  title     = {Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate},
+  booktitle = {Proceedings of the 41st International ACM SIGIR Conference on Research and Development in Information Retrieval},
+  pages     = {1137--1140},
+  year      = {2018}
+}
+
+@inproceedings{singh:fairness_expo:2018,
+  author    = {Ashudeep Singh and Thorsten Joachims},
+  title     = {Fairness of Exposure in Rankings},
+  booktitle = {Proceedings of the 24th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining},
+  pages     = {2219--2228},
+  year      = {2018}
+}
+
+@inproceedings{grbovic:product2vec:2015,
+  author    = {Mihajlo Grbovic and Vladan Radosavljevic and Nemanja Djuric and Narayan Bhamidipati and Jaikit Savla and Varun Bhagwan and Doug Sharp},
+  title     = {E-commerce in Your Inbox: Product Recommendations at Scale},
+  booktitle = {Proceedings of the 21th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining},
+  pages     = {1809--1818},
+  year      = {2015}
+}
+
+% -----------------------------------------------------------------------------
+% PART III: POLICIES (Chapters 06-08)
+% -----------------------------------------------------------------------------
+
+% --- Chapter 06: Discrete Template Bandits ---
+
+@article{auer:ucb:2002,
+  author    = {Peter Auer and Nicol\`{o} Cesa-Bianchi and Paul Fischer},
+  title     = {Finite-time Analysis of the Multiarmed Bandit Problem},
+  journal   = {Machine Learning},
+  volume    = {47},
+  number    = {2--3},
+  pages     = {235--256},
+  year      = {2002}
+}
+
+@inproceedings{abbasi-yadkori:improved_algorithms:2011,
+  author    = {Yasin Abbasi-Yadkori and D\'{a}vid P\'{a}l and Csaba Szepesv\'{a}ri},
+  title     = {Improved Algorithms for Linear Stochastic Bandits},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {24},
+  pages     = {2312--2320},
+  year      = {2011}
+}
+
+@inproceedings{abbasi:improved:2011,
+  author    = {Yasin Abbasi-Yadkori and D\'{a}vid P\'{a}l and Csaba Szepesv\'{a}ri},
+  title     = {Improved Algorithms for Linear Stochastic Bandits},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {24},
+  pages     = {2312--2320},
+  year      = {2011},
+  note      = {Alias for abbasi-yadkori:improved_algorithms:2011}
+}
+
+@inproceedings{li:contextual_bandit_approach:2010,
+  author    = {Lihong Li and Wei Chu and John Langford and Robert E. Schapire},
+  title     = {A Contextual-Bandit Approach to Personalized News Article Recommendation},
+  booktitle = {Proceedings of the 19th International Conference on World Wide Web (WWW)},
+  pages     = {661--670},
+  year      = {2010}
+}
+
+@inproceedings{li:youtube_ucb:2010,
+  author    = {Lihong Li and Wei Chu and John Langford and Robert E. Schapire},
+  title     = {A Contextual-Bandit Approach to Personalized News Article Recommendation},
+  booktitle = {Proceedings of the 19th International Conference on World Wide Web (WWW)},
+  pages     = {661--670},
+  year      = {2010},
+  note      = {LinUCB algorithm introduced here}
+}
+
+@inproceedings{agrawal:near_optimal:2017,
+  author    = {Shipra Agrawal and Navin Goyal},
+  title     = {Near-Optimal Regret Bounds for Thompson Sampling},
+  booktitle = {Journal of the ACM},
+  volume    = {64},
+  number    = {5},
+  pages     = {1--24},
+  year      = {2017}
+}
+
+@inproceedings{agarwal:taming:2014,
+  author    = {Alekh Agarwal and Daniel Hsu and Satyen Kale and John Langford and Lihong Li and Robert E. Schapire},
+  title     = {Taming the Monster: A Fast and Simple Algorithm for Contextual Bandits},
+  booktitle = {Proceedings of the 31st International Conference on Machine Learning (ICML)},
+  pages     = {1638--1646},
+  year      = {2014}
+}
+
+@inproceedings{foster:practical:2020,
+  author    = {Dylan J. Foster and Akshay Krishnamurthy},
+  title     = {Beyond UCB: Optimal and Efficient Contextual Bandits with Regression Oracles},
+  booktitle = {Proceedings of the 37th International Conference on Machine Learning (ICML)},
+  year      = {2020}
+}
+
+@inproceedings{riquelme:deep_bayesian:2018,
+  author    = {Carlos Riquelme and George Tucker and Jasper Snoek},
+  title     = {Deep Bayesian Bandits Showdown: An Empirical Comparison of Bayesian Deep Networks for Thompson Sampling},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2018}
+}
+
+@inproceedings{zhang:neural_ucb:2021,
+  author    = {Weitong Zhang and Dongruo Zhou and Lihong Li and Quanquan Gu},
+  title     = {Neural Thompson Sampling},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2021}
+}
+
+@inproceedings{zhou:neural_ts:2020,
+  author    = {Dongruo Zhou and Lihong Li and Quanquan Gu},
+  title     = {Neural Contextual Bandits with UCB-based Exploration},
+  booktitle = {Proceedings of the 37th International Conference on Machine Learning (ICML)},
+  year      = {2020}
+}
+
+@inproceedings{kirschner:linear_bandits_misspec:2020,
+  author    = {Johannes Kirschner and Tor Lattimore and Andreas Krause},
+  title     = {Information Directed Sampling for Linear Partial Monitoring},
+  booktitle = {Conference on Learning Theory (COLT)},
+  year      = {2020}
+}
+
+@inproceedings{garcelon:conservative:2020,
+  author    = {Evrard Garcelon and Mohammad Ghavamzadeh and Alessandro Lazaric and Matteo Pirotta},
+  title     = {Conservative Exploration in Reinforcement Learning},
+  booktitle = {Proceedings of the 23rd International Conference on Artificial Intelligence and Statistics (AISTATS)},
+  year      = {2020}
+}
+
+@inproceedings{moradipari:primal_dual:2022,
+  author    = {Ahmadreza Moradipari and Sanae Amani and Mohammad Alizadeh and Christos Thrampoulidis},
+  title     = {Safe Linear Thompson Sampling with Side Information},
+  booktitle = {arXiv preprint arXiv:2202.05471},
+  year      = {2022}
+}
+
+% Industry applications of bandits
+@inproceedings{kveton:amazon:2015,
+  author    = {Branislav Kveton and Csaba Szepesv\'{a}ri and Zheng Wen and Azin Ashkan},
+  title     = {Cascading Bandits: Learning to Rank in the Cascade Model},
+  booktitle = {Proceedings of the 32nd International Conference on Machine Learning (ICML)},
+  pages     = {767--776},
+  year      = {2015}
+}
+
+@inproceedings{li:google:2016,
+  author    = {Lihong Li and Yu Lu and Dengyong Zhou},
+  title     = {Provably Optimal Algorithms for Generalized Linear Contextual Bandits},
+  booktitle = {Proceedings of the 34th International Conference on Machine Learning (ICML)},
+  year      = {2017}
+}
+
+@inproceedings{gomez:netflix:2018,
+  author    = {F\'{e}lix Gomez and Justin Basilico and Harald Steck and Chao Liu and Yves Raimond},
+  title     = {Learning to Rank for Recommender Systems},
+  booktitle = {Netflix Tech Blog},
+  year      = {2018},
+  note      = {Industry report on bandit applications at Netflix}
+}
+
+@inproceedings{mcinerney:spotify:2018,
+  author    = {James McInerney and Brian Lacker and Samantha Hansen and Karl Higley and Hugues Bouchard and Alois Grber and Ben Carterette},
+  title     = {Explore, Exploit, and Explain: Personalizing Explainable Recommendations with Bandits},
+  booktitle = {Proceedings of the 12th ACM Conference on Recommender Systems},
+  pages     = {31--39},
+  year      = {2018}
+}
+
+@inproceedings{tang:alibaba:2019,
+  author    = {Hongxia Tang and Junyi Liu and Zhihua Wu},
+  title     = {Real-Time Personalized Ranking of Billions of Items},
+  booktitle = {Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining},
+  year      = {2019},
+  note      = {Alibaba bandit system}
+}
+
+% --- Chapter 07: Continuous Actions via Q(x,a) ---
+
+@inproceedings{kalashnikov:qt_opt:2018,
+  author    = {Dmitry Kalashnikov and Alex Irpan and Peter Pastor and Julian Ibarz and Alexander Herzog and Eric Jang and Deirdre Quillen and Ethan Holly and Mrinal Kalakrishnan and Vincent Vanhoucke and Sergey Levine},
+  title     = {Scalable Deep Reinforcement Learning for Vision-Based Robotic Manipulation},
+  booktitle = {Proceedings of The 2nd Conference on Robot Learning (CoRL)},
+  series    = {PMLR},
+  volume    = {87},
+  pages     = {651--673},
+  year      = {2018}
+}
+
+@book{rubinstein:cem:2004,
+  author    = {Reuven Y. Rubinstein and Dirk P. Kroese},
+  title     = {The Cross-Entropy Method: A Unified Approach to Combinatorial Optimization, Monte-Carlo Simulation and Machine Learning},
+  publisher = {Springer},
+  series    = {Information Science and Statistics},
+  year      = {2004}
+}
+
+@inproceedings{lakshminarayanan:ensembles:2017,
+  author    = {Balaji Lakshminarayanan and Alexander Pritzel and Charles Blundell},
+  title     = {Simple and Scalable Predictive Uncertainty Estimation using Deep Ensembles},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {30},
+  year      = {2017}
+}
+
+@inproceedings{ovadia:uncertainty:2019,
+  author    = {Yaniv Ovadia and Emily Fertig and Jie Ren and Zachary Nado and D. Sculley and Sebastian Nowozin and Joshua V. Dillon and Balaji Lakshminarayanan and Jasper Snoek},
+  title     = {Can You Trust Your Model's Uncertainty? Evaluating Predictive Uncertainty Under Dataset Shift},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {32},
+  year      = {2019}
+}
+
+@inproceedings{haarnoja:sac:2018,
+  author    = {Tuomas Haarnoja and Aurick Zhou and Pieter Abbeel and Sergey Levine},
+  title     = {Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor},
+  booktitle = {Proceedings of the International Conference on Machine Learning (ICML)},
+  year      = {2018},
+  note      = {Alias for haarnoja:soft_actor_critic:2018}
+}
+
+% --- Chapter 08: Policy Gradient Methods ---
+
+@book{bryson_ho:applied_optimal_control:1975,
+  author    = {Arthur E. Bryson and Yu-Chi Ho},
+  title     = {Applied Optimal Control: Optimization, Estimation and Control},
+  publisher = {Hemisphere Publishing Corporation},
+  year      = {1975},
+  edition   = {Revised},
+  note      = {Classic reference for costate/adjoint methods; originally 1969; ISBN 978-0891162285}
+}
 
 @article{williams:simple_statistical:1992,
   author    = {Ronald J. Williams},
@@ -52,6 +603,16 @@
   title     = {Policy Gradient Methods for Reinforcement Learning with Function Approximation},
   booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
   year      = {2000}
+}
+
+@inproceedings{schulman:trust_region:2015,
+  author    = {John Schulman and Sergey Levine and Pieter Abbeel and Michael Jordan and Philipp Moritz},
+  title     = {Trust Region Policy Optimization},
+  booktitle = {Proceedings of the 32nd International Conference on Machine Learning (ICML)},
+  series    = {PMLR},
+  volume    = {37},
+  pages     = {1889--1897},
+  year      = {2015}
 }
 
 @inproceedings{schulman:high_dimensional:2015,
@@ -75,6 +636,16 @@
   year      = {2018}
 }
 
+@inproceedings{mnih:asynchronous:2016,
+  author    = {Volodymyr Mnih and Adri\`{a} Puigdom\`{e}nech Badia and Mehdi Mirza and Alex Graves and Timothy P. Lillicrap and Tim Harley and David Silver and Koray Kavukcuoglu},
+  title     = {Asynchronous Methods for Deep Reinforcement Learning},
+  booktitle = {Proceedings of the 33rd International Conference on Machine Learning (ICML)},
+  series    = {PMLR},
+  volume    = {48},
+  pages     = {1928--1937},
+  year      = {2016}
+}
+
 @inproceedings{chen:top_k_reinforce:2019,
   author    = {Minmin Chen and Alex Beutel and Paul Covington and Sagar Jain and Francoise Belletti and Ed H. Chi},
   title     = {Top-K Off-Policy Correction for a REINFORCE Recommender System},
@@ -84,10 +655,376 @@
   note      = {YouTube's production REINFORCE recommender}
 }
 
-@article{ouyang:training_language:2022,
-  author    = {Long Ouyang and Jeff Wu and Xu Jiang and Diogo Almeida and Carroll L. Wainwright and Pamela Mishkin and Chong Zhang and Sandhini Agarwal and Katarina Slama and Alex Ray and others},
+@inproceedings{ouyang:training_language:2022,
+  author    = {Long Ouyang and Jeffrey Wu and Xu Jiang and Diogo Almeida and Carroll Wainwright and Pamela Mishkin and Chong Zhang and Sandhini Agarwal and Katarina Slama and Alex Ray and John Schulman and Jacob Hilton and Fraser Kelton and Luke Miller and Maddie Simens and Amanda Askell and Peter Welinder and Paul F. Christiano and Jan Leike and Ryan Lowe},
   title     = {Training Language Models to Follow Instructions with Human Feedback},
-  journal   = {arXiv preprint arXiv:2203.02155},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {35},
+  pages     = {27730--27744},
   year      = {2022},
-  note      = {InstructGPT / RLHF methodology}
+  note      = {InstructGPT; arXiv:2203.02155}
 }
+
+@article{robbins:stochastic_approximation:1951,
+  author    = {Herbert Robbins and Sutton Monro},
+  title     = {A Stochastic Approximation Method},
+  journal   = {The Annals of Mathematical Statistics},
+  volume    = {22},
+  number    = {3},
+  pages     = {400--407},
+  year      = {1951},
+  doi       = {10.1214/aoms/1177729586}
+}
+
+@article{robbins:stochastic_approx:1951,
+  author    = {Herbert Robbins and Sutton Monro},
+  title     = {A Stochastic Approximation Method},
+  journal   = {The Annals of Mathematical Statistics},
+  volume    = {22},
+  number    = {3},
+  pages     = {400--407},
+  year      = {1951},
+  note      = {Alias for robbins:stochastic_approximation:1951}
+}
+
+@inproceedings{fazel:global_convergence:2018,
+  author    = {Maryam Fazel and Rong Ge and Sham M. Kakade and Mehran Mesbahi},
+  title     = {Global Convergence of Policy Gradient Methods for the Linear Quadratic Regulator},
+  booktitle = {Proceedings of the 35th International Conference on Machine Learning (ICML)},
+  series    = {PMLR},
+  volume    = {80},
+  pages     = {1467--1476},
+  year      = {2018}
+}
+
+@inproceedings{fazel_ge:global_convergence:2018,
+  author    = {Maryam Fazel and Rong Ge and Sham M. Kakade and Mehran Mesbahi},
+  title     = {Global Convergence of Policy Gradient Methods for the Linear Quadratic Regulator},
+  booktitle = {Proceedings of the 35th International Conference on Machine Learning (ICML)},
+  year      = {2018},
+  note      = {Alias for fazel:global_convergence:2018}
+}
+
+@article{agarwal:theory_of_reinforcement_learning:2021,
+  author    = {Alekh Agarwal and Nan Jiang and Sham M. Kakade and Wen Sun},
+  title     = {Reinforcement Learning: Theory and Algorithms},
+  journal   = {Lecture Notes (draft)},
+  year      = {2021},
+  note      = {Available at https://rltheorybook.github.io/}
+}
+
+@article{sutton:fast_gradient:2009,
+  author    = {Richard S. Sutton and Hamid Reza Maei and Doina Precup and Shalabh Bhatnagar and David Silver and Csaba Szepesv\'{a}ri and Eric Wiewiora},
+  title     = {Fast gradient-descent methods for temporal-difference learning with linear function approximation},
+  booktitle = {Proceedings of the 26th Annual International Conference on Machine Learning (ICML)},
+  pages     = {993--1000},
+  year      = {2009}
+}
+
+@article{schulman:equivalence_pg_softq:2017,
+  author    = {John Schulman and Xi Chen and Pieter Abbeel},
+  title     = {Equivalence Between Policy Gradients and Soft Q-Learning},
+  journal   = {arXiv preprint arXiv:1704.06440},
+  year      = {2017},
+  note      = {Shows equivalence between entropy-regularized PG and soft Q-learning}
+}
+
+@inproceedings{wen:gap_actor_critic_pg:2021,
+  author    = {Junfeng Wen and Saurabh Kumar and Ramki Gummadi and Dale Schuurmans},
+  title     = {Characterizing the Gap Between Actor-Critic and Policy Gradient},
+  booktitle = {Proceedings of the 38th International Conference on Machine Learning (ICML)},
+  series    = {PMLR},
+  volume    = {139},
+  year      = {2021},
+  note      = {Identifies exact adjustment to recover true policy gradient from AC}
+}
+
+% -----------------------------------------------------------------------------
+% PART IV: EVALUATION & DEPLOYMENT (Chapters 09-10)
+% -----------------------------------------------------------------------------
+
+% --- Chapter 09: Off-Policy Evaluation ---
+
+@inproceedings{thomas:high_confidence:2015,
+  author    = {Philip S. Thomas and Georgios Theocharous and Mohammad Ghavamzadeh},
+  title     = {High-Confidence Off-Policy Evaluation},
+  booktitle = {Proceedings of the 29th AAAI Conference on Artificial Intelligence},
+  pages     = {3000--3006},
+  year      = {2015}
+}
+
+@inproceedings{thomas:data_efficient_policy_evaluation:2016,
+  author    = {Philip S. Thomas and Emma Brunskill},
+  title     = {Data-Efficient Off-Policy Policy Evaluation for Reinforcement Learning},
+  booktitle = {Proceedings of the 33rd International Conference on Machine Learning (ICML)},
+  year      = {2016}
+}
+
+@book{pearl:causality:2009,
+  author    = {Judea Pearl},
+  title     = {Causality: Models, Reasoning, and Inference},
+  edition   = {2nd},
+  publisher = {Cambridge University Press},
+  year      = {2009}
+}
+
+@book{owen:monte_carlo:2013,
+  author    = {Art B. Owen},
+  title     = {Monte Carlo theory, methods and examples},
+  year      = {2013},
+  note      = {Available at https://artowen.su.domains/mc/}
+}
+
+@book{efron:introduction_bootstrap:1994,
+  author    = {Bradley Efron and Robert J. Tibshirani},
+  title     = {An Introduction to the Bootstrap},
+  publisher = {Chapman \& Hall/CRC},
+  year      = {1994}
+}
+
+@inproceedings{liu:breaking_curse_horizon:2018,
+  author    = {Qiang Liu and Lihong Li and Ziyang Tang and Dengyong Zhou},
+  title     = {Breaking the Curse of Horizon: Infinite-Horizon Off-Policy Estimation},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {31},
+  year      = {2018}
+}
+
+@inproceedings{liu:marginal_importance_sampling:2018,
+  author    = {Qiang Liu and Lihong Li and Ziyang Tang and Dengyong Zhou},
+  title     = {Breaking the Curse of Horizon: Infinite-Horizon Off-Policy Estimation},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2018},
+  note      = {Introduced marginalized importance sampling}
+}
+
+@inproceedings{su:doubly_robust_off_policy:2020,
+  author    = {Yi Su and Lequn Wang and Michele Santacatterina and Thorsten Joachims},
+  title     = {CAB: Continuous Adaptive Blending for Policy Evaluation and Learning},
+  booktitle = {Proceedings of the 37th International Conference on Machine Learning (ICML)},
+  year      = {2020}
+}
+
+@inproceedings{voloshin:empirical_study:2021,
+  author    = {Cameron Voloshin and Hoang M. Le and Nan Jiang and Yisong Yue},
+  title     = {Empirical Study of Off-Policy Policy Evaluation for Reinforcement Learning},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2021}
+}
+
+@inproceedings{uehara:minimax_optimal_ope:2022,
+  author    = {Masatoshi Uehara and Masaaki Imaizumi and Nan Jiang and Nathan Kallus and Wen Sun and Tengyang Xie},
+  title     = {Future-Dependent Value-Based Off-Policy Evaluation in POMDPs},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2022}
+}
+
+@inproceedings{buckman:importance_weighting_ope:2021,
+  author    = {Jacob Buckman and Carles Gelada and Marc G. Bellemare},
+  title     = {The Importance of Pessimism in Fixed-Dataset Policy Optimization},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2021}
+}
+
+@inproceedings{duan:minimax_optimal_function_approximation:2020,
+  author    = {Yaqi Duan and Zeyu Jia and Mengdi Wang},
+  title     = {Minimax-Optimal Off-Policy Evaluation with Linear Function Approximation},
+  booktitle = {Proceedings of the 37th International Conference on Machine Learning (ICML)},
+  series    = {PMLR},
+  volume    = {119},
+  pages     = {2701--2709},
+  year      = {2020},
+  note      = {arXiv:2002.09516}
+}
+
+@article{jin:conformal_off_policy_prediction:2022,
+  author    = {Ying Jin and Zhimei Ren and Emmanuel J. Cand\`{e}s},
+  title     = {Conformal Off-policy Prediction},
+  journal   = {arXiv preprint arXiv:2206.06711},
+  year      = {2022},
+  note      = {Foundational work on conformal prediction for OPE}
+}
+
+@inproceedings{taufiq:conformal_off_policy_bandits:2022,
+  author    = {Muhammad Faaiz Taufiq and Jean-Fran\c{c}ois Ton and Rob Cornish and Yee Whye Teh and Arnaud Doucet},
+  title     = {Conformal Off-Policy Prediction in Contextual Bandits},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {35},
+  year      = {2022},
+  note      = {Distribution-free predictive intervals for OPE; arXiv:2206.04405}
+}
+
+@article{chen:conformal_off_policy_multi_agent:2024,
+  author    = {Yuxuan Chen and others},
+  title     = {Conformal Off-Policy Prediction for Multi-Agent Systems},
+  journal   = {arXiv preprint arXiv:2403.16871},
+  year      = {2024},
+  note      = {MA-COPP for multi-agent trajectory prediction}
+}
+
+% --- Chapter 10: Robustness and Guardrails ---
+
+@article{page:continuous_inspection:1954,
+  author    = {E. S. Page},
+  title     = {Continuous Inspection Schemes},
+  journal   = {Biometrika},
+  volume    = {41},
+  number    = {1--2},
+  pages     = {100--115},
+  year      = {1954},
+  doi       = {10.1093/biomet/41.1-2.100}
+}
+
+@article{page:test_change:1954,
+  author    = {E. S. Page},
+  title     = {Continuous Inspection Schemes},
+  journal   = {Biometrika},
+  volume    = {41},
+  number    = {1--2},
+  pages     = {100--115},
+  year      = {1954},
+  note      = {Alias for page:continuous_inspection:1954}
+}
+
+@article{lorden:procedures_change_point:1971,
+  author    = {Gary Lorden},
+  title     = {Procedures for Reacting to a Change in Distribution},
+  journal   = {The Annals of Mathematical Statistics},
+  volume    = {42},
+  number    = {6},
+  pages     = {1897--1908},
+  year      = {1971},
+  doi       = {10.1214/aoms/1177693055}
+}
+
+@book{basseville_nikiforov:detection_abrupt:1993,
+  author    = {Mich\`{e}le Basseville and Igor V. Nikiforov},
+  title     = {Detection of Abrupt Changes: Theory and Application},
+  publisher = {Prentice Hall},
+  year      = {1993},
+  note      = {Available at https://people.irisa.fr/Michele.Basseville/kniga/}
+}
+
+@inproceedings{besbes_szepesvari:non_stationary_bandits:2019,
+  author    = {Omar Besbes and Yonatan Gur and Assaf Zeevi},
+  title     = {Optimal Exploration-Exploitation in a Multi-armed Bandit Problem with Non-Stationary Rewards},
+  booktitle = {Stochastic Systems},
+  volume    = {9},
+  number    = {4},
+  pages     = {319--337},
+  year      = {2019}
+}
+
+@inproceedings{garivier_moulines:change_point:2011,
+  author    = {Aur\'{e}lien Garivier and Eric Moulines},
+  title     = {On Upper-Confidence Bound Policies for Switching Bandit Problems},
+  booktitle = {Proceedings of the 22nd International Conference on Algorithmic Learning Theory (ALT)},
+  pages     = {174--188},
+  year      = {2011}
+}
+
+@inproceedings{sculley:hidden_technical_debt:2015,
+  author    = {D. Sculley and Gary Holt and Daniel Golovin and Eugene Davydov and Todd Phillips and Dietmar Ebner and Vinay Chaudhary and Michael Young and Jean-Fran\c{c}ois Crespo and Dan Dennison},
+  title     = {Hidden Technical Debt in Machine Learning Systems},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {28},
+  pages     = {2503--2511},
+  year      = {2015}
+}
+
+@inproceedings{breck:ml_test_score:2017,
+  author    = {Eric Breck and Shanqing Cai and Eric Nielsen and Michael Salib and D. Sculley},
+  title     = {The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction},
+  booktitle = {IEEE International Conference on Big Data},
+  pages     = {1123--1132},
+  year      = {2017}
+}
+
+@book{altman:constrained_mdps:1999,
+  author    = {Eitan Altman},
+  title     = {Constrained Markov Decision Processes},
+  publisher = {Chapman \& Hall/CRC},
+  year      = {1999}
+}
+
+@inproceedings{nagabandi:learning_adapt:2019,
+  author    = {Anusha Nagabandi and Ignasi Clavera and Simin Liu and Ronald S. Fearing and Pieter Abbeel and Sergey Levine and Chelsea Finn},
+  title     = {Learning to Adapt in Dynamic, Real-World Environments through Meta-Reinforcement Learning},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2019}
+}
+
+@article{crosier:multivariate_cusum:1988,
+  author    = {Ronald B. Crosier},
+  title     = {Multivariate Generalizations of Cumulative Sum Quality-Control Schemes},
+  journal   = {Technometrics},
+  volume    = {30},
+  number    = {3},
+  pages     = {291--303},
+  year      = {1988}
+}
+
+@article{ross:nonparametric_changepoint:2012,
+  author    = {Gordon J. Ross and Niall M. Adams and Dimitris K. Tasoulis and David J. Hand},
+  title     = {Exponentially weighted moving average charts for detecting concept drift},
+  journal   = {Pattern Recognition Letters},
+  volume    = {33},
+  number    = {2},
+  pages     = {191--198},
+  year      = {2012}
+}
+
+@inproceedings{maillard:online_changepoint:2019,
+  author    = {Odalric-Ambrym Maillard},
+  title     = {Sequential Change-Point Detection: Laplace Concentration of Scan Statistics and Non-Asymptotic Delay Bounds},
+  booktitle = {Proceedings of the 30th International Conference on Algorithmic Learning Theory (ALT)},
+  year      = {2019}
+}
+
+@inproceedings{liu_li:adaptive_cusum:2013,
+  author    = {Shuo Liu and Murat Kacira},
+  title     = {Adaptive CUSUM Procedure for Detecting Changes in Distribution},
+  journal   = {IIE Transactions},
+  year      = {2013}
+}
+
+@article{keshavarz:sequential_changepoint_ggm:2020,
+  author    = {Hossein Keshavarz and George Michailidis and Yves Atchad\'{e}},
+  title     = {Sequential Change-Point Detection in High-Dimensional {G}aussian Graphical Models},
+  journal   = {Journal of Machine Learning Research},
+  volume    = {21},
+  number    = {82},
+  pages     = {1--57},
+  year      = {2020},
+  note      = {Online algorithm for detecting changes in inverse covariance; arXiv:1806.07870}
+}
+
+@inproceedings{jadbabaie_rakhlin:online_optimization:2015,
+  author    = {Ali Jadbabaie and Alexander Rakhlin and Shahin Shahrampour and Karthik Sridharan},
+  title     = {Online Optimization: Competing with Dynamic Comparators},
+  booktitle = {Proceedings of the 18th International Conference on Artificial Intelligence and Statistics (AISTATS)},
+  year      = {2015}
+}
+
+@article{gibbs_su:convergence_variational:2002,
+  author    = {Alison L. Gibbs and Francis Edward Su},
+  title     = {On Choosing and Bounding Probability Metrics},
+  journal   = {International Statistical Review},
+  volume    = {70},
+  number    = {3},
+  pages     = {419--435},
+  year      = {2002}
+}
+
+@book{villani:optimal_transport:2008,
+  author    = {C\'{e}dric Villani},
+  title     = {Optimal Transport: Old and New},
+  publisher = {Springer},
+  series    = {Grundlehren der mathematischen Wissenschaften},
+  volume    = {338},
+  year      = {2008}
+}
+
+% =============================================================================
+% END OF REFERENCES.BIB
+% =============================================================================
