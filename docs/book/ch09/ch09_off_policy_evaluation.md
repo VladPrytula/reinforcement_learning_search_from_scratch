@@ -1210,9 +1210,9 @@ Recent work addresses these gaps:
 
 **Stateful OPE** [@uehara:minimax_optimal_ope:2022]: Optimal minimax estimators for MDPs that exploit sequential structure beyond PDIS.
 
-**Conformal prediction for OPE** [@xu:conformal_off_policy_prediction:2024]: Distribution-free confidence intervals without bootstrap, valid under weaker assumptions.
+**Conformal prediction for OPE** [@taufiq:conformal_off_policy_bandits:2022]: Distribution-free predictive intervals for contextual bandits without bootstrap, valid under standard bandit assumptions.
 
-**OPE with function approximation** [@duan:minimax_optimal_function_approximation:2024]: Sample complexity bounds for FQE with neural networks, characterizing when model-based methods outperform IS.
+**OPE with function approximation** [@duan:minimax_optimal_function_approximation:2020]: Minimax-optimal sample complexity bounds for fitted Q-iteration with linear function approximation, establishing when model-based methods achieve information-theoretic optimality.
 
 **Practical consensus (as of 2025):**
 - For short horizons ($T < 20$), well-tuned IS/SNIPS is reliable
@@ -1911,7 +1911,7 @@ Key papers and resources for off-policy evaluation:
 - **Doubly Robust**: [@dudik:doubly_robust:2014; @jiang:doubly_robust:2016]
 - **SWITCH/MAGIC**: [@thomas:data_efficient_policy_evaluation:2016]
 - **FQE**: [@le:batch_policy_learning:2019; @paine:hyperparameter_selection:2020]
-- **Recent advances**: [@uehara:minimax_optimal_ope:2022; @xu:conformal_off_policy_prediction:2024]
+- **Recent advances**: [@uehara:minimax_optimal_ope:2022; @taufiq:conformal_off_policy_bandits:2022]
 - **Benchmarks**: [@voloshin:empirical_study:2021; @fu:benchmarks_off_policy_evaluation:2021]
 
 ---

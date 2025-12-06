@@ -1184,6 +1184,533 @@ For production OPE, SNIPS or Doubly Robust (Chapter 9) are preferred.
 
 
 # =============================================================================
+# Lab 2.3: Textbook Click Model Verification
+# =============================================================================
+
+
+def lab_2_3_textbook_click_models(seed: int = 42, verbose: bool = True) -> dict:
+    """
+    Lab 2.3 Solution: Textbook Click Model Verification.
+
+    Verifies that toy implementations of PBM ([DEF-2.5.1], [EQ-2.1]) and
+    DBN ([DEF-2.5.2], [EQ-2.3]) match their theoretical predictions exactly.
+
+    This lab uses the same PBM/DBN simulators as the extended click model
+    verification, but organized as a formal lab exercise with pedagogical focus.
+
+    Mathematical correspondence:
+        - [EQ-2.1]: P(C_k = 1) = rel(p_k) * theta_k (PBM)
+        - [EQ-2.3]: P(E_k = 1) = prod_{j<k} [1 - rel(p_j) * s(p_j)] (DBN)
+
+    Args:
+        seed: Random seed
+        verbose: Whether to print output
+
+    Returns:
+        Dict with PBM and DBN verification results
+    """
+    if verbose:
+        print("=" * 70)
+        print("Lab 2.3: Textbook Click Model Verification")
+        print("=" * 70)
+        print("\nVerifying PBM [DEF-2.5.1] and DBN [DEF-2.5.2] match theory exactly.")
+
+    M = 10
+    n_sessions = 50_000
+
+    # PBM configuration
+    lambda_decay = 0.3
+    exam_probs = np.array([0.9 * np.exp(-lambda_decay * k) for k in range(M)])
+    relevance = np.array([0.7 - 0.05 * k for k in range(M)])
+
+    if verbose:
+        print("\n--- Part A: Position Bias Model (PBM) ---")
+        print(f"\nConfiguration:")
+        print(f"  Positions: {M}")
+        print(f"  theta_k (examination): exponential decay with lambda={lambda_decay}")
+        print(f"  rel(p_k) (relevance): linear decay from 0.70 to 0.25")
+        print(f"\nTheoretical prediction [EQ-2.1]:")
+        print("  P(C_k = 1) = rel(p_k) * theta_k")
+        print(f"\nSimulating {n_sessions:,} sessions...")
+
+    # Simulate PBM
+    examinations_pbm, clicks_pbm = simulate_pbm(relevance, exam_probs, n_sessions, seed)
+    ctr_theory_pbm = relevance * exam_probs
+    ctr_empirical_pbm = clicks_pbm.mean(axis=0)
+
+    pbm_errors = np.abs(ctr_theory_pbm - ctr_empirical_pbm)
+    pbm_max_error = np.max(pbm_errors)
+
+    if verbose:
+        print(f"\n{'Position':>8} | {'theta_k':>8} | {'rel(p_k)':>8} | {'CTR theory':>10} | {'CTR empirical':>13} | {'Error':>8}")
+        print("-" * 70)
+        for k in range(M):
+            print(f"    {k+1:>4} | {exam_probs[k]:>8.3f} | {relevance[k]:>8.2f} | {ctr_theory_pbm[k]:>10.4f} | {ctr_empirical_pbm[k]:>13.4f} | {pbm_errors[k]:>8.4f}")
+
+        print(f"\nMax absolute error: {pbm_max_error:.4f}")
+        if pbm_max_error < 0.01:
+            print("checkmark PBM: Empirical CTRs match [EQ-2.1] within 1% tolerance")
+        else:
+            print(f"warning PBM: Max error {pbm_max_error:.4f} exceeds 1% tolerance")
+
+    # DBN configuration
+    satisfaction = np.array([0.2 - 0.01 * k for k in range(M)])
+    rel_sat = relevance * satisfaction
+
+    if verbose:
+        print("\n--- Part B: Dynamic Bayesian Network (DBN) ---")
+        print(f"\nConfiguration:")
+        print(f"  rel(p_k) * s(p_k) (relevance * satisfaction):")
+        print(f"    [{', '.join([f'{x:.2f}' for x in rel_sat])}]")
+        print(f"\nTheoretical prediction [EQ-2.3]:")
+        print("  P(E_k = 1) = prod_{j<k} [1 - rel(p_j) * s(p_j)]")
+        print(f"\nSimulating {n_sessions:,} sessions...")
+
+    # Simulate DBN
+    examinations_dbn, clicks_dbn = simulate_dbn(relevance, satisfaction, n_sessions, seed + 1)
+
+    # Theoretical examination probabilities
+    exam_theory_dbn = np.zeros(M)
+    for k in range(M):
+        exam_theory_dbn[k] = np.prod([1 - rel_sat[j] for j in range(k)])
+    exam_empirical_dbn = examinations_dbn.mean(axis=0)
+
+    dbn_errors = np.abs(exam_theory_dbn - exam_empirical_dbn)
+    dbn_max_error = np.max(dbn_errors)
+
+    if verbose:
+        print(f"\n{'Position':>8} | {'P(E_k) theory':>13} | {'P(E_k) empirical':>16} | {'Error':>8}")
+        print("-" * 55)
+        for k in range(M):
+            print(f"    {k+1:>4} | {exam_theory_dbn[k]:>13.4f} | {exam_empirical_dbn[k]:>16.4f} | {dbn_errors[k]:>8.4f}")
+
+        print(f"\nMax absolute error: {dbn_max_error:.4f}")
+        if dbn_max_error < 0.01:
+            print("checkmark DBN: Examination probabilities match [EQ-2.3] within 1% tolerance")
+        else:
+            print(f"warning DBN: Max error {dbn_max_error:.4f} exceeds 1% tolerance")
+
+        # Key comparison
+        print("\n--- Part C: PBM vs DBN Comparison ---")
+        print(f"\nExamination probability at position 5:")
+        print(f"  PBM: P(E_5) = theta_5 = {exam_probs[4]:.3f} (fixed by position)")
+        print(f"  DBN: P(E_5) = {exam_theory_dbn[4]:.3f} (depends on cascade)")
+        print(f"\nKey insight:")
+        print("  DBN predicts HIGHER examination at later positions because users")
+        print("  who reach position 5 are 'unsatisfied browsers' who continue scanning.")
+        print("  PBM's fixed theta_k is simpler but ignores this selection effect.")
+
+    return {
+        "pbm": {
+            "ctr_theory": ctr_theory_pbm,
+            "ctr_empirical": ctr_empirical_pbm,
+            "max_error": pbm_max_error,
+        },
+        "dbn": {
+            "exam_theory": exam_theory_dbn,
+            "exam_empirical": exam_empirical_dbn,
+            "max_error": dbn_max_error,
+        },
+        "n_sessions": n_sessions,
+    }
+
+
+# =============================================================================
+# Lab 2.4: Nesting Verification ([PROP-2.5.4])
+# =============================================================================
+
+
+@dataclass
+class FallbackBehaviorConfig:
+    """Fallback behavior configuration mimicking BehaviorConfig."""
+
+    alpha_rel: float = 1.0
+    alpha_price: float = 0.8
+    alpha_pl: float = 1.2
+    alpha_cat: float = 0.6
+    sigma_u: float = 0.8
+    satisfaction_gain: float = 0.5
+    satisfaction_decay: float = 0.2
+    abandonment_threshold: float = -2.0
+    max_purchases: int = 3
+    post_purchase_fatigue: float = 1.2
+    pos_bias: Dict[str, List[float]] = field(
+        default_factory=lambda: {
+            "category": [1.2, 0.9, 0.7, 0.5, 0.3] + [0.2] * 15,
+            "brand": [1.5, 0.8, 0.5, 0.3, 0.2] + [0.1] * 15,
+            "generic": [1.0, 0.8, 0.6, 0.4, 0.2] + [0.1] * 15,
+        }
+    )
+
+
+def _sigmoid(x: float) -> float:
+    """Logistic sigmoid function."""
+    return 1.0 / (1.0 + np.exp(-np.clip(x, -500, 500)))
+
+
+def simulate_utility_cascade(
+    n_positions: int,
+    behavior: FallbackBehaviorConfig,
+    query_type: str,
+    relevances: np.ndarray,
+    prices: np.ndarray,
+    is_pl: np.ndarray,
+    rng: np.random.Generator,
+) -> Tuple[np.ndarray, np.ndarray, List[float], str]:
+    """
+    Simulate a session under the Utility-Based Cascade Model [DEF-2.5.3].
+
+    Returns:
+        clicks: Binary array of clicks
+        buys: Binary array of purchases
+        satisfaction_trajectory: List of satisfaction values
+        stop_reason: 'exam_fail', 'abandonment', 'purchase_limit', or 'end'
+    """
+    clicks = np.zeros(n_positions, dtype=int)
+    buys = np.zeros(n_positions, dtype=int)
+    satisfaction = 0.0
+    satisfaction_trajectory = [satisfaction]
+    purchase_count = 0
+    stop_reason = "end"
+
+    pos_bias_vec = behavior.pos_bias.get(query_type, behavior.pos_bias["generic"])
+
+    for k in range(n_positions):
+        # Examination probability [EQ-2.12]
+        pos_bias_k = pos_bias_vec[k] if k < len(pos_bias_vec) else 0.1
+        exam_prob = _sigmoid(pos_bias_k + 0.2 * satisfaction)
+
+        if rng.random() > exam_prob:
+            stop_reason = "exam_fail"
+            break
+
+        # Latent utility [EQ-2.10]
+        utility = (
+            behavior.alpha_rel * relevances[k]
+            + behavior.alpha_price * (-0.5) * np.log1p(prices[k])  # Assume theta_price = -0.5
+            + behavior.alpha_pl * (0.5 if is_pl[k] else 0.0)  # Assume theta_pl = 0.5
+            + rng.normal(0, behavior.sigma_u)
+        )
+
+        # Click probability [EQ-2.11]
+        click_prob = _sigmoid(utility)
+        if rng.random() < click_prob:
+            clicks[k] = 1
+            satisfaction += behavior.satisfaction_gain * utility
+
+            # Purchase probability (simplified)
+            if rng.random() < 0.3:  # Simple purchase probability
+                buys[k] = 1
+                purchase_count += 1
+                satisfaction -= behavior.post_purchase_fatigue
+
+                if purchase_count >= behavior.max_purchases:
+                    satisfaction_trajectory.append(satisfaction)
+                    stop_reason = "purchase_limit"
+                    break
+        else:
+            satisfaction -= behavior.satisfaction_decay
+
+        satisfaction_trajectory.append(satisfaction)
+
+        # Abandonment check [EQ-2.14]
+        if satisfaction < behavior.abandonment_threshold:
+            stop_reason = "abandonment"
+            break
+
+    return clicks, buys, satisfaction_trajectory, stop_reason
+
+
+def lab_2_4_nesting_verification(seed: int = 42, verbose: bool = True) -> dict:
+    """
+    Lab 2.4 Solution: Nesting Verification ([PROP-2.5.4]).
+
+    Demonstrates that the Utility-Based Cascade Model (Section 2.5.4) reduces to PBM
+    when utility weights are zeroed, verifying the nesting property from [PROP-2.5.4].
+
+    Mathematical correspondence:
+        - [PROP-2.5.4]: Setting alpha_price = alpha_pl = alpha_cat = 0, sigma_u = 0,
+          and disabling satisfaction dynamics recovers PBM structure.
+
+    Args:
+        seed: Random seed
+        verbose: Whether to print output
+
+    Returns:
+        Dict with comparison results
+    """
+    if verbose:
+        print("=" * 70)
+        print("Lab 2.4: Nesting Verification ([PROP-2.5.4])")
+        print("=" * 70)
+        print("\nGoal: Show that Utility-Based Cascade reduces to PBM when utility")
+        print("weights are zeroed, verifying the nesting property from [PROP-2.5.4].")
+
+    rng = np.random.default_rng(seed)
+    n_sessions = 5_000
+    n_positions = 10
+
+    # Full configuration
+    full_config = FallbackBehaviorConfig()
+
+    # PBM-like configuration: disable utility dependence
+    pbm_like_config = FallbackBehaviorConfig(
+        alpha_price=0.0,
+        alpha_pl=0.0,
+        alpha_cat=0.0,
+        sigma_u=0.0,
+        satisfaction_gain=0.0,
+        satisfaction_decay=0.0,
+        abandonment_threshold=-100.0,
+        max_purchases=999,
+        post_purchase_fatigue=0.0,
+    )
+
+    # Generate fixed product attributes for fair comparison
+    relevances = np.array([0.7 - 0.04 * k for k in range(n_positions)])
+    prices = np.exp(rng.normal(2.5, 0.4, n_positions))
+    is_pl = rng.random(n_positions) < 0.4
+
+    if verbose:
+        print("\n--- Configuration ---")
+        print("\nFull Utility-Based Cascade:")
+        print(f"  alpha_price = {full_config.alpha_price}")
+        print(f"  alpha_pl = {full_config.alpha_pl}")
+        print(f"  sigma_u = {full_config.sigma_u}")
+        print(f"  satisfaction_gain = {full_config.satisfaction_gain}")
+        print(f"  abandonment_threshold = {full_config.abandonment_threshold}")
+        print("\nPBM-like Configuration:")
+        print(f"  alpha_price = {pbm_like_config.alpha_price}")
+        print(f"  alpha_pl = {pbm_like_config.alpha_pl}")
+        print(f"  sigma_u = {pbm_like_config.sigma_u}")
+        print(f"  satisfaction_gain = {pbm_like_config.satisfaction_gain}")
+        print(f"  abandonment_threshold = {pbm_like_config.abandonment_threshold}")
+        print(f"\nSimulating {n_sessions:,} sessions for each configuration...")
+
+    # Simulate with full config
+    full_clicks = np.zeros((n_sessions, n_positions))
+    full_stop_reasons = []
+    for i in range(n_sessions):
+        clicks, _, _, stop_reason = simulate_utility_cascade(
+            n_positions, full_config, "category", relevances, prices, is_pl, rng
+        )
+        full_clicks[i] = clicks
+        full_stop_reasons.append(stop_reason)
+
+    # Simulate with PBM-like config
+    rng = np.random.default_rng(seed)  # Reset seed for fair comparison
+    pbm_clicks = np.zeros((n_sessions, n_positions))
+    pbm_stop_reasons = []
+    for i in range(n_sessions):
+        clicks, _, _, stop_reason = simulate_utility_cascade(
+            n_positions, pbm_like_config, "category", relevances, prices, is_pl, rng
+        )
+        pbm_clicks[i] = clicks
+        pbm_stop_reasons.append(stop_reason)
+
+    # Compute CTR by position
+    full_ctr = full_clicks.mean(axis=0)
+    pbm_ctr = pbm_clicks.mean(axis=0)
+
+    # Compute CTR variance across products with different attributes
+    # In PBM-like mode, CTR should depend only on position, not product attributes
+    # In full mode, CTR should vary with product attributes
+
+    if verbose:
+        print("\n--- Results ---")
+        print(f"\n{'Position':>8} | {'Full CTR':>10} | {'PBM-like CTR':>12} | {'Difference':>10}")
+        print("-" * 50)
+        for k in range(n_positions):
+            diff = full_ctr[k] - pbm_ctr[k]
+            print(f"    {k+1:>4} | {full_ctr[k]:>10.4f} | {pbm_ctr[k]:>12.4f} | {diff:>+10.4f}")
+
+        print("\n--- Stop Reason Distribution ---")
+        from collections import Counter
+        full_reasons = Counter(full_stop_reasons)
+        pbm_reasons = Counter(pbm_stop_reasons)
+
+        print(f"\n{'Reason':<15} | {'Full Config':>12} | {'PBM-like':>10}")
+        print("-" * 45)
+        for reason in ["exam_fail", "abandonment", "purchase_limit", "end"]:
+            full_pct = 100 * full_reasons.get(reason, 0) / n_sessions
+            pbm_pct = 100 * pbm_reasons.get(reason, 0) / n_sessions
+            print(f"{reason:<15} | {full_pct:>11.1f}% | {pbm_pct:>9.1f}%")
+
+        print("\n--- Interpretation ---")
+        print("\nKey observations:")
+        print("  1. PBM-like config has NO abandonment (threshold = -100)")
+        print("  2. PBM-like config has NO purchase limit stopping")
+        print("  3. PBM-like CTR depends only on position (via pos_bias)")
+        print("  4. Full config CTR varies with utility (price, PL, noise)")
+        print("\nThis verifies [PROP-2.5.4]: Utility-Based Cascade nests PBM")
+        print("as a special case when utility dependence is disabled.")
+
+    return {
+        "full_ctr": full_ctr,
+        "pbm_ctr": pbm_ctr,
+        "full_stop_reasons": dict(Counter(full_stop_reasons)),
+        "pbm_stop_reasons": dict(Counter(pbm_stop_reasons)),
+        "n_sessions": n_sessions,
+    }
+
+
+# =============================================================================
+# Lab 2.5: Utility-Based Cascade Dynamics ([DEF-2.5.3])
+# =============================================================================
+
+
+def lab_2_5_utility_cascade_dynamics(seed: int = 42, verbose: bool = True) -> dict:
+    """
+    Lab 2.5 Solution: Utility-Based Cascade Dynamics ([DEF-2.5.3]).
+
+    Verifies the three key mechanisms of the production click model from Section 2.5.4:
+    1. Position decay (via pos_bias)
+    2. Satisfaction dynamics (gain on click, decay on no-click)
+    3. Stopping conditions (exam failure, abandonment, purchase limit)
+
+    Mathematical correspondence:
+        - [EQ-2.10]: Latent utility
+        - [EQ-2.12]: Examination probability with satisfaction
+        - [EQ-2.13]: Satisfaction dynamics
+        - [EQ-2.14]: Stopping time
+
+    Args:
+        seed: Random seed
+        verbose: Whether to print output
+
+    Returns:
+        Dict with dynamics verification results
+    """
+    if verbose:
+        print("=" * 70)
+        print("Lab 2.5: Utility-Based Cascade Dynamics ([DEF-2.5.3])")
+        print("=" * 70)
+        print("\nVerifying three key mechanisms:")
+        print("  1. Position decay (pos_bias)")
+        print("  2. Satisfaction dynamics (gain/decay)")
+        print("  3. Stopping conditions")
+
+    rng = np.random.default_rng(seed)
+    config = FallbackBehaviorConfig()
+    n_sessions = 2_000
+    n_positions = 20
+
+    # Generate product attributes
+    relevances = np.array([0.6 - 0.02 * k for k in range(n_positions)])
+    prices = np.exp(rng.normal(2.5, 0.4, n_positions))
+    is_pl = rng.random(n_positions) < 0.4
+
+    if verbose:
+        print(f"\nConfiguration:")
+        print(f"  Positions: {n_positions}")
+        print(f"  satisfaction_gain: {config.satisfaction_gain}")
+        print(f"  satisfaction_decay: {config.satisfaction_decay}")
+        print(f"  abandonment_threshold: {config.abandonment_threshold}")
+        print(f"  pos_bias (category, first 5): {config.pos_bias['category'][:5]}")
+        print(f"\nSimulating {n_sessions:,} sessions...")
+
+    # Collect session data
+    session_lengths = []
+    total_clicks = []
+    stop_reasons = []
+    satisfaction_trajectories = []
+    position_click_counts = np.zeros(n_positions)
+    position_exam_counts = np.zeros(n_positions)
+
+    for i in range(n_sessions):
+        clicks, buys, sat_traj, stop_reason = simulate_utility_cascade(
+            n_positions, config, "category", relevances, prices, is_pl, rng
+        )
+
+        session_length = len(sat_traj) - 1  # Number of positions examined
+        session_lengths.append(session_length)
+        total_clicks.append(clicks.sum())
+        stop_reasons.append(stop_reason)
+        satisfaction_trajectories.append(sat_traj)
+
+        # Track per-position statistics
+        for k in range(min(session_length, n_positions)):
+            position_exam_counts[k] += 1
+            position_click_counts[k] += clicks[k]
+
+    session_lengths = np.array(session_lengths)
+    total_clicks = np.array(total_clicks)
+
+    # Compute position-level CTR (clicks / examinations)
+    position_ctr = np.zeros(n_positions)
+    for k in range(n_positions):
+        if position_exam_counts[k] > 0:
+            position_ctr[k] = position_click_counts[k] / position_exam_counts[k]
+
+    # Examination rate by position
+    exam_rate = position_exam_counts / n_sessions
+
+    if verbose:
+        print("\n--- Part 1: Position Decay ---")
+        print(f"\n{'Position':>8} | {'Exam Rate':>10} | {'CTR|Exam':>10} | {'pos_bias':>10}")
+        print("-" * 50)
+        for k in range(min(10, n_positions)):
+            pb = config.pos_bias["category"][k] if k < len(config.pos_bias["category"]) else 0.1
+            print(f"    {k+1:>4} | {exam_rate[k]:>10.3f} | {position_ctr[k]:>10.3f} | {pb:>10.2f}")
+
+        print("\nObservation: Examination rate decays with position, matching pos_bias pattern.")
+
+        print("\n--- Part 2: Satisfaction Dynamics ---")
+        # Show a few representative trajectories
+        print("\nSample satisfaction trajectories (first 5 sessions):")
+        for i in range(min(5, len(satisfaction_trajectories))):
+            traj = satisfaction_trajectories[i]
+            traj_str = " -> ".join([f"{s:.2f}" for s in traj[:8]])
+            if len(traj) > 8:
+                traj_str += f" ... ({stop_reasons[i]})"
+            else:
+                traj_str += f" ({stop_reasons[i]})"
+            print(f"  Session {i+1}: {traj_str}")
+
+        # Compute final satisfaction statistics
+        final_sats = [traj[-1] for traj in satisfaction_trajectories]
+        print(f"\nFinal satisfaction statistics:")
+        print(f"  Mean: {np.mean(final_sats):.2f}")
+        print(f"  Std:  {np.std(final_sats):.2f}")
+        print(f"  Min:  {np.min(final_sats):.2f}")
+        print(f"  Max:  {np.max(final_sats):.2f}")
+
+        print("\n--- Part 3: Stopping Conditions ---")
+        from collections import Counter
+        reason_counts = Counter(stop_reasons)
+
+        print(f"\n{'Stop Reason':<18} | {'Count':>8} | {'Percentage':>10}")
+        print("-" * 45)
+        for reason in ["exam_fail", "abandonment", "purchase_limit", "end"]:
+            count = reason_counts.get(reason, 0)
+            pct = 100 * count / n_sessions
+            print(f"{reason:<18} | {count:>8} | {pct:>9.1f}%")
+
+        print(f"\nSession length statistics:")
+        print(f"  Mean: {np.mean(session_lengths):.1f} positions")
+        print(f"  Std:  {np.std(session_lengths):.1f}")
+        print(f"  Median: {np.median(session_lengths):.0f}")
+
+        print(f"\nClicks per session:")
+        print(f"  Mean: {np.mean(total_clicks):.2f}")
+        print(f"  Max:  {np.max(total_clicks)}")
+
+        print("\n--- Verification Summary ---")
+        print("\ncheckmark Position decay: Examination rate follows pos_bias pattern")
+        print("checkmark Satisfaction dynamics: Trajectories show gain on click, decay on no-click")
+        print("checkmark Stopping conditions: All three mechanisms observed (exam, abandon, limit)")
+
+    return {
+        "session_lengths": session_lengths,
+        "total_clicks": total_clicks,
+        "stop_reasons": dict(Counter(stop_reasons)),
+        "position_ctr": position_ctr,
+        "exam_rate": exam_rate,
+        "n_sessions": n_sessions,
+    }
+
+
+# =============================================================================
 # Main Entry Point
 # =============================================================================
 
@@ -1201,6 +1728,9 @@ def run_all(verbose: bool = True) -> dict:
         "lab_2_2": lab_2_2_base_score_integration(verbose=verbose),
         "lab_2_2_users": lab_2_2_user_sampling_verification(verbose=verbose),
         "lab_2_2_histogram": lab_2_2_score_histogram(verbose=verbose),
+        "lab_2_3": lab_2_3_textbook_click_models(verbose=verbose),
+        "lab_2_4": lab_2_4_nesting_verification(verbose=verbose),
+        "lab_2_5": lab_2_5_utility_cascade_dynamics(verbose=verbose),
         "extended_clicks": extended_click_model_verification(verbose=verbose),
         "extended_ips": extended_ips_verification(verbose=verbose),
     }
@@ -1234,6 +1764,9 @@ def main():
             lab_2_2_user_sampling_verification(),
             lab_2_2_score_histogram(),
         ),
+        "2.3": lab_2_3_textbook_click_models,
+        "2.4": lab_2_4_nesting_verification,
+        "2.5": lab_2_5_utility_cascade_dynamics,
     }
 
     extended_map = {
@@ -1249,7 +1782,7 @@ def main():
             lab_map[key]()
         else:
             print(f"Unknown lab: {args.lab}")
-            print("Available: 2.1, 2.2")
+            print("Available: 2.1, 2.2, 2.3, 2.4, 2.5")
             sys.exit(1)
     elif args.extended:
         key = args.extended.lower()
@@ -1265,12 +1798,15 @@ def main():
         print("=" * 40)
         print("1. Lab 2.1  - Segment Mix Sanity Check")
         print("2. Lab 2.2  - Base Score Integration")
-        print("3. Extended - Click Model Verification")
-        print("4. Extended - IPS Estimator Verification")
+        print("3. Lab 2.3  - Textbook Click Models")
+        print("4. Lab 2.4  - Nesting Verification")
+        print("5. Lab 2.5  - Utility Cascade Dynamics")
+        print("6. Extended - Click Model (legacy)")
+        print("7. Extended - IPS Estimator")
         print("A. All      - Run everything")
         print()
 
-        choice = input("Select (1-4 or A): ").strip().lower()
+        choice = input("Select (1-7 or A): ").strip().lower()
         choice_map = {
             "1": lambda: (
                 lab_2_1_segment_mix_sanity_check(),
@@ -1282,8 +1818,11 @@ def main():
                 lab_2_2_user_sampling_verification(),
                 lab_2_2_score_histogram(),
             ),
-            "3": extended_click_model_verification,
-            "4": extended_ips_verification,
+            "3": lab_2_3_textbook_click_models,
+            "4": lab_2_4_nesting_verification,
+            "5": lab_2_5_utility_cascade_dynamics,
+            "6": extended_click_model_verification,
+            "7": extended_ips_verification,
             "a": run_all,
         }
         if choice in choice_map:

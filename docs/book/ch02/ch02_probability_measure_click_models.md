@@ -56,6 +56,21 @@ Let's begin.
     - Transition and policy kernels $P(\cdot \mid s,a)$ and $\pi(\cdot \mid s)$ are Markov kernels measurable in their arguments.
     - Off‑policy evaluation (IPS): positivity/overlap — if $\pi(a \mid x) > 0$ then $\mu(a \mid x) > 0$ for the logging policy $\mu$.
 
+??? info "Background: Standard Borel and Polish Spaces"
+    **Polish space**: A topological space that is separable (has a countable dense subset) and completely metrizable (admits a complete metric inducing its topology). Examples: $\mathbb{R}^n$, separable Hilbert spaces, the space of continuous functions $C([0,1])$, discrete countable sets.
+
+    **Standard Borel space**: A measurable space $(X, \mathcal{B})$ isomorphic (as a measurable space) to a Borel subset of a Polish space equipped with its Borel $\sigma$-algebra. Equivalently: a measurable space that "looks like" $\mathbb{R}$, $[0,1]$, $\mathbb{N}$, or a finite set from the measure-theoretic viewpoint.
+
+    **Why this matters for RL**: Standard Borel spaces enjoy three crucial properties:
+
+    1. **Regular conditional probabilities exist**: $\mathbb{P}(A \mid X = x)$ is well-defined as a function of $x$
+    2. **Measurable selection theorems apply**: Optimal policies $\pi^*(s) = \arg\max_a Q(s,a)$ are measurable functions
+    3. **Disintegration of measures**: Joint distributions factor cleanly into marginals and conditionals
+
+    Without these assumptions, pathological counterexamples exist where conditional expectations are undefined or optimal policies are non-measurable. The standard Borel assumption is the "fine print" that makes RL theory work.
+
+    *Reference*: [@kechris:classical_dsp:1995, Chapter 12] provides the definitive treatment. For RL applications, see [@bertsekas:stochastic_oc:1996, Appendix C].
+
 ---
 
 ## 2.2 Probability Spaces and Random Variables
@@ -115,7 +130,7 @@ The triple $(\Omega, \mathcal{F}, \mathbb{P})$ is called a **probability space**
 
 **Example 2.2.3** (Discrete uniform distribution). Let $\Omega = \{1, 2, \ldots, N\}$, $\mathcal{F} = 2^\Omega$. Define $\mathbb{P}(A) = |A|/N$ for all $A \subseteq \Omega$. This is a probability measure (verify: normalization holds, countable additivity reduces to finite additivity since $\Omega$ is finite).
 
-**Example 2.2.4** (Uniform distribution on $[0,1]$). Let $\Omega = [0,1]$, $\mathcal{F} = \mathcal{B}([0,1])$ (Borel sets). Define $\mathbb{P}((a, b)) = b - a$ for intervals $(a, b) \subseteq [0,1]$. This extends uniquely to all Borel sets by **Carathéodory's Extension Theorem** [@folland:real_analysis:1999, Theorem 1.14], giving the **Lebesgue measure** restricted to $[0,1]$.
+**Example 2.2.4** (Uniform distribution on $[0,1]$). Let $\Omega = [0,1]$, $\mathcal{F} = \mathcal{B}([0,1])$ (Borel sets). Define $\mathbb{P}((a, b)) = b - a$ for intervals $(a, b) \subseteq [0,1]$. **Carathéodory's Extension Theorem** [@folland:real_analysis:1999, Theorem 1.14] says that any countably additive set function defined on an algebra (here, finite unions of intervals) extends uniquely to the $\sigma$-algebra it generates. Applying it here extends $\mathbb{P}$ uniquely to all Borel sets, giving the **Lebesgue measure** restricted to $[0,1]$.
 
 **Remark 2.2.2** (Necessity of countable additivity). Why require *countable* additivity rather than just finite additivity? Consider the Lebesgue measure of singletons in $[0,1]$: if $\mathbb{P}(\{x\}) > 0$ for all $x \in [0,1]$, then $\sigma$-additivity forces
 $$
@@ -212,6 +227,8 @@ $$
 *Proof.* Direct application of the Monotone Convergence Theorem for Lebesgue integration [@folland:real_analysis:1999, Theorem 2.14]. $\square$
 
 **Remark 2.2.6** (Monotone convergence technique). The key mechanism is monotone convergence: approximate $X$ by an increasing sequence $X_n \uparrow X$ of simple functions and pass the limit inside the integral. No domination is required; monotonicity alone suffices.
+
+**Remark 2.2.7** (Dominated convergence, informal). The **Dominated Convergence Theorem** complements monotone convergence: if $X_n \to X$ almost surely and there exists an integrable random variable $Y$ with $|X_n| \le Y$ for all $n$, then $X$ is integrable and $\mathbb{E}[X_n] \to \mathbb{E}[X]$. Intuitively, a single integrable bound $Y$ prevents “mass from escaping to infinity,” allowing us to interchange limit and expectation. In later chapters this justifies moving gradients or limits inside expectations when rewards or score functions are uniformly bounded.
 
 **Remark 2.2.4** (RL preview: reward expectations). In RL, the value function $V^\pi(s) = \mathbb{E}^\pi[\sum_{t=0}^\infty \gamma^t R_t \mid S_0 = s]$ is an expectation over trajectories. For this to be well-defined, we need $R_t$ to be measurable and integrable. The Monotone Convergence Theorem (THM-2.2.3) allows us to interchange limits and expectations when computing Bellman operator fixed points (Chapter 3).
 
@@ -320,7 +337,7 @@ Define $W := \mathbb{E}[Y \mid \mathcal{G}]$. By the defining property of condit
 
 Let $X \in L^1(\Omega, \mathcal{F}, \mathbb{P})$ and $\mathcal{G} \subseteq \mathcal{F}$ a sub-$\sigma$-algebra. Then $\mathbb{E}[X \mid \mathcal{G}]$ exists and is unique up to $\mathbb{P}$-almost sure equality.
 
-*Proof.* This is a deep result from measure theory, proven via the **Radon-Nikodym Theorem** [@folland:real_analysis:1999, Theorem 3.8]. We cite this result and defer the full proof to standard references. The key idea: define a signed measure $\nu(A) = \int_A X \, d\mathbb{P}$ for $A \in \mathcal{G}$. This measure is absolutely continuous with respect to $\mathbb{P}$ restricted to $\mathcal{G}$. The Radon-Nikodym Theorem provides the density $d\nu/d\mathbb{P}$, which is precisely $\mathbb{E}[X \mid \mathcal{G}]$. $\square$
+*Proof.* This is a deep result from measure theory, proven via the **Radon-Nikodym Theorem** [@folland:real_analysis:1999, Theorem 3.8]. Informally, Radon-Nikodym says that if a (finite) measure $\nu$ is absolutely continuous with respect to another measure $\mathbb{P}$, then there exists an integrable density $h$ such that $\nu(A) = \int_A h \, d\mathbb{P}$ for all $A$; we write $h = d\nu/d\mathbb{P}$. We cite this result and defer the full proof to standard references. The key idea: define a signed measure $\nu(A) = \int_A X \, d\mathbb{P}$ for $A \in \mathcal{G}$. This measure is absolutely continuous with respect to $\mathbb{P}$ restricted to $\mathcal{G}$. The Radon-Nikodym Theorem provides the density $d\nu/d\mathbb{P}$, which is precisely $\mathbb{E}[X \mid \mathcal{G}]$. $\square$
 
 **Remark 2.3.2** (The Radon-Nikodym connection). Conditional expectation is fundamentally a **change of measure** problem. This reappears in off-policy RL (Chapter 9): importance sampling ratios $\rho_t = \pi(a_t \mid s_t) / \mu(a_t \mid s_t)$ are Radon-Nikodym derivatives relating two policies.
 
@@ -577,7 +594,7 @@ This is empirically more accurate than PBM's position-only dependence.
 
 **When to use DBN:** Off-policy evaluation, counterfactual ranking, realistic simulation. More accurate but computationally expensive.
 
-**Chapter 0 connection:** The toy simulator in Chapter 0 used a simplified PBM (fixed examination probabilities $\theta_k$, independent clicks). Chapter 4's `zoosim` will implement both PBM and DBN, configurable via `zoosim/core/config.py`.
+**Chapter 0 connection:** The toy simulator in Chapter 0 used a simplified PBM (fixed examination probabilities $\theta_k$, independent clicks). The production simulator `zoosim` implements a richer **Utility-Based Cascade Model** (§2.5.4) that nests both PBM and DBN as special cases, configurable via `zoosim/core/config.py`. PBM and DBN remain valuable as analytical reference models---their simpler structure enables closed-form analysis that guides intuition for the production model.
 
 !!! note "Code ↔ Config (position bias and satisfaction)"
     PBM and DBN parameters map to configuration fields:
@@ -600,6 +617,118 @@ This is empirically more accurate than PBM's position-only dependence.
     - **Integration**: The `SessionOutcome` returned is the stopped process $X_\tau$.
 
     KG: `MOD-zoosim.behavior`, `CN-ClickModel`, `CODE-behavior.simulate_session`.
+
+---
+
+### 2.5.4 The Utility-Based Cascade Model (Production Model)
+
+The PBM and DBN models above are valuable for theoretical analysis and algorithm design, but our production simulator implements a richer model that combines the best of both paradigms with economically meaningful user preferences. This section formalizes the **Utility-Based Cascade Model** implemented in `zoosim/dynamics/behavior.py` and establishes its relationship to the textbook models.
+
+**Why formalize the production model?** Without this bridge, students would learn theory (PBM/DBN) they cannot verify in the codebase, and practitioners would use code they cannot connect to guarantees. The core principle of this book---*theory and code in constant dialogue*---demands that our production simulator have rigorous mathematical foundations.
+
+**Definition 2.5.3** (Utility-Based Cascade Model) {#DEF-2.5.3}
+
+Let user $u$ have preference parameters $(\theta_{\text{price}}, \theta_{\text{pl}}, \boldsymbol{\theta}_{\text{cat}})$ where $\boldsymbol{\theta}_{\text{cat}} \in \mathbb{R}^{|\mathcal{C}|}$ encodes category affinities. For a ranking $(p_1, \ldots, p_M)$ in response to query $q$, define the session dynamics:
+
+1. **Latent utility at position $k$:**
+   $$
+   U_k = \alpha_{\text{rel}} \cdot \text{match}(q, p_k) + \alpha_{\text{price}} \cdot \theta_{\text{price}} \cdot \log(1 + \text{price}_k) + \alpha_{\text{pl}} \cdot \theta_{\text{pl}} \cdot \mathbf{1}_{\text{is\_pl}(p_k)} + \alpha_{\text{cat}} \cdot \theta_{\text{cat}}(\text{cat}_k) + \varepsilon_k
+   \tag{2.10}
+   $$
+   {#EQ-2.10}
+   where $\text{match}(q, p_k) = \cos(\phi_q, \phi_{p_k})$ is semantic similarity (Chapter 5), $\text{cat}_k$ is the category of product $p_k$, and $\varepsilon_k \stackrel{\text{iid}}{\sim} \mathcal{N}(0, \sigma_u^2)$ is utility noise.
+
+2. **Click probability given examination:**
+   $$
+   \mathbb{P}(C_k = 1 \mid E_k = 1, U_k) = \sigma(U_k) := \frac{1}{1 + e^{-U_k}}
+   \tag{2.11}
+   $$
+   {#EQ-2.11}
+
+3. **Examination probability (cascade with satisfaction):**
+   $$
+   \mathbb{P}(E_k = 1 \mid \mathcal{F}_{k-1}) = \sigma(\text{pos\_bias}_k(q) + \beta_{\text{exam}} \cdot S_{k-1})
+   \tag{2.12}
+   $$
+   {#EQ-2.12}
+   where $\text{pos\_bias}_k(q)$ depends on query type and position, and $S_{k-1}$ is the running satisfaction state.
+
+4. **Satisfaction dynamics:**
+   $$
+   S_k = S_{k-1} + \gamma_{\text{gain}} \cdot U_k \cdot C_k - \gamma_{\text{decay}} \cdot (1 - C_k) - \gamma_{\text{fatigue}} \cdot B_k
+   \tag{2.13}
+   $$
+   {#EQ-2.13}
+   where $B_k \in \{0, 1\}$ indicates purchase at position $k$, and $\gamma_{\text{fatigue}}$ captures post-purchase satiation.
+
+5. **Stopping time:**
+   $$
+   \tau = \min\{k : E_k = 0 \text{ or } S_k < \theta_{\text{abandon}} \text{ or } \sum_{j \leq k} B_j \geq n_{\max}\}
+   \tag{2.14}
+   $$
+   {#EQ-2.14}
+   The session terminates at the first position where examination fails, satisfaction drops below threshold, or the purchase limit is reached.
+
+**Why this model?** The Utility-Based Cascade captures three phenomena that pure PBM and DBN miss:
+
+- **User heterogeneity**: Different users have different price sensitivities ($\theta_{\text{price}}$), brand preferences ($\theta_{\text{pl}}$), and category affinities ($\boldsymbol{\theta}_{\text{cat}}$). A premium user clicks expensive items; a price hunter clicks discounts. The utility structure [EQ-2.10] makes this heterogeneity explicit.
+
+- **Satisfaction dynamics**: Unlike DBN's binary satisfaction, our running state $S_k$ accumulates positive utility on clicks and decays on non-clicks. This models realistic shopping fatigue: a user who sees several irrelevant results becomes less likely to continue, even if they haven't yet clicked.
+
+- **Purchase satiation**: The $\gamma_{\text{fatigue}}$ term captures the observation that users who just bought something are less likely to continue browsing. This is economically significant for GMV optimization.
+
+**Proposition 2.5.4** (Nesting Property) {#PROP-2.5.4}
+
+The Utility-Based Cascade Model nests PBM and DBN as special cases:
+
+**(a) PBM recovery:** Set $\alpha_{\text{price}} = \alpha_{\text{pl}} = \alpha_{\text{cat}} = 0$, $\sigma_u = 0$, $\beta_{\text{exam}} = 0$, $\gamma_{\text{gain}} = \gamma_{\text{decay}} = 0$, and $\theta_{\text{abandon}} = -\infty$. Then:
+$$
+\mathbb{P}(C_k = 1) = \sigma(\alpha_{\text{rel}} \cdot \text{match}) \cdot \sigma(\text{pos\_bias}_k)
+$$
+which factors as a position-dependent term times a relevance-dependent term---the PBM structure from Definition 2.5.1.
+
+**(b) DBN recovery:** Additionally set $\gamma_{\text{gain}} > 0$, $\gamma_{\text{decay}} > 0$, and $\theta_{\text{abandon}} = 0$ with $\beta_{\text{exam}} \gg 1$. Then examination depends strongly on previous outcomes through $S_{k-1}$, recovering DBN's cascade structure where $\mathbb{P}(E_k = 1)$ depends on clicks at earlier positions.
+
+*Proof sketch.* Part (a): With zeroed preference weights and no satisfaction dynamics, utility reduces to $U_k = \alpha_{\text{rel}} \cdot \text{match}(q, p_k)$ (deterministic). Examination probability becomes $\sigma(\text{pos\_bias}_k)$ (position-only), and click probability given examination is $\sigma(U_k)$. These are independent across positions.
+
+Part (b): With active satisfaction dynamics, the examination probability $\sigma(\text{pos\_bias}_k + \beta_{\text{exam}} \cdot S_{k-1})$ depends on $S_{k-1}$, which in turn depends on clicks at positions $1, \ldots, k-1$. This creates the cascade dependence structure. $\square$
+
+**Proposition 2.5.5** (Stopping Time Validity) {#PROP-2.5.5}
+
+The stopping time $\tau$ from [EQ-2.14] is a valid stopping time with respect to the natural filtration $\mathcal{F}_k = \sigma(E_1, C_1, B_1, S_1, \ldots, E_k, C_k, B_k, S_k)$.
+
+*Proof.* We verify that $\{\tau \leq k\} \in \mathcal{F}_k$ for all $k \geq 1$. The event $\{\tau \leq k\}$ is the union:
+$$
+\{\tau \leq k\} = \bigcup_{j=1}^{k} \left( \{E_j = 0\} \cup \{S_j < \theta_{\text{abandon}}\} \cup \Big\{\sum_{\ell \leq j} B_\ell \geq n_{\max}\Big\} \right).
+$$
+
+Each component event at position $j \leq k$ is determined by $(E_1, \ldots, E_j, C_1, \ldots, C_j, B_1, \ldots, B_j, S_1, \ldots, S_j)$, all of which are $\mathcal{F}_k$-measurable for $j \leq k$. The union of $\mathcal{F}_k$-measurable events is $\mathcal{F}_k$-measurable. $\square$
+
+**Remark 2.5.4** (Why this proof matters). The stopping time validity ensures that the session outcome $X_\tau = (C_1, \ldots, C_\tau, B_1, \ldots, B_\tau)$ is a well-defined random variable on the underlying probability space. This is essential for defining rewards (Chapter 1) and value functions (Chapter 3) rigorously. Without this guarantee, the "GMV of a session" would be mathematically undefined.
+
+!!! note "Code ↔ Theory (Complete Mapping for Utility-Based Cascade)"
+    Every term in Definition 2.5.3 maps directly to `BehaviorConfig` and `behavior.py`:
+
+    | Theory Symbol | Code Reference | Default Value |
+    |---------------|----------------|---------------|
+    | $\alpha_{\text{rel}}$ | `BehaviorConfig.alpha_rel` | 1.0 |
+    | $\alpha_{\text{price}}$ | `BehaviorConfig.alpha_price` | 0.8 |
+    | $\alpha_{\text{pl}}$ | `BehaviorConfig.alpha_pl` | 1.2 |
+    | $\alpha_{\text{cat}}$ | `BehaviorConfig.alpha_cat` | 0.6 |
+    | $\sigma_u$ | `BehaviorConfig.sigma_u` | 0.8 |
+    | $\text{pos\_bias}_k(q)$ | `BehaviorConfig.pos_bias[query_type][k]` | see config |
+    | $\beta_{\text{exam}}$ | hardcoded `0.2` in `behavior.py:91` | 0.2 |
+    | $\gamma_{\text{gain}}$ | `BehaviorConfig.satisfaction_gain` | 0.5 |
+    | $\gamma_{\text{decay}}$ | `BehaviorConfig.satisfaction_decay` | 0.2 |
+    | $\gamma_{\text{fatigue}}$ | `BehaviorConfig.post_purchase_fatigue` | 1.2 |
+    | $\theta_{\text{abandon}}$ | `BehaviorConfig.abandonment_threshold` | -2.0 |
+    | $n_{\max}$ | `BehaviorConfig.max_purchases` | 3 |
+
+    **Implementation location**: `zoosim/dynamics/behavior.py:67-118` (`simulate_session` function).
+
+    KG: `DEF-2.5.3`, `PROP-2.5.4`, `PROP-2.5.5`, `MOD-zoosim.behavior`, `CODE-behavior.simulate_session`.
+
+We have now formalized three click models with increasing realism: PBM (§2.5.1) for analytical tractability, DBN (§2.5.2) for cascade dynamics, and the Utility-Based Cascade (§2.5.4) for production simulation. The nesting property (Proposition 2.5.4) ensures that insights from the simpler models transfer to the richer one. Next, we turn to off-policy evaluation, where all three models serve as the outcome distribution $P(\cdot \mid x, a)$ in importance sampling.
 
 ---
 
@@ -926,20 +1055,21 @@ for k in range(M):
 # ... (examination decays rapidly as satisfied users stop)
 
 # Abandonment statistics
-print(f"\n\nMean stopping position: {tau_dbn.mean():.2f}")
-print(f"% sessions stopping at position 1: {(tau_dbn == 0).mean() * 100:.1f}%")
-print(f"% sessions examining all {M} results: {(tau_dbn == M).mean() * 100:.1f}%")
+# Note: tau is 0-based index; add 1 for position (rank)
+print(f"\n\nMean stopping position (1-based): {tau_dbn.mean() + 1:.2f}")
+print(f"% sessions satisfied at position 1: {(tau_dbn == 0).mean() * 100:.1f}%")
+print(f"% sessions exhausting list without satisfaction: {(tau_dbn == M).mean() * 100:.1f}%")
 
 # Output:
-# Mean stopping position: 2.34
-# % sessions stopping at position 1: 48.6%
-# % sessions examining all 10 results: 5.2%
+# Mean stopping position (1-based): 3.34
+# % sessions satisfied at position 1: 48.6%
+# % sessions exhausting list without satisfaction: 5.2%
 ```
 
 **Key observations:**
 1. **PBM verification**: Empirical CTR matches $\text{rel}(p_k) \cdot \theta_k$ within 0.01 (Monte Carlo error)
 2. **DBN cascade**: Examination probability decays rapidly due to satisfaction-induced stopping
-3. **Abandonment**: ~50% of users satisfied at position 1; only ~5% examine all results
+3. **Early satisfaction**: ~50% satisfied at position 1; only ~5% exhaust list without satisfaction
 
 This confirms Definitions 2.5.1 (PBM) and 2.5.2 (DBN), and Proposition 2.5.1 (DBN examination formula).
 
@@ -1247,6 +1377,29 @@ Interpretation: clipping reduces variance at the expense of **negative bias** (f
 
 We've built measure-theoretic probability foundations. Now we connect to reinforcement learning.
 
+Before diving into MDPs, we establish a key integrability result that ensures reward expectations are well-defined.
+
+**Proposition 2.8.1** (Score Integrability) {#PROP-2.8.1}
+
+Under the standard Borel assumptions (see §2.1 assumptions box), the base relevance score function $s: \mathcal{Q} \times \mathcal{P} \to [0, 1]$ satisfies:
+
+1. **Boundedness**: $s(q, p) \in [0, 1]$ for all query-product pairs $(q, p) \in \mathcal{Q} \times \mathcal{P}$
+2. **Measurability**: $s$ is $(\mathcal{B}(\mathcal{Q}) \otimes \mathcal{B}(\mathcal{P}), \mathcal{B}([0,1]))$-measurable
+3. **Integrability**: For any probability measure $\mu$ on $\mathcal{Q} \times \mathcal{P}$,
+   $$
+   \mathbb{E}_{(Q,P) \sim \mu}[s(Q, P)] \leq 1 < \infty.
+   $$
+
+*Proof sketch.* Boundedness holds by construction of the relevance scoring function (cosine similarity is normalized to $[0,1]$). Measurability follows from continuity of the score function on Polish spaces (Borel measurable). Integrability is immediate from boundedness. $\square$
+
+**Consequence for OPE (Theorem 2.6.1):** The integrability assumption in Theorem 2.6.1 is satisfied whenever rewards are bounded functions of bounded scores. Since $R(x, a, \omega)$ aggregates GMV, CM2, and clicks—all bounded when prices and scores are bounded—the IPS estimator is well-defined.
+
+!!! note "Code ↔ Theory (Score Boundedness Verification)"
+    Lab 2.2 verifies Proposition 2.8.1 empirically by computing score statistics over thousands of query-product pairs. The implementation in `zoosim/ranking/relevance.py` enforces $s \in [0, 1]$ via cosine similarity normalization.
+    KG: `PROP-2.8.1`, `LAB-2.2`.
+
+---
+
 ### 2.8.1 MDPs as Probability Spaces
 
 **Markov Decision Processes (MDPs)**, the canonical RL framework (Chapter 3), are probability spaces with structure.
@@ -1278,7 +1431,7 @@ Chapter 3 makes this rigorous and proves convergence of value iteration via cont
 
 **Remark 2.8.1** (Uncountable trajectory space). Even when per-step state and action spaces are finite, the space of infinite-horizon trajectories $\Omega = (\mathcal{S} \times \mathcal{A} \times \mathbb{R})^{\mathbb{N}}$ is uncountable (same cardinality as $[0,1]$). There is no meaningful "uniform counting" on $\Omega$; probabilities must be defined as measures on $\sigma$-algebras.
 
-**Proposition 2.8.1** (Bellman measurability and contraction) {#THM-2.8.1}.
+**Proposition 2.8.2** (Bellman measurability and contraction) {#PROP-2.8.2}.
 
 Assume standard Borel state/action spaces, bounded measurable rewards $r(s,a)$, measurable Markov kernel $P(\cdot \mid s,a)$, measurable policy kernel $\pi(\cdot \mid s)$, and discount $0 \le \gamma < 1$. Then on $(B_b(\mathcal{S}), \|\cdot\|_\infty)$,
 - the policy evaluation operator
@@ -1302,8 +1455,16 @@ $$
 $$
 measurability of $\mathcal{T}V$ can require additional topological assumptions (e.g., compact $\mathcal{A}$ and upper semicontinuity) or application of a measurable selection theorem. Contraction still holds under boundedness and $0 \le \gamma < 1$.
 
-!!! note "Measurable Selection (argmax existence)"
-    Under standard Borel state spaces and compact metric action spaces, if $a \mapsto r(s,a) + \gamma \int V(s') P(ds'\mid s,a)$ is upper semicontinuous for each $s$ and measurable in $s$, the argmax correspondence admits a **measurable selector** (Kuratowski–Ryll‑Nardzewski selection theorem). This yields a measurable greedy policy $s \mapsto a^*(s)$, ensuring $\mathcal{T}V$ is measurable.
+!!! note "Advanced: Measurable Selection (argmax existence)"
+    **The problem:** For each state $s$, the Bellman optimality equation requires finding $a^*(s) = \arg\max_a Q(s,a)$. But knowing that a maximum *exists* at each $s$ doesn't guarantee that the mapping $s \mapsto a^*(s)$ is *measurable*---and if it's not measurable, the "optimal policy" cannot be evaluated as a random variable.
+
+    **Why this is subtle:** The supremum of measurable functions is measurable, but the argmax need not be. The set of maximizers $A^*(s) = \{a : Q(s,a) = \sup_{a'} Q(s,a')\}$ varies with $s$, and selecting one element from each set in a measurable way is non-trivial (this is an Axiom of Choice problem with measurability constraints).
+
+    **The solution:** Under standard Borel state spaces and compact metric action spaces, if $a \mapsto Q(s,a)$ is upper semicontinuous for each $s$ (ensuring maxima exist by compactness) and jointly measurable in $(s,a)$, the **Kuratowski--Ryll-Nardzewski selection theorem** guarantees a measurable selector exists. This yields a measurable greedy policy $s \mapsto a^*(s)$, ensuring $\mathcal{T}V$ is measurable.
+
+    **For search RL:** Our finite template action space ($|\mathcal{A}| = 25$) trivially satisfies these conditions---compactness is automatic for finite sets. The theorem becomes essential in Chapter 7 when we consider continuous boost actions.
+
+    *References*: The original theorem appears in [@kuratowski:selectors:1965]. For textbook treatments: [@kechris:classical_dsp:1995, §36] provides the definitive descriptive set theory perspective; [@bertsekas:stochastic_oc:1996, Chapter 7] develops the RL-specific machinery.
 
 ---
 
@@ -1372,28 +1533,33 @@ All rely on the probability foundations built in this chapter.
 
 ## 2.9 Production Checklist
 
-::: {.note title="Production Checklist (Chapter 2)"}
-**Configuration alignment:**
-- **Click model selection**: Set `BehaviorConfig.click_model` in `zoosim/core/config.py` to `"pbm"` or `"dbn"`
-- **PBM parameters**: Configure `theta_1` (position-1 examination) and `decay` (exponential decay rate) in `BehaviorConfig.pbm`
-- **DBN parameters**: Configure `satisfaction_fn` (product → satisfaction probability) in `BehaviorConfig.dbn`
-- **Seeds**: Ensure `SimulatorConfig.seed` is set consistently for reproducible click patterns
+!!! tip "Production Checklist (Chapter 2)"
+    **Configuration alignment:**
 
-**Implementation modules (to be created in Chapter 4–5):**
-- `zoosim/dynamics/behavior.py`: Implements PBM and DBN simulators from Definitions 2.5.1–2.5.2
-- `zoosim/core/config.py`: Exposes `BehaviorConfig` with position bias and satisfaction parameters
-- `evaluation/ope.py` (Chapter 9): Implements IPS estimator from Definition 2.6.2
+    The simulator implements a **PBM/DBN-inspired cascade model** (see note in §2.5.3) with the following configuration surface:
 
-**Tests:**
-- `tests/test_behavior.py`: Verify empirical CTR matches theoretical values (within Monte Carlo error)
-- `tests/test_ope.py`: Verify IPS unbiasedness on synthetic data (Section 2.7.2)
-- `tests/test_stopping_times.py`: Verify DBN abandonment statistics (mean stop position, examination decay)
+    - **Position bias**: `BehaviorConfig.pos_bias` in `zoosim/core/config.py:180-186` — dictionary mapping query types to position bias vectors (PBM-like behavior)
+    - **Satisfaction dynamics**: `BehaviorConfig.satisfaction_decay` and `satisfaction_gain` in `zoosim/core/config.py:175-176` — DBN-like cascade stopping
+    - **Abandonment threshold**: `BehaviorConfig.abandonment_threshold` in `zoosim/core/config.py:177` — session termination condition
+    - **Seeds**: `SimulatorConfig.seed` in `zoosim/core/config.py:252` for reproducible click patterns
 
-**Assertions:**
-- Check $0 \leq \theta_k \leq 1$ for all examination probabilities
-- Check $0 \leq \text{rel}(p) \leq 1$ and $0 \leq s(p) \leq 1$ for relevance/satisfaction
-- Check positivity assumption $\pi_0(a \mid x) > 0$ when computing IPS weights
-:::
+    **Implementation modules:**
+
+    - `zoosim/dynamics/behavior.py`: Implements cascade session simulation via `simulate_session()` — combines PBM position bias with DBN-style satisfaction/abandonment dynamics
+    - `zoosim/core/config.py`: `BehaviorConfig` dataclass with utility weights (`alpha_*`), satisfaction parameters, and position bias vectors
+    - `zoosim/evaluation/ope.py` (Chapter 9): Implements IPS, SNIPS, PDIS, and DR estimators from Definitions 2.6.1–2.6.2
+
+    **Tests:**
+
+    - `tests/ch09/test_ope.py`: Verifies OPE estimator behavior
+    - `tests/ch02/test_behavior.py`: Verifies empirical CTR matches theoretical predictions (within Monte Carlo error)
+    - `tests/ch02/test_segment_sampling.py`: Verifies segment frequencies converge to configured probabilities
+
+    **Assertions:**
+
+    - Check $0 \leq \theta_k \leq 1$ for all position bias values
+    - Check $0 \leq \text{rel}(p) \leq 1$ and $0 \leq s(p) \leq 1$ for relevance/satisfaction scores
+    - Check positivity assumption $\pi_0(a \mid x) > 0$ when computing IPS weights
 
 ---
 

@@ -704,7 +704,7 @@ Matches the Dirichlet concentration parameters: litter_heavy users have 40% litt
     - Sampling function: `sample_user()` in `zoosim/world/users.py:29-48`
     - Segment configuration: `UserConfig` in `zoosim/core/config.py:82-129`
     - Segment parameters: `SegmentParams` dataclass in `zoosim/core/config.py:83-89`
-    - Usage: Utility function [EQ-4.8] implemented in `zoosim/dynamics/behavior.py` (Chapter 5)
+    - Usage: The latent utility [EQ-4.8] is instantiated as the **Utility-Based Cascade Model** (§2.5.4, [DEF-2.5.3]) and implemented in `zoosim/dynamics/behavior.py` (used throughout Chapters 5--8)
 
 ---
 

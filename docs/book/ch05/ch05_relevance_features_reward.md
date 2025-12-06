@@ -1630,11 +1630,13 @@ Final ranking (after boosts):
 
 **Step 5: Simulate user interaction** (clicks and purchases)
 
+The environment uses the **Utility-Based Cascade Model** from §2.5.4 ([DEF-2.5.3]) to generate clicks and purchases. User preferences ($\theta_{\text{price}}$, $\theta_{\text{pl}}$, $\boldsymbol{\theta}_{\text{cat}}$) interact with product features and position bias to determine outcomes.
+
 ```python
 from zoosim.dynamics.behavior import simulate_session
 
-# Simulate clicks and buys (uses position bias, utility model from Chapter 2)
-clicks, buys = simulate_session(
+# Simulate session using Utility-Based Cascade Model (§2.5.4)
+outcome = simulate_session(
     ranking=final_ranking,
     user=user,
     query=query,
@@ -1642,10 +1644,12 @@ clicks, buys = simulate_session(
     config=config,
     rng=rng
 )
+clicks, buys = outcome.clicks, outcome.buys
 
 print("\nUser interaction:")
 print(f"  Clicks: {clicks[:5]}")
 print(f"  Buys: {buys[:5]}")
+print(f"  Final satisfaction: {outcome.satisfaction:.2f}")
 ```
 
 **Output:**
@@ -1653,6 +1657,7 @@ print(f"  Buys: {buys[:5]}")
 User interaction:
   Clicks: [1, 1, 0, 1, 0]
   Buys: [1, 0, 0, 1, 0]
+  Final satisfaction: 1.23
 ```
 
 **Step 6: Compute reward**
