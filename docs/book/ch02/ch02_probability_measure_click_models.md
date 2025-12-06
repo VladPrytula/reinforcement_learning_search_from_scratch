@@ -679,19 +679,19 @@ Let user $u$ have preference parameters $(\theta_{\text{price}}, \theta_{\text{p
 
 **Proposition 2.5.4** (Nesting Property) {#PROP-2.5.4}
 
-The Utility-Based Cascade Model nests PBM and DBN as special cases:
+The Utility-Based Cascade Model recovers PBM exactly and approximates DBN:
 
-**(a) PBM recovery:** Set $\alpha_{\text{price}} = \alpha_{\text{pl}} = \alpha_{\text{cat}} = 0$, $\sigma_u = 0$, $\beta_{\text{exam}} = 0$, $\gamma_{\text{gain}} = \gamma_{\text{decay}} = 0$, and $\theta_{\text{abandon}} = -\infty$. Then:
+**(a) PBM recovery (exact):** Set $\alpha_{\text{price}} = \alpha_{\text{pl}} = \alpha_{\text{cat}} = 0$, $\sigma_u = 0$, $\beta_{\text{exam}} = 0$, $\gamma_{\text{gain}} = \gamma_{\text{decay}} = 0$, and $\theta_{\text{abandon}} = -\infty$. Then:
 $$
 \mathbb{P}(C_k = 1) = \sigma(\alpha_{\text{rel}} \cdot \text{match}) \cdot \sigma(\text{pos\_bias}_k)
 $$
 which factors as a position-dependent term times a relevance-dependent term---the PBM structure from Definition 2.5.1.
 
-**(b) DBN recovery:** Additionally set $\gamma_{\text{gain}} > 0$, $\gamma_{\text{decay}} > 0$, and $\theta_{\text{abandon}} = 0$ with $\beta_{\text{exam}} \gg 1$. Then examination depends strongly on previous outcomes through $S_{k-1}$, recovering DBN's cascade structure where $\mathbb{P}(E_k = 1)$ depends on clicks at earlier positions.
+**(b) DBN recovery (limiting case):** Additionally set $\gamma_{\text{gain}} > 0$, $\gamma_{\text{decay}} > 0$, and $\theta_{\text{abandon}} = 0$. As $\beta_{\text{exam}} \to \infty$, the sigmoid $\sigma(\beta_{\text{exam}} \cdot S_{k-1})$ converges to a step function, recovering DBN's hard cascade logic where examination depends deterministically on previous satisfaction. For finite $\beta_{\text{exam}} \gg 1$, the Utility model provides a **continuous relaxation** of DBN that preserves the qualitative cascade structure while enabling gradient-based optimization.
 
 *Proof sketch.* Part (a): With zeroed preference weights and no satisfaction dynamics, utility reduces to $U_k = \alpha_{\text{rel}} \cdot \text{match}(q, p_k)$ (deterministic). Examination probability becomes $\sigma(\text{pos\_bias}_k)$ (position-only), and click probability given examination is $\sigma(U_k)$. These are independent across positions.
 
-Part (b): With active satisfaction dynamics, the examination probability $\sigma(\text{pos\_bias}_k + \beta_{\text{exam}} \cdot S_{k-1})$ depends on $S_{k-1}$, which in turn depends on clicks at positions $1, \ldots, k-1$. This creates the cascade dependence structure. $\square$
+Part (b): With active satisfaction dynamics, the examination probability $\sigma(\text{pos\_bias}_k + \beta_{\text{exam}} \cdot S_{k-1})$ depends on $S_{k-1}$, which in turn depends on clicks at positions $1, \ldots, k-1$. This creates the cascade dependence structure. The key difference from DBN is that our model uses soft sigmoids rather than hard binary decisions ($S_k \in \{0,1\}$). In the limit $\beta_{\text{exam}} \to \infty$, the sigmoid sharpens to a step function, recovering DBN's deterministic continuation rule. $\square$
 
 **Proposition 2.5.5** (Stopping Time Validity) {#PROP-2.5.5}
 
@@ -871,11 +871,18 @@ This reduces computational cost while retaining most signal (users rarely examin
 $$
 \mu((A,B)) = \tfrac{2}{3}, \quad \mu((B,A)) = \tfrac{1}{3}, \qquad \pi((A,B)) = \tfrac{1}{3}, \quad \pi((B,A)) = \tfrac{2}{3}.
 $$
-Let reward $R$ be 1 if the top item is $A$ and 0 otherwise. The true value is $V(\pi)=\tfrac{1}{3}$. The **item‑position factorization** that uses per‑position marginals yields
+Let reward $R$ be 1 if the top item is $A$ and 0 otherwise. The true value is $V(\pi)=\tfrac{1}{3}$. From these ranking probabilities, we derive item‑position marginals:
 $$
-\tilde{w}(A,B) = \frac{\pi(A@1)}{\mu(A@1)} \cdot \frac{\pi(B@2)}{\mu(B@2)} = \frac{1/3}{2/3} \cdot \frac{2/3}{1/3} = 1,\quad \tilde{w}(B,A)=1.
+\mu(A@1) = \tfrac{2}{3},\; \mu(B@2) = \tfrac{2}{3},\; \mu(B@1) = \tfrac{1}{3},\; \mu(A@2) = \tfrac{1}{3}
 $$
-Hence $\mathbb{E}_\mu[\tilde{w} R] = \mathbb{E}_\mu[R] = \tfrac{2}{3} \ne V(\pi)$. The approximation collapses weights to 1 and produces **biased IPS**. List‑level propensities (product of conditionals, #EQ‑2.6) avoid this pitfall.
+$$
+\pi(A@1) = \tfrac{1}{3},\; \pi(B@2) = \tfrac{1}{3},\; \pi(B@1) = \tfrac{2}{3},\; \pi(A@2) = \tfrac{2}{3}
+$$
+The **item‑position factorization** that uses per‑position marginals yields
+$$
+\tilde{w}(A,B) = \frac{\pi(A@1)}{\mu(A@1)} \cdot \frac{\pi(B@2)}{\mu(B@2)} = \frac{1/3}{2/3} \cdot \frac{1/3}{2/3} = \tfrac{1}{4},\quad \tilde{w}(B,A) = \frac{2/3}{1/3} \cdot \frac{2/3}{1/3} = 4.
+$$
+Hence $\mathbb{E}_\mu[\tilde{w} R] = \tfrac{2}{3} \cdot \tfrac{1}{4} \cdot 1 + \tfrac{1}{3} \cdot 4 \cdot 0 = \tfrac{1}{6} \ne V(\pi) = \tfrac{1}{3}$. The factorization produces **biased IPS** because item‑position marginals ignore the correlation structure of full rankings. List‑level propensities (product of conditionals, #EQ‑2.6) avoid this pitfall.
 
 **Remark 2.6.3** (Chapter 9 preview). Off-policy evaluation in production search systems uses **clipped IPS**, **doubly robust estimators**, or **learned propensities** from logged data. The full treatment lives in Chapter 9 (Off-Policy Evaluation), with implementation in `evaluation/ope.py`.
 
@@ -1536,7 +1543,7 @@ All rely on the probability foundations built in this chapter.
 !!! tip "Production Checklist (Chapter 2)"
     **Configuration alignment:**
 
-    The simulator implements a **PBM/DBN-inspired cascade model** (see note in §2.5.3) with the following configuration surface:
+    The simulator implements the **Utility-Based Cascade Model** (§2.5.4), which nests PBM and DBN as special cases, with the following configuration surface:
 
     - **Position bias**: `BehaviorConfig.pos_bias` in `zoosim/core/config.py:180-186` — dictionary mapping query types to position bias vectors (PBM-like behavior)
     - **Satisfaction dynamics**: `BehaviorConfig.satisfaction_decay` and `satisfaction_gain` in `zoosim/core/config.py:175-176` — DBN-like cascade stopping
