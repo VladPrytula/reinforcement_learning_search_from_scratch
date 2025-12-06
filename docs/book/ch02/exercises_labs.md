@@ -128,8 +128,8 @@ pbm_like_behavior = BehaviorConfig(
 ```
 
 **Tasks**
-1. Run 10,000 sessions with full BehaviorConfig and 10,000 with PBM-like config. Show that the PBM-like config produces position-independent click probabilities (given examination).
-2. Progressively re-enable utility weights ($\alpha_{\text{price}}$, then $\alpha_{\text{pl}}$, then $\alpha_{\text{cat}}$) and plot how the click probability surface changes from flat (PBM) to utility-dependent (full model).
+1. Run 10,000 sessions with full BehaviorConfig and 10,000 with PBM-like config. Show that the PBM-like config produces click rates that depend only on position bias and relevance (independent of history), whereas the full config shows cascade effects.
+2. Progressively re-enable utility weights ($\alpha_{\text{price}}$, then $\alpha_{\text{pl}}$, then $\alpha_{\text{cat}}$) and plot how the click probability surface changes from relevance-only (PBM) to utility-dependent (full model).
 
 ## Lab 2.5 -- Utility-Based Cascade Dynamics ([DEF-2.5.3])
 

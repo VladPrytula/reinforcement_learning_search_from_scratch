@@ -1055,20 +1055,21 @@ for k in range(M):
 # ... (examination decays rapidly as satisfied users stop)
 
 # Abandonment statistics
-print(f"\n\nMean stopping position: {tau_dbn.mean():.2f}")
-print(f"% sessions stopping at position 1: {(tau_dbn == 0).mean() * 100:.1f}%")
-print(f"% sessions examining all {M} results: {(tau_dbn == M).mean() * 100:.1f}%")
+# Note: tau is 0-based index; add 1 for position (rank)
+print(f"\n\nMean stopping position (1-based): {tau_dbn.mean() + 1:.2f}")
+print(f"% sessions satisfied at position 1: {(tau_dbn == 0).mean() * 100:.1f}%")
+print(f"% sessions exhausting list without satisfaction: {(tau_dbn == M).mean() * 100:.1f}%")
 
 # Output:
-# Mean stopping position: 2.34
-# % sessions stopping at position 1: 48.6%
-# % sessions examining all 10 results: 5.2%
+# Mean stopping position (1-based): 3.34
+# % sessions satisfied at position 1: 48.6%
+# % sessions exhausting list without satisfaction: 5.2%
 ```
 
 **Key observations:**
 1. **PBM verification**: Empirical CTR matches $\text{rel}(p_k) \cdot \theta_k$ within 0.01 (Monte Carlo error)
 2. **DBN cascade**: Examination probability decays rapidly due to satisfaction-induced stopping
-3. **Abandonment**: ~50% of users satisfied at position 1; only ~5% examine all results
+3. **Early satisfaction**: ~50% satisfied at position 1; only ~5% exhaust list without satisfaction
 
 This confirms Definitions 2.5.1 (PBM) and 2.5.2 (DBN), and Proposition 2.5.1 (DBN examination formula).
 
@@ -1378,7 +1379,7 @@ We've built measure-theoretic probability foundations. Now we connect to reinfor
 
 Before diving into MDPs, we establish a key integrability result that ensures reward expectations are well-defined.
 
-**Proposition 2.8** (Score Integrability) {#PROP-2.8}
+**Proposition 2.8.1** (Score Integrability) {#PROP-2.8.1}
 
 Under the standard Borel assumptions (see §2.1 assumptions box), the base relevance score function $s: \mathcal{Q} \times \mathcal{P} \to [0, 1]$ satisfies:
 
@@ -1394,8 +1395,8 @@ Under the standard Borel assumptions (see §2.1 assumptions box), the base relev
 **Consequence for OPE (Theorem 2.6.1):** The integrability assumption in Theorem 2.6.1 is satisfied whenever rewards are bounded functions of bounded scores. Since $R(x, a, \omega)$ aggregates GMV, CM2, and clicks—all bounded when prices and scores are bounded—the IPS estimator is well-defined.
 
 !!! note "Code ↔ Theory (Score Boundedness Verification)"
-    Lab 2.2 verifies Proposition 2.8 empirically by computing score statistics over thousands of query-product pairs. The implementation in `zoosim/ranking/relevance.py` enforces $s \in [0, 1]$ via cosine similarity normalization.
-    KG: `PROP-2.8`, `LAB-2.2`.
+    Lab 2.2 verifies Proposition 2.8.1 empirically by computing score statistics over thousands of query-product pairs. The implementation in `zoosim/ranking/relevance.py` enforces $s \in [0, 1]$ via cosine similarity normalization.
+    KG: `PROP-2.8.1`, `LAB-2.2`.
 
 ---
 
@@ -1430,7 +1431,7 @@ Chapter 3 makes this rigorous and proves convergence of value iteration via cont
 
 **Remark 2.8.1** (Uncountable trajectory space). Even when per-step state and action spaces are finite, the space of infinite-horizon trajectories $\Omega = (\mathcal{S} \times \mathcal{A} \times \mathbb{R})^{\mathbb{N}}$ is uncountable (same cardinality as $[0,1]$). There is no meaningful "uniform counting" on $\Omega$; probabilities must be defined as measures on $\sigma$-algebras.
 
-**Proposition 2.8.1** (Bellman measurability and contraction) {#THM-2.8.1}.
+**Proposition 2.8.2** (Bellman measurability and contraction) {#PROP-2.8.2}.
 
 Assume standard Borel state/action spaces, bounded measurable rewards $r(s,a)$, measurable Markov kernel $P(\cdot \mid s,a)$, measurable policy kernel $\pi(\cdot \mid s)$, and discount $0 \le \gamma < 1$. Then on $(B_b(\mathcal{S}), \|\cdot\|_\infty)$,
 - the policy evaluation operator
@@ -1551,8 +1552,8 @@ All rely on the probability foundations built in this chapter.
     **Tests:**
 
     - `tests/ch09/test_ope.py`: Verifies OPE estimator behavior
-    - **Suggested for Chapter 2**: Create `tests/ch02/test_behavior.py` to verify empirical CTR matches theoretical predictions (within Monte Carlo error)
-    - **Suggested for Chapter 2**: Create `tests/ch02/test_segment_sampling.py` to verify segment frequencies converge to configured probabilities
+    - `tests/ch02/test_behavior.py`: Verifies empirical CTR matches theoretical predictions (within Monte Carlo error)
+    - `tests/ch02/test_segment_sampling.py`: Verifies segment frequencies converge to configured probabilities
 
     **Assertions:**
 

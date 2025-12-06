@@ -276,13 +276,13 @@ This is the measure-theoretic foundation of **support deficiency**, the #1 cause
 
 ## Lab 2.2 — Query Measure and Base Score Integration
 
-**Goal:** Link the click-model measure $\mathbb{P}$ defined in §2.6 to simulator code paths, verifying that base scores are bounded as predicted by Proposition 2.8 on score integrability.
+**Goal:** Link the click-model measure $\mathbb{P}$ defined in §2.6 to simulator code paths, verifying that base scores are bounded as predicted by Proposition 2.8.1 on score integrability.
 
 ### Theoretical Foundation
 
 The base relevance score $s_{\text{base}}(q, p)$ measures how well product $p$ matches query $q$. From the chapter:
 
-**Proposition 2.8** (Score Integrability): Under the standard Borel assumptions, the base score function $s: \mathcal{Q} \times \mathcal{P} \to [0, 1]$ satisfies:
+**Proposition 2.8.1** (Score Integrability): Under the standard Borel assumptions, the base score function $s: \mathcal{Q} \times \mathcal{P} \to [0, 1]$ satisfies:
 1. **Boundedness**: $s(q, p) \in [0, 1]$ for all $(q, p)$
 2. **Measurability**: $s$ is $(\mathcal{B}(\mathcal{Q}) \otimes \mathcal{B}(\mathcal{P}), \mathcal{B}([0,1]))$-measurable
 3. **Integrability**: $\mathbb{E}[s(Q, P)] < \infty$ for any product measure on $\mathcal{Q} \times \mathcal{P}$
@@ -338,7 +338,7 @@ Score percentiles:
   75th: 0.523
   90th: 0.714
 
-✓ All scores bounded in [0, 1] as required by Proposition 2.8
+✓ All scores bounded in [0, 1] as required by Proposition 2.8.1
 ✓ Score mean ≈ 0.5 (expected for random query-product pairs)
 ✓ Score std ≈ 0.19 (reasonable spread without pathological concentration)
 ```
@@ -384,7 +384,7 @@ Cross-segment consistency check:
   → No significant difference in score distributions across segments
   → Base scores are segment-independent (as expected from [DEF-5.2])
 
-Proposition 2.8 verification:
+Proposition 2.8.1 verification:
   ✓ All 500 × 100 = 50,000 scores in [0, 1]
   ✓ No infinite or NaN values
   ✓ Score integrability confirmed
@@ -410,7 +410,7 @@ Computing scores for 10,000 query-product pairs...
 
 Score distribution summary:
   Shape: Approximately beta-distributed (peaked near 0.5)
-  This matches the assumption in Proposition 2.8
+  This matches the assumption in Proposition 2.8.1
 
 Histogram (ASCII representation):
 
@@ -840,7 +840,7 @@ These labs validated the measure-theoretic foundations of Chapter 2:
 |-----|--------------|-------------------|
 | Lab 2.1 | Segment frequencies converge at $O(1/\sqrt{n})$ | [DEF-2.2.2], LLN |
 | Lab 2.1 Task 2 | Zero-probability segments break IPS | [THM-2.6.1], Positivity |
-| Lab 2.2 | Base scores bounded in $[0,1]$ | Proposition 2.8 |
+| Lab 2.2 | Base scores bounded in $[0,1]$ | Proposition 2.8.1 |
 | Lab 2.2 Task 2 | Score histogram enables Radon-Nikodym intuition | [DEF-2.6.1] |
 | Lab 2.3 | PBM and DBN match theory exactly | [DEF-2.5.1], [DEF-2.5.2], [EQ-2.1], [EQ-2.3] |
 | Lab 2.4 | Utility-Based Cascade nests PBM | [PROP-2.5.4], [DEF-2.5.3] |
