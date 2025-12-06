@@ -804,7 +804,11 @@ $$
 $$
 $\square$
 
-**Remark 2.6.1** (The importance sampling mechanism). This proof uses the **importance sampling technique**: reweight samples from distribution $\pi_0$ to estimate expectations under $\pi_1$. The ratio $\pi_1(a \mid x)/\pi_0(a \mid x)$ is the **Radon–Nikodym derivative** $d\pi_1/d\pi_0$ when $\pi_0$ dominates $\pi_1$ (positivity assumption). In measure‑theoretic terms, $V(\pi_1)=\int R \, d(\rho\times\pi_1)$ and IPS implements a **change of measure**: $d(\rho\times\pi_1) = (d\pi_1/d\pi_0)\, d(\rho\times\pi_0)$.
+**Remark 2.6.1** (The importance sampling mechanism). This proof uses the **importance sampling technique**: reweight samples from distribution $\pi_0$ to estimate expectations under $\pi_1$. In the finite‑action case, fix a context $x$ and view $\mu(a) := \pi_0(a \mid x)$ and $\nu(a) := \pi_1(a \mid x)$ as probability mass functions on $\mathcal{A}$. The Radon–Nikodym derivative $d\nu/d\mu$ is just the pointwise ratio $w(a) = \nu(a)/\mu(a)$ on actions with $\mu(a) > 0$, and IPS computes
+$$
+\sum_a w(a) R(x,a)\,\mu(a) = \sum_a R(x,a)\,\nu(a),
+$$
+that is, the expectation of $R$ under $\nu$ via a **change of measure** from $\mu$ to $\nu$. In full measure‑theoretic notation, $V(\pi_1)=\int R \, d(\rho\times\pi_1)$ and IPS implements the same mechanism using the Radon–Nikodym derivative $d(\rho\times\pi_1)/d(\rho\times\pi_0) = d\pi_1/d\pi_0$, so that $d(\rho\times\pi_1) = (d\pi_1/d\pi_0)\, d(\rho\times\pi_0)$. For the topological and measurability assumptions that guarantee these derivatives and conditional expectations behave well, see the “Background: Standard Borel and Polish Spaces” box in §2.2.
 
 **Remark 2.6.2** (High variance caveat). While IPS is unbiased, it has **high variance** when $\pi_1$ and $\pi_0$ differ substantially (i.e., when $\pi_1(a \mid x)/\pi_0(a \mid x)$ is large for some $(x, a)$). This is the **curse of importance sampling**. Chapter 9 introduces variance-reduction techniques: **capping**, **doubly robust estimation**, and **SWITCH estimators**.
 
@@ -1463,6 +1467,8 @@ $$
 measurability of $\mathcal{T}V$ can require additional topological assumptions (e.g., compact $\mathcal{A}$ and upper semicontinuity) or application of a measurable selection theorem. Contraction still holds under boundedness and $0 \le \gamma < 1$.
 
 !!! note "Advanced: Measurable Selection (argmax existence)"
+    You can safely skip this note on a first read; it only matters if you want to understand the topological “fine print” that makes optimal policies measurable in continuous spaces.
+
     **The problem:** For each state $s$, the Bellman optimality equation requires finding $a^*(s) = \arg\max_a Q(s,a)$. But knowing that a maximum *exists* at each $s$ doesn't guarantee that the mapping $s \mapsto a^*(s)$ is *measurable*---and if it's not measurable, the "optimal policy" cannot be evaluated as a random variable.
 
     **Why this is subtle:** The supremum of measurable functions is measurable, but the argmax need not be. The set of maximizers $A^*(s) = \{a : Q(s,a) = \sup_{a'} Q(s,a')\}$ varies with $s$, and selecting one element from each set in a measurable way is non-trivial (this is an Axiom of Choice problem with measurability constraints).
