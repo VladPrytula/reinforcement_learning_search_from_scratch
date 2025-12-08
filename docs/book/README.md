@@ -41,7 +41,7 @@ The chapters follow a progression:
 - **Part III (Ch 6–8):** Policies — from discrete bandits to continuous actions to constrained optimization
 - **Part IV (Ch 9–11):** Evaluation and deployment — off-policy estimation, robustness, multi-session dynamics
 
-`outline.md` maps chapters to code modules. `syllabus.md` provides a course-style reading order if you want structure.
+`outline.md` maps chapters to code modules. `syllabus.md` provides a detailed internal course-style reading order; `syllabus_github.md` is a GitHub-facing syllabus for self-study and teaching.
 
 ---
 

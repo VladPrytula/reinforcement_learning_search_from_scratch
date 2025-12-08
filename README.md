@@ -13,6 +13,8 @@
 **Author:** Vlad Prytula
 **Status:** Work in Progress (Chapters 0--10 drafted, Part V in development)
 
+**Syllabus:** See the GitHub-facing study roadmap in [`docs/book/syllabus_github.md`](docs/book/syllabus_github.md).
+
 ## Project Overview
 
 This repository accompanies a textbook-in-progress that builds a reinforcement learning system for e-commerce search ranking.
