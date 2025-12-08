@@ -121,8 +121,8 @@ nodes:
     status: complete
     file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
     summary: Multi-objective reward; boosts-as-actions; #EQ-1.2 and preview #EQ-1.2-prime.
-    defines: [EQ-1.1, EQ-1.2, EQ-1.3, EQ-1.4, EQ-1.5, EQ-1.6, EQ-1.7, EQ-1.8, EQ-1.9, EQ-1.10, EQ-1.11, EQ-1.12, EQ-1.13, EQ-1.14, EQ-1.15, EQ-1.16, EQ-1.17, EQ-1.18, EQ-1.19, EQ-1.20, EQ-1.21, REM-1.2.1, EQ-1.2-prime, DEF-1.4.1, ASM-1.7.1]
-    proves: [THM-1.7.2, THM-1.7.3, THM-1.9.1]
+    defines: [EQ-1.1, EQ-1.2, EQ-1.3, EQ-1.4, EQ-1.5, EQ-1.6, EQ-1.7, EQ-1.8, EQ-1.9, EQ-1.10, EQ-1.11, EQ-1.12, EQ-1.13, EQ-1.14, EQ-1.15, EQ-1.16, EQ-1.17, EQ-1.18, EQ-1.19, EQ-1.20, EQ-1.21, REM-1.2.1, EQ-1.2-prime, DEF-1.4.1]
+    proves: [THM-1.7.2, THM-1.9.1]
     forward_refs: [CH-11]
 
   - id: EQ-1.1
@@ -506,7 +506,15 @@ nodes:
     file: docs/book/ch07/ch07_continuous_actions.md
     summary: Continuous boost optimization using Q-function approximation with neural network ensembles and CEM-based action selection with rigorous measure-theoretic foundations.
     depends_on: [CH-6]
-    defines: [SETUP-7.1, DEF-7.1, DEF-7.2, DEF-7.3, PROB-7.1, ALG-7.1, ALG-7.2, THM-7.4.1, VERIFY-7.1, EQ-7.1, EQ-7.2, EQ-7.3, EQ-7.4, EQ-7.5, EQ-7.6, EQ-7.7, EQ-7.8, EQ-7.9, EQ-7.10, EQ-7.11, EQ-7.12, EQ-7.13]
+    defines: [SEC-CH7-WARMUP-7.1, SETUP-7.1, DEF-7.1, DEF-7.2, DEF-7.3, PROB-7.1, ALG-7.1, ALG-7.2, THM-7.4.1, VERIFY-7.1, EQ-7.1, EQ-7.2, EQ-7.3, EQ-7.4, EQ-7.5, EQ-7.6, EQ-7.7, EQ-7.8, EQ-7.9, EQ-7.10, EQ-7.11, EQ-7.12, EQ-7.13]
+
+  - id: SEC-CH7-WARMUP-7.1
+    kind: section
+    title: Warm-up — Tabular Q as Regression
+    status: in_progress
+    file: docs/book/ch07/ch07_continuous_actions.md
+    summary: Minimal tabular Q-function example with 3 contexts and 4 actions, illustrating Q(x,a) as supervised regression before moving to neural function approximation and continuous actions.
+    depends_on: [CH-1, CH-6]
 
   - id: SETUP-7.1
     kind: section
@@ -1307,14 +1315,14 @@ nodes:
     summary: Formal definition of (X, A, R, ρ) tuple for search ranking problem.
     depends_on: [EQ-1.2, EQ-1.4]
 
-  - id: ASM-1.7.1
+  - id: ASSUMP-2.6.1
     kind: definition
-    title: Well-Defined Rewards
+    title: OPE Probability Conditions
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
-    anchor: "{#ASM-1.7.1}"
-    summary: Measurability, finite expectation, and absolute continuity conditions for rewards.
-    depends_on: [EQ-1.12]
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#ASSUMP-2.6.1}"
+    summary: "(1) Measurability: R(x,a,ω) measurable in ω; (2) Integrability: 𝔼[|R|] < ∞; (3) Absolute continuity (coverage): π_eval ≪ π_log ensures importance weights are well-defined."
+    depends_on: []
 
   - id: THM-1.7.2
     kind: theorem
@@ -1323,14 +1331,6 @@ nodes:
     file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
     anchor: "{#THM-1.7.2}"
     summary: Compact action space + bounded reward → optimal policy exists.
-
-  - id: THM-1.7.3
-    kind: theorem
-    title: Lower bound for contextual bandits
-    status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
-    anchor: "{#THM-1.7.3}"
-    summary: Regret lower bound scales with sqrt(T·K·d).
 
   - id: THM-1.9.1
     kind: theorem
@@ -1700,7 +1700,7 @@ nodes:
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     summary: Measure-theoretic foundations for click models and OPE; PBM/DBN, conditional expectation, filtrations, IPS.
-    defines: [DEF-2.2.1, DEF-2.2.2, DEF-2.2.3, DEF-2.2.4, DEF-2.2.5, THM-2.2.1, THM-2.2.2, THM-2.2.3, DEF-2.3.1, DEF-2.3.2, THM-2.3.1, THM-2.3.2, THM-2.3.3, DEF-2.4.1, DEF-2.4.2, DEF-2.4.3, THM-2.4.1, DEF-2.5.1, DEF-2.5.2, THM-2.5.1, DEF-2.5.3, PROP-2.5.4, PROP-2.5.5, EQ-2.1, EQ-2.2, EQ-2.3, EQ-2.10, EQ-2.11, EQ-2.12, EQ-2.13, EQ-2.14, DEF-2.6.1, DEF-2.6.2, THM-2.6.1, EQ-2.5, EQ-2.6, EQ-2.7, THM-2.6.2, EQ-2.8, THM-2.8.1, REM-2.8.2, EQ-2.9]
+    defines: [DEF-2.2.1, DEF-2.2.2, DEF-2.2.3, DEF-2.2.4, DEF-2.2.5, THM-2.2.1, THM-2.2.2, THM-2.2.3, DEF-2.3.1, DEF-2.3.2, THM-2.3.1, THM-2.3.2, THM-2.3.3, DEF-2.4.1, DEF-2.4.2, DEF-2.4.3, THM-2.4.1, DEF-2.5.1, DEF-2.5.2, THM-2.5.1, DEF-2.5.3, PROP-2.5.4, PROP-2.5.5, EQ-2.1, EQ-2.2, EQ-2.3, EQ-2.10, EQ-2.11, EQ-2.12, EQ-2.13, EQ-2.14, ASSUMP-2.6.1, DEF-2.6.1, DEF-2.6.2, THM-2.6.1, EQ-2.5, EQ-2.6, EQ-2.7, THM-2.6.2, EQ-2.8, THM-2.8.1, REM-2.8.2, THM-2.8.3, EQ-2.9]
 
   - id: DEF-2.2.1
     kind: definition
@@ -1964,6 +1964,15 @@ nodes:
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     anchor: "{#REM-2.8.2}"
     summary: Measurable selection (Kuratowski–Ryll‑Nardzewski) yields measurable greedy policies under mild assumptions.
+
+  - id: THM-2.8.3
+    kind: theorem
+    title: Kuratowski--Ryll--Nardzewski Selection (RL specialization)
+    status: complete
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.8.3}"
+    summary: "Under standard Borel state spaces and compact metric action spaces, if Q(s,a) is jointly measurable and upper semicontinuous in a, there exists a measurable greedy policy π*(s) = argmax_a Q(s,a). Ensures Bellman operators produce measurable functions."
+    depends_on: []
 
   - id: SEC-CH2-2.7.3
     kind: section
@@ -3671,7 +3680,6 @@ edges:
   - {src: CH-1, dst: EQ-1.11, rel: defines, status: complete}
   - {src: CH-1, dst: EQ-1.12, rel: defines, status: complete}
   - {src: CH-1, dst: THM-1.7.2, rel: proves, status: complete}
-  - {src: CH-1, dst: THM-1.7.3, rel: proves, status: complete}
   - {src: CH-1, dst: THM-1.9.1, rel: proves, status: complete}
   - {src: MOD-zoosim.reward, dst: EQ-1.2, rel: implements, status: complete}
   - {src: MOD-zoosim.env, dst: EQ-1.11, rel: implements, status: complete}
@@ -3701,7 +3709,6 @@ edges:
   - {src: CH-1, dst: EQ-1.20, rel: defines, status: complete}
   - {src: CH-1, dst: EQ-1.21, rel: defines, status: complete}
   - {src: CH-1, dst: DEF-1.4.1, rel: defines, status: complete}
-  - {src: CH-1, dst: ASM-1.7.1, rel: defines, status: complete}
   - {src: DEF-1.4.1, dst: EQ-1.2, rel: depends_on, status: complete}
   - {src: CH-2, dst: DEF-2.2.1, rel: defines, status: in_progress}
   - {src: CH-2, dst: DEF-2.2.2, rel: defines, status: in_progress}
@@ -3732,9 +3739,11 @@ edges:
   - {src: CH-2, dst: EQ-2.13, rel: defines, status: in_progress}
   - {src: CH-2, dst: EQ-2.14, rel: defines, status: in_progress}
   - {src: MOD-zoosim.behavior, dst: DEF-2.5.3, rel: implements, status: in_progress}
+  - {src: CH-2, dst: ASSUMP-2.6.1, rel: defines, status: complete}
   - {src: CH-2, dst: DEF-2.6.1, rel: defines, status: in_progress}
   - {src: CH-2, dst: DEF-2.6.2, rel: defines, status: in_progress}
   - {src: CH-2, dst: THM-2.6.1, rel: defines, status: in_progress}
+  - {src: THM-2.6.1, dst: ASSUMP-2.6.1, rel: depends_on, status: complete}
   - {src: CH-2, dst: EQ-2.5, rel: defines, status: in_progress}
   - {src: CH-2, dst: EQ-2.6, rel: defines, status: in_progress}
   - {src: SEC-CH2-2.7.4, dst: THM-2.6.2, rel: uses, status: in_progress}

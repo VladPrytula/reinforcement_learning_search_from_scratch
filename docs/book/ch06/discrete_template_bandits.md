@@ -626,6 +626,12 @@ $$
 
 This measures the **loss from not always playing the optimal action**.
 
+**Fundamental limit (lower bound, preview).** Before designing algorithms, it's worth knowing the scale of regret we should even hope for. Classical information-theoretic results for $K$-armed stochastic bandits show that, for any learning algorithm and any horizon $T$, there exists a problem instance on which the expected cumulative regret satisfies
+$$
+\mathbb{E}[\text{Regret}(T)] = \Omega\bigl(\sqrt{K T}\bigr).
+$$
+In words: **no algorithm can do better than order $\sqrt{KT}$ regret** (up to constants and logarithmic factors) uniformly over all bandit problems. The upper bounds we prove for Thompson Sampling and LinUCB in this chapter match this rate up to logs, which is why they are called “optimal” in the bandit literature. For contextual and continuous-action bandits (our real search setting), similar lower bounds hold with $K$ replaced by an effective dimension; we'll return to this when we discuss feature richness and model misspecification in §§6.5–6.7.
+
 **Why this matters:**
 
 If we could observe $\mu(x, a)$ for all $(x, a)$ pairs, we'd just pick $\pi^*(x)$ greedily. But $\mu$ is **unknown**---we must learn it from noisy samples while balancing **exploration** (try all templates) vs. **exploitation** (use best known template).
