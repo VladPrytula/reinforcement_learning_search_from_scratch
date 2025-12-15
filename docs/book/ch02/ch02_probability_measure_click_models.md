@@ -50,6 +50,17 @@ The **Position Bias Model (PBM)** and **Dynamic Bayesian Network (DBN)** formali
 
 Let's begin.
 
+??? tip "How much measure theory do you need? (Reading guide)"
+    **For practitioners focused on implementation:** You can safely skim §§2.2--2.4 (measure-theoretic foundations) on first pass and return to them when a later chapter invokes a specific result. The essential material for algorithms is:
+
+    - **§2.5 (Click Models)**: Position Bias Model and DBN---these directly parameterize user behavior in the simulator
+    - **§2.6 (Propensity Scoring)**: Foundation for importance weighting in off-policy evaluation (Chapter 9)
+    - **§2.7--2.8 (Computational Verification & RL Bridges)**: NumPy experiments and connections to MDP formalism
+
+    **For readers building theoretical depth:** §§2.2--2.4 provide the rigorous foundations that make policy gradient interchange (Chapter 8) and Radon--Nikodym importance weights (Chapter 9) theorems rather than heuristics. The proofs there are self-contained and follow Folland's *Real Analysis* [@folland:real_analysis:1999].
+
+    **Bottom line:** If you see a $\sigma$-algebra and your eyes glaze over, skip to §2.5 and come back later. The algorithms will still work; you'll just be taking the theory on faith temporarily.
+
 !!! note for all that follows "Assumptions (probability and RL foundations)"
     - Spaces $\mathcal{S}$, $\mathcal{A}$, contexts $\mathcal{X}$, and outcome spaces are standard Borel (measurable subsets of Polish spaces, i.e. separable completely metrizable topological spaces). This guarantees existence of regular conditional probabilities and measurable stochastic kernels.
     - Rewards are integrable: $R \in L^1$. For discounted RL with $0 \le \gamma < 1$, assume bounded rewards (or a uniform bound on expected discounted sums) so value iteration is well-defined.
@@ -836,16 +847,6 @@ $$
 $$
 {#EQ-2.7}
 
-**Proposition 2.6.2** (Negative bias for nonnegative rewards) {#THM-2.6.2}.
-
-Assume $r_i \ge 0$ and the positivity and integrability conditions above. Then
-$$
-\mathbb{E}[\hat{V}_{\text{clip}}(\pi_1)] \le V(\pi_1),
-$$
-with strict inequality whenever $\mathbb{P}\big(\tfrac{\pi_1}{\pi_0}(a\mid x) > c, \; r>0\big) > 0$.
-
-*Proof.* Since $\min\{c, w\} \le w$ for $w \ge 0$, we have $\min\{c, w\} r \le w r$ for $r \ge 0$. Taking expectations yields the result; strict inequality holds when clipping occurs with positive probability and $r>0$. $\square$
-
 **Definition 2.6.4** (Self‑normalized IPS, SNIPS) {#DEF-2.6.4}
 
 The **SNIPS** estimator normalizes by the sum of weights:
@@ -855,7 +856,7 @@ $$
 $$
 {#EQ-2.8}
 
-**Remark 2.6.5** (SNIPS properties). SNIPS reduces variance but loses unbiasedness; under mild regularity it is consistent as $N \to \infty$.
+**Remark 2.6.5** (SNIPS properties). SNIPS reduces variance but loses unbiasedness; under mild regularity it is consistent as $N \to \infty$. Clipped IPS [EQ-2.7] trades bias for variance: for nonnegative rewards, clipping induces **negative bias** (the estimator systematically underestimates). Formal bias and consistency results, along with numerical experiments illustrating the bias--variance trade-off, live in **Chapter 9** (Off-Policy Evaluation), specifically [PROP-9.6.1] and Lab 9.5.
 
 ---
 
@@ -1305,97 +1306,6 @@ The numerical experiment confirms the Tower Property: averaging the conditional 
 !!! note "Code ↔ Theory (Tower Property)"
     This numerical check verifies [THM-2.3.2] (Tower Property) by constructing nested $\sigma$‑algebras via parity (\#groups=2) and mod‑4 (\#groups=4) partitions and confirming $\mathbb{E}[\mathbb{E}[Z\mid \mathcal{H}]\mid \mathcal{G}] = \mathbb{E}[Z\mid \mathcal{G}]$.
     KG: `THM-2.3.2`.
-
----
-
-### 2.7.4 Clipped IPS and SNIPS: Bias–Variance Illustration
-
-We illustrate the **negative bias** of clipped IPS [THM-2.6.2] and the **variance reduction** of SNIPS [EQ-2.8].
-
-```python
-import numpy as np
-
-np.random.seed(0)
-
-def reward_fn(x, a):
-    rewards = [
-        [1.0, 0.3, 0.2],  # context 0
-        [0.9, 0.4, 0.1],  # context 1
-        [0.5, 0.6, 0.4],  # context 2
-        [0.2, 0.3, 0.9],  # context 3
-        [0.1, 0.2, 1.0],  # context 4
-    ]
-    return rewards[x][a]
-
-def pi_logging(x):
-    return np.array([1/3, 1/3, 1/3])
-
-def pi_target(x):
-    optimal_actions = [0, 0, 1, 2, 2]
-    probs = np.zeros(3)
-    probs[optimal_actions[x]] = 1.0
-    return probs
-
-# Ground-truth value under target
-true_value = 0.0
-for x in range(5):
-    pt = pi_target(x)
-    for a in range(3):
-        true_value += (1/5) * pt[a] * reward_fn(x, a)
-
-n_trials = 300
-n_samples = 800
-c = 2.0  # clipping cap
-
-ips_vals, clip_vals, snips_vals = [], [], []
-
-for trial in range(n_trials):
-    rng = np.random.default_rng(trial)
-    contexts = rng.integers(0, 5, size=n_samples)
-    rewards = []
-    weights = []
-
-    for x in contexts:
-        p_log = pi_logging(x)
-        a = rng.choice(3, p=p_log)
-        r = reward_fn(x, a) + rng.normal(0, 0.1)
-        p_tgt = pi_target(x)
-        w = p_tgt[a] / p_log[a]
-        rewards.append(r)
-        weights.append(w)
-
-    rewards = np.asarray(rewards)
-    weights = np.asarray(weights)
-
-    ips = np.mean(weights * rewards)
-    clip = np.mean(np.minimum(weights, c) * rewards)
-    snips = np.sum(weights * rewards) / np.sum(weights)
-
-    ips_vals.append(ips)
-    clip_vals.append(clip)
-    snips_vals.append(snips)
-
-ips_mean, ips_std = np.mean(ips_vals), np.std(ips_vals)
-clip_mean, clip_std = np.mean(clip_vals), np.std(clip_vals)
-snips_mean, snips_std = np.mean(snips_vals), np.std(snips_vals)
-
-print("True value:", round(true_value, 3))
-print("IPS     → mean:", round(ips_mean, 3), "bias:", round(ips_mean - true_value, 4), "std:", round(ips_std, 3))
-print("Clipped → mean:", round(clip_mean, 3), "bias:", round(clip_mean - true_value, 4), "std:", round(clip_std, 3))
-print("SNIPS   → mean:", round(snips_mean, 3), "bias:", round(snips_mean - true_value, 4), "std:", round(snips_std, 3))
-
-# Output (representative):
-# True value: 0.82
-# IPS     → mean: 0.821 bias: 0.0010 std: 0.088
-# Clipped → mean: 0.804 bias: -0.0160 std: 0.061
-# SNIPS   → mean: 0.818 bias: -0.0020 std: 0.071
-```
-
-Interpretation: clipping reduces variance at the expense of **negative bias** (for nonnegative rewards), while SNIPS reduces variance and introduces small bias; both effects are tunable via the clipping cap and exploration.
-
-!!! note "Code ↔ Theory (Clipped IPS and SNIPS)"
-    This numerical check illustrates [THM-2.6.2] (negative bias under clipping) and [EQ-2.8] (SNIPS definition) with empirical bias/variance trade-offs.
-    KG: `THM-2.6.2`, `EQ-2.8`.
 
 ---
 

@@ -275,7 +275,7 @@ $$
 
 This measure-theoretic foundation ensures the IS identity holds in full generality—for discrete, continuous, and mixed distributions—and connects OPE to the broader theory of change-of-measure techniques in probability (Girsanov theorem, Esscher transform, exponential families via Esscher transform).
 
-**Connection to Chapter 2.** For readers who completed Chapter 2's treatment of measure theory, this is the Radon-Nikodym theorem [THM-2.4.3] applied to trajectory distributions. The common support assumption [ASSUMP-9.1.1] is equivalent to absolute continuity $p_{\pi_e} \ll p_{\pi_b}$: the evaluation policy's trajectory distribution must be absolutely continuous with respect to the behavior policy's. When this fails (e.g., $\pi_e$ takes actions with zero probability under $\pi_b$), the Radon-Nikodym derivative is undefined, and importance sampling breaks down—exactly as shown in [EX-9.1.2].
+**Connection to Chapter 2.** For readers who completed Chapter 2's treatment of measure theory, this is the Radon-Nikodym theorem [THM-2.4.3] applied to trajectory distributions. The common support assumption [ASSUMP-9.1.1] is equivalent to absolute continuity $p_{\pi_e} \ll p_{\pi_b}$: the evaluation policy's trajectory distribution must be absolutely continuous with respect to the behavior policy's. When this fails (e.g., $\pi_e$ takes actions with zero probability under $\pi_b$), the Radon-Nikodym derivative is undefined, and importance sampling breaks down—exactly as shown in [EX-9.1.2]. You first saw a **single-step, bandit-level** version of IPS, clipped IPS, and SNIPS in Chapter 2; this chapter generalizes those ideas to full trajectories.
 
 ---
 
@@ -973,7 +973,7 @@ For $K = 10$ dimensions and $a_{\max} = 1$ (our default config), $\text{vol}(\ma
 
 !!! note "Code ↔ Config (ε-Greedy Logging)"
     - Parameter: `SimulatorConfig.logging_epsilon` in `zoosim/core/config.py:240`
-    - Implementation: `zoosim/envs/search_env.py` (planned, §9.9)
+    - Implementation: `zoosim/envs/search_env.py` (planned)
     - Lab 9.1 uses `cfg.action.logging_epsilon` to mix policies
 
 ---
@@ -1092,7 +1092,7 @@ Use the **bootstrap** [@efron:introduction_bootstrap:1994]:
 
 Bootstrap over training data, retrain model on each bootstrap sample, compute estimate. This accounts for **model uncertainty**.
 
-**Proposition 9.6.1** (Concentration Bound for IPS). {#PROP-9.6.1}
+**Proposition 9.6.0** (Concentration Bound for IPS). {#PROP-9.6.0-IPS-concentration}
 
 Under [ASSUMP-9.1.1]–[ASSUMP-9.1.4], the IPS estimator satisfies the following concentration inequality. With probability at least $1 - \delta$:
 $$
@@ -1137,6 +1137,18 @@ $$
 {#EQ-9.36}
 
 This introduces bias (violates [THM-9.2.1]) but dramatically reduces variance. The bias-variance trade-off often favors clipping in practice.
+
+**Proposition 9.6.1** (Negative bias for nonnegative rewards) {#PROP-9.6.1}.
+
+Clipping introduces *systematic* bias. Formally: assume $r_i \ge 0$ and the positivity and integrability conditions from [ASSUMP-9.1.1]--[ASSUMP-9.1.4]. Then
+$$
+\mathbb{E}[\hat{V}_{\text{clip}}(\pi_e)] \le V(\pi_e),
+$$
+with strict inequality whenever $\mathbb{P}\big(\tfrac{\pi_e}{\pi_b}(a\mid s) > w_{\max}, \; r>0\big) > 0$.
+
+*Proof.* Since $\min\{w_{\max}, w\} \le w$ for $w \ge 0$, we have $\min\{w_{\max}, w\} \cdot r \le w \cdot r$ for $r \ge 0$. Taking expectations yields the result; strict inequality holds when clipping occurs with positive probability and $r>0$. $\square$
+
+**Interpretation.** For nonnegative rewards (e.g., GMV, clicks, engagement), clipped IPS is a **conservative estimator**---it underestimates the true value of $\pi_e$. This conservatism is sometimes desirable (prefer to underestimate than overestimate when deploying new policies), but be aware that aggressive clipping (small $w_{\max}$) amplifies the negative bias. Lab 9.5 in the exercises provides a numerical illustration of this bias--variance trade-off.
 
 ---
 
@@ -1868,8 +1880,9 @@ Enhanced labs with critical improvements are in `exercises_labs.md`. Key additio
 - **Lab 9.2** (FQE integration): Connects to Chapter 3 Bellman operator explicitly, uses real Q-ensemble from Ch7
 - **Lab 9.3** (Estimator comparison): Compare IPS, SNIPS, PDIS, DR, FQE against ground truth, reproduce MSE < 5% and Spearman ρ > 0.8 benchmarks
 - **Lab 9.4** (Distribution shift stress test): Evaluate OPE when π_e is very different from π_b, document failure modes
+- **Lab 9.5** (Clipped IPS and SNIPS bias--variance): Numerically illustrate [PROP-9.6.1] (negative bias under clipping) and compare IPS/SNIPS variance
 
-See [Lab 9.1](./exercises_labs.md#lab-91-ips-estimate-with-variance-analysis), [Lab 9.2](./exercises_labs.md#lab-92-fqe-integration-with-chapter-3-bellman-operator), [Lab 9.3](./exercises_labs.md#lab-93-estimator-comparison-against-ground-truth), [Lab 9.4](./exercises_labs.md#lab-94-distribution-shift-stress-test).
+See [Lab 9.1](./exercises_labs.md#lab-91-ips-estimate-with-variance-analysis), [Lab 9.2](./exercises_labs.md#lab-92-fqe-integration-with-chapter-3-bellman-operator), [Lab 9.3](./exercises_labs.md#lab-93-estimator-comparison-against-ground-truth), [Lab 9.4](./exercises_labs.md#lab-94-distribution-shift-stress-test), [Lab 9.5](./exercises_labs.md#lab-95-clipped-ips-snips-bias-variance).
 
 ---
 

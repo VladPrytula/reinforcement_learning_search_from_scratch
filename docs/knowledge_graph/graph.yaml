@@ -122,7 +122,7 @@ nodes:
     file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
     summary: Multi-objective reward; boosts-as-actions; #EQ-1.2 and preview #EQ-1.2-prime.
     defines: [EQ-1.1, EQ-1.2, EQ-1.3, EQ-1.4, EQ-1.5, EQ-1.6, EQ-1.7, EQ-1.8, EQ-1.9, EQ-1.10, EQ-1.11, EQ-1.12, EQ-1.13, EQ-1.14, EQ-1.15, EQ-1.16, EQ-1.17, EQ-1.18, EQ-1.19, EQ-1.20, EQ-1.21, REM-1.2.1, EQ-1.2-prime, DEF-1.4.1]
-    proves: [THM-1.7.2, THM-1.9.1]
+    proves: [THM-1.9.1]
     forward_refs: [CH-11]
 
   - id: EQ-1.1
@@ -163,11 +163,15 @@ nodes:
   - id: CH-11
     kind: chapter
     title: Chapter 11 — Multi-Episode Inter-Session MDP
-    status: in_progress
-    file: docs/book/syllabus.md
-    summary: Introduces retention/hazard state; operationalizes #EQ-1.2-prime with session_env + retention.
+    status: complete
+    file: docs/book/ch11/ch11_multi_episode_mdp.md
+    summary: Introduces retention/hazard state; operationalizes #EQ-1.2-prime with session_env + retention and validates policy ordering, retention curves, and value stability via Labs 11.1–11.3.
     depends_on: [EQ-1.2-prime, MOD-zoosim.session_env, MOD-zoosim.retention]
     provides: []
+    labs:
+      - Lab 11.1: Single-step vs multi-episode value
+      - Lab 11.2: Retention curves and ΔRank@k
+      - Lab 11.3: Value estimation stability
 
   - id: MOD-zoosim.config
     kind: module
@@ -1324,14 +1328,6 @@ nodes:
     summary: "(1) Measurability: R(x,a,ω) measurable in ω; (2) Integrability: 𝔼[|R|] < ∞; (3) Absolute continuity (coverage): π_eval ≪ π_log ensures importance weights are well-defined."
     depends_on: []
 
-  - id: THM-1.7.2
-    kind: theorem
-    title: Existence of optimal policy
-    status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
-    anchor: "{#THM-1.7.2}"
-    summary: Compact action space + bounded reward → optimal policy exists.
-
   - id: THM-1.9.1
     kind: theorem
     title: Slater's condition for bandits
@@ -1339,6 +1335,59 @@ nodes:
     file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
     anchor: "{#THM-1.9.1}"
     summary: Strict feasibility ensures Lagrangian methods converge.
+
+  # Appendices (A reserved for Bayesian per syllabus)
+  - id: APPENDIX-B
+    kind: doc
+    title: "Appendix B — Control-Theoretic Background (LQR, HJB, Deep RL)"
+    status: complete
+    file: docs/book/appendix_b_control_theory.md
+    summary: Bridges classical control theory (LQR, HJB equations) to modern deep RL. Shows how Bellman optimality connects to Hamilton-Jacobi-Bellman PDEs and how control-theoretic insights inform algorithm design.
+    defines: [THM-B.1.1]
+    see_also: [CH-3, CH-8, CH-10, CH-11]
+
+  - id: THM-B.1.1
+    kind: theorem
+    title: Optimal LQR Solution
+    status: complete
+    file: docs/book/appendix_b_control_theory.md
+    anchor: "{#THM-B.1.1}"
+    summary: Under controllability, optimal LQR policy is linear in state with gain from discrete algebraic Riccati equation.
+
+  - id: APPENDIX-C
+    kind: doc
+    title: "Appendix C — Convex Optimization for Constrained MDPs"
+    status: complete
+    file: docs/book/appendix_c_convex_optimization.md
+    summary: Rigorous treatment of Lagrangian duality, Slater's condition, and primal-dual methods for constrained RL. Establishes strong duality for randomized policies and KKT conditions.
+    defines: [THM-C.2.1, THM-C.5.1, ALG-C.5.1]
+    see_also: [CH-1, CH-10, CH-14]
+
+  - id: THM-C.2.1
+    kind: theorem
+    title: Slater's Condition for Strong Duality
+    status: complete
+    file: docs/book/appendix_c_convex_optimization.md
+    anchor: "{#THM-C.2.1}"
+    summary: Under strict feasibility (∃π₀ with gᵢ(π₀) > 0 for all i), the constrained MDP problem has strong duality. Primal and dual optimal values coincide, Lagrangian saddle-point problem is equivalent, KKT conditions are necessary and sufficient.
+
+  - id: THM-C.5.1
+    kind: theorem
+    title: Primal-Dual Convergence
+    status: complete
+    file: docs/book/appendix_c_convex_optimization.md
+    anchor: "{#THM-C.5.1}"
+    summary: Under convexity + Slater + Robbins-Monro step sizes, primal-dual gradient ascent-descent converges to saddle point.
+    depends_on: [THM-C.2.1]
+
+  - id: ALG-C.5.1
+    kind: algorithm
+    title: Primal-Dual RL Algorithm
+    status: complete
+    file: docs/book/appendix_c_convex_optimization.md
+    anchor: "{#ALG-C.5.1}"
+    summary: Alternating primal step (policy gradient on Lagrangian) and dual step (multiplier adjustment for constraint violations).
+    depends_on: [THM-C.2.1, THM-C.5.1]
 
   - id: CH-10
     kind: chapter
@@ -3147,7 +3196,7 @@ nodes:
     file: docs/book/ch09/ch09_off_policy_evaluation.md
     summary: Evaluates policies from logged data without online interaction; covers IPS, SNIPS, PDIS, DR, FQE, SWITCH, MAGIC estimators with theory-practice gap analysis.
     depends_on: [CH-3, CH-7, CH-8]
-    defines: [DEF-9.1.1, DEF-9.1.2, DEF-9.1.3, DEF-9.2.1, DEF-9.2.2, DEF-9.2.3, DEF-9.3.1, DEF-9.4.1, DEF-9.4.2, DEF-9.4.3, DEF-9.4.4, ASSUMP-9.1.1, ASSUMP-9.1.2, ASSUMP-9.1.3, ASSUMP-9.1.4, THM-9.2.0-RN, THM-9.2.1, THM-9.2.2, THM-9.2.3, THM-9.4.1, LEM-9.2.1, PROP-9.6.1, REM-9.2.0, REM-9.5.1]
+    defines: [DEF-9.1.1, DEF-9.1.2, DEF-9.1.3, DEF-9.2.1, DEF-9.2.2, DEF-9.2.3, DEF-9.3.1, DEF-9.4.1, DEF-9.4.2, DEF-9.4.3, DEF-9.4.4, ASSUMP-9.1.1, ASSUMP-9.1.2, ASSUMP-9.1.3, ASSUMP-9.1.4, THM-9.2.0-RN, THM-9.2.1, THM-9.2.2, THM-9.2.3, THM-9.4.1, LEM-9.2.1, PROP-9.6.0, PROP-9.6.1, REM-9.2.0, REM-9.5.1]
 
   # Definitions
 
@@ -3348,14 +3397,23 @@ nodes:
 
   # Propositions
 
-  - id: PROP-9.6.1
+  - id: PROP-9.6.0
     kind: proposition
     title: Concentration Bound for IPS
     status: complete
     file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#PROP-9.6.0-IPS-concentration}"
+    summary: "Hoeffding-style bound for IPS: under ASSUMP-9.1.1–9.1.4, |Ĵ_IS - J(π_e)| ≤ (ρ_max^T · G_max)/√n · √(2 log(2/δ)) with probability ≥ 1-δ; highlights exponential horizon dependence and distribution shift penalty."
+    see_also: [ASSUMP-9.1.1, ASSUMP-9.1.4, THM-9.2.1, EQ-9.10]
+
+  - id: PROP-9.6.1
+    kind: proposition
+    title: Negative Bias for Nonnegative Rewards
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
     anchor: "{#PROP-9.6.1}"
-    summary: "Under ASSUMP-9.1.1–9.1.4, |Ĵ_IS - J(π_e)| ≤ (ρ_max^T · G_max)/√n · √(2 log(2/δ)) with probability ≥ 1-δ; reveals exponential horizon dependence and distribution shift penalty in IPS."
-    see_also: [ASSUMP-9.1.1, ASSUMP-9.1.4, THM-9.2.1, EQ-9.9]
+    summary: "For clipped IPS with nonnegative rewards, E[Ĵ_clip(π_e)] ≤ J(π_e), with strict inequality whenever clipping occurs on trajectories with positive reward; shows clipped IPS is a conservative estimator."
+    see_also: [EQ-9.36]
 
   # Remarks
 
@@ -3679,7 +3737,6 @@ edges:
   - {src: CH-1, dst: EQ-1.7, rel: defines, status: complete}
   - {src: CH-1, dst: EQ-1.11, rel: defines, status: complete}
   - {src: CH-1, dst: EQ-1.12, rel: defines, status: complete}
-  - {src: CH-1, dst: THM-1.7.2, rel: proves, status: complete}
   - {src: CH-1, dst: THM-1.9.1, rel: proves, status: complete}
   - {src: MOD-zoosim.reward, dst: EQ-1.2, rel: implements, status: complete}
   - {src: MOD-zoosim.env, dst: EQ-1.11, rel: implements, status: complete}

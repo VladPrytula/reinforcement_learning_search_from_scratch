@@ -190,7 +190,7 @@ $$
 $$
 (cumulative GMV per click up to episode $t$). If $\text{CVR}_t$ drops $>10\%$ below baseline while CTR rises during training, the agent is learning clickbait—reduce $\delta$ immediately.
 
-**Control-theoretic analogy**: This is similar to LQR with **state and control penalties**: $c(x, u) = x^\top Q x + u^\top R u$. We penalize both deviation from target state (GMV, CM2) and control effort (engagement as "cost" of achieving GMV). The relative weights $Q, R$ encode the tradeoff. In our case, $\alpha, \beta, \gamma, \delta$ play the role of $Q$, and we're learning the optimal policy $\pi^*(x)$ under this cost structure. See Section 1.10 for deeper connections to classical control.
+**Control-theoretic analogy**: This is similar to LQR with **state and control penalties**: $c(x, u) = x^\top Q x + u^\top R u$. We penalize both deviation from target state (GMV, CM2) and control effort (engagement as "cost" of achieving GMV). The relative weights $Q, R$ encode the tradeoff. In our case, $\alpha, \beta, \gamma, \delta$ play the role of $Q$, and we're learning the optimal policy $\pi^*(x)$ under this cost structure. See Appendix B (and Section 1.10) for deeper connections to classical control.
 
 **Multi-episode perspective** (Chapter 11 preview): In a **Markov Decision Process (MDP)** with inter-session dynamics, engagement enters *implicitly* through its effect on retention and lifetime value:
 
@@ -207,7 +207,7 @@ However, the **single-step contextual bandit** (our MVP formulation) cannot mode
 **The honest assessment**: This is a **theory-practice tradeoff**. The "correct" formulation is #EQ-1.2-prime (multi-episode MDP), but it requires modeling complex user dynamics (churn, seasonality, cross-session preferences) that are expensive to simulate and hard to learn from. The single-step approximation #EQ-1.2 with $\delta \cdot \text{CLICKS}$ is **pragmatic**: it captures 80% of the value with 20% of the complexity. For the MVP, this is the right tradeoff. Chapter 11 extends to multi-episode settings where engagement is properly modeled as state dynamics.
 
 ::: {.note title="Cross-reference — Chapter 11"}
-The full multi-episode treatment and implementation live in `Chapter 11 — Multi-Episode Inter-Session MDP` (see `docs/book/drafts/syllabus.md`). There we add `zoosim/multi_episode/session_env.py` and `zoosim/multi_episode/retention.py` to operationalize #EQ-1.2-prime with a retention/hazard state and validate that engagement raises long-term value without needing an explicit $\delta \cdot \text{CLICKS}$ term.
+The full multi-episode treatment and implementation live in `Chapter 11 — Multi-Episode Inter-Session MDP` (see `docs/book/syllabus.md`). There we add `zoosim/multi_episode/session_env.py` and `zoosim/multi_episode/retention.py` to operationalize #EQ-1.2-prime with a retention/hazard state and validate that engagement raises long-term value without needing an explicit $\delta \cdot \text{CLICKS}$ term.
 :::
 
 ::: {.note title="Code $\leftrightarrow$ Config (reward weights)"}
@@ -218,7 +218,7 @@ Business weights in `RewardConfig` (`MOD-zoosim.config`) implement #EQ-1.2 param
 - $\gamma/\alpha$ (STRAT weight): Strategic priority, typically $\in [0.1, 0.3]$ (house brands, new products, clearance)
 - **$\delta/\alpha$ (CLICKS weight): Bounded $\in [0.01, 0.10]$ to prevent clickbait strategies**
 
-Validation (enforced in code): see `zoosim/dynamics/reward.py` for an assertion on $\delta/\alpha$ in the production reward path. Chapter 8 derives principled bounds from Lagrangian constraint analysis.
+Validation (enforced in code): see `zoosim/dynamics/reward.py` for an assertion on $\delta/\alpha$ in the production reward path. **Appendix C** derives principled bounds from Lagrangian duality and Slater's condition [THM-C.2.1].
 
 Diagnostic: Compute $\text{CVR}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i$ after each policy update. If CVR drops $>10\%$ while CTR rises, reduce $\delta$ by 30–50%.
 :::
@@ -839,25 +839,25 @@ Before implementing RL algorithms, we need a **realistic environment** to test t
 
 ### Part III: Policies (Chapters 6-8)
 
-With a simulator, we can now develop **algorithms**: discrete template bandits (Chapter 6), continuous action Q-learning (Chapter 7), and constrained optimization for CM2/exposure/stability (Chapter 8). Each chapter proves regret bounds and provides PyTorch implementations.
+With a simulator, we can now develop **algorithms**: discrete template bandits (Chapter 6), continuous action Q-learning (Chapter 7), and policy gradients (Chapter 8). Constraint enforcement for CM2 floors and rank stability appears in Chapter 10 (Guardrails), with the underlying duality theory in Appendix C. Chapter 6 develops bandits with formal regret bounds; Chapter 7 establishes convergence under realizability (but no regret guarantees for continuous actions); Chapter 8 proves the Policy Gradient Theorem and analyzes the theory-practice gap. All three provide PyTorch implementations.
 
 **Chapter 6**: Discrete template bandits (LinUCB, Thompson Sampling over fixed strategies)
 **Chapter 7**: Continuous actions via $Q(x, a)$ regression (neural Q-functions)
-**Chapter 8**: Constraints (Lagrangian methods for CM2/exposure floors)
+**Chapter 8**: Policy gradient methods (REINFORCE, PPO, theory-practice gap)
 
-### Part IV: Evaluation & Deployment (Chapters 9-11)
+### Part IV: Evaluation, Robustness & Multi-Episode MDPs (Chapters 9-11)
 
-Before production deployment, we need **safety guarantees**: off-policy evaluation to test policies on historical data (Chapter 9), robustness checks and guardrails (Chapter 10), and production infrastructure (Chapter 11: A/B testing, monitoring, latency).
+Before production deployment, we need **safety guarantees**: off-policy evaluation to test policies on historical data (Chapter 9), robustness checks and guardrails with production monitoring (Chapter 10), and the extension to multi-episode dynamics where user engagement compounds across sessions (Chapter 11).
 
-**Chapter 9**: Off-policy evaluation (IPS, SNIPS, DR—how to test policies safely)
-**Chapter 10**: Robustness and guardrails (drift detection, rank stability, fallback policies)
-**Chapter 11**: Production deployment (A/B testing, latency, monitoring)
+**Chapter 9**: Off-policy evaluation (IPS, SNIPS, DR---how to test policies safely)
+**Chapter 10**: Robustness and guardrails (drift detection, rank stability, CM2 floors, A/B testing, monitoring)
+**Chapter 11**: Multi-episode MDPs (inter-session retention, hazard modeling, long-term user value)
 
 ### The Journey Ahead
 
 By the end, you will:
 - **Prove** convergence of bandit algorithms under general conditions
-- **Implement** production-quality deep RL agents (PyTorch/JAX)
+- **Implement** production-quality deep RL agents (NumPy/PyTorch)
 - **Understand** when theory applies and when it breaks (the deadly triad, function approximation divergence)
 - **Deploy** RL systems safely (OPE, constraints, monitoring)
 
@@ -1289,7 +1289,7 @@ Real-world RL requires **constrained optimization**. Maximizing #EQ-1.2 alone ca
 - **Ignoring strategic products**: Optimizing short-term revenue at the expense of long-term goals
 - **Rank instability**: Reordering the top-10 drastically between queries, confusing users
 
-We enforce constraints via **Lagrangian methods** (Chapter 8) and **rank stability penalties**.
+We enforce constraints via **Lagrangian methods** (Chapter 10, with theory in Appendix C) and **rank stability penalties**.
 
 ### Lagrangian Formulation
 
@@ -1321,15 +1321,15 @@ $$
 $$
 is equivalent to the original constrained optimization problem: they have the same optimal value.
 
-*Interpretation.* Under mild convexity assumptions, we can treat Lagrange multipliers $\boldsymbol{\lambda}$ as "prices" for violating constraints and search for a saddle point instead of solving the constrained problem directly. **Chapter 8** proves this rigorously for the contextual bandit setting using the theory of randomized policies and convex duality ([@boyd:convex_optimization:2004, Section 5.2.3]). In Chapter 8 we exploit this to implement **primal--dual RL** for search: we update the policy parameters to increase reward and constraint satisfaction (primal step) while adapting multipliers that penalize violations (dual step).
+*Interpretation.* Under mild convexity assumptions, we can treat Lagrange multipliers $\boldsymbol{\lambda}$ as "prices" for violating constraints and search for a saddle point instead of solving the constrained problem directly. **Appendix C** proves this rigorously (Theorem C.2.1) for the contextual bandit setting using the theory of randomized policies and convex duality ([@boyd:convex_optimization:2004, Section 5.2.3]). Chapter 10 exploits this to implement **primal--dual RL** for search: we update the policy parameters to increase reward and constraint satisfaction (primal step) while adapting multipliers that penalize violations (dual step).
 
 **What this tells us:**
 
 Strong duality means we can solve the constrained problem #EQ-1.18 by solving the unconstrained Lagrangian #EQ-1.19---no duality gap. Practically, this justifies **primal-dual algorithms**: alternate between improving the policy (primal) and adjusting constraint penalties (dual), confident that convergence to the saddle point yields the constrained optimum.
 
-The strict feasibility requirement ($\exists \tilde{\pi}$ with slack in the CM2 constraint) is typically easy to verify: the baseline production policy usually satisfies constraints with margin. If no such policy exists, the constraints may be infeasible---you're asking for profitability floors that no ranking can achieve. Chapter 8 develops diagnostics for detecting infeasible constraint configurations.
+The strict feasibility requirement ($\exists \tilde{\pi}$ with slack in the CM2 constraint) is typically easy to verify: the baseline production policy usually satisfies constraints with margin. If no such policy exists, the constraints may be infeasible---you're asking for profitability floors that no ranking can achieve. **Appendix C, §C.4.3** discusses diagnosing infeasible constraint configurations: diverging dual variables, Pareto frontiers below constraint thresholds, and $\varepsilon$-relaxation remedies.
 
-**Implementation preview**: In Chapter 8, we'll implement constraint-aware RL using primal-dual optimization:
+**Implementation preview**: In **Chapter 10 (§10.4.2)**, we implement constraint-aware RL using primal-dual optimization (theory in **Appendix C, §C.5**):
 1. **Primal step**: $\theta \leftarrow \theta + \eta \nabla_\theta \mathcal{L}(\theta, \boldsymbol{\lambda})$ (improve policy toward higher reward and constraint satisfaction)
 2. **Dual step**: $\boldsymbol{\lambda} \leftarrow \max(0, \boldsymbol{\lambda} - \eta' \nabla_{\boldsymbol{\lambda}} \mathcal{L}(\theta, \boldsymbol{\lambda}))$ (tighten constraints if violated, relax if satisfied)
 
@@ -1337,92 +1337,7 @@ The saddle-point $(\theta^*, \boldsymbol{\lambda}^*)$ satisfies the Karush-Kuhn-
 
 ---
 
-## 1.10 (Advanced) Connecting to Classical Control Theory
-
-For readers with control theory background, here's the bridge to familiar territory. **If you're unfamiliar with control theory, you can skip this section now and return when these tools appear in later chapters.** The key takeaway: **RL generalizes classical control from known dynamics and quadratic costs to unknown dynamics and arbitrary rewards.**
-
-### Linear Quadratic Regulator (LQR) Analogy
-
-In LQR, we have:
-- **State dynamics**: $x_{t+1} = Ax_t + Bu_t + w_t$
-- **Quadratic cost**: $c(x, u) = x^\top Q x + u^\top R u$
-- **Optimal control**: $u^*(x) = -Kx$ where $K$ solves the Riccati equation
-
-In our search problem:
-- **Context** $x$ (user/query) analogous to **state**
-- **Boost weights** $a$ analogous to **control**
-- **Reward** $R(x, a)$ analogous to **negative cost**
-- **Single-step** (bandit) $\rightarrow$ no dynamics (no $x_{t+1}$ term)
-
-If we had quadratic rewards $R(x, a) = x^\top Q x - a^\top H a$, the optimal policy would be **linear**: $a^*(x) = K x$ for some gain matrix $K$. But our rewards are **non-quadratic** (clicks are nonlinear, purchases are discrete)—hence we need **nonlinear function approximation** (neural nets).
-
-### Hamilton-Jacobi-Bellman (HJB) Connection
-
-In continuous-time optimal control with dynamics $\dot{x} = f(x, u)$, running reward $r(x,u)$, and discount rate $\rho > 0$, the infinite-horizon value function $V(x)$ satisfies the Hamilton-Jacobi-Bellman (HJB) PDE:
-
-$$
-\rho V(x) = \max_u \left\{r(x, u) + \nabla V(x)^\top f(x, u)\right\}
-\tag{1.20}
-$$
-{#EQ-1.20}
-
-where $\nabla V(x) \in \mathbb{R}^n$ is the gradient of $V$ and the $\max$ is over admissible controls $u \in \mathcal{U}$. For finite-horizon problems, the time-dependent form is $-\frac{\partial V}{\partial t}(x,t) = \max_u \{r(x,u) + \nabla_x V(x,t)^\top f(x,u)\}$.
-
-The discrete-time Bellman equation:
-$$
-V(x) = \max_a \left\{R(x, a) + \gamma \mathbb{E}_{x'}[V(x')]\right\}
-$$
-can be viewed as a **discretization** of HJB: with time step $\Delta t$, $\gamma = e^{-\rho \Delta t}$, and the transition $x' \approx x + f(x,u)\Delta t + \text{noise}$.
-
-For our single-step problem (no dynamics), this reduces to:
-
-$$
-V(x) = \max_a Q(x, a)
-\tag{1.21}
-$$
-{#EQ-1.21}
-
-which is exactly equation (1.9)! The **discrete-time Bellman equation** is the **finite-difference approximation** of the HJB PDE.
-
-**Why this matters**: Control theory provides tools we'll use throughout this book:
-- **Lyapunov analysis** (Chapter 10): Prove algorithms converge by constructing "energy functions" that decrease
-- **Robust control** (Chapter 10): Handle model mismatch when simulator differs from real search
-- **Trajectory optimization** (Chapter 11): Multi-step session dynamics with cart building
-
-### From Control Theory to RL Algorithms
-
-The connections above are not just abstract parallels—they inspire concrete algorithms:
-
-**From LQR to Policy Gradient:**
-
-The LQR optimal gain $K^* = (R + B^\top P B)^{-1} B^\top P A$ (where $P$ solves the Riccati equation) can be found by **policy gradient** on the linear policy $u = -Kx$:
-
-$$
-\nabla_K J(K) = 2(R K - B^\top P A) \Sigma_K
-$$
-
-where $\Sigma_K$ is the state covariance under policy $K$. Setting gradient to zero recovers $K^*$. This is the foundation of **DDPG** [@lillicrap:ddpg:2016] and **TD3** [@fujimoto:td3:2018] for nonlinear policies—replace linear $Kx$ with neural network $\pi_\theta(x)$, estimate $\nabla_\theta J$ via critic, and descend.
-
-**From HJB to Fitted Value Iteration:**
-
-The HJB fixed-point $V^* = \mathcal{T}V^*$ motivates **fitted value iteration**:
-1. Collect transitions $(x, a, r, x')$
-2. Fit $V_\theta$ to minimize $\|V_\theta(x) - (r + \gamma V_{\theta'}(x'))\|^2$
-3. Repeat with updated targets
-
-This is the continuous-state analog of our tabular updates. Convergence requires additional assumptions (complete function class, sufficient exploration)—theory is incomplete here, but DQN [@mnih:dqn:2015] empirically succeeds with neural $V_\theta$ via target networks and experience replay.
-
-**Timeline of Deep RL Milestones:**
-- **DQN** (Mnih et al., 2015): First deep RL success (Atari games)
-- **A3C** (Mnih et al., 2016): Asynchronous actor-critic for parallel training
-- **PPO** (Schulman et al., 2017): Stable policy gradients via clipped objectives
-- **SAC** (Haarnoja et al., 2018): Maximum entropy RL for robust exploration
-- **MuZero** (Schrittwieser et al., 2020): Model-based planning without known dynamics
-- **Decision Transformer** (Chen et al., 2021): Sequence modeling for offline RL
-
----
-
-## 1.11 Summary and Looking Ahead
+## 1.10 Summary and Looking Ahead
 
 We've established the foundation:
 
@@ -1443,13 +1358,15 @@ We've established the foundation:
 - **Evaluation** (Chapter 9): Off-policy evaluation (IPS, SNIPS, DR) for testing policies before deployment
 - **Deployment** (Chapters 10-11): Robustness, A/B testing, production ops for real-world systems
 
+> **For Readers with Control Theory Background.** If you're familiar with LQR, HJB equations, or optimal control, **Appendix B** provides a detailed bridge to RL: we show how the discrete Bellman equation arises as a discretization of HJB, how policy gradients relate to Riccati solutions, and how Lyapunov analysis informs convergence proofs. That appendix also traces the lineage from classical control to modern deep RL algorithms (DDPG, PPO, SAC). If you're new to control theory, skip it for now and return when these connections appear in Chapters 8, 10, and 11.
+
 ### Why Chapter 2 Comes Next
 
 We've formulated search ranking as contextual bandits, but left two critical gaps unresolved:
 
 1. **User behavior is a black box.** Section 1.3's illustrative click model (position bias = 1/k) was helpful pedagogically, but production search requires **rigorous click models** that capture examination, clicks, purchases, and abandonment. We need to formalize "How do users interact with rankings?" at the level of **probability measures and stopping times**, not heuristics. Without this, our simulator won't reflect real user behavior, and algorithms trained in simulation will fail in production.
 
-2. **We can't afford online-only learning.** Evaluating each policy candidate with real users (Section 1.5's "sample complexity bottleneck") is too expensive and risky. We need **off-policy evaluation (OPE)** to test policies on historical data logged under old policies. But OPE requires reweighting probabilities across different policies (importance sampling)—the weights $w(x,a) = \pi_{\text{eval}}(a|x) / \pi_{\text{log}}(a|x)$ are only well-defined when both policies are absolutely continuous w.r.t. a common measure (ASM-1.7.1 condition 3). This is **measure theory**, and it's not optional.
+2. **We can't afford online-only learning.** Evaluating each policy candidate with real users (Section 1.5's "sample complexity bottleneck") is too expensive and risky. We need **off-policy evaluation (OPE)** to test policies on historical data logged under old policies. But OPE requires reweighting probabilities across different policies (importance sampling)—the weights $w(x,a) = \pi_{\text{eval}}(a|x) / \pi_{\text{log}}(a|x)$ are only well-defined when both policies are absolutely continuous w.r.t. a common measure (the **coverage condition** in **Assumption 2.6.1** of Chapter 2, §2.6). This is **measure theory**, and it's not optional.
 
 **Chapter 2 addresses both gaps**: We'll build **position-biased click models (PBM/DBN)** that mirror real user behavior with examination, relevance-dependent clicks, and session abandonment. Then we'll develop the **measure-theoretic foundations** (Radon-Nikodym derivatives, change of measure, importance sampling) that make OPE sound. This is not abstract mathematics for its own sake—it's the **foundation of safe RL deployment**.
 
@@ -1472,7 +1389,7 @@ Note. If you completed Chapter 0's toy bandit experiment: (i) compare your regre
     - **Use config-driven weights**: `RewardConfig` for $(\alpha,\beta,\gamma,\delta)$; avoid hard-coded numbers.
     - **Validate engagement weight**: Assert $\delta/\alpha \in [0.01, 0.10]$ in `zoosim/dynamics/reward.py:25` (see Section 1.2.1).
     - **Monitor CVR**: Log $\text{CVR}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i$; alert if drops $>10\%$ (clickbait detection).
-    - **Enforce constraints early**: CM2 and exposure floors via Lagrange multipliers (Chapter 8 implementation).
+    - **Enforce constraints early**: CM2 and exposure floors via Lagrange multipliers (**Chapter 10, §10.4.2**; theory in **Appendix C**).
     - **Ensure reproducible ranking**: Enable `ActionConfig.standardize_features` in `zoosim/core/config.py:210`.
 
 **Exercise 1.1** (Reward Function Sensitivity). [20 min]

@@ -19,13 +19,15 @@
 
 This repository accompanies a textbook-in-progress that builds a reinforcement learning system for e-commerce search ranking.
 
-Our goal is to bridge the gap between rigorous mathematics and production engineering. Too often, these worlds exist in isolation: theory papers often skip implementation details, while engineering guides may overlook the foundational math. This project aims to do both, treating them as inseparable parts of the same discipline.
+The project grew from years of building personalized search and recommendation systems at one of Europe's largest e-commerce platforms, combined with a background in applied mathematics (functional analysis, measure theory). I kept wishing for a resource that held both standards simultaneously—rigorous foundations *and* production-quality implementations—so I started writing one.
 
-We build the system on three core principles:
+The goal is to treat mathematics and engineering as inseparable parts of the same discipline:
 
 1.  **Foundational Math**: We derive algorithms from first principles (measure theory, Bellman operators) to understand *why* they work.
 2.  **Clean, Modular Code**: Readable, reproducible, and maintainable Python/PyTorch---not a pile of scripts. The architecture is designed so the same blueprint can realistically scale to production.
 3.  **Realistic Constraints**: We move beyond gridworlds to tackle the messy reality of search: optimizing GMV, managing user retention, and respecting business constraints.
+
+I wrote it for the version of myself who was searching library shelves for exactly this—and I hope it proves useful to anyone else who's felt that same gap between textbook algorithms and production systems.
 
 ---
 

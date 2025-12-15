@@ -102,7 +102,7 @@ python scripts/ch06/ch06_compute_arc.py \
     --n-static 2000 \
     --n-bandit 20000 \
     --base-seed 20250322 \
-    --out-dir docs/book/drafts/ch06/data \
+    --out-dir docs/book/ch06/data \
     --prior-weight 50 \
     --lin-alpha 0.2 \
     --ts-sigma 0.5
@@ -119,6 +119,6 @@ And produces JSON summaries + comparison tables demonstrating the Algorithm Sele
 
 ## References
 
-- Chapter 6 main narrative: `docs/book/drafts/ch06/discrete_template_bandits.md`
-- Lab exercises: `docs/book/drafts/ch06/exercises_labs.md`
+- Chapter 6 main narrative: `docs/book/ch06/discrete_template_bandits.md`
+- Lab exercises: `docs/book/ch06/exercises_labs.md`
 - Compute arc script: `scripts/ch06/ch06_compute_arc.py`

@@ -1590,7 +1590,7 @@ We deliberately explored three failure scenarios (Lab 6A.3):
 
 **Immediate next steps:**
 
-1. **Complete exercises** (`docs/book/drafts/ch06a/exercises_labs.md`):
+1. **Complete exercises** (`docs/book/ch06a/exercises_labs.md`):
    - Theory: Ex 6A.1-6A.3 (30 min) — When linear features fail
    - Implementation: Ex 6A.4-6A.5 (40 min) — Build Neural Feature Extractor
    - Labs: Lab 6A.1-6A.3 (80 min) — Compare Neural Linear vs rich features, run NL-Bandit, diagnose overfitting

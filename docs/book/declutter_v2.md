@@ -40,38 +40,26 @@
 
 ---
 
-## 🎯 UPDATED PLAN: Create Appendix A and Appendix B
+## 🎯 UPDATED PLAN: Appendices (Actual Layout)
 
-**Decision (2025-12-08):** Instead of bloating Chapter 8 with convex optimization, create TWO book-level appendices:
+**Decision (2025-12-08, revised 2025-12-09):** Instead of bloating Chapter 8 with convex optimization, move the heavy auxiliary material into **three book-level appendices**. The live book now uses:
 
-### Appendix A — Control-Theoretic Background (Move §1.10)
-- **Purpose:** Move Ch01 §1.10 "Connecting to Classical Control Theory" to standalone appendix
-- **Rationale:** Originally planned (declutter lines 407-428), enables modular reading
-- **Estimated time:** 1-2 hours (mostly mechanical)
+- **Appendix A — Bayesian Preference Models** (`docs/book/appendix_a_bayesian_preference_models.md`)
+  - Status: **written**.
+  - Role: Provides hierarchical Bayesian preference models and ties them to the template bandits of Chapter 6.
+- **Appendix B — Control-Theoretic Background** (`docs/book/appendix_b_control_theory.md`)
+  - Status: **written**.
+  - Role: Hosts the “classical control” background for the LQR analogy and Bellman/control connections previewed in Ch01 §1.10.
+- **Appendix C — Convex Optimization for Constrained MDPs** (`docs/book/appendix_c_convex_optimization.md`)
+  - Status: **written**.
+  - Role: Provides the Slater/duality machinery and primal–dual algorithms that support Ch01 §1.9 and the guardrail story in Chapter 10.
 
-### Appendix B — Convex Optimization for Constrained MDPs (NEW)
-- **Purpose:** Rigorous treatment of Slater's condition, Lagrangian duality, primal-dual methods
-- **Content:**
-  - §B.1: Lagrangian Duality (Quick Recap)
-  - §B.2: **Theorem B.2.1 (Slater's Condition)** with full proof using randomized policies + convex duality
-  - §B.3: Application to Constrained MDPs (Ch01 §1.9, Ch11)
-  - §B.4: Primal-Dual Algorithms (informal sketch)
-  - §B.5: References and Further Reading
-  - §B.6: Summary
-- **Rationale:**
-  - Ch08 already ~1200 lines (policy gradients focus)
-  - Ch10 is about production concerns (guardrails), not foundational math
-  - Appendices enable modularity: readers can skip if familiar
-- **Estimated time:** 4-5 hours (new content, Springer-quality proof)
+### Cross-Reference Updates (reflected in the live book)
 
-### Cross-Reference Updates Required:
-- **Ch01 line 1324**: Change "Chapter 8" → "**Appendix B, §B.2 (Theorem B.2.1)**"
-- **Ch10 line 996**: Change "Chapter 8, Remark 8.7.3" → "**Appendix B**"
-- **Ch01 §1.11**: Add pointer to Appendix A (control theory)
+- Ch01 now points to **Appendix B** (control theory) and **Appendix C** (convex optimization) instead of a hypothetical Chapter 8 section.
+- Ch10’s guardrail discussion points to **Appendix C** for the formal primal–dual background.
 
-**Total estimated time:** 6-8 hours
-
-**Status:** Documented in `docs/book/RESUME_DECLUTTER_HERE.md` for execution 2025-12-09
+Treat this section as **historical context** for how we arrived at the A/B/C layout; the live appendices A/B/C above supersede the earlier “Appendix A=control, Appendix B=convex” sketch.
 
 ---
 

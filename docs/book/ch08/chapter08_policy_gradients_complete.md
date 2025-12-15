@@ -1,17 +1,17 @@
-# Chapter 8: Policy Gradient Methods — Direct Optimization of Search Performance
+# Chapter 8: Policy Gradient Methods --- Direct Optimization of Search Performance
 
 **Vlad Prytula**
 ---
 
 ## Introduction: The Value-Function Detour
 
-In Chapters 6 and 7, we optimized search ranking through **value-based methods**: we learned estimators $Q_\theta(s,a) \approx \mathbb{E}[R \mid s,a]$ and extracted policies by maximization $\pi(s) = \arg\max_a Q_\theta(s,a)$. This indirect approach—learn values, then maximize—has served us well. Our continuous Q-learning agent (Chapter 7) achieved returns of ~25.0, far surpassing random baselines (~8.7) and discrete bandits (~10.4).
+In Chapters 6 and 7, we optimized search ranking through **value-based methods**: we learned estimators $Q_\theta(s,a) \approx \mathbb{E}[R \mid s,a]$ and extracted policies by maximization $\pi(s) = \arg\max_a Q_\theta(s,a)$. This indirect approach---learn values, then maximize---has served us well. Our continuous Q-learning agent (Chapter 7) achieved returns of ~25.0, far surpassing random baselines (~8.7) and discrete bandits (~10.4).
 
 But value-based methods have fundamental limitations. Consider three challenges endemic to e-commerce search:
 
 **1. The Maximization Bottleneck.** For continuous boost weights $a \in \mathbb{R}^K$ (where $K=10$ product categories), computing $\arg\max_a Q(s,a)$ requires optimization *at every decision point*. Our Chapter 7 agent used Cross-Entropy Method (CEM) with 64 samples per query. This works, but it's expensive and approximate.
 
-**2. The Exploration-Exploitation Dilemma in Continuous Spaces.** LinUCB (Chapter 6) elegantly balances exploration via uncertainty quantification: $\text{UCB}(a) = \hat{Q}(a) + \beta \sqrt{\text{Var}(a)}$. But for continuous actions, maintaining calibrated uncertainty becomes intractable—our covariance matrix is $K \times K$, and the surface $Q(s,\cdot)$ is nonlinear.
+**2. The Exploration-Exploitation Dilemma in Continuous Spaces.** LinUCB (Chapter 6) elegantly balances exploration via uncertainty quantification: $\text{UCB}(a) = \hat{Q}(a) + \beta \sqrt{\text{Var}(a)}$. But for continuous actions, maintaining calibrated uncertainty becomes intractable---our covariance matrix is $K \times K$, and the surface $Q(s,\cdot)$ is nonlinear.
 
 **3. The Stochasticity Requirement.** E-commerce users are heterogeneous and noisy. A deterministic policy $\pi(s) = a^*$ commits to a single strategy. But what if different users in the same state segment respond differently? A stochastic policy $\pi(a|s)$ can hedge across multiple plausible actions, improving robustness to model misspecification.
 
@@ -23,16 +23,16 @@ $$
 $$
 {#EQ-8.1}
 
-and optimize the expected return $J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[G(\tau)]$ via gradient ascent. This chapter develops the mathematical foundations (Policy Gradient Theorem), implements REINFORCE—the Monte Carlo policy gradient estimator—and confronts the theory-practice gap through rigorous experiments.
+and optimize the expected return $J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[G(\tau)]$ via gradient ascent. This chapter develops the mathematical foundations (Policy Gradient Theorem), implements REINFORCE---the Monte Carlo policy gradient estimator---and confronts the theory-practice gap through rigorous experiments.
 
 **Roadmap:**
-- **§8.1**: Mathematical foundations (performance objective, score function estimator, baseline variance reduction)
-- **§8.2**: The Policy Gradient Theorem (rigorous proof, connection to HJB equations)
-- **§8.3**: REINFORCE algorithm (specification and production implementation)
-- **§8.4**: Gaussian policies for continuous actions (parameterization, entropy regularization)
-- **§8.5**: Empirical analysis (REINFORCE vs. Q-learning, feature engineering, deep end-to-end attempts)
-- **§8.6**: Control theory connections (Pontryagin's principle, continuous-time limits)
-- **§8.7**: Modern context (Actor-Critic, PPO, RLHF)
+- **Section 8.1**: Mathematical foundations (performance objective, score function estimator, baseline variance reduction)
+- **Section 8.2**: The Policy Gradient Theorem (rigorous proof, connection to HJB equations)
+- **Section 8.3**: REINFORCE algorithm (specification and production implementation)
+- **Section 8.4**: Gaussian policies for continuous actions (parameterization, entropy regularization)
+- **Section 8.5**: Empirical analysis (REINFORCE vs. Q-learning, feature engineering, deep end-to-end attempts)
+- **Section 8.6**: Control theory connections (Pontryagin's principle, continuous-time limits)
+- **Section 8.7**: Modern context (Actor-Critic, PPO, RLHF)
 
 ---
 
@@ -49,7 +49,7 @@ A **parameterized policy** $\pi_\theta$ defines a conditional distribution over 
 - For discrete $\mathcal{A}$, $\pi_\theta(a|s)$ is a probability mass function with $\sum_{a \in \mathcal{A}} \pi_\theta(a|s) = 1$.
 - For continuous $\mathcal{A} \subseteq \mathbb{R}^K$, $\pi_\theta(a|s)$ is a density with respect to Lebesgue measure satisfying $\int_{\mathcal{A}} \pi_\theta(a|s) \, da = 1$.
 
-We suppress the distinction in notation—$\pi_\theta(a|s)$ always refers to a conditional distribution—but keep in mind which measure is implied. The parameters $\theta \in \mathbb{R}^d$ (e.g., neural network weights) determine both the policy mean and its stochasticity.
+We suppress the distinction in notation---$\pi_\theta(a|s)$ always refers to a conditional distribution---but keep in mind which measure is implied. The parameters $\theta \in \mathbb{R}^d$ (e.g., neural network weights) determine both the policy mean and its stochasticity.
 
 A trajectory $\tau = (s_0, a_0, r_0, s_1, a_1, r_1, \ldots, s_T)$ is generated by sampling:
 - Initial state $s_0 \sim \rho_0$ (start-state distribution)
@@ -87,7 +87,7 @@ $$
 
 This makes the dependence on $\theta$ explicit: changing policy parameters alters the trajectory distribution, which in turn changes expected returns.
 
-!!! note "Code ↔ Config (Performance Objective)"
+!!! note "Code <-> Config (Performance Objective)"
     The objective [EQ-8.3] is implemented in the training loop at `scripts/ch08/reinforce_demo.py:84-110`:
     - **Episode rollout**: Lines 89-98 generate trajectories $\tau$ by sampling actions $a_t \sim \pi_\theta(\cdot|s_t)$
     - **Return computation**: `agent.update()` computes $G(\tau)$ at `zoosim/policies/reinforce.py:149-155`
@@ -153,7 +153,7 @@ This completes the proof. $\square$
 
 **Remark.** Neural policies built from smooth activations (tanh, sigmoid, softplus) satisfy (1), compact parameter neighborhoods guarantee (2), and bounded episodic rewards ($|r_t| \leq R_{\max}$ implies $|G| \leq R_{\max}/(1-\gamma)$, so $f$ is bounded) ensure (3) and the dominated convergence step. Thus the lemma covers the policies we deploy in production.
 
-**Intuition.** The score function $\nabla_\theta \log p_\theta(x)$ measures how the log-probability of outcome $x$ changes with $\theta$. High-reward outcomes $x$ (large $f(x)$) with positive score (increasing probability) yield positive gradient contributions, pushing $\theta$ toward policies that make good outcomes more likely. Crucially, we do not need to differentiate $f(x)$—this is why policy gradients work in black-box environments where $f$ (e.g., user purchase behavior) is unknown.
+**Intuition.** The score function $\nabla_\theta \log p_\theta(x)$ measures how the log-probability of outcome $x$ changes with $\theta$. High-reward outcomes $x$ (large $f(x)$) with positive score (increasing probability) yield positive gradient contributions, pushing $\theta$ toward policies that make good outcomes more likely. Crucially, we do not need to differentiate $f(x)$---this is why policy gradients work in black-box environments where $f$ (e.g., user purchase behavior) is unknown.
 
 **Remark.** The regularity condition for differentiating under the integral requires $p_\theta$ to have sufficient smoothness (e.g., $p_\theta \in C^1$ with integrable derivatives). For neural network policies with continuous activations (tanh, sigmoid, softplus), this holds. For discrete distributions (softmax over finite actions), the discrete analogue is straightforward.
 
@@ -266,11 +266,11 @@ Extending the sum to $t=T$ (where $G_T = 0$ typically) completes the proof. $\sq
 3. Weight the policy gradient $\nabla_\theta \log \pi_\theta(a_t|s_t)$ by $G_t$
 4. Average over many trajectories to reduce variance
 
-Critically, this estimator requires **only rollouts**—no model of $P(s'|s,a)$, no value function bootstrapping. This is model-free, Monte Carlo policy optimization.
+Critically, this estimator requires **only rollouts**---no model of $P(s'|s,a)$, no value function bootstrapping. This is model-free, Monte Carlo policy optimization.
 
 **Discounting convention.** We discount the return-to-go relative to the local timestep: $G_t = \sum_{k=t}^{T} \gamma^{k-t} r_k$. This differs from the global convention $\sum_{k=t}^{T} \gamma^{k} r_k$ by a factor $\gamma^t$ that does not depend on $a_t$, so both lead to identical gradients.
 
-**Remark (Connection to Control Theory).** In continuous time, [THM-8.2] connects to Pontryagin's Maximum Principle: the costate (adjoint) dynamics naturally arise from differentiating the Hamiltonian. We explore this in §8.6, and in discrete time Exercise 8.4 (Policy Gradient for LQR) together with the helper script `scripts/ch08/discounted_lqr_gain.py` shows how the policy gradient recovers the optimal LQR gain in 1D.
+**Remark (Connection to Control Theory).** In continuous time, [THM-8.2] connects to Pontryagin's Maximum Principle: the costate (adjoint) dynamics naturally arise from differentiating the Hamiltonian. We explore this in Section 8.6, and in discrete time Exercise 8.4 (Policy Gradient for LQR) together with the helper script `scripts/ch08/discounted_lqr_gain.py` shows how the policy gradient recovers the optimal LQR gain in 1D.
 
 ---
 
@@ -335,7 +335,7 @@ Summing over all timesteps completes the proof. $\square$
 
 Our REINFORCE implementation uses a simple running average baseline with exponential moving average (EMA):
 
-!!! note "Code ↔ Algorithm (Baseline Subtraction)"
+!!! note "Code <-> Algorithm (Baseline Subtraction)"
     The baseline $b$ from [EQ-8.9] is implemented in `zoosim/policies/reinforce.py:160-173`:
     - **Line 162**: `batch_mean = returns_t.mean().item()` computes episode return average
     - **Line 163-166**: `self.baseline = momentum * self.baseline + (1 - momentum) * batch_mean` maintains EMA
@@ -347,7 +347,7 @@ Our REINFORCE implementation uses a simple running average baseline with exponen
 
 ## 8.3 The REINFORCE Algorithm
 
-We now specify the algorithm. REINFORCE (REward Increment = Nonnegative Factor × Offset Reinforcement × Characteristic Eligibility—yes, the acronym is contrived) was introduced by [@williams:simple_statistical:1992] as the first practical policy gradient method.
+We now specify the algorithm. REINFORCE (REward Increment = Nonnegative Factor x Offset Reinforcement x Characteristic Eligibility---yes, the acronym is contrived) was introduced by [@williams:simple_statistical:1992] as the first practical policy gradient method.
 
 **Algorithm 8.3.1** (REINFORCE with Baseline) {#ALG-8.1}
 
@@ -473,7 +473,7 @@ This introduces bias (clipped actions are not properly distributed according to 
 - **Squashed Gaussian**: $a = a_{\max} \tanh(\tilde{a})$ where $\tilde{a} \sim \mathcal{N}(\mu, \sigma^2)$ (used in SAC [@haarnoja:soft_actor_critic:2018])
 - **Beta distribution**: Natural support on $[0,1]$, scaled to $[-a_{\max}, a_{\max}]$
 
-!!! note "Code ↔ Simulator (Action Bounds)"
+!!! note "Code <-> Simulator (Action Bounds)"
     The clipping bound $a_{\max}$ from our Gaussian policy [EQ-8.11] maps to:
     - **Config**: `SimulatorConfig.action.a_max` at `zoosim/core/config.py:52`
     - **Environment**: `np.clip(action, -self.a_max, self.a_max)` at `zoosim/envs/gym_env.py:89`
@@ -502,9 +502,9 @@ $$
 
 This is trivial to compute and differentiate. The entropy gradient w.r.t. $\log \sigma_i$ is simply $1$ (increasing $\sigma$ increases entropy).
 
-**Practical Impact.** In our experiments (§8.5), adding entropy regularization ($\beta=0.01$) was **essential** for stability. Without it, the policy collapsed to deterministic behavior within 500 episodes, achieving poor final performance (~9.0). With entropy regularization, the agent maintained exploration and converged to returns ~11.5.
+**Practical Impact.** In our experiments (Section 8.5), adding entropy regularization ($\beta=0.01$) was **essential** for stability. Without it, the policy collapsed to deterministic behavior within 500 episodes, achieving poor final performance (~9.0). With entropy regularization, the agent maintained exploration and converged to returns ~11.5.
 
-!!! note "Code ↔ Algorithm (Entropy Regularization)"
+!!! note "Code <-> Algorithm (Entropy Regularization)"
     The entropy bonus [EQ-8.15] is implemented at `zoosim/policies/reinforce.py:180-182`:
     - **Line 132**: `self.entropies.append(dist.entropy().sum())` accumulates entropy per timestep
     - **Line 180**: `entropy_loss = -self.config.entropy_coef * torch.stack(self.entropies).mean()`
@@ -512,13 +512,13 @@ This is trivial to compute and differentiate. The entropy gradient w.r.t. $\log 
 
 ---
 
-# §8.5 Empirical Analysis: The Variance Barrier (REVISED)
+# 8.5 Empirical Analysis: The Variance Barrier (REVISED)
 
 **Vlad Prytula**
 
 ---
 
-This section demonstrates the "Failure → Diagnosis → Fix" pattern that recurs throughout deep RL: we implement the theoretically sound algorithm (REINFORCE, [ALG-8.1]), observe empirical failure (high variance, oscillating returns), diagnose the root cause mathematically (state-dependent variance not removed by scalar baseline), and deploy the fix (learned value baseline, [THM-8.5.2]). This is not a failure of theory—it's theory guiding us to the correct architecture.
+This section demonstrates the "Failure -> Diagnosis -> Fix" pattern that recurs throughout deep RL: we implement the theoretically sound algorithm (REINFORCE, [ALG-8.1]), observe empirical failure (high variance, oscillating returns), diagnose the root cause mathematically (state-dependent variance not removed by scalar baseline), and deploy the fix (learned value baseline, [THM-8.5.2]). This is not a failure of theory---it's theory guiding us to the correct architecture.
 
 ---
 
@@ -532,7 +532,7 @@ This section demonstrates the "Failure → Diagnosis → Fix" pattern that recur
   - Estimated user preferences (2-dim): `theta_price_est`, `theta_margin_est`
   - Ranking statistics (7-dim): `avg_price`, `avg_margin`, `diversity`, `strategic_coverage`, etc.
 - **Action space**: Continuous boost weights $a \in [-5.0, +5.0]^{10}$ (10 product categories)
-- **Episode structure**: Single search session (user query → ranking → clicks → potential purchase)
+- **Episode structure**: Single search session (user query -> ranking -> clicks -> potential purchase)
 - **Reward**: GMV (Gross Merchandise Value) if purchase occurs, else 0
   - Sparse rewards: ~5-10% of episodes yield nonzero reward
   - Stochastic clicks: Position bias model (PBM, Chapter 5) with probabilistic user behavior
@@ -545,7 +545,7 @@ This section demonstrates the "Failure → Diagnosis → Fix" pattern that recur
 - **Gradient clipping**: Max norm 1.0
 - **Seed**: 2025 (reproducibility)
 
-!!! note "Code ↔ Config (Experiment Alignment)"
+!!! note "Code <-> Config (Experiment Alignment)"
     All hyperparameters map to configuration:
     - **Action bounds**: `SimulatorConfig.action.a_max = 5.0` at `zoosim/core/config.py:52`
     - **Rich features**: `GymZooplusEnv(rich_features=True)` at `zoosim/envs/gym_env.py:34`
@@ -553,9 +553,9 @@ This section demonstrates the "Failure → Diagnosis → Fix" pattern that recur
     - **Learning rates**: `REINFORCEConfig.learning_rate`, `REINFORCEBaselineConfig.value_lr`
 
 **Baselines for comparison:**
-- **Random policy**: Uniform $a \sim \mathcal{U}([-5, 5]^{10})$ → Avg return ~8.7
-- **Discrete LinUCB** (Chapter 6): Template bandits → Avg return ~10.4
-- **Continuous Q-Learning** (Chapter 7): Q-network + CEM → Avg return ~20.06
+- **Random policy**: Uniform $a \sim \mathcal{U}([-5, 5]^{10})$ -> Avg return ~8.7
+- **Discrete LinUCB** (Chapter 6): Template bandits -> Avg return ~10.4
+- **Continuous Q-Learning** (Chapter 7): Q-network + CEM -> Avg return ~20.06
 
 All experiments run for 5,000 episodes (50,000 for extended vanilla REINFORCE to confirm non-convergence). We report **average return over final 100 episodes** as the primary metric.
 
@@ -571,26 +571,26 @@ We first deploy the canonical REINFORCE implementation from [ALG-8.1] using `zoo
 
 ### The Instability Pattern
 
-Despite 50,000 episodes of training—more than enough for convergence in tabular settings—the agent never stabilizes:
+Despite 50,000 episodes of training---more than enough for convergence in tabular settings---the agent never stabilizes:
 
 ```
 Ep   500 | Return:   8.01 | Entropy: 14.37 | Loss: -310.13
 Ep  1000 | Return:   3.40 | Entropy: 14.44 | Loss:  -31.84
-Ep  2300 | Return:  14.87 | Entropy: 14.58 | Loss: -282.19  ← Lucky streak!
+Ep  2300 | Return:  14.87 | Entropy: 14.58 | Loss: -282.19  <- Lucky streak!
 Ep  2400 | Return:  12.44 | Entropy: 14.59 | Loss: -142.50
-Ep  2700 | Return:  14.18 | Entropy: 14.61 | Loss: 1305.29  ← Massive gradient spike
-Ep  3700 | Return:   8.06 | Entropy: 14.73 | Loss:   96.92  ← Back to baseline
-Ep  5900 | Return:  21.77 | Entropy: 15.01 | Loss: -256.62  ← Another spike
+Ep  2700 | Return:  14.18 | Entropy: 14.61 | Loss: 1305.29  <- Massive gradient spike
+Ep  3700 | Return:   8.06 | Entropy: 14.73 | Loss:   96.92  <- Back to baseline
+Ep  5900 | Return:  21.77 | Entropy: 15.01 | Loss: -256.62  <- Another spike
 Ep  6000 | Return:  13.25 | Entropy: 15.00 | Loss:  850.96
-Ep  6100 | Return:   8.55 | Entropy: 15.02 | Loss: -119.03  ← Crash
+Ep  6100 | Return:   8.55 | Entropy: 15.02 | Loss: -119.03  <- Crash
 ...
-Ep 13500 | Return:  17.70 | Entropy: 15.84 | Loss: -589.97  ← Best so far
-Ep 13600 | Return:   9.42 | Entropy: 15.85 | Loss: -219.38  ← Immediate collapse
+Ep 13500 | Return:  17.70 | Entropy: 15.84 | Loss: -589.97  <- Best so far
+Ep 13600 | Return:   9.42 | Entropy: 15.85 | Loss: -219.38  <- Immediate collapse
 ...
-Ep 50000 | Return:   7.99 | Entropy: 15.12 | Loss: -301.47  ← Still oscillating
+Ep 50000 | Return:   7.99 | Entropy: 15.12 | Loss: -301.47  <- Still oscillating
 ```
 
-**Visualization:** If we plot the rolling mean (window 100) and ±1 std bands:
+**Visualization:** If we plot the rolling mean (window 100) and +/-1 std bands:
 
 ```
 Return
@@ -602,12 +602,12 @@ Return
      |     *                             *     *
   10 | *                                         *
      |                                               *
-   5 |_______________________________________________↓_____________
+   5 |_______________________________________________v_____________
      0       10000      20000      30000      40000      50000
                          Episode
 ```
 
-The agent explores (entropy increases from 14.2 → 15.1), but performance oscillates wildly. This is not a convergence problem—it's a **variance problem**.
+The agent explores (entropy increases from 14.2 -> 15.1), but performance oscillates wildly. This is not a convergence problem---it's a **variance problem**.
 
 ### What's Happening? Environmental Luck vs. Policy Skill
 
@@ -629,20 +629,20 @@ Consider two episodes with identical state $s_0$ and action $a_0$:
 - **Identical state, identical action**
 - User clicks position 2 (CTR = 0.30, random draw fails this time)
 - User does not engage further
-- **Return**: $G_B = 0$ (no clicks → no purchase)
+- **Return**: $G_B = 0$ (no clicks -> no purchase)
 
 **Vanilla REINFORCE gradient:**
 - Episode A: $\nabla_\theta J \approx \nabla \log \pi_\theta(a_0|s_0) \cdot (45 - 10) = \nabla \log \pi \cdot 35$ (huge positive push)
 - Episode B: $\nabla_\theta J \approx \nabla \log \pi_\theta(a_0|s_0) \cdot (0 - 10) = \nabla \log \pi \cdot (-10)$ (negative push)
 
-The policy receives **contradictory gradients for the same state-action pair** because the scalar baseline $b = 10$ cannot distinguish state quality. The agent is chasing ghosts—lucky outcomes that don't reflect systematic skill.
+The policy receives **contradictory gradients for the same state-action pair** because the scalar baseline $b = 10$ cannot distinguish state quality. The agent is chasing ghosts---lucky outcomes that don't reflect systematic skill.
 
 !!! danger "Failure Mode: Ghost Chasing"
     Vanilla REINFORCE reinforces actions that precede high returns, even when those returns are due to environmental luck rather than policy quality. In our stochastic simulator:
     - 90% of episodes yield $G_t = 0$ (no purchase)
     - 10% yield $G_t \in [30, 60]$ (purchase with variable GMV)
 
-    A single lucky episode can produce a gradient magnitude 10× larger than typical episodes, causing the policy to "chase" that lucky trajectory and destabilize.
+    A single lucky episode can produce a gradient magnitude 10x larger than typical episodes, causing the policy to "chase" that lucky trajectory and destabilize.
 
 ---
 
@@ -770,7 +770,7 @@ This is exactly the value function. $\square$
 
 **Remark (Weighted Baseline).** The rigorous optimal baseline weights returns by $\|\nabla \log \pi\|^2$, but in practice the unweighted $V^\pi(s)$ performs nearly as well and is simpler to implement. See Exercise 8.1 for the weighted derivation.
 
-!!! note "Code ↔ Theory (Value Network as Baseline)"
+!!! note "Code <-> Theory (Value Network as Baseline)"
     [THM-8.5.2] is implemented in `zoosim/policies/reinforce_baseline.py`:
     - **ValueNetwork** (lines 32-46): MLP $V_\phi(s) \approx V^{\pi_\theta}(s)$ with architecture matching policy network
     - **Advantage** (line 126): `advantages = returns_t - values_t.detach()` computes $A_t = G_t - V_\phi(s_t)$
@@ -807,7 +807,7 @@ We now implement [THM-8.5.2] by adding a neural value network $V_\phi(s)$ alongs
 - **Advantage centering**: Policy sees $(G_t - V_\phi(s_t))$ instead of $(G_t - \bar{G})$
 - **Value supervision**: Critic learns to predict returns via supervised regression
 
-!!! note "Code ↔ Algorithm (Two-Network Architecture)"
+!!! note "Code <-> Algorithm (Two-Network Architecture)"
     [ALG-8.5] implemented in `zoosim/policies/reinforce_baseline.py`:
     - **Policy network** (lines 65-70): `GaussianPolicy` from `reinforce.py` (reused)
     - **Value network** (lines 73-78): New `ValueNetwork` MLP with identical architecture
@@ -824,40 +824,40 @@ We now implement [THM-8.5.2] by adding a neural value network $V_\phi(s)$ alongs
 
 | Method | Architecture | Avg Return (Last 100) | Training Stability | Improvement vs. Vanilla |
 |:-------|:-------------|:---------------------:|:------------------:|:-----------------------:|
-| **Vanilla REINFORCE** | Single policy net | 7.99 | ❌ High variance, oscillates | Baseline |
-| **REINFORCE + Learned Baseline** | Policy + Value nets | **13.19** | ✅ Monotonic improvement | **+65%** |
-| *Q-Learning (Ch7)* | *Q-net + CEM* | *20.06* | *✅ Sample efficient* | *+151%* |
+| **Vanilla REINFORCE** | Single policy net | 7.99 | Unstable (high variance, oscillates) | Baseline |
+| **REINFORCE + Learned Baseline** | Policy + Value nets | **13.19** | Stable, monotonic improvement | **+65%** |
+| *Q-Learning (Ch7)* | *Q-net + CEM* | *20.06* | *Sample efficient* | *+151%* |
 
 ### Training Dynamics Comparison
 
 **Vanilla REINFORCE (50,000 episodes):**
 ```
 Ep  1000 | Return:   3.40 | Entropy: 14.44 | Loss:  -31.84
-Ep  2000 | Return:  11.58 | Entropy: 14.52 | Loss: -125.30  ← Looks promising!
-Ep  2100 | Return:   5.59 | Entropy: 14.54 | Loss: -115.01  ← Collapsed
+Ep  2000 | Return:  11.58 | Entropy: 14.52 | Loss: -125.30  <- Looks promising!
+Ep  2100 | Return:   5.59 | Entropy: 14.54 | Loss: -115.01  <- Collapsed
 Ep  5000 | Return:   7.99 | Entropy: 14.87 | Loss: -297.35
 Ep 10000 | Return:  11.17 | Entropy: 15.45 | Loss: -196.90
-Ep 13500 | Return:  17.70 | Entropy: 15.84 | Loss: -589.97  ← Spike
-Ep 13600 | Return:   9.42 | Entropy: 15.85 | Loss: -219.38  ← Immediate crash
-Ep 50000 | Return:   7.99 | Entropy: 15.12 | Loss: -301.47  ← Never stabilized
+Ep 13500 | Return:  17.70 | Entropy: 15.84 | Loss: -589.97  <- Spike
+Ep 13600 | Return:   9.42 | Entropy: 15.85 | Loss: -219.38  <- Immediate crash
+Ep 50000 | Return:   7.99 | Entropy: 15.12 | Loss: -301.47  <- Never stabilized
 ```
 
 **REINFORCE + Baseline (5,000 episodes):**
 ```
-Ep   100 | Return:   3.66 | Entropy: 14.22 | ValLoss:   0.00  ← Critic initializing
-Ep   500 | Return:  11.98 | Entropy: 14.31 | ValLoss:   1.32  ← Learning
+Ep   100 | Return:   3.66 | Entropy: 14.22 | ValLoss:   0.00  <- Critic initializing
+Ep   500 | Return:  11.98 | Entropy: 14.31 | ValLoss:   1.32  <- Learning
 Ep  1000 | Return:   9.75 | Entropy: 14.41 | ValLoss:  95.75
-Ep  2000 | Return:  12.31 | Entropy: 14.53 | ValLoss:   0.00  ← Stable
-Ep  3000 | Return:  13.86 | Entropy: 14.60 | ValLoss: 7261.44 ← Occasional spike
-Ep  4000 | Return:  16.01 | Entropy: 14.68 | ValLoss:   1.21  ← Monotonic growth
-Ep  5000 | Return:  13.19 | Entropy: 14.82 | ValLoss:   0.03  ← Converged
+Ep  2000 | Return:  12.31 | Entropy: 14.53 | ValLoss:   0.00  <- Stable
+Ep  3000 | Return:  13.86 | Entropy: 14.60 | ValLoss: 7261.44 <- Occasional spike
+Ep  4000 | Return:  16.01 | Entropy: 14.68 | ValLoss:   1.21  <- Monotonic growth
+Ep  5000 | Return:  13.19 | Entropy: 14.82 | ValLoss:   0.03  <- Converged
 ```
 
 **Key observations:**
 
 1. **Variance reduction visible immediately**: By episode 500, baseline method stabilizes around 12, while vanilla is still oscillating between 3-15.
 
-2. **10× fewer episodes needed**: Baseline converges in ~5,000 episodes (final return 13.19), while vanilla hasn't converged even after 50,000.
+2. **10x fewer episodes needed**: Baseline converges in ~5,000 episodes (final return 13.19), while vanilla hasn't converged even after 50,000.
 
 3. **Value network learns incrementally**: Value loss decreases from hundreds (episode 300-400) to near-zero (episode 5000), indicating $V_\phi(s) \approx V^\pi(s)$ convergence.
 
@@ -899,7 +899,7 @@ The baseline-centered distribution is **symmetric and tighter** (std ~7 vs. ~15 
 
 ## 8.5.5 The Remaining Gap: Why Q-Learning Still Leads
 
-REINFORCE + Baseline achieves **13.19** vs. Q-Learning's **20.06** — a 50% gap remains. This is not a bug; it reflects fundamental algorithmic differences.
+REINFORCE + Baseline achieves **13.19** vs. Q-Learning's **20.06** --- a 50% gap remains. This is not a bug; it reflects fundamental algorithmic differences.
 
 ### Sample Efficiency: Off-Policy vs. On-Policy
 
@@ -913,7 +913,7 @@ REINFORCE + Baseline achieves **13.19** vs. Q-Learning's **20.06** — a 50% gap
 - Using old trajectories from $\pi_{\theta_{\text{old}}}$ to estimate $\nabla_\theta J(\theta_{\text{new}})$ introduces bias (policy gradient theorem requires on-policy samples)
 - **Effective sample count**: $N_{\text{episodes}} \times 1$ gradient updates from $N_{\text{episodes}} \times T$ environment steps
 
-**Data efficiency ratio:** Q-learning extracts ~20× more information per episode. This compounds over 5,000 episodes:
+**Data efficiency ratio:** Q-learning extracts ~20x more information per episode. This compounds over 5,000 episodes:
 - Q-learning: ~100,000 gradient updates
 - REINFORCE: ~5,000 gradient updates
 
@@ -959,13 +959,13 @@ For a 10-dimensional Gaussian with $\sigma=1$, the mode $\mu$ has probability de
 
 | Factor | Q-Learning (Ch7) | REINFORCE + Baseline (Ch8) | Impact on Performance Gap |
 |:-------|:-----------------|:---------------------------|:-------------------------:|
-| **Sample reuse** | 20× (replay buffer) | 1× (on-policy) | ✓ Major: ~50% of gap |
-| **Variance** | Bootstrapped (low) | Monte Carlo (medium after baseline) | ✓ Moderate: ~30% of gap |
-| **Exploration** | CEM (structured) | Gaussian (isotropic) | ✓ Minor: ~20% of gap |
+| **Sample reuse** | 20x (replay buffer) | 1x (on-policy) | Major: ~50% of gap |
+| **Variance** | Bootstrapped (low) | Monte Carlo (medium after baseline) | Moderate: ~30% of gap |
+| **Exploration** | CEM (structured) | Gaussian (isotropic) | Minor: ~20% of gap |
 
 **Is the gap closable?** Yes, via modern methods that combine best of both worlds:
-- **Soft Actor-Critic (SAC)**: Policy gradients + Q-learning critic + replay buffer → achieves Q-learning sample efficiency with stochastic policies (Chapter 13)
-- **PPO with multi-step returns**: On-policy but uses parallel workers to collect 20× data per update (Chapter 12)
+- **Soft Actor-Critic (SAC)**: Policy gradients + Q-learning critic + replay buffer -> achieves Q-learning sample efficiency with stochastic policies (Chapter 13)
+- **PPO with multi-step returns**: On-policy but uses parallel workers to collect 20x data per update (Chapter 12)
 
 ---
 
@@ -973,11 +973,11 @@ For a 10-dimensional Gaussian with $\sigma=1$, the mode $\mu$ has probability de
 
 | What [THM-8.2] Says | What Experiments Show | Resolution |
 |:--------------------|:----------------------|:-----------|
-| Converges to local optimum | ✓ Converges, but to **worse** optimum than Q-learning (13.19 vs. 20.06) | Expected: on-policy sample inefficiency |
-| Unbiased gradient estimator | ✓ Unbiased, but **high variance** dominates in finite samples | Fixed by learned baseline (65% improvement) |
-| Model-free (no dynamics needed) | ✓ Works, but **throws away data** after one use | Inherent to policy gradients; SAC adds replay |
-| Handles continuous actions naturally | ✓ Handles, but requires **careful action scaling** and entropy regularization | Config: `a_max=5.0`, `entropy_coef=0.01` |
-| Baseline does not introduce bias | ✓ True, but **variance reduction is critical** for stability | Learned $V(s)$ reduces variance by 50% |
+| Converges to local optimum | Converges, but to **worse** optimum than Q-learning (13.19 vs. 20.06) | Expected: on-policy sample inefficiency |
+| Unbiased gradient estimator | Unbiased, but **high variance** dominates in finite samples | Fixed by learned baseline (65% improvement) |
+| Model-free (no dynamics needed) | Works, but **throws away data** after one use | Inherent to policy gradients; SAC adds replay |
+| Handles continuous actions naturally | Handles, but requires **careful action scaling** and entropy regularization | Config: `a_max=5.0`, `entropy_coef=0.01` |
+| Baseline does not introduce bias | True, but **variance reduction is critical** for stability | Learned $V(s)$ reduces variance by 50% |
 
 **Why does REINFORCE still matter?** Despite these limitations, policy gradients are the foundation of modern RL:
 
@@ -1003,9 +1003,9 @@ To isolate the contribution of each component, we ran ablations on the baseline 
 | No entropy regularization | 9.15 | Premature convergence, $\sigma \to 0$ by episode 1000 |
 
 **Key findings:**
-1. **Value network** contributes 65% improvement (7.99 → 13.19)
+1. **Value network** contributes 65% improvement (7.99 -> 13.19)
 2. **Value learning rate** matters: $\alpha_\phi \approx 3 \times \alpha_\theta$ is optimal (critic should learn faster than actor to provide stable baseline)
-3. **Entropy regularization** prevents collapse, contributing ~20% improvement (9.15 → 13.19 when comparing with/without)
+3. **Entropy regularization** prevents collapse, contributing ~20% improvement (9.15 -> 13.19 when comparing with/without)
 
 ---
 
@@ -1013,34 +1013,34 @@ To isolate the contribution of each component, we ran ablations on the baseline 
     When deploying REINFORCE with learned baseline in production:
 
     **Architecture:**
-    - ✓ Separate optimizers for policy and value (never share)
-    - ✓ Identical hidden layer sizes for actor and critic (e.g., both `[64, 64]`)
-    - ✓ Detach value baseline in advantage: `(G - V.detach())` to prevent value gradients affecting policy
+    - Separate optimizers for policy and value (never share)
+    - Identical hidden layer sizes for actor and critic (e.g., both `[64, 64]`)
+    - Detach value baseline in advantage: `(G - V.detach())` to prevent value gradients affecting policy
 
     **Hyperparameters:**
-    - ✓ Value learning rate 3-5× larger than policy: $\alpha_\phi \approx 3 \times \alpha_\theta$
-    - ✓ Entropy coefficient $\beta \in [0.001, 0.01]$ (scale with action dimension)
-    - ✓ Gradient clipping max norm 1.0 (essential for stability)
+    - Value learning rate 3-5x larger than policy: $\alpha_\phi \approx 3 \times \alpha_\theta$
+    - Entropy coefficient $\beta \in [0.001, 0.01]$ (scale with action dimension)
+    - Gradient clipping max norm 1.0 (essential for stability)
 
     **Monitoring:**
-    - ✓ Track value loss: Should decrease from $10^2$ to $<5$ over training
-    - ✓ Track advantage mean: Should oscillate around 0 (if constantly positive/negative, critic is biased)
-    - ✓ Track advantage std: Should be $\approx 0.5 \times$ raw return std (if not, baseline isn't helping)
+    - Track value loss: Should decrease from $10^2$ to $<5$ over training
+    - Track advantage mean: Should oscillate around 0 (if constantly positive/negative, critic is biased)
+    - Track advantage std: Should be $\approx 0.5 \times$ raw return std (if not, baseline isn't helping)
 
     **When to stop and upgrade to Actor-Critic:**
-    - If convergence takes >10k episodes → Need bootstrapping (Chapter 12)
-    - If sample efficiency is critical → Use SAC with replay (Chapter 13)
-    - If constraint satisfaction is required → Add Lagrangian terms (Chapter 10)
+    - If convergence takes >10k episodes -> Need bootstrapping (Chapter 12)
+    - If sample efficiency is critical -> Use SAC with replay (Chapter 13)
+    - If constraint satisfaction is required -> Add Lagrangian terms (Chapter 10)
 
 ---
 
-**Next:** §8.6 Control Theory Connections (LQR, Pontryagin, HJB)
+**Next:** Section 8.6 Control Theory Connections (LQR, Pontryagin, HJB)
 
 ---
 
 ## 8.6 Control Theory Connections
 
-Policy gradient methods have deep roots in optimal control theory. We briefly connect [THM-8.2] to classical results; a full treatment requires continuous-time analysis (see Appendix C and [@bertsekas:dynamic_programming:2012, Chap 4]).
+Policy gradient methods have deep roots in optimal control theory. We briefly connect [THM-8.2] to classical results; a full treatment requires continuous-time analysis (see **Appendix B** and [@bertsekas:dynamic_programming:2012, Chap 4]).
 
 ### 8.6.1 The Hamilton-Jacobi-Bellman Equation
 
@@ -1130,16 +1130,16 @@ where $A_t = r_t + \gamma V(s_{t+1}) - V(s_t)$ is the **advantage** (how much be
 
 **A3C (Asynchronous A2C)** runs multiple workers in parallel, each collecting trajectories and updating a shared policy. This decorrelates gradient estimates and stabilizes learning. A3C dominated Atari benchmarks (2016-2017) before being supplanted by PPO.
 
-**Why better than REINFORCE?** TD bootstrapping reduces variance by ~10× in practice [@mnih:asynchronous:2016, Table 1]. However, it introduces bias (if $V$ is inaccurate, the advantage estimate is wrong). The bias-variance tradeoff is controlled by $\lambda$-returns (GAE, [@schulman:high_dimensional:2015]).
+**Why better than REINFORCE?** TD bootstrapping reduces variance by ~10x in practice [@mnih:asynchronous:2016, Table 1]. However, it introduces bias (if $V$ is inaccurate, the advantage estimate is wrong). The bias-variance tradeoff is controlled by $\lambda$-returns (GAE, [@schulman:high_dimensional:2015]).
 
 **Code Pointer.** We implement A2C in Chapter 12; it requires adding a value network $V_\phi(s)$ and training it via TD error.
 
-!!! note "Code ↔ Agent (A2C, Forward Reference)"
+!!! note "Code <-> Agent (A2C, Forward Reference)"
     The advantage estimator in [EQ-8.22] becomes the update used by our actor in Chapter 12 (CH-12), where we instantiate $A_t = r_t + \gamma V_\phi(s_{t+1}) - V_\phi(s_t)$ with a neural value function. The A2C/A3C implementations there reuse the REINFORCE-style log-prob weighting from [EQ-8.6] but swap $G_t$ for this bootstrapped advantage.
 
 ### 8.7.2 Proximal Policy Optimization (PPO)
 
-**Problem:** Policy gradients can take "too large" steps, causing catastrophic performance collapse. If an update accidentally increases $\pi_\theta(a_{\text{bad}}|s)$ (a bad action), the next trajectory will be terrible, yielding a bad gradient, further degrading the policy—a **death spiral**.
+**Problem:** Policy gradients can take "too large" steps, causing catastrophic performance collapse. If an update accidentally increases $\pi_\theta(a_{\text{bad}}|s)$ (a bad action), the next trajectory will be terrible, yielding a bad gradient, further degrading the policy---a **death spiral**.
 
 **Solution (TRPO):** Constrain the update to stay within a "trust region" where the policy doesn't change too much. [@schulman:trust_region:2015] use KL divergence:
 
@@ -1167,7 +1167,7 @@ where $\epsilon \approx 0.2$. This prevents large policy updates by clipping the
 
 **Relation to REINFORCE:** PPO is REINFORCE + Actor-Critic + Trust Region + Importance Sampling. Each component addresses a specific failure mode. We implement PPO in Chapter 12.
 
-!!! note "Code ↔ Agent (PPO, Forward Reference)"
+!!! note "Code <-> Agent (PPO, Forward Reference)"
     The clipped objective [EQ-8.24] is exactly the loss minimized by our PPO-style policies in Chapter 12 (CH-12): we plug in the advantage estimate from [EQ-8.22], reuse the REINFORCE log-prob terms from [EQ-8.6], and monitor the empirical KL between old and new policies to keep updates within a trust region.
 
 ### 8.7.3 Soft Actor-Critic (SAC)
@@ -1207,7 +1207,7 @@ The most visible application of policy gradients today is **RLHF for large langu
 - Need for stochastic exploration (diverse ranking strategies, diverse text)
 - Continuous improvement loop (A/B tests in production, human feedback for LLMs)
 
-The techniques we develop in this chapter (entropy regularization, baseline variance reduction) are directly applicable to RLHF. See [@ouyang:training_language:2022] for OpenAI's RLHF methodology. Our **Lab 8.4 (RLHF Simulation)** is an optional advanced lab that mirrors this three-phase structure (SFT → reward model → KL-regularized policy gradient) in the search-ranking setting as a structural analogy to InstructGPT.
+The techniques we develop in this chapter (entropy regularization, baseline variance reduction) are directly applicable to RLHF. See [@ouyang:training_language:2022] for OpenAI's RLHF methodology. Our **Lab 8.4 (RLHF Simulation)** is an optional advanced lab that mirrors this three-phase structure (SFT -> reward model -> KL-regularized policy gradient) in the search-ranking setting as a structural analogy to InstructGPT.
 
 ---
 
@@ -1233,23 +1233,23 @@ We close with implementation guidance for practitioners deploying policy gradien
     - Use squashed Gaussian ($a = a_{\max} \tanh(\tilde{a})$) if strict bounds are needed
 
     **Feature Engineering:**
-    - Rich features (price sensitivity, ranking statistics) improve sample efficiency 2×
+    - Rich features (price sensitivity, ranking statistics) improve sample efficiency 2x
     - For deep end-to-end learning, use Actor-Critic (Chapter 12), not raw REINFORCE
 
     **Monitoring:**
     - Track entropy $H(\pi)$ per episode: if $H < 0.1 \times H_{\text{initial}}$, increase $\beta$
     - Track policy gradient norm: if $\|\nabla J\| < 10^{-4}$, check for vanishing gradients
-    - Compare to Q-learning baseline: if gap is >2×, consider hybrid methods (SAC)
+    - Compare to Q-learning baseline: if gap is >2x, consider hybrid methods (SAC)
 
     **Reproducibility:**
     - Set seeds for `torch.manual_seed`, `np.random.seed`, `env.seed()`
     - Log hyperparameters with Git commit hash in experiment metadata
-    - Run at least 3 seeds; report mean ± std of final 100-episode returns
+    - Run at least 3 seeds; report mean +/- std of final 100-episode returns
 
     **Config Alignment:**
-    - `REINFORCEConfig.learning_rate` → Training script `--lr` arg
-    - `REINFORCEConfig.hidden_sizes` → Policy network architecture
-    - `REINFORCEConfig.device` → 'cuda' if available, else 'cpu'
+    - `REINFORCEConfig.learning_rate` -> Training script `--lr` arg
+    - `REINFORCEConfig.hidden_sizes` -> Policy network architecture
+    - `REINFORCEConfig.device` -> 'cuda' if available, else 'cpu'
 
 ---
 
@@ -1277,14 +1277,14 @@ Implement policy gradient [ALG-8.1] for the 1D LQR problem: $s_{t+1} = s_t + a_t
 
 ### Labs
 
-!!! note "Code ↔ Algorithm (Lab Harnesses)"
-    - **Lab 8.1 & 8.2**: `scripts/ch08/reinforce_demo.py` and `scripts/ch08/neural_reinforce_demo.py` implement the core REINFORCE and deep end-to-end experiments described in §8.5.
+!!! note "Code <-> Algorithm (Lab Harnesses)"
+    - **Lab 8.1 & 8.2**: `scripts/ch08/reinforce_demo.py` and `scripts/ch08/neural_reinforce_demo.py` implement the core REINFORCE and deep end-to-end experiments described in Section 8.5.
     - **Lab 8.3 (Gaussian Ablations)**: `scripts/ch08/policy_ablation.py` provides a turnkey ablation harness for Gaussian, Beta, squashed, and fixed-std policies on the Zoosim search env.
-    - **Lab 8.4 (RLHF Simulation)**: `scripts/ch08/rlhf_demo.py` implements a compact three-phase RLHF-style pipeline (SFT → reward modeling → KL-regularized policy gradient) on top of the same environment.
+    - **Lab 8.4 (RLHF Simulation)**: `scripts/ch08/rlhf_demo.py` implements a compact three-phase RLHF-style pipeline (SFT -> reward modeling -> KL-regularized policy gradient) on top of the same environment.
 
 **Lab 8.1: REINFORCE with Rich Features**
 
-Run `scripts/ch08/reinforce_demo.py` with rich features and reproduce the results from §8.5.2:
+Run `scripts/ch08/reinforce_demo.py` with rich features and reproduce the results from Section 8.5.2:
 
 ```bash
 python scripts/ch08/reinforce_demo.py \
@@ -1296,12 +1296,12 @@ python scripts/ch08/reinforce_demo.py \
   --seed 2025
 ```
 
-**Expected output:** Final average return ~11.5 (±0.5 across seeds).
+**Expected output:** Final average return ~11.5 (+/-0.5 across seeds).
 
 **Tasks:**
 1. Plot learning curves: return vs. episode, entropy vs. episode
 2. Ablate entropy regularization: set `--entropy 0` and observe collapse
-3. Compare to Q-learning baseline (Chapter 7): quantify the 2× gap
+3. Compare to Q-learning baseline (Chapter 7): quantify the 2x gap
 
 **Lab 8.2: Deep End-to-End REINFORCE (Failure Analysis)**
 
@@ -1353,7 +1353,7 @@ This chapter developed policy gradient methods from first principles, proving th
 
 1. **Direct optimization**: Policy gradients optimize $\pi_\theta(a|s)$ directly, avoiding the value-function detour and maximization bottleneck.
 
-2. **Model-free**: The gradient estimator [EQ-8.6] requires only trajectory rollouts—no dynamics model, no bootstrapping.
+2. **Model-free**: The gradient estimator [EQ-8.6] requires only trajectory rollouts---no dynamics model, no bootstrapping.
 
 3. **High variance**: Monte Carlo returns yield unbiased but noisy gradients. Baselines [THM-8.2.2] and entropy regularization [EQ-8.15] are essential for stability.
 
@@ -1361,7 +1361,7 @@ This chapter developed policy gradient methods from first principles, proving th
 
 5. **Modern methods**: PPO (trust regions), SAC (entropy + Q-learning), and RLHF (LLM alignment) all build on the REINFORCE foundation, adding variance reduction and constraint handling.
 
-**Next Chapter:** Off-Policy Evaluation (Chapter 9) addresses the data efficiency problem by learning from logged data without live interaction—critical for production e-commerce where A/B tests are expensive.
+**Next Chapter:** Off-Policy Evaluation (Chapter 9) addresses the data efficiency problem by learning from logged data without live interaction---critical for production e-commerce where A/B tests are expensive.
 
 ---
 
@@ -1369,21 +1369,21 @@ This chapter developed policy gradient methods from first principles, proving th
 
 Full citations in `references.bib`. Key references:
 
-- [@williams:simple_statistical:1992] — Original REINFORCE paper
-- [@sutton:policy_gradient:2000] — Policy Gradient Theorem proof
-- [@schulman:high_dimensional:2015] — Trust regions, GAE
-- [@schulman:proximal_policy:2017] — PPO
-- [@haarnoja:soft_actor_critic:2018] — SAC
-- [@chen:top_k_reinforce:2019] — YouTube REINFORCE recommender (WSDM 2019)
-- [@ouyang:training_language:2022] — RLHF for LLMs (InstructGPT)
-- [@fazel:global_convergence:2018] — Policy gradient convergence for LQR
+- [@williams:simple_statistical:1992] --- Original REINFORCE paper
+- [@sutton:policy_gradient:2000] --- Policy Gradient Theorem proof
+- [@schulman:high_dimensional:2015] --- Trust regions, GAE
+- [@schulman:proximal_policy:2017] --- PPO
+- [@haarnoja:soft_actor_critic:2018] --- SAC
+- [@chen:top_k_reinforce:2019] --- YouTube REINFORCE recommender (WSDM 2019)
+- [@ouyang:training_language:2022] --- RLHF for LLMs (InstructGPT)
+- [@fazel:global_convergence:2018] --- Policy gradient convergence for LQR
 
 ---
 
 **Production Code:**
-- `zoosim/policies/reinforce.py:82-199` — REINFORCEAgent implementation
-- `scripts/ch08/reinforce_demo.py:30-130` — Training script (rich features)
-- `scripts/ch08/neural_reinforce_demo.py:38-130` — Deep end-to-end experiment
+- `zoosim/policies/reinforce.py:82-199` --- REINFORCEAgent implementation
+- `scripts/ch08/reinforce_demo.py:30-130` --- Training script (rich features)
+- `scripts/ch08/neural_reinforce_demo.py:38-130` --- Deep end-to-end experiment
 
 **Knowledge Graph Entries:**
 - [THM-8.2]: Policy Gradient Theorem
