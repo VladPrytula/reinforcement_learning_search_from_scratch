@@ -1401,7 +1401,7 @@ Before you treat the simulator as a production‑grade world model, it is worth 
 
 Complete runnable exercises and labs are provided in:
 
-**→ `docs/book/drafts/ch04/exercises_labs.md`**
+**→ `docs/book/ch04/exercises_labs.md`**
 
 **Preview of exercises:**
 

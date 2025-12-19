@@ -121,8 +121,8 @@ nodes:
     status: complete
     file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
     summary: Multi-objective reward; boosts-as-actions; #EQ-1.2 and preview #EQ-1.2-prime.
-    defines: [EQ-1.1, EQ-1.2, EQ-1.3, EQ-1.4, EQ-1.5, EQ-1.6, EQ-1.7, EQ-1.8, EQ-1.9, EQ-1.10, EQ-1.11, EQ-1.12, EQ-1.13, EQ-1.14, EQ-1.15, EQ-1.16, EQ-1.17, EQ-1.18, EQ-1.19, EQ-1.20, EQ-1.21, REM-1.2.1, EQ-1.2-prime, DEF-1.4.1, ASM-1.7.1]
-    proves: [THM-1.7.2, THM-1.7.3, THM-1.9.1]
+    defines: [EQ-1.1, EQ-1.2, EQ-1.3, EQ-1.4, EQ-1.5, EQ-1.6, EQ-1.7, EQ-1.8, EQ-1.9, EQ-1.10, EQ-1.11, EQ-1.12, EQ-1.13, EQ-1.14, EQ-1.15, EQ-1.16, EQ-1.17, EQ-1.18, EQ-1.19, EQ-1.20, EQ-1.21, REM-1.2.1, EQ-1.2-prime, DEF-1.4.1]
+    proves: [THM-1.9.1]
     forward_refs: [CH-11]
 
   - id: EQ-1.1
@@ -163,11 +163,15 @@ nodes:
   - id: CH-11
     kind: chapter
     title: Chapter 11 — Multi-Episode Inter-Session MDP
-    status: in_progress
-    file: docs/book/syllabus.md
-    summary: Introduces retention/hazard state; operationalizes #EQ-1.2-prime with session_env + retention.
+    status: complete
+    file: docs/book/ch11/ch11_multi_episode_mdp.md
+    summary: Introduces retention/hazard state; operationalizes #EQ-1.2-prime with session_env + retention and validates policy ordering, retention curves, and value stability via Labs 11.1–11.3.
     depends_on: [EQ-1.2-prime, MOD-zoosim.session_env, MOD-zoosim.retention]
     provides: []
+    labs:
+      - Lab 11.1: Single-step vs multi-episode value
+      - Lab 11.2: Retention curves and ΔRank@k
+      - Lab 11.3: Value estimation stability
 
   - id: MOD-zoosim.config
     kind: module
@@ -506,7 +510,15 @@ nodes:
     file: docs/book/ch07/ch07_continuous_actions.md
     summary: Continuous boost optimization using Q-function approximation with neural network ensembles and CEM-based action selection with rigorous measure-theoretic foundations.
     depends_on: [CH-6]
-    defines: [SETUP-7.1, DEF-7.1, DEF-7.2, DEF-7.3, PROB-7.1, ALG-7.1, ALG-7.2, THM-7.4.1, VERIFY-7.1, EQ-7.1, EQ-7.2, EQ-7.3, EQ-7.4, EQ-7.5, EQ-7.6, EQ-7.7, EQ-7.8, EQ-7.9, EQ-7.10, EQ-7.11, EQ-7.12, EQ-7.13]
+    defines: [SEC-CH7-WARMUP-7.1, SETUP-7.1, DEF-7.1, DEF-7.2, DEF-7.3, PROB-7.1, ALG-7.1, ALG-7.2, THM-7.4.1, VERIFY-7.1, EQ-7.1, EQ-7.2, EQ-7.3, EQ-7.4, EQ-7.5, EQ-7.6, EQ-7.7, EQ-7.8, EQ-7.9, EQ-7.10, EQ-7.11, EQ-7.12, EQ-7.13]
+
+  - id: SEC-CH7-WARMUP-7.1
+    kind: section
+    title: Warm-up — Tabular Q as Regression
+    status: in_progress
+    file: docs/book/ch07/ch07_continuous_actions.md
+    summary: Minimal tabular Q-function example with 3 contexts and 4 actions, illustrating Q(x,a) as supervised regression before moving to neural function approximation and continuous actions.
+    depends_on: [CH-1, CH-6]
 
   - id: SETUP-7.1
     kind: section
@@ -1307,30 +1319,14 @@ nodes:
     summary: Formal definition of (X, A, R, ρ) tuple for search ranking problem.
     depends_on: [EQ-1.2, EQ-1.4]
 
-  - id: ASM-1.7.1
+  - id: ASSUMP-2.6.1
     kind: definition
-    title: Well-Defined Rewards
+    title: OPE Probability Conditions
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
-    anchor: "{#ASM-1.7.1}"
-    summary: Measurability, finite expectation, and absolute continuity conditions for rewards.
-    depends_on: [EQ-1.12]
-
-  - id: THM-1.7.2
-    kind: theorem
-    title: Existence of optimal policy
-    status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
-    anchor: "{#THM-1.7.2}"
-    summary: Compact action space + bounded reward → optimal policy exists.
-
-  - id: THM-1.7.3
-    kind: theorem
-    title: Lower bound for contextual bandits
-    status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
-    anchor: "{#THM-1.7.3}"
-    summary: Regret lower bound scales with sqrt(T·K·d).
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#ASSUMP-2.6.1}"
+    summary: "(1) Measurability: R(x,a,ω) measurable in ω; (2) Integrability: 𝔼[|R|] < ∞; (3) Absolute continuity (coverage): π_eval ≪ π_log ensures importance weights are well-defined."
+    depends_on: []
 
   - id: THM-1.9.1
     kind: theorem
@@ -1339,6 +1335,59 @@ nodes:
     file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
     anchor: "{#THM-1.9.1}"
     summary: Strict feasibility ensures Lagrangian methods converge.
+
+  # Appendices (A reserved for Bayesian per syllabus)
+  - id: APPENDIX-B
+    kind: doc
+    title: "Appendix B — Control-Theoretic Background (LQR, HJB, Deep RL)"
+    status: complete
+    file: docs/book/appendix_b_control_theory.md
+    summary: Bridges classical control theory (LQR, HJB equations) to modern deep RL. Shows how Bellman optimality connects to Hamilton-Jacobi-Bellman PDEs and how control-theoretic insights inform algorithm design.
+    defines: [THM-B.1.1]
+    see_also: [CH-3, CH-8, CH-10, CH-11]
+
+  - id: THM-B.1.1
+    kind: theorem
+    title: Optimal LQR Solution
+    status: complete
+    file: docs/book/appendix_b_control_theory.md
+    anchor: "{#THM-B.1.1}"
+    summary: Under controllability, optimal LQR policy is linear in state with gain from discrete algebraic Riccati equation.
+
+  - id: APPENDIX-C
+    kind: doc
+    title: "Appendix C — Convex Optimization for Constrained MDPs"
+    status: complete
+    file: docs/book/appendix_c_convex_optimization.md
+    summary: Rigorous treatment of Lagrangian duality, Slater's condition, and primal-dual methods for constrained RL. Establishes strong duality for randomized policies and KKT conditions.
+    defines: [THM-C.2.1, THM-C.5.1, ALG-C.5.1]
+    see_also: [CH-1, CH-10, CH-14]
+
+  - id: THM-C.2.1
+    kind: theorem
+    title: Slater's Condition for Strong Duality
+    status: complete
+    file: docs/book/appendix_c_convex_optimization.md
+    anchor: "{#THM-C.2.1}"
+    summary: Under strict feasibility (∃π₀ with gᵢ(π₀) > 0 for all i), the constrained MDP problem has strong duality. Primal and dual optimal values coincide, Lagrangian saddle-point problem is equivalent, KKT conditions are necessary and sufficient.
+
+  - id: THM-C.5.1
+    kind: theorem
+    title: Primal-Dual Convergence
+    status: complete
+    file: docs/book/appendix_c_convex_optimization.md
+    anchor: "{#THM-C.5.1}"
+    summary: Under convexity + Slater + Robbins-Monro step sizes, primal-dual gradient ascent-descent converges to saddle point.
+    depends_on: [THM-C.2.1]
+
+  - id: ALG-C.5.1
+    kind: algorithm
+    title: Primal-Dual RL Algorithm
+    status: complete
+    file: docs/book/appendix_c_convex_optimization.md
+    anchor: "{#ALG-C.5.1}"
+    summary: Alternating primal step (policy gradient on Lagrangian) and dual step (multiplier adjustment for constraint violations).
+    depends_on: [THM-C.2.1, THM-C.5.1]
 
   - id: CH-10
     kind: chapter
@@ -1700,7 +1749,7 @@ nodes:
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     summary: Measure-theoretic foundations for click models and OPE; PBM/DBN, conditional expectation, filtrations, IPS.
-    defines: [DEF-2.2.1, DEF-2.2.2, DEF-2.2.3, DEF-2.2.4, DEF-2.2.5, THM-2.2.1, THM-2.2.2, THM-2.2.3, DEF-2.3.1, DEF-2.3.2, THM-2.3.1, THM-2.3.2, THM-2.3.3, DEF-2.4.1, DEF-2.4.2, DEF-2.4.3, THM-2.4.1, DEF-2.5.1, DEF-2.5.2, THM-2.5.1, DEF-2.5.3, PROP-2.5.4, PROP-2.5.5, EQ-2.1, EQ-2.2, EQ-2.3, EQ-2.10, EQ-2.11, EQ-2.12, EQ-2.13, EQ-2.14, DEF-2.6.1, DEF-2.6.2, THM-2.6.1, EQ-2.5, EQ-2.6, EQ-2.7, THM-2.6.2, EQ-2.8, THM-2.8.1, REM-2.8.2, EQ-2.9]
+    defines: [DEF-2.2.1, DEF-2.2.2, DEF-2.2.3, DEF-2.2.4, DEF-2.2.5, THM-2.2.1, THM-2.2.2, THM-2.2.3, DEF-2.3.1, DEF-2.3.2, THM-2.3.1, THM-2.3.2, THM-2.3.3, DEF-2.4.1, DEF-2.4.2, DEF-2.4.3, THM-2.4.1, DEF-2.5.1, DEF-2.5.2, THM-2.5.1, DEF-2.5.3, PROP-2.5.4, PROP-2.5.5, EQ-2.1, EQ-2.2, EQ-2.3, EQ-2.10, EQ-2.11, EQ-2.12, EQ-2.13, EQ-2.14, ASSUMP-2.6.1, DEF-2.6.1, DEF-2.6.2, THM-2.6.1, EQ-2.5, EQ-2.6, EQ-2.7, THM-2.6.2, EQ-2.8, THM-2.8.1, REM-2.8.2, THM-2.8.3, EQ-2.9]
 
   - id: DEF-2.2.1
     kind: definition
@@ -1964,6 +2013,15 @@ nodes:
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     anchor: "{#REM-2.8.2}"
     summary: Measurable selection (Kuratowski–Ryll‑Nardzewski) yields measurable greedy policies under mild assumptions.
+
+  - id: THM-2.8.3
+    kind: theorem
+    title: Kuratowski--Ryll--Nardzewski Selection (RL specialization)
+    status: complete
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.8.3}"
+    summary: "Under standard Borel state spaces and compact metric action spaces, if Q(s,a) is jointly measurable and upper semicontinuous in a, there exists a measurable greedy policy π*(s) = argmax_a Q(s,a). Ensures Bellman operators produce measurable functions."
+    depends_on: []
 
   - id: SEC-CH2-2.7.3
     kind: section
@@ -3138,7 +3196,7 @@ nodes:
     file: docs/book/ch09/ch09_off_policy_evaluation.md
     summary: Evaluates policies from logged data without online interaction; covers IPS, SNIPS, PDIS, DR, FQE, SWITCH, MAGIC estimators with theory-practice gap analysis.
     depends_on: [CH-3, CH-7, CH-8]
-    defines: [DEF-9.1.1, DEF-9.1.2, DEF-9.1.3, DEF-9.2.1, DEF-9.2.2, DEF-9.2.3, DEF-9.3.1, DEF-9.4.1, DEF-9.4.2, DEF-9.4.3, DEF-9.4.4, ASSUMP-9.1.1, ASSUMP-9.1.2, ASSUMP-9.1.3, ASSUMP-9.1.4, THM-9.2.0-RN, THM-9.2.1, THM-9.2.2, THM-9.2.3, THM-9.4.1, LEM-9.2.1, PROP-9.6.1, REM-9.2.0, REM-9.5.1]
+    defines: [DEF-9.1.1, DEF-9.1.2, DEF-9.1.3, DEF-9.2.1, DEF-9.2.2, DEF-9.2.3, DEF-9.3.1, DEF-9.4.1, DEF-9.4.2, DEF-9.4.3, DEF-9.4.4, ASSUMP-9.1.1, ASSUMP-9.1.2, ASSUMP-9.1.3, ASSUMP-9.1.4, THM-9.2.0-RN, THM-9.2.1, THM-9.2.2, THM-9.2.3, THM-9.4.1, LEM-9.2.1, PROP-9.6.0, PROP-9.6.1, REM-9.2.0, REM-9.5.1]
 
   # Definitions
 
@@ -3339,14 +3397,23 @@ nodes:
 
   # Propositions
 
-  - id: PROP-9.6.1
+  - id: PROP-9.6.0
     kind: proposition
     title: Concentration Bound for IPS
     status: complete
     file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#PROP-9.6.0-IPS-concentration}"
+    summary: "Hoeffding-style bound for IPS: under ASSUMP-9.1.1–9.1.4, |Ĵ_IS - J(π_e)| ≤ (ρ_max^T · G_max)/√n · √(2 log(2/δ)) with probability ≥ 1-δ; highlights exponential horizon dependence and distribution shift penalty."
+    see_also: [ASSUMP-9.1.1, ASSUMP-9.1.4, THM-9.2.1, EQ-9.10]
+
+  - id: PROP-9.6.1
+    kind: proposition
+    title: Negative Bias for Nonnegative Rewards
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
     anchor: "{#PROP-9.6.1}"
-    summary: "Under ASSUMP-9.1.1–9.1.4, |Ĵ_IS - J(π_e)| ≤ (ρ_max^T · G_max)/√n · √(2 log(2/δ)) with probability ≥ 1-δ; reveals exponential horizon dependence and distribution shift penalty in IPS."
-    see_also: [ASSUMP-9.1.1, ASSUMP-9.1.4, THM-9.2.1, EQ-9.9]
+    summary: "For clipped IPS with nonnegative rewards, E[Ĵ_clip(π_e)] ≤ J(π_e), with strict inequality whenever clipping occurs on trajectories with positive reward; shows clipped IPS is a conservative estimator."
+    see_also: [EQ-9.36]
 
   # Remarks
 
@@ -3670,8 +3737,6 @@ edges:
   - {src: CH-1, dst: EQ-1.7, rel: defines, status: complete}
   - {src: CH-1, dst: EQ-1.11, rel: defines, status: complete}
   - {src: CH-1, dst: EQ-1.12, rel: defines, status: complete}
-  - {src: CH-1, dst: THM-1.7.2, rel: proves, status: complete}
-  - {src: CH-1, dst: THM-1.7.3, rel: proves, status: complete}
   - {src: CH-1, dst: THM-1.9.1, rel: proves, status: complete}
   - {src: MOD-zoosim.reward, dst: EQ-1.2, rel: implements, status: complete}
   - {src: MOD-zoosim.env, dst: EQ-1.11, rel: implements, status: complete}
@@ -3701,7 +3766,6 @@ edges:
   - {src: CH-1, dst: EQ-1.20, rel: defines, status: complete}
   - {src: CH-1, dst: EQ-1.21, rel: defines, status: complete}
   - {src: CH-1, dst: DEF-1.4.1, rel: defines, status: complete}
-  - {src: CH-1, dst: ASM-1.7.1, rel: defines, status: complete}
   - {src: DEF-1.4.1, dst: EQ-1.2, rel: depends_on, status: complete}
   - {src: CH-2, dst: DEF-2.2.1, rel: defines, status: in_progress}
   - {src: CH-2, dst: DEF-2.2.2, rel: defines, status: in_progress}
@@ -3732,9 +3796,11 @@ edges:
   - {src: CH-2, dst: EQ-2.13, rel: defines, status: in_progress}
   - {src: CH-2, dst: EQ-2.14, rel: defines, status: in_progress}
   - {src: MOD-zoosim.behavior, dst: DEF-2.5.3, rel: implements, status: in_progress}
+  - {src: CH-2, dst: ASSUMP-2.6.1, rel: defines, status: complete}
   - {src: CH-2, dst: DEF-2.6.1, rel: defines, status: in_progress}
   - {src: CH-2, dst: DEF-2.6.2, rel: defines, status: in_progress}
   - {src: CH-2, dst: THM-2.6.1, rel: defines, status: in_progress}
+  - {src: THM-2.6.1, dst: ASSUMP-2.6.1, rel: depends_on, status: complete}
   - {src: CH-2, dst: EQ-2.5, rel: defines, status: in_progress}
   - {src: CH-2, dst: EQ-2.6, rel: defines, status: in_progress}
   - {src: SEC-CH2-2.7.4, dst: THM-2.6.2, rel: uses, status: in_progress}

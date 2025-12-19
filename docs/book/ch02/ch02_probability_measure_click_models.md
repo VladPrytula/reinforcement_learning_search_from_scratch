@@ -50,6 +50,17 @@ The **Position Bias Model (PBM)** and **Dynamic Bayesian Network (DBN)** formali
 
 Let's begin.
 
+??? tip "How much measure theory do you need? (Reading guide)"
+    **For practitioners focused on implementation:** You can safely skim §§2.2--2.4 (measure-theoretic foundations) on first pass and return to them when a later chapter invokes a specific result. The essential material for algorithms is:
+
+    - **§2.5 (Click Models)**: Position Bias Model and DBN---these directly parameterize user behavior in the simulator
+    - **§2.6 (Propensity Scoring)**: Foundation for importance weighting in off-policy evaluation (Chapter 9)
+    - **§2.7--2.8 (Computational Verification & RL Bridges)**: NumPy experiments and connections to MDP formalism
+
+    **For readers building theoretical depth:** §§2.2--2.4 provide the rigorous foundations that make policy gradient interchange (Chapter 8) and Radon--Nikodym importance weights (Chapter 9) theorems rather than heuristics. The proofs there are self-contained and follow Folland's *Real Analysis* [@folland:real_analysis:1999].
+
+    **Bottom line:** If you see a $\sigma$-algebra and your eyes glaze over, skip to §2.5 and come back later. The algorithms will still work; you'll just be taking the theory on faith temporarily.
+
 !!! note for all that follows "Assumptions (probability and RL foundations)"
     - Spaces $\mathcal{S}$, $\mathcal{A}$, contexts $\mathcal{X}$, and outcome spaces are standard Borel (measurable subsets of Polish spaces, i.e. separable completely metrizable topological spaces). This guarantees existence of regular conditional probabilities and measurable stochastic kernels.
     - Rewards are integrable: $R \in L^1$. For discounted RL with $0 \le \gamma < 1$, assume bounded rewards (or a uniform bound on expected discounted sums) so value iteration is well-defined.
@@ -752,6 +763,26 @@ A central challenge in RL for search: we observe clicks under a **logging policy
 
 ### 2.6.2 Propensity Scores and Inverse Propensity Scoring (IPS)
 
+To formally define the IPS estimator and prove its unbiasedness, we first state the regularity conditions required for off-policy evaluation.
+
+**Assumption 2.6.1 (OPE Probability Conditions).** {#ASSUMP-2.6.1}
+
+For all $(x, a) \in \mathcal{X} \times \mathcal{A}$:
+
+1. **Measurability**: $R(x, a, \omega)$ is measurable as a function of $\omega$.
+2. **Integrability**: $\mathbb{E}[|R(x, a, \omega)|] < \infty$ (finite first moment).
+3. **Absolute continuity (coverage)**: The outcome kernel $P(\cdot \mid x, a)$ is absolutely continuous with respect to some reference measure $\mu$ on $\Omega$. Equivalently, if the evaluation policy $\pi_{\text{eval}}$ assigns positive probability to action $a$ in context $x$, then the logging policy $\pi_{\text{log}}$ must also assign positive probability: $\pi_{\text{eval}}(a \mid x) > 0 \Rightarrow \pi_{\text{log}}(a \mid x) > 0$.
+
+Conditions (1)–(2) ensure $Q(x,a) := \mathbb{E}[R(x,a,\omega) \mid x,a]$ is a well-defined finite Lebesgue integral. Condition (3) is the **coverage** or **overlap** assumption: it guarantees that likelihood ratios $dP(\cdot\mid x,a') / dP(\cdot\mid x,a)$ exist whenever we reweight from the logging policy to the evaluation policy, preventing division by zero in importance weights.
+
+> **Remark 2.6.1a (Why absolute continuity?).**
+> Off-policy evaluation requires reweighting logged data: we estimate the value of a new policy $\pi_{\text{eval}}$ using data collected under a different policy $\pi_{\text{log}}$. Conceptually, we divide "probabilities under $\pi_{\text{eval}}$" by "probabilities under $\pi_{\text{log}}$." Absolute continuity formalizes "the denominator is never zero where the numerator is positive," ensuring these ratios are well-defined. The Radon–Nikodym theorem (§2.3) provides the measure-theoretic machinery for this reweighting.
+
+> **Remark 2.6.1b (Verification for our setting).**
+> In the search ranking simulator (Chapters 4–5), condition (1) holds because rewards aggregate measurable click outcomes; condition (2) holds because rewards are bounded (GMV, CM2, and click indicators are all bounded functions of product prices and scores); condition (3) requires the logging policy to have sufficient **exploration**—e.g., an $\varepsilon$-greedy policy with $\varepsilon > 0$ ensures all actions have positive probability, satisfying coverage.
+
+---
+
 **Definition 2.6.1** (Propensity Score) {#DEF-2.6.1}
 
 Let $\pi_0$ be a stochastic logging policy that produces ranking $a \in \mathcal{A}$ for context $x$ with probability $\pi_0(a \mid x)$. The **propensity score** of action (ranking) $a$ in context $x$ is
@@ -770,12 +801,7 @@ $$
 
 **Theorem 2.6.1** (Unbiasedness of IPS) {#THM-2.6.1}
 
-Assume:
-1. **Positivity**: $\pi_0(a \mid x) > 0$ for all $a$ with $\pi_1(a \mid x) > 0$
-2. **Correct logging**: Observed actions $a_i$ are sampled from $\pi_0(\cdot \mid x_i)$
-3. **Integrability**: $\mathbb{E}[|R(x,a,\omega)|] < \infty$
-
-Then $\hat{V}_{\text{IPS}}(\pi_1)$ is **unbiased**:
+Under Assumption 2.6.1 (OPE Probability Conditions) and assuming **correct logging** (observed actions $a_i$ are sampled from $\pi_0(\cdot \mid x_i)$), the IPS estimator is **unbiased**:
 $$
 \mathbb{E}[\hat{V}_{\text{IPS}}(\pi_1)] = V(\pi_1) := \mathbb{E}_{x \sim \rho, a \sim \pi_1(\cdot \mid x)}[R(x, a)].
 $$
@@ -804,7 +830,11 @@ $$
 $$
 $\square$
 
-**Remark 2.6.1** (The importance sampling mechanism). This proof uses the **importance sampling technique**: reweight samples from distribution $\pi_0$ to estimate expectations under $\pi_1$. The ratio $\pi_1(a \mid x)/\pi_0(a \mid x)$ is the **Radon–Nikodym derivative** $d\pi_1/d\pi_0$ when $\pi_0$ dominates $\pi_1$ (positivity assumption). In measure‑theoretic terms, $V(\pi_1)=\int R \, d(\rho\times\pi_1)$ and IPS implements a **change of measure**: $d(\rho\times\pi_1) = (d\pi_1/d\pi_0)\, d(\rho\times\pi_0)$.
+**Remark 2.6.1** (The importance sampling mechanism). This proof uses the **importance sampling technique**: reweight samples from distribution $\pi_0$ to estimate expectations under $\pi_1$. In the finite‑action case, fix a context $x$ and view $\mu(a) := \pi_0(a \mid x)$ and $\nu(a) := \pi_1(a \mid x)$ as probability mass functions on $\mathcal{A}$. The Radon–Nikodym derivative $d\nu/d\mu$ is just the pointwise ratio $w(a) = \nu(a)/\mu(a)$ on actions with $\mu(a) > 0$, and IPS computes
+$$
+\sum_a w(a) R(x,a)\,\mu(a) = \sum_a R(x,a)\,\nu(a),
+$$
+that is, the expectation of $R$ under $\nu$ via a **change of measure** from $\mu$ to $\nu$. In full measure‑theoretic notation, $V(\pi_1)=\int R \, d(\rho\times\pi_1)$ and IPS implements the same mechanism using the Radon–Nikodym derivative $d(\rho\times\pi_1)/d(\rho\times\pi_0) = d\pi_1/d\pi_0$, so that $d(\rho\times\pi_1) = (d\pi_1/d\pi_0)\, d(\rho\times\pi_0)$. For the topological and measurability assumptions that guarantee these derivatives and conditional expectations behave well, see the “Background: Standard Borel and Polish Spaces” box in §2.2.
 
 **Remark 2.6.2** (High variance caveat). While IPS is unbiased, it has **high variance** when $\pi_1$ and $\pi_0$ differ substantially (i.e., when $\pi_1(a \mid x)/\pi_0(a \mid x)$ is large for some $(x, a)$). This is the **curse of importance sampling**. Chapter 9 introduces variance-reduction techniques: **capping**, **doubly robust estimation**, and **SWITCH estimators**.
 
@@ -817,16 +847,6 @@ $$
 $$
 {#EQ-2.7}
 
-**Proposition 2.6.2** (Negative bias for nonnegative rewards) {#THM-2.6.2}.
-
-Assume $r_i \ge 0$ and the positivity and integrability conditions above. Then
-$$
-\mathbb{E}[\hat{V}_{\text{clip}}(\pi_1)] \le V(\pi_1),
-$$
-with strict inequality whenever $\mathbb{P}\big(\tfrac{\pi_1}{\pi_0}(a\mid x) > c, \; r>0\big) > 0$.
-
-*Proof.* Since $\min\{c, w\} \le w$ for $w \ge 0$, we have $\min\{c, w\} r \le w r$ for $r \ge 0$. Taking expectations yields the result; strict inequality holds when clipping occurs with positive probability and $r>0$. $\square$
-
 **Definition 2.6.4** (Self‑normalized IPS, SNIPS) {#DEF-2.6.4}
 
 The **SNIPS** estimator normalizes by the sum of weights:
@@ -836,7 +856,7 @@ $$
 $$
 {#EQ-2.8}
 
-**Remark 2.6.5** (SNIPS properties). SNIPS reduces variance but loses unbiasedness; under mild regularity it is consistent as $N \to \infty$.
+**Remark 2.6.5** (SNIPS properties). SNIPS reduces variance but loses unbiasedness; under mild regularity it is consistent as $N \to \infty$. Clipped IPS [EQ-2.7] trades bias for variance: for nonnegative rewards, clipping induces **negative bias** (the estimator systematically underestimates). Formal bias and consistency results, along with numerical experiments illustrating the bias--variance trade-off, live in **Chapter 9** (Off-Policy Evaluation), specifically [PROP-9.6.1] and Lab 9.5.
 
 ---
 
@@ -1289,97 +1309,6 @@ The numerical experiment confirms the Tower Property: averaging the conditional 
 
 ---
 
-### 2.7.4 Clipped IPS and SNIPS: Bias–Variance Illustration
-
-We illustrate the **negative bias** of clipped IPS [THM-2.6.2] and the **variance reduction** of SNIPS [EQ-2.8].
-
-```python
-import numpy as np
-
-np.random.seed(0)
-
-def reward_fn(x, a):
-    rewards = [
-        [1.0, 0.3, 0.2],  # context 0
-        [0.9, 0.4, 0.1],  # context 1
-        [0.5, 0.6, 0.4],  # context 2
-        [0.2, 0.3, 0.9],  # context 3
-        [0.1, 0.2, 1.0],  # context 4
-    ]
-    return rewards[x][a]
-
-def pi_logging(x):
-    return np.array([1/3, 1/3, 1/3])
-
-def pi_target(x):
-    optimal_actions = [0, 0, 1, 2, 2]
-    probs = np.zeros(3)
-    probs[optimal_actions[x]] = 1.0
-    return probs
-
-# Ground-truth value under target
-true_value = 0.0
-for x in range(5):
-    pt = pi_target(x)
-    for a in range(3):
-        true_value += (1/5) * pt[a] * reward_fn(x, a)
-
-n_trials = 300
-n_samples = 800
-c = 2.0  # clipping cap
-
-ips_vals, clip_vals, snips_vals = [], [], []
-
-for trial in range(n_trials):
-    rng = np.random.default_rng(trial)
-    contexts = rng.integers(0, 5, size=n_samples)
-    rewards = []
-    weights = []
-
-    for x in contexts:
-        p_log = pi_logging(x)
-        a = rng.choice(3, p=p_log)
-        r = reward_fn(x, a) + rng.normal(0, 0.1)
-        p_tgt = pi_target(x)
-        w = p_tgt[a] / p_log[a]
-        rewards.append(r)
-        weights.append(w)
-
-    rewards = np.asarray(rewards)
-    weights = np.asarray(weights)
-
-    ips = np.mean(weights * rewards)
-    clip = np.mean(np.minimum(weights, c) * rewards)
-    snips = np.sum(weights * rewards) / np.sum(weights)
-
-    ips_vals.append(ips)
-    clip_vals.append(clip)
-    snips_vals.append(snips)
-
-ips_mean, ips_std = np.mean(ips_vals), np.std(ips_vals)
-clip_mean, clip_std = np.mean(clip_vals), np.std(clip_vals)
-snips_mean, snips_std = np.mean(snips_vals), np.std(snips_vals)
-
-print("True value:", round(true_value, 3))
-print("IPS     → mean:", round(ips_mean, 3), "bias:", round(ips_mean - true_value, 4), "std:", round(ips_std, 3))
-print("Clipped → mean:", round(clip_mean, 3), "bias:", round(clip_mean - true_value, 4), "std:", round(clip_std, 3))
-print("SNIPS   → mean:", round(snips_mean, 3), "bias:", round(snips_mean - true_value, 4), "std:", round(snips_std, 3))
-
-# Output (representative):
-# True value: 0.82
-# IPS     → mean: 0.821 bias: 0.0010 std: 0.088
-# Clipped → mean: 0.804 bias: -0.0160 std: 0.061
-# SNIPS   → mean: 0.818 bias: -0.0020 std: 0.071
-```
-
-Interpretation: clipping reduces variance at the expense of **negative bias** (for nonnegative rewards), while SNIPS reduces variance and introduces small bias; both effects are tunable via the clipping cap and exploration.
-
-!!! note "Code ↔ Theory (Clipped IPS and SNIPS)"
-    This numerical check illustrates [THM-2.6.2] (negative bias under clipping) and [EQ-2.8] (SNIPS definition) with empirical bias/variance trade-offs.
-    KG: `THM-2.6.2`, `EQ-2.8`.
-
----
-
 ## 2.8 Application Bridge to RL
 
 We've built measure-theoretic probability foundations. Now we connect to reinforcement learning.
@@ -1460,22 +1389,72 @@ Assume standard Borel state/action spaces, bounded measurable rewards $r(s,a)$, 
 $$
 (\mathcal{T} V)(s) := \sup_{a \in \mathcal{A}} \Big\{ r(s,a) + \gamma \int_{\mathcal{S}} V(s')\, P(ds'\mid s,a) \Big\},
 $$
-measurability of $\mathcal{T}V$ can require additional topological assumptions (e.g., compact $\mathcal{A}$ and upper semicontinuity) or application of a measurable selection theorem. Contraction still holds under boundedness and $0 \le \gamma < 1$.
-
-!!! note "Advanced: Measurable Selection (argmax existence)"
-    **The problem:** For each state $s$, the Bellman optimality equation requires finding $a^*(s) = \arg\max_a Q(s,a)$. But knowing that a maximum *exists* at each $s$ doesn't guarantee that the mapping $s \mapsto a^*(s)$ is *measurable*---and if it's not measurable, the "optimal policy" cannot be evaluated as a random variable.
-
-    **Why this is subtle:** The supremum of measurable functions is measurable, but the argmax need not be. The set of maximizers $A^*(s) = \{a : Q(s,a) = \sup_{a'} Q(s,a')\}$ varies with $s$, and selecting one element from each set in a measurable way is non-trivial (this is an Axiom of Choice problem with measurability constraints).
-
-    **The solution:** Under standard Borel state spaces and compact metric action spaces, if $a \mapsto Q(s,a)$ is upper semicontinuous for each $s$ (ensuring maxima exist by compactness) and jointly measurable in $(s,a)$, the **Kuratowski--Ryll-Nardzewski selection theorem** guarantees a measurable selector exists. This yields a measurable greedy policy $s \mapsto a^*(s)$, ensuring $\mathcal{T}V$ is measurable.
-
-    **For search RL:** Our finite template action space ($|\mathcal{A}| = 25$) trivially satisfies these conditions---compactness is automatic for finite sets. The theorem becomes essential in Chapter 7 when we consider continuous boost actions.
-
-    *References*: The original theorem appears in [@kuratowski:selectors:1965]. For textbook treatments: [@kechris:classical_dsp:1995, §36] provides the definitive descriptive set theory perspective; [@bertsekas:stochastic_oc:1996, Chapter 7] develops the RL-specific machinery.
+measurability of $\mathcal{T}V$ can require additional topological assumptions (e.g., compact $\mathcal{A}$ and upper semicontinuity) or application of a measurable selection theorem. Contraction still holds under boundedness and $0 \le \gamma < 1$. The measurable selection theorem needed for the control operator appears in **§2.8.2 (Advanced: Measurable Selection and Optimal Policies)** below.
 
 ---
 
-### 2.8.2 Click Models as Contextual Bandits
+### 2.8.2 (Advanced) Measurable Selection and Optimal Policies
+
+*This section is optional on a first reading. It addresses the topological fine print that ensures optimal policies $\pi^*(s) = \arg\max_a Q(s,a)$ are well-defined measurable functions in continuous state and action spaces. Readers primarily interested in finite action spaces (Chapters 6, 8) can safely skip this and return when studying continuous actions (Chapter 7).*
+
+In Remark 2.8.2 above, we noted that the control Bellman operator
+$$
+(\mathcal{T}V)(s) = \sup_{a \in \mathcal{A}} \left\{ r(s,a) + \gamma \int_{\mathcal{S}} V(s') P(ds' \mid s,a) \right\}
+$$
+requires additional care to ensure measurability of $\mathcal{T}V$. The issue is subtle but fundamental to continuous-space RL.
+
+**The problem.** For each state $s$, the Bellman optimality equation requires finding $a^*(s) = \arg\max_a Q(s,a)$. But knowing that a maximum *exists* at each $s$ (e.g., by compactness and continuity) doesn't guarantee that the mapping $s \mapsto a^*(s)$ is *measurable*---and if it's not measurable, the "optimal policy" cannot be evaluated as a random variable. We couldn't take expectations like $\mathbb{E}[R(S, \pi^*(S))]$ because $\pi^*$ would be ill-defined measure-theoretically.
+
+**Why this is subtle.** The supremum of measurable functions is measurable---this is a standard result in measure theory. But the **argmax** (the action achieving the supremum) need not be measurable. Geometrically, the set of maximizers
+$$
+A^*(s) = \{a \in \mathcal{A} : Q(s,a) = \sup_{a' \in \mathcal{A}} Q(s,a')\}
+$$
+can vary wildly with $s$ in continuous spaces. Selecting one element from each set $A^*(s)$ in a measurable way is non-trivial---this is an Axiom of Choice problem constrained by measurability requirements. Without structure, pathological examples exist where no measurable selector is possible.
+
+**The solution.** The following theorem packages the conditions under which measurable optimal policies exist:
+
+**Theorem 2.8.3 (Kuratowski--Ryll--Nardzewski Selection, specialized to RL).** {#THM-2.8.3}
+
+Let $\mathcal{S}$ be a standard Borel space and $\mathcal{A}$ a compact metric space. Suppose $Q: \mathcal{S} \times \mathcal{A} \to \mathbb{R}$ satisfies:
+
+**(A1) Joint measurability:** $Q$ is Borel measurable in $(s,a)$
+
+**(A2) Upper semicontinuity:** For each fixed $s \in \mathcal{S}$, the map $a \mapsto Q(s,a)$ is upper semicontinuous
+
+Then there exists a Borel measurable function $\pi^*: \mathcal{S} \to \mathcal{A}$ such that
+$$
+Q(s, \pi^*(s)) = \sup_{a \in \mathcal{A}} Q(s,a) \quad \text{for all } s \in \mathcal{S}.
+$$
+
+That is, a **measurable optimal selector** (greedy policy) exists.
+
+*Proof sketch.* Assumption (A2) plus compactness of $\mathcal{A}$ ensure the supremum is attained at each $s$ (Weierstrass theorem). The challenge is proving that some selector is measurable. Under standard Borel state spaces and compact metric action spaces, the Kuratowski--Ryll--Nardzewski measurable selection theorem ([@kuratowski:selectors:1965]) guarantees that every non-empty-valued, closed-valued measurable correspondence admits a measurable selector. The set-valued map $s \mapsto A^*(s)$ (maximizers) is closed-valued by upper semicontinuity and measurable by joint measurability of $Q$. Applying the theorem yields a measurable $\pi^*$. See [@kechris:classical_dsp:1995, §36] for the full descriptive set theory machinery. $\square$
+
+**What this guarantees for RL.** This theorem ensures:
+
+1. **Bellman optimality operator is well-defined:** The pointwise maximum $(\mathcal{T}V)(s) = \max_{a} \{r(s,a) + \gamma \mathbb{E}[V(S') \mid s,a]\}$ produces a measurable function $\mathcal{T}V: \mathcal{S} \to \mathbb{R}$ when $V$ is measurable.
+
+2. **Optimal policies are random variables:** The greedy policy $\pi^*(s) \in \arg\max_a Q(s,a)$ is a measurable function, so we can evaluate expectations like $\mathbb{E}_{S \sim \rho}[R(S, \pi^*(S))]$.
+
+3. **Value iteration convergence machinery works:** Chapter 3 proves that iterating $V_{n+1} = \mathcal{T}V_n$ converges to the unique fixed point $V^*$. Measurability of $\mathcal{T}$ at each step is essential for this operator-theoretic argument.
+
+**When this theorem matters in our book:**
+
+- **Finite action spaces:** Trivially satisfied. If $\mathcal{A} = \{a_1, \ldots, a_M\}$ is finite, compactness is automatic and argmax is trivially measurable (just pick the first maximizer in some fixed ordering). No sophisticated machinery needed.
+
+- **Discrete template bandits (Chapter 6):** Our template library has $|\mathcal{A}| = 25$ templates. Theorem 2.8.3 is overkill---measurability is immediate.
+
+- **Continuous boost actions (Chapter 7):** When we learn $Q(x,a)$ for $a \in [-a_{\max}, a_{\max}]^K$ (continuous action space), this theorem becomes essential. Neural Q-networks approximate $Q$ as $Q_\theta(x,a)$; upper semicontinuity (A2) may fail in practice (neural nets are not inherently u.s.c.), requiring care in implementation.
+
+- **General state/action spaces:** If you extend this work to continuous state representations (e.g., learned embeddings $x \in \mathbb{R}^d$), the standard Borel assumption on $\mathcal{S}$ is critical. Pathological spaces exist where measurable selection fails without these topological conditions.
+
+**Practical takeaway.** For this book's finite-action and compact-action applications, you can treat optimal policies as "obviously measurable" and skip the set-theoretic details on first reading. The theorem provides the rigorous foundation we need when we claim (in Chapter 3) that value iteration produces well-defined optimal policies. It's the difference between "it works in practice" and "we can prove it works in theory."
+
+*References:* The original Kuratowski--Ryll--Nardzewski theorem appears in [@kuratowski:selectors:1965]. For textbook treatments: [@kechris:classical_dsp:1995, §36] provides the definitive descriptive set theory perspective; [@bertsekas:stochastic_oc:1996, Chapter 7] develops the RL-specific machinery and verifies standard Borel conditions for typical RL state/action spaces.
+
+---
+
+### 2.8.3 Click Models as Contextual Bandits
 
 The **contextual bandit** (one-step MDP, no state transitions) is the foundation for Chapters 6–8:
 
@@ -1509,7 +1488,7 @@ All rely on the probability foundations built in this chapter.
 
 ---
 
-### 2.8.3 Forward References
+### 2.8.4 Forward References
 
 **Chapter 3 — Stochastic Processes & Bellman Foundations:**
 - Bellman operators as **contractions** in function spaces (operator theory)

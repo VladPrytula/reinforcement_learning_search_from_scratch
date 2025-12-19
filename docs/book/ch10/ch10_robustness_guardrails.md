@@ -993,7 +993,7 @@ Typically $C_{\min} = 0$ (non-negative margin) or $C_{\min} = 0.15 \cdot \mathbb
    $$
    r'_t = r_t + \mu \max\bigl(0, C_{\min} - \text{CM2}_t\bigr),
    $$
-   where $\mu > 0$ is a Lagrange multiplier tuned (for example, via binary search) to enforce $\mathbb{E}[\text{CM2}_t] \geq C_{\min}$ on average. This is the standard **primal–dual method** for constrained MDPs (see Chapter 8, Remark 8.7.3 on constraints, and [@altman:constrained_mdps:1999] for theory).
+   where $\mu > 0$ is a Lagrange multiplier tuned (for example, via binary search) to enforce $\mathbb{E}[\text{CM2}_t] \geq C_{\min}$ on average. This is the standard **primal–dual method** for constrained MDPs (see **Appendix C** for Lagrangian duality theory and Slater's condition; [@altman:constrained_mdps:1999] for constrained MDP foundations).
 
    **Regularity condition (Slater's condition).** Strong duality holds—meaning the Lagrangian approach finds the true constrained optimum—when Slater's condition is satisfied: there exists a **strictly feasible** policy $\pi$ with $\mathbb{E}_\pi[\text{CM2}] > C_{\min}$ (strict inequality). This is typically satisfied in e-commerce when at least one template has positive margin exceeding the floor. If all templates have margins exactly at $C_{\min}$, the constraint qualification fails and the Lagrangian method may not converge to the optimal constrained policy. See [@altman:constrained_mdps:1999, Chapter 4] for constrained MDP duality theory and [@boyd_vandenberghe:convex_optimization:2004, §5.2.3] for the general convex optimization perspective.
 
@@ -1766,7 +1766,7 @@ For a comprehensive bibliography, see `references.bib`. Key papers for this chap
     **Cross-references:**
     - [THM-3.5.2] — Bellman Optimality Equation (Chapter 3)
     - [EQ-6.8] — LinUCB ridge regression (Chapter 6)
-    - [THM-8.1] — Policy Gradient Theorem (Chapter 8)
+    - [THM-8.2] — Policy Gradient Theorem (Chapter 8)
     - [ALG-10.1] — CUSUM algorithm (this chapter)
     - [ALG-10.2] — Page-Hinkley test (this chapter)
     - [EQ-10.9] — Delta-Rank@k definition (this chapter)

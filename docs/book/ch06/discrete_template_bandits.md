@@ -626,6 +626,12 @@ $$
 
 This measures the **loss from not always playing the optimal action**.
 
+**Fundamental limit (lower bound, preview).** Before designing algorithms, it's worth knowing the scale of regret we should even hope for. Classical information-theoretic results for $K$-armed stochastic bandits show that, for any learning algorithm and any horizon $T$, there exists a problem instance on which the expected cumulative regret satisfies
+$$
+\mathbb{E}[\text{Regret}(T)] = \Omega\bigl(\sqrt{K T}\bigr).
+$$
+In words: **no algorithm can do better than order $\sqrt{KT}$ regret** (up to constants and logarithmic factors) uniformly over all bandit problems. The upper bounds we prove for Thompson Sampling and LinUCB in this chapter match this rate up to logs, which is why they are called "optimal" in the bandit literature. For contextual and continuous-action bandits (our real search setting), similar lower bounds hold with $K$ replaced by an effective dimension; we'll return to this when we discuss feature richness and model misspecification in Sections 6.5--6.7.
+
 **Why this matters:**
 
 If we could observe $\mu(x, a)$ for all $(x, a)$ pairs, we'd just pick $\pi^*(x)$ greedily. But $\mu$ is **unknown**---we must learn it from noisy samples while balancing **exploration** (try all templates) vs. **exploitation** (use best known template).
@@ -888,7 +894,7 @@ $$
 
 Thompson Sampling is naturally analyzed in the Bayesian sense (it explicitly uses a prior), whereas LinUCB is usually analyzed in the frequentist sense (no prior, worst-case guarantees over all admissible $\theta^*$). When the prior is well-calibrated and concentrates around the true parameters, the two perspectives tend to agree asymptotically, but they answer slightly different questions: "average performance across plausible worlds" vs. "performance in this particular world".  
 
-If you want to go deeper on the Bayesian side---hierarchical priors over user and segment preferences, posterior shrinkage, and how those posteriors feed rich features into Chapter 6's bandits---see the **"Part V --- Optional Bayesian Appendix"** in the syllabus (`docs/book/drafts/syllabus.md`, **Appendix A --- Bayesian Preference Models**). That appendix will eventually host the planned `bayes/price_sensitivity_model.py` module and labs that plug Bayesian preference estimates into the template bandit in place of oracle latents.
+For deeper treatment of the Bayesian perspective---hierarchical priors over user and segment preferences, posterior shrinkage, and how those posteriors feed into bandit features---see [@russo:tutorial_ts:2018] and [@chapelle:empirical_ts:2011]. The survey by [@lattimore:bandit_algorithms:2020, Chapters 35--37] provides rigorous foundations for Bayesian regret analysis in linear bandits. **Appendix A** develops these ideas for our search setting: hierarchical user preference models, posterior inference for price sensitivity and brand affinity, and how Bayesian estimates integrate with the template bandits of this chapter.
 
 **Theorem 6.1** (Thompson Sampling Regret Bound) {#THM-6.1}
 
@@ -2435,7 +2441,7 @@ Production systems invariably have noisy features---estimated from clicks, infer
 
 **For hands-on practice:**
 
-`docs/book/drafts/ch06/exercises_labs.md` contains exercises and labs that walk you through:
+`docs/book/ch06/exercises_labs.md` contains exercises and labs that walk you through:
 
 - **Lab 6.1**: Reproducing the simple-feature failure (Stage 1)
 - **Lab 6.2a**: Rich features with oracle latents---Both excel (Stage 3a)
@@ -2473,7 +2479,7 @@ These appendices deepen and generalize the core narrative but are **optional**. 
 
 ## Exercises & Labs
 
-See `docs/book/drafts/ch06/exercises_labs.md` for:
+See `docs/book/ch06/exercises_labs.md` for:
 
 - **Exercise 6.1**: Prove [PROP-5.1] properties of semantic relevance (warmup)
 - **Exercise 6.2**: Implement epsilon-greedy baseline, compare regret to LinUCB
@@ -2561,8 +2567,8 @@ Test files:
 - **Yes** `tests/ch06/test_integration.py` (full training loops with mock environment)
 
 Documentation:
-- **Yes** `docs/book/drafts/ch06/discrete_template_bandits.md` (this chapter)
-- **Yes** `docs/book/drafts/ch06/exercises_labs.md` (exercises and labs)
+- **Yes** `docs/book/ch06/discrete_template_bandits.md` (this chapter)
+- **Yes** `docs/book/ch06/exercises_labs.md` (exercises and labs)
 
 Knowledge Graph entries:
 - **Yes** Chapter and theory nodes for Ch06 (`CH-6`, `DEF-6.1`--`DEF-6.4`, `ALG-6.1`, `ALG-6.2`, `THM-6.1`, `THM-6.2`, `PROP-6.1`, `PROP-6.2`, `EQ-6.1`--`EQ-6.17`)

@@ -65,6 +65,23 @@ Where the field is heading. These chapters are on the roadmap.
 
 ---
 
+## Appendices
+
+Foundational mathematics supporting multiple chapters. Read as needed based on background.
+
+| App | Title | Main File | Dependencies |
+|-----|-------|-----------|--------------|
+| A | [Bayesian Preference Models](appendix_a_bayesian_preference_models.md) | Hierarchical priors, shrinkage, bandit integration | Ch06 |
+| B | [Control-Theoretic Background](appendix_b_control_theory.md) | LQR, HJB, deep RL timeline | Ch01, Ch03 |
+| C | [Convex Optimization for Constrained MDPs](appendix_c_convex_optimization.md) | Lagrangian duality, Slater's condition | Ch01 §1.9, Ch10 |
+
+**When to read:**
+- **Appendix A**: When implementing Thompson Sampling or LinUCB with rich features (Chapter 6), or when modeling user preferences in the simulator (Chapter 4)
+- **Appendix B**: If you have control theory background (LQR, HJB) and want to see connections to RL, or when control-theoretic tools appear in Chapters 8, 10, and 11
+- **Appendix C**: Before implementing constrained RL (Chapter 10) if you want rigorous foundations for Lagrangian methods and primal-dual algorithms
+
+---
+
 ## Quick Reference
 
 **Each chapter folder contains:**

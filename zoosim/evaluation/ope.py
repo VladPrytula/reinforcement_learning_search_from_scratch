@@ -187,7 +187,7 @@ def ips_estimate(
 ) -> Tuple[float, Dict[str, Any]]:
     """
     Importance Sampling (IPS) estimator.
-    Implements [EQ-9.9].
+    Implements [EQ-9.10].
     """
     n = len(dataset)
     weights = []
@@ -247,7 +247,7 @@ def snips_estimate(
 ) -> Tuple[float, Dict[str, Any]]:
     """
     Self-Normalized Importance Sampling (SNIPS).
-    Implements [EQ-9.11].
+    Implements [EQ-9.13].
     """
     weights = []
     returns = []
@@ -301,7 +301,7 @@ def pdis_estimate(
 ) -> Tuple[float, Dict[str, Any]]:
     """
     Per-Decision Importance Sampling (PDIS).
-    Implements [EQ-9.13].
+    Implements [EQ-9.16].
     """
     total = 0.0
     n = len(dataset)
@@ -342,7 +342,7 @@ def dr_estimate(
 ) -> Tuple[float, Dict[str, Any]]:
     """
     Doubly Robust (DR) estimator.
-    Implements [EQ-9.22].
+    Implements [EQ-9.25].
     """
     estimates = []
 

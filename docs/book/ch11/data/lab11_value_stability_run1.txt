@@ -1,0 +1,133 @@
+[Lab 11.3] Estimating value for seed 11 (1/10, n_users=600, gamma=0.95)...
+[Lab 11.3]   Seed 11 estimate: 8.1101
+[Lab 11.3] Estimating value for seed 13 (2/10, n_users=600, gamma=0.95)...
+[Lab 11.3]   Seed 13 estimate: 7.1644
+[Lab 11.3] Estimating value for seed 17 (3/10, n_users=600, gamma=0.95)...
+[Lab 11.3]   Seed 17 estimate: 7.9486
+[Lab 11.3] Estimating value for seed 19 (4/10, n_users=600, gamma=0.95)...
+[Lab 11.3]   Seed 19 estimate: 8.3764
+[Lab 11.3] Estimating value for seed 23 (5/10, n_users=600, gamma=0.95)...
+[Lab 11.3]   Seed 23 estimate: 7.7241
+[Lab 11.3] Estimating value for seed 29 (6/10, n_users=600, gamma=0.95)...
+[Lab 11.3]   Seed 29 estimate: 8.7478
+[Lab 11.3] Estimating value for seed 31 (7/10, n_users=600, gamma=0.95)...
+[Lab 11.3]   Seed 31 estimate: 9.6739
+[Lab 11.3] Estimating value for seed 37 (8/10, n_users=600, gamma=0.95)...
+[Lab 11.3]   Seed 37 estimate: 8.6162
+[Lab 11.3] Estimating value for seed 41 (9/10, n_users=600, gamma=0.95)...
+[Lab 11.3]   Seed 41 estimate: 8.4765
+[Lab 11.3] Estimating value for seed 43 (10/10, n_users=600, gamma=0.95)...
+[Lab 11.3]   Seed 43 estimate: 9.8536
+Value estimation statistics:
+  mean: 8.4692
+  std: 0.8255
+  cv: 0.0975
+  ci_low: 7.2903
+  ci_high: 9.8132
+
+Target CV < 0.10
+ACCEPTED: value stability criterion met.
+600 users
+[Lab 11.3]     Seed 17: completed 120/600 users
+[Lab 11.3]     Seed 17: completed 180/600 users
+[Lab 11.3]     Seed 17: completed 240/600 users
+[Lab 11.3]     Seed 17: completed 300/600 users
+[Lab 11.3]     Seed 17: completed 360/600 users
+[Lab 11.3]     Seed 17: completed 420/600 users
+[Lab 11.3]     Seed 17: completed 480/600 users
+[Lab 11.3]     Seed 17: completed 540/600 users
+[Lab 11.3]     Seed 17: completed 600/600 users
+[Lab 11.3]   Seed 17 estimate: 7.9486
+[Lab 11.3] Estimating value for seed 19 (4/10, n_users=600, gamma=0.95)...
+[Lab 11.3]     Seed 19: completed 60/600 users
+[Lab 11.3]     Seed 19: completed 120/600 users
+[Lab 11.3]     Seed 19: completed 180/600 users
+[Lab 11.3]     Seed 19: completed 240/600 users
+[Lab 11.3]     Seed 19: completed 300/600 users
+[Lab 11.3]     Seed 19: completed 360/600 users
+[Lab 11.3]     Seed 19: completed 420/600 users
+[Lab 11.3]     Seed 19: completed 480/600 users
+[Lab 11.3]     Seed 19: completed 540/600 users
+[Lab 11.3]     Seed 19: completed 600/600 users
+[Lab 11.3]   Seed 19 estimate: 8.3764
+[Lab 11.3] Estimating value for seed 23 (5/10, n_users=600, gamma=0.95)...
+[Lab 11.3]     Seed 23: completed 60/600 users
+[Lab 11.3]     Seed 23: completed 120/600 users
+[Lab 11.3]     Seed 23: completed 180/600 users
+[Lab 11.3]     Seed 23: completed 240/600 users
+[Lab 11.3]     Seed 23: completed 300/600 users
+[Lab 11.3]     Seed 23: completed 360/600 users
+[Lab 11.3]     Seed 23: completed 420/600 users
+[Lab 11.3]     Seed 23: completed 480/600 users
+[Lab 11.3]     Seed 23: completed 540/600 users
+[Lab 11.3]     Seed 23: completed 600/600 users
+[Lab 11.3]   Seed 23 estimate: 7.7241
+[Lab 11.3] Estimating value for seed 29 (6/10, n_users=600, gamma=0.95)...
+[Lab 11.3]     Seed 29: completed 60/600 users
+[Lab 11.3]     Seed 29: completed 120/600 users
+[Lab 11.3]     Seed 29: completed 180/600 users
+[Lab 11.3]     Seed 29: completed 240/600 users
+[Lab 11.3]     Seed 29: completed 300/600 users
+[Lab 11.3]     Seed 29: completed 360/600 users
+[Lab 11.3]     Seed 29: completed 420/600 users
+[Lab 11.3]     Seed 29: completed 480/600 users
+[Lab 11.3]     Seed 29: completed 540/600 users
+[Lab 11.3]     Seed 29: completed 600/600 users
+[Lab 11.3]   Seed 29 estimate: 8.7478
+[Lab 11.3] Estimating value for seed 31 (7/10, n_users=600, gamma=0.95)...
+[Lab 11.3]     Seed 31: completed 60/600 users
+[Lab 11.3]     Seed 31: completed 120/600 users
+[Lab 11.3]     Seed 31: completed 180/600 users
+[Lab 11.3]     Seed 31: completed 240/600 users
+[Lab 11.3]     Seed 31: completed 300/600 users
+[Lab 11.3]     Seed 31: completed 360/600 users
+[Lab 11.3]     Seed 31: completed 420/600 users
+[Lab 11.3]     Seed 31: completed 480/600 users
+[Lab 11.3]     Seed 31: completed 540/600 users
+[Lab 11.3]     Seed 31: completed 600/600 users
+[Lab 11.3]   Seed 31 estimate: 9.6739
+[Lab 11.3] Estimating value for seed 37 (8/10, n_users=600, gamma=0.95)...
+[Lab 11.3]     Seed 37: completed 60/600 users
+[Lab 11.3]     Seed 37: completed 120/600 users
+[Lab 11.3]     Seed 37: completed 180/600 users
+[Lab 11.3]     Seed 37: completed 240/600 users
+[Lab 11.3]     Seed 37: completed 300/600 users
+[Lab 11.3]     Seed 37: completed 360/600 users
+[Lab 11.3]     Seed 37: completed 420/600 users
+[Lab 11.3]     Seed 37: completed 480/600 users
+[Lab 11.3]     Seed 37: completed 540/600 users
+[Lab 11.3]     Seed 37: completed 600/600 users
+[Lab 11.3]   Seed 37 estimate: 8.6162
+[Lab 11.3] Estimating value for seed 41 (9/10, n_users=600, gamma=0.95)...
+[Lab 11.3]     Seed 41: completed 60/600 users
+[Lab 11.3]     Seed 41: completed 120/600 users
+[Lab 11.3]     Seed 41: completed 180/600 users
+[Lab 11.3]     Seed 41: completed 240/600 users
+[Lab 11.3]     Seed 41: completed 300/600 users
+[Lab 11.3]     Seed 41: completed 360/600 users
+[Lab 11.3]     Seed 41: completed 420/600 users
+[Lab 11.3]     Seed 41: completed 480/600 users
+[Lab 11.3]     Seed 41: completed 540/600 users
+[Lab 11.3]     Seed 41: completed 600/600 users
+[Lab 11.3]   Seed 41 estimate: 8.4765
+[Lab 11.3] Estimating value for seed 43 (10/10, n_users=600, gamma=0.95)...
+[Lab 11.3]     Seed 43: completed 60/600 users
+[Lab 11.3]     Seed 43: completed 120/600 users
+[Lab 11.3]     Seed 43: completed 180/600 users
+[Lab 11.3]     Seed 43: completed 240/600 users
+[Lab 11.3]     Seed 43: completed 300/600 users
+[Lab 11.3]     Seed 43: completed 360/600 users
+[Lab 11.3]     Seed 43: completed 420/600 users
+[Lab 11.3]     Seed 43: completed 480/600 users
+[Lab 11.3]     Seed 43: completed 540/600 users
+[Lab 11.3]     Seed 43: completed 600/600 users
+[Lab 11.3]   Seed 43 estimate: 9.8536
+Value estimation statistics:
+  mean: 8.4692
+  std: 0.8255
+  cv: 0.0975
+  ci_low: 7.2903
+  ci_high: 9.8132
+
+Target CV < 0.10
+ACCEPTED: value stability criterion met.
