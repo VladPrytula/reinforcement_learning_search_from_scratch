@@ -577,7 +577,7 @@ This is an advanced, end-to-end lab that teaches you how and why to move from th
 
 See the dedicated draft:
 
-- `docs/book/drafts/ch06/ch06_advanced_gpu_lab.md`
+- `docs/book/ch06/ch06_advanced_gpu_lab.md`
 
 for:
 

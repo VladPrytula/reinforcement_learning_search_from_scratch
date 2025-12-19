@@ -86,7 +86,7 @@ It then:
 
 - Runs scenarios sequentially or in parallel threads
 - Captures stdout into a JSON artifact
-- Writes results under `docs/book/drafts/ch06/data/`
+- Writes results under `docs/book/ch06/data/`
 
 ### 2.1. Warm-Up: Run the CPU Batch Once
 
@@ -111,7 +111,7 @@ Planned scenarios:
 [OK] Completed 'simple_baseline'
 ...
 
-Saved batch results to docs/book/drafts/ch06/data/bandit_matrix_20250701T120000Z.json
+Saved batch results to docs/book/ch06/data/bandit_matrix_20250701T120000Z.json
 ```
 
 You do not need to inspect every line yet. The takeaway:
@@ -528,8 +528,8 @@ What you should check:
 The script saves:
 
 - JSON summaries:
-  - `docs/book/drafts/ch06/data/template_bandits_simple_gpu_summary.json`
-  - `docs/book/drafts/ch06/data/template_bandits_rich_gpu_summary.json`
+  - `docs/book/ch06/data/template_bandits_simple_gpu_summary.json`
+  - `docs/book/ch06/data/template_bandits_rich_gpu_summary.json`
 - Figures:
   - Segment GMV comparison
   - Template selection frequencies for simple and rich features
@@ -591,7 +591,7 @@ Summary (per-episode averages):
 
 ...
 
-Saved batch results to docs/book/drafts/ch06/data/bandit_matrix_gpu_20250701T121000Z.json
+Saved batch results to docs/book/ch06/data/bandit_matrix_gpu_20250701T121000Z.json
 ```
 
 Differences from the CPU batch runner:
@@ -896,4 +896,3 @@ That is the level of care I expect from you as a practicing RL engineer.
 ---
 
 *Chapter 6 --- Advanced Lab Draft --- 2025*
-

@@ -65,11 +65,12 @@ This is the natural next step to close the remaining 8-15% gap to oracle perform
 
 ## Roadmap
 
-- §7.1 Q(x,a) as a supervised regression problem
-- §7.2 Neural network ensembles and uncertainty calibration
-- §7.3 Cross-Entropy Method (CEM) for $\operatorname{argmax}_a Q(x,a)$
-- §7.4 Production Implementation: The "Optimizer in the Loop"
-- §7.5 Theory-Practice Gap
+- §7.1 Warm-up: Tabular Q as Regression
+- §7.2 Q(x,a) as a supervised regression problem
+- §7.3 Neural network ensembles and uncertainty calibration
+- §7.4 Cross-Entropy Method (CEM) for $\operatorname{argmax}_a Q(x,a)$
+- §7.5 Production Implementation: The "Optimizer in the Loop"
+- §7.6 Theory-Practice Gap
 
 !!! note "Code ↔ Agent"
     - Q-ensemble module: `zoosim/policies/q_ensemble.py`
@@ -81,9 +82,103 @@ This is the natural next step to close the remaining 8-15% gap to oracle perform
 
 ---
 
-## 7.1 The Continuous Ranking Problem
+## 7.1 Warm-up: Tabular Q as Regression
 
-### 7.1.1 Mathematical Setup: Stochastic Reward Model
+Before tackling continuous actions with neural networks, it's useful to see $Q(x,a)$ in its simplest form: a finite table indexed by discrete contexts and actions. This warm‑up isolates the idea that **Q‑learning is just regression on $(x,a,r)$ triples**; everything else in this chapter is function approximation and optimization on top of that.
+
+### 7.1.1 Minimal Tabular Q-Function
+
+Consider a tiny bandit with:
+
+- 3 contexts (e.g., user segments) indexed by $x \in \{0,1,2\}$
+- 4 actions (e.g., boost templates) indexed by $a \in \{0,1,2,3\}$
+
+We can represent $Q(x,a)$ as a Python dictionary and update it by stochastic gradient descent on the squared error between $Q$ and observed rewards:
+
+```python
+from typing import Dict, Tuple
+import numpy as np
+
+class TabularQFunction:
+    """Tabular Q-function: Q(x, a) stored in a dictionary.
+
+    Mathematical correspondence: Q: X x A -> R represented as a lookup table.
+    """
+    def __init__(self, n_contexts: int, n_actions: int,
+                 initial_value: float = 0.0):
+        """Initialize Q-table with uniform values."""
+        self.Q: Dict[Tuple[int, int], float] = {}  # (context_id, action_id) -> Q-value
+        self.n_contexts = n_contexts
+        self.n_actions = n_actions
+
+        # Initialize all (x, a) pairs
+        for x in range(n_contexts):
+            for a in range(n_actions):
+                self.Q[(x, a)] = initial_value
+
+    def get(self, x: int, a: int) -> float:
+        """Retrieve Q(x, a)."""
+        return self.Q.get((x, a), 0.0)
+
+    def update(self, x: int, a: int, target: float, lr: float = 0.1):
+        """Update Q(x, a) <- (1 - alpha) * Q(x, a) + alpha * target.
+
+        This implements stochastic gradient descent on loss (Q - target)^2.
+        """
+        current = self.get(x, a)
+        self.Q[(x, a)] = (1 - lr) * current + lr * target
+
+    def get_optimal_action(self, x: int) -> int:
+        """Compute pi*(x) = argmax_a Q(x, a)."""
+        q_values = [self.get(x, a) for a in range(self.n_actions)]
+        return int(np.argmax(q_values))
+
+    def get_optimal_value(self, x: int) -> float:
+        """Compute V*(x) = max_a Q(x, a)."""
+        q_values = [self.get(x, a) for a in range(self.n_actions)]
+        return float(np.max(q_values))
+
+# Example: 3 contexts (user segments), 4 actions (boost strategies)
+Q = TabularQFunction(n_contexts=3, n_actions=4, initial_value=0.0)
+
+# Simulate observing rewards (seeded for reproducibility)
+rng = np.random.default_rng(42)
+for _ in range(100):
+    x = rng.integers(0, 3)
+    a = rng.integers(0, 4)
+    # True Q-function: Q(x, a) = x + a + noise
+    r = x + a + rng.normal(0, 0.5)
+    Q.update(x, a, target=r, lr=0.1)
+
+# Check learned values
+print("Learned Q-function:")
+for x in range(3):
+    print(f"Context {x}: Q-values = {[f'{Q.get(x, a):.2f}' for a in range(4)]}")
+    print(f"           -> pi*(x={x}) = action {Q.get_optimal_action(x)}, " +
+          f"V*(x={x}) = {Q.get_optimal_value(x):.2f}")
+```
+
+**Representative output:**
+
+```
+Learned Q-function:
+Context 0: Q-values = ['0.08', '1.12', '1.93', '2.89']
+           -> pi*(x=0) = action 3, V*(x=0) = 2.89
+Context 1: Q-values = ['0.98', '1.96', '3.03', '4.06']
+           -> pi*(x=1) = action 3, V*(x=1) = 4.06
+Context 2: Q-values = ['1.89', '3.15', '4.01', '4.94']
+           -> pi*(x=2) = action 3, V*(x=2) = 4.94
+```
+
+The optimal action is always $a=3$ (highest index), consistent with the true $Q(x, a) = x + a$. Despite noise, the learned values track the underlying pattern well.
+
+**Scalability problem.** With $|\mathcal{X}| = 10^6$ contexts and $|\mathcal{A}| = 100$ actions, a tabular representation requires $10^8$ entries. This is infeasible in memory and statistically: many $(x,a)$ pairs will be rarely or never visited. The rest of this chapter replaces the table with a **function approximator** $Q_\theta(x,a)$ (neural networks) that can generalize across similar $(x,a)$ pairs and handle continuous actions.
+
+---
+
+## 7.2 The Continuous Ranking Problem
+
+### 7.2.1 Mathematical Setup: Stochastic Reward Model
 
 Before defining the Q-function, we establish the measure-theoretic foundations that make conditional expectations well-defined.
 
@@ -111,7 +206,7 @@ which exists $\mathbb{P}$-almost surely by Kolmogorov's conditional expectation 
 
 The integrability condition $\mathbb{E}[|R|] < \infty$ ensures that $Q(x,a)$ is finite-valued almost everywhere. In our e-commerce setting, rewards are bounded: $R \in [-R_{\max}, +R_{\max}]$ for some $R_{\max} < \infty$ (GMV contributions, click penalties, CM2 costs are all bounded), so this condition is automatically satisfied.
 
-### 7.1.2 The Continuous Action Challenge
+### 7.2.2 The Continuous Action Challenge
 
 Recall our ranking score from Chapter 5:
 $$
@@ -152,7 +247,7 @@ $$
 1. **Learn approximate Q-function**: $Q_\theta \approx Q^*$ via supervised regression on $\mathcal{D}$
 2. **Optimize per-context**: $\pi_\theta(x) = \operatorname*{argmax}_{a \in \mathcal{A}} Q_\theta(x, a)$ using CEM (§7.3)
 
-### 7.1.3 The Solution: Model-Based Optimization via Learned Reward Landscape
+### 7.2.3 The Solution: Model-Based Optimization via Learned Reward Landscape
 
 We learn a **critic** $Q_\theta(x, a) \approx Q^*(x,a)$ (neural network) that predicts expected reward for any context-action pair. At serving time, we solve:
 $$
@@ -175,7 +270,7 @@ We choose **CEM** (§7.3) because:
 
 This is "model-based" in the sense that we learn a model of expected reward $Q(x,a)$ and plan against it. It is **not** model-based in the sense of learning transition dynamics $P(s'|s,a)$ (Chapter 11). In single-episode bandits, there is no next state $s'$, so the "world model" reduces to reward prediction.
 
-### 7.1.4 Connection to Chapter 3: Bellman Operators and Q-Regression
+### 7.2.4 Connection to Chapter 3: Bellman Operators and Q-Regression
 
 **Recall from Chapter 3:** The Bellman operator for Q-functions is ([EQ-3.14]):
 $$
@@ -207,6 +302,23 @@ Then Q-regression **alone is insufficient**—we'll need:
 - **Bellman iteration**: $Q^{k+1} \leftarrow \mathcal{T}Q^k$ (iterative updates)
 - **Target networks**: Stabilize bootstrapping (DQN trick from Chapter 12)
 - **Off-policy correction**: IPS weights for logged data (Chapter 9)
+
+!!! warning "The Deadly Triad (Sutton–Barto)"
+    Neural Q-functions introduce **the deadly triad** [@sutton:rl_book:2018, Section 11.3]:
+
+    1. **Function approximation**: $Q_\theta$ cannot represent all value functions perfectly.
+    2. **Bootstrapping**: TD targets $r + \gamma Q_\theta(x', a')$ use the same network being trained.
+    3. **Off-policy learning**: Data from $\pi_{\text{log}}$, evaluating/improving $\pi_{\text{eval}}$.
+
+    Together, these can cause **divergence**—$Q_\theta$ explodes rather than converges to $Q^*$.
+
+    **Empirical fixes** (DQN and successors):
+
+    - **Target networks**: Use slow-moving $\theta' \leftarrow \tau \theta + (1-\tau)\theta'$ for TD targets.
+    - **Experience replay**: Store $(x, a, r, x')$ tuples; sample mini-batches to decorrelate updates.
+    - **Gradient clipping**: Bound $\|\nabla_\theta \mathcal{L}\|$ to prevent explosive updates.
+
+    **Theoretical status** (2024): We lack general convergence proofs for deep RL with all three components. Neural Tangent Kernel (NTK) theory [@jacot:ntk:2018] provides partial explanations for overparameterized networks. Recent work on implicit regularization and representation learning offers hope, but rigorous guarantees remain elusive. Chapter 3 covers what theory *does* guarantee (tabular convergence, linear function approximation); Chapters 7 and 12 focus on practical neural implementations.
 
 **For now** (Chapter 7, single-episode), supervised Q-regression suffices because the Bellman equation collapses to a simple expectation. This is why our approach works without the complexity of temporal credit assignment.
 

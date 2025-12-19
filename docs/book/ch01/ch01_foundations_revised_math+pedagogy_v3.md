@@ -65,7 +65,7 @@ In Chapter 0 (Motivation: Your First RL Experiment), we built a tiny, code-first
 
 > **On Mathematical Rigor**
 >
-> This chapter provides **working definitions** and builds intuition for the RL formulation. We specify function signatures (domains, codomains, types) but defer **measure-theoretic foundations**---$\sigma$-algebras on $\mathcal{X}$ and $\Omega$, measurability conditions, integrability requirements---to **Chapters 2--3**. Key results (THM-1.7.2, THM-1.7.3) state their assumptions explicitly; verification that our search setting satisfies these assumptions appears in later chapters. Readers seeking Bourbaki-level rigor should treat this chapter as motivation and roadmap; the rigorous development begins in Chapter 2.
+> This chapter provides **working definitions** and builds intuition for the RL formulation. We specify function signatures (domains, codomains, types) but defer **measure-theoretic foundations**---$\sigma$-algebras on $\mathcal{X}$ and $\Omega$, measurability conditions, integrability requirements---to **Chapters 2--3**. Key results (existence of optimal policies and the regret lower-bound preview in §1.7.6) state their assumptions explicitly; verification that our search setting satisfies these assumptions appears in later chapters. Readers seeking Bourbaki-level rigor should treat this chapter as motivation and roadmap; the rigorous development begins in Chapter 2.
 
 This chapter establishes the mathematical foundation: we formulate search ranking as a **constrained optimization problem**, then show why it requires **contextual decision-making** (bandits), and finally preview the RL framework we'll develop.
 
@@ -90,7 +90,7 @@ $$
 
 where $\omega \in \Omega$ represents the stochastic user behavior conditioned on the ranking $\pi_{\mathbf{w}}(u, q)$ induced by boost weights $\mathbf{w}$, and $(\alpha, \beta, \gamma, \delta) \in \mathbb{R}_+^4$ are **business weight parameters** reflecting strategic priorities. The outcome components (GMV, CM2, STRAT, CLICKS) depend on the full context $(\mathbf{w}, u, q)$ through the ranking, though we often abbreviate this dependence when clear from context.
 
-**Standing assumption (Integrability).** Throughout this chapter, we assume $R: \mathcal{A} \times \mathcal{U} \times \mathcal{Q} \times \Omega \to \mathbb{R}$ is measurable in $\omega$ and $\mathbb{E}[|R(\mathbf{w}, u, q, \omega)|] < \infty$ for all $(\mathbf{w}, u, q)$. This ensures expectations like $\mathbb{E}[R \mid \mathbf{w}]$ are well-defined. The formal statement appears as ASM-1.7.1; verification for our bounded-reward setting is in Chapter 2.
+**Standing assumption (Integrability).** Throughout this chapter, we assume $R: \mathcal{A} \times \mathcal{U} \times \mathcal{Q} \times \Omega \to \mathbb{R}$ is measurable in $\omega$ and $\mathbb{E}[|R(\mathbf{w}, u, q, \omega)|] < \infty$ for all $(\mathbf{w}, u, q)$. This ensures expectations like $\mathbb{E}[R \mid \mathbf{w}]$ are well-defined. The formal regularity conditions appear as **Assumption 2.6.1 (OPE Probability Conditions)** in Chapter 2, §2.6; verification for our bounded-reward setting is in Chapter 2.
 
 **Remark** (connection to Chapter 0). The Chapter 0 toy used a simplified instance of this reward with $(\alpha,\beta,\gamma,\delta) \approx (0.6, 0.3, 0, 0.1)$ and no explicit STRAT term. All analysis in this chapter applies to that setting.
 
@@ -131,7 +131,16 @@ the fraction of top-$k$ positions where the rankings differ. Values range in $[0
 - **Exposure floor** (1.3b): Ensure strategic products (new launches, house brands) get visibility
 - **Rank stability** (1.3c): Limit reordering volatility (users expect consistency); $\tau_{\text{stability}} \approx 0.2$ is typical
 
-This is a **constrained Markov decision process (CMDP)**, though we'll start with the simpler **contextual bandit** (single-step) formulation.
+
+> Taken together, the scalar objective [EQ-1.2] and constraints (1.3a–c) define a **constrained stochastic optimization** problem over the boost weights $\mathbf w$. Formally, we would like to choose $\mathbf w$ to solve
+> $
+> \max_{\mathbf w \in \mathbb{R}^K} \mathbb{E}_{x \sim \rho,\omega \sim P(\cdot \mid x,\mathbf w)}\big[ R(\mathbf w, x, \omega) \big]
+> \quad \text{subject to (1.3a–c).}
+> $
+> From the perspective of a single query, there is no internal state evolution: each query arrives with a context $x$, we apply fixed boost weights $\mathbf w$, observe a random outcome, and then move on to the next independent query. This “context + one action + one noisy payoff” structure is exactly the **contextual bandit** template.
+>
+> In §1.3 we move from a single global choice of $\mathbf w$ to an explicit **policy** $\pi$ that maps each context $x$ to boost weights $\pi(x)$. In **Chapter 11**, when we introduce multi-step user/session dynamics with states and transitions, the resulting model becomes a **constrained Markov decision process (CMDP)**. Contextual bandits are the $\gamma = 0$ special case of an MDP.
+
 
 **Now we understand the complete optimization problem:** maximize the scalar reward #EQ-1.2 subject to constraints #EQ-1.3. This establishes what we're optimizing. Next, we'll dive deep into one critical component—the engagement term—before implementing the reward function.
 
@@ -175,7 +184,7 @@ $$
 $$
 (cumulative GMV per click up to episode $t$). If $\text{CVR}_t$ drops $>10\%$ below baseline while CTR rises during training, the agent is learning clickbait—reduce $\delta$ immediately.
 
-**Control-theoretic analogy**: This is similar to LQR with **state and control penalties**: $c(x, u) = x^\top Q x + u^\top R u$. We penalize both deviation from target state (GMV, CM2) and control effort (engagement as "cost" of achieving GMV). The relative weights $Q, R$ encode the tradeoff. In our case, $\alpha, \beta, \gamma, \delta$ play the role of $Q$, and we're learning the optimal policy $\pi^*(x)$ under this cost structure. See Section 1.10 for deeper connections to classical control.
+**Control-theoretic analogy**: This is similar to LQR with **state and control penalties**: $c(x, u) = x^\top Q x + u^\top R u$. We penalize both deviation from target state (GMV, CM2) and control effort (engagement as "cost" of achieving GMV). The relative weights $Q, R$ encode the tradeoff. In our case, $\alpha, \beta, \gamma, \delta$ play the role of $Q$, and we're learning the optimal policy $\pi^*(x)$ under this cost structure. See Appendix B (and Section 1.10) for deeper connections to classical control.
 
 **Multi-episode perspective** (Chapter 11 preview): In a **Markov Decision Process (MDP)** with inter-session dynamics, engagement enters *implicitly* through its effect on retention and lifetime value:
 
@@ -192,7 +201,7 @@ However, the **single-step contextual bandit** (our MVP formulation) cannot mode
 **The honest assessment**: This is a **theory-practice tradeoff**. The "correct" formulation is #EQ-1.2-prime (multi-episode MDP), but it requires modeling complex user dynamics (churn, seasonality, cross-session preferences) that are expensive to simulate and hard to learn from. The single-step approximation #EQ-1.2 with $\delta \cdot \text{CLICKS}$ is **pragmatic**: it captures 80% of the value with 20% of the complexity. For the MVP, this is the right tradeoff. Chapter 11 extends to multi-episode settings where engagement is properly modeled as state dynamics.
 
 ::: {.note title="Cross-reference — Chapter 11"}
-The full multi-episode treatment and implementation live in `Chapter 11 — Multi-Episode Inter-Session MDP` (see `docs/book/drafts/syllabus.md`). There we add `zoosim/multi_episode/session_env.py` and `zoosim/multi_episode/retention.py` to operationalize #EQ-1.2-prime with a retention/hazard state and validate that engagement raises long-term value without needing an explicit $\delta \cdot \text{CLICKS}$ term.
+The full multi-episode treatment and implementation live in `Chapter 11 — Multi-Episode Inter-Session MDP` (see `docs/book/syllabus.md`). There we add `zoosim/multi_episode/session_env.py` and `zoosim/multi_episode/retention.py` to operationalize #EQ-1.2-prime with a retention/hazard state and validate that engagement raises long-term value without needing an explicit $\delta \cdot \text{CLICKS}$ term.
 :::
 
 ::: {.note title="Code $\leftrightarrow$ Config (reward weights)"}
@@ -203,7 +212,7 @@ Business weights in `RewardConfig` (`MOD-zoosim.config`) implement #EQ-1.2 param
 - $\gamma/\alpha$ (STRAT weight): Strategic priority, typically $\in [0.1, 0.3]$ (house brands, new products, clearance)
 - **$\delta/\alpha$ (CLICKS weight): Bounded $\in [0.01, 0.10]$ to prevent clickbait strategies**
 
-Validation (enforced in code): see `zoosim/dynamics/reward.py` for an assertion on $\delta/\alpha$ in the production reward path. Chapter 8 derives principled bounds from Lagrangian constraint analysis.
+Validation (enforced in code): see `zoosim/dynamics/reward.py` for an assertion on $\delta/\alpha$ in the production reward path. **Appendix C** derives principled bounds from Lagrangian duality and Slater's condition [THM-C.2.1].
 
 Diagnostic: Compute $\text{CVR}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i$ after each policy update. If CVR drops $>10\%$ while CTR rises, reduce $\delta$ by 30–50%.
 :::
@@ -217,132 +226,32 @@ Diagnostic: Compute $\text{CVR}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i$ af
 - `zoosim/multi_episode/{session_env.py,retention.py}`: Chapter 11's retention-aware MDP implementing #EQ-1.2-prime
 :::
 
-### Let's Verify the Reward Function with Code
+### Verifying the Reward Function
 
-Before diving into theory, let's implement #EQ-1.2 and see what it does. We'll use a minimal simulator to generate outcomes.
-
-```python
-from dataclasses import dataclass
-from typing import NamedTuple
-import numpy as np
-
-class SessionOutcome(NamedTuple):
-    """Outcomes from a single search session.
-
-    Mathematical correspondence: realization omega in Omega of random variables
-    (GMV, CM2, STRAT, CLICKS).
-    """
-    gmv: float          # Gross merchandise value (EUR)
-    cm2: float          # Contribution margin 2 (EUR)
-    strat_exposure: int # Number of strategic products in top-10
-    clicks: int         # Total clicks
-
-@dataclass
-class BusinessWeights:
-    """Business priority coefficients (alpha, beta, gamma, delta) in #EQ-1.2."""
-    alpha_gmv: float = 1.0
-    beta_cm2: float = 0.5
-    gamma_strat: float = 0.2
-    delta_clicks: float = 0.1
-
-def compute_reward(outcome: SessionOutcome, weights: BusinessWeights) -> float:
-    """Implements #EQ-1.2: R = alpha*GMV + beta*CM2 + gamma*STRAT + delta*CLICKS.
-
-    This is the **scalar objective** we will maximize via RL.
-
-    See `zoosim/dynamics/reward.py:1` for the production implementation that
-    aggregates GMV/CM2/strategic exposure/clicks using `RewardConfig`
-    parameters defined in `zoosim/core/config.py:193`.
-    """
-    return (weights.alpha_gmv * outcome.gmv +
-            weights.beta_cm2 * outcome.cm2 +
-            weights.gamma_strat * outcome.strat_exposure +
-            weights.delta_clicks * outcome.clicks)
-
-# Example: Compare two strategies
-# Strategy A: Maximize GMV (show expensive products)
-outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_exposure=1, clicks=3)
-
-# Strategy B: Balance GMV and CM2 (show profitable products)
-outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_exposure=3, clicks=4)
-
-weights = BusinessWeights(alpha_gmv=1.0, beta_cm2=0.5, gamma_strat=0.2, delta_clicks=0.1)
-
-R_A = compute_reward(outcome_A, weights)
-R_B = compute_reward(outcome_B, weights)
-
-print(f"Strategy A (GMV-focused): R = {R_A:.2f}")
-print(f"Strategy B (Balanced):    R = {R_B:.2f}")
-print(f"Delta = {R_B - R_A:.2f} (Strategy {'B' if R_B > R_A else 'A'} wins!)")
-```
-
-**Output:**
-```
-Strategy A (GMV-focused): R = 128.00
-Strategy B (Balanced):    R = 118.50
-Delta = -9.50 (Strategy A wins!)
-```
-
-Wait—Strategy A won? Let's recalibrate weights to prioritize profitability:
+Before diving into theory, let's implement #EQ-1.2 and see what it does:
 
 ```python
-weights_profit = BusinessWeights(alpha_gmv=0.5, beta_cm2=1.0, gamma_strat=0.5, delta_clicks=0.1)
-R_A_profit = compute_reward(outcome_A, weights_profit)
-R_B_profit = compute_reward(outcome_B, weights_profit)
+# Minimal implementation of #EQ-1.2 (full version: Lab 1.3 in exercises_labs.md)
+def compute_reward(gmv, cm2, strat, clicks, alpha=1.0, beta=0.5, gamma=0.2, delta=0.1):
+    """R = alpha*GMV + beta*CM2 + gamma*STRAT + delta*CLICKS"""
+    return alpha * gmv + beta * cm2 + gamma * strat + delta * clicks
 
-print(f"\nWith profitability weighting:")
-print(f"Strategy A: R = {R_A_profit:.2f}")
-print(f"Strategy B: R = {R_B_profit:.2f}")
-print(f"Delta = {R_B_profit - R_A_profit:.2f} (Strategy {'B' if R_B_profit > R_A_profit else 'A'} wins!)")
+# Strategy A (GMV-focused): gmv=120, cm2=15, strat=1, clicks=3
+# Strategy B (Balanced):    gmv=100, cm2=35, strat=3, clicks=4
+R_A = compute_reward(120, 15, 1, 3)  # = 128.00
+R_B = compute_reward(100, 35, 3, 4)  # = 118.50
 ```
 
-**Output:**
-```
-With profitability weighting:
-Strategy A: R = 75.80
-Strategy B: R = 86.90
-Delta = 11.10 (Strategy B wins!)
-```
+| Strategy | GMV | CM2 | STRAT | CLICKS | Reward |
+|----------|-----|-----|-------|--------|--------|
+| A (GMV-focused) | 120 | 15 | 1 | 3 | **128.00** |
+| B (Balanced) | 100 | 35 | 3 | 4 | 118.50 |
 
-Now let's add the **diagnostic metric** from Section 1.2.1 to detect clickbait risk:
+Wait---Strategy A won? With profitability-focused weights $(\alpha=0.5, \beta=1.0, \gamma=0.5, \delta=0.1)$, the result flips: Strategy A scores 75.80, Strategy B scores **86.90**. The optimal strategy depends on business weights---this is a multi-objective tradeoff, not a fixed optimization. See **Lab 1.3--1.4** for full implementations and weight sensitivity analysis.
 
-```python
-def compute_conversion_quality(outcome: SessionOutcome) -> float:
-    """GMV per click (conversion quality).
+**Conversion quality diagnostic** (clickbait detection): Strategy A gets fewer clicks (3 vs 4) but 60% higher GMV per click (EUR 40 vs EUR 25)---*quality over quantity*. The metric $\text{CVR} = \text{GMV}/\text{CLICKS}$ monitors for clickbait: if CVR drops while CTR rises, reduce $\delta$ immediately. See **Lab 1.5** for the full implementation with alerting thresholds.
 
-    Diagnostic for clickbait detection: high CTR with low CVR indicates
-    the agent is optimizing delta*CLICKS at expense of alpha*GMV.
-    See Section 1.2.1 for theory.
-    """
-    return outcome.gmv / outcome.clicks if outcome.clicks > 0 else 0.0
-
-cvr_A = compute_conversion_quality(outcome_A)
-cvr_B = compute_conversion_quality(outcome_B)
-
-print(f"\nConversion quality (GMV per click):")
-print(f"Strategy A: EUR {cvr_A:.2f}/click ({outcome_A.clicks} clicks -> EUR {outcome_A.gmv:.0f} GMV)")
-print(f"Strategy B: EUR {cvr_B:.2f}/click ({outcome_B.clicks} clicks -> EUR {outcome_B.gmv:.0f} GMV)")
-print(f"-> Strategy {'A' if cvr_A > cvr_B else 'B'} has higher-quality engagement")
-
-# Verify delta/alpha bound from Section 1.2.1
-print(f"\n[Validation] delta/alpha = {weights.delta_clicks / weights.alpha_gmv:.3f}")
-print(f"             Bound check: {'PASS' if weights.delta_clicks / weights.alpha_gmv <= 0.10 else 'FAIL'} (must be <= 0.10)")
-```
-
-**Output:**
-```
-Conversion quality (GMV per click):
-Strategy A: EUR 40.00/click (3 clicks -> EUR 120 GMV)
-Strategy B: EUR 25.00/click (4 clicks -> EUR 100 GMV)
--> Strategy A has higher-quality engagement
-
-[Validation] delta/alpha = 0.100
-             Bound check: PASS (must be <= 0.10)
-```
-
-**Analysis**: Strategy A gets **fewer clicks** (3 vs 4) but **60% higher GMV per click** (EUR 40 vs EUR 25)—this is *quality over quantity*. If you observe CVR dropping during training while CTR rises, that's your signal to reduce $\delta$ (see Section 1.2.1).
-
-The bound $\delta/\alpha = 0.10$ is at the upper limit. For initial experiments, I recommend starting with $\delta/\alpha = 0.05$ (half the bound) and monitoring CVR over time. If CVR remains stable as the agent learns, you can cautiously increase $\delta$. If CVR degrades, reduce $\delta$ immediately—the agent has learned to exploit the engagement term.
+The bound $\delta/\alpha = 0.10$ is at the upper limit. We recommend starting with $\delta/\alpha = 0.05$ and monitoring CVR over time. If CVR degrades, the agent has learned to exploit the engagement term.
 
 ::: {.note title="Code $\leftrightarrow$ Simulator"}
 The minimal example above mirrors the simulator's reward path. In production, `RewardConfig` (`MOD-zoosim.config`) in `zoosim/core/config.py` holds the business weights, and `compute_reward` (`MOD-zoosim.reward`) in `zoosim/dynamics/reward.py` implements #EQ-1.2 aggregation with a detailed breakdown. Keeping these constants in configuration avoids magic numbers in code and guarantees reproducibility across experiments.
@@ -360,91 +269,30 @@ Current production systems use **fixed boost weights** $\mathbf{w}_{\text{static
 
 ### Experiment: User Segment Heterogeneity
 
-Simulate two user types with different preferences.
-
-See `zoosim/dynamics/behavior.py:1` for the production click/abandonment model and
-position-bias parameters used throughout the simulator; the toy model below
-is intentionally simplified for exposition.
+Simulate two user types with different preferences. See `zoosim/dynamics/behavior.py` for the production click/abandonment model; the toy model in **Lab 1.6** is simplified for exposition.
 
 ::: {.note title="Code $\leftrightarrow$ Behavior (production click model)"}
-The simplified click function below models position bias as `1/k`. Production (`MOD-zoosim.behavior`, concept `CN-ClickModel`) implements an examination–click–purchase process with position bias and termination.
+Production (`MOD-zoosim.behavior`, concept `CN-ClickModel`) implements an examination--click--purchase process with position bias:
 
-- Click probability: `click_prob = sigmoid(utility)` inside `simulate_session()` (see `zoosim/dynamics/behavior.py`)
-- Position bias: `_position_bias()` (see `zoosim/dynamics/behavior.py`) using `BehaviorConfig.pos_bias` in `zoosim/core/config.py`
-- Purchase: `buy_logit = ...` then `sigmoid(buy_logit)` (see `zoosim/dynamics/behavior.py`)
+- Click probability: `click_prob = sigmoid(utility)` in `zoosim/dynamics/behavior.py`
+- Position bias: `_position_bias()` using `BehaviorConfig.pos_bias` in `zoosim/core/config.py`
+- Purchase: `sigmoid(buy_logit)` in `zoosim/dynamics/behavior.py`
 
-Chapter 2 formalizes click models and position bias; Chapter 5 connects these to off-policy evaluation for counterfactual testing.
+Chapter 2 formalizes click models and position bias; Chapter 5 connects these to off-policy evaluation.
 :::
 
-```python
-# User 1: Price hunter (discount-sensitive)
-# User 2: Premium shopper (quality-focused)
+**Experiment results** (full implementation: **Lab 1.6** in `exercises_labs.md`):
 
-def simulate_click_probability(product_score: float, position: int,
-                                user_type: str) -> float:
-    """Probability of click given score and position.
+With static discount boost $w = 2.0$, user segments respond dramatically differently:
 
-    Models position bias: P(click | position k) is proportional to 1/k.
-    User types have different sensitivities to boost features.
-    """
-    position_bias = 1.0 / position  # Top positions get more attention
+| User Type | Expected Clicks | Relative Performance |
+|-----------|-----------------|---------------------|
+| Price hunter | 0.997 | Baseline |
+| Premium shopper | 0.428 | **57% fewer clicks** |
 
-    if user_type == "price_hunter":
-        # Highly responsive to discount boosts
-        relevance_weight = 0.3
-        boost_weight = 0.7
-    else:  # premium
-        # Prioritizes base relevance, ignores discounts
-        relevance_weight = 0.8
-        boost_weight = 0.2
+**Analysis**: The static weight is **over-optimized for price hunters** and **under-performs for premium shoppers**. Ideally, we'd adapt per segment: price hunters get $w_{\text{discount}} \approx 2.0$, premium shoppers get $w_{\text{discount}} \approx 0.5$. But production systems use **one global $\mathbf{w}$**---this is wasteful.
 
-    # Simplified: score = relevance + boost_features
-    base_relevance = product_score * 0.6  # Assume fixed base
-    boost_effect = product_score * 0.4    # Boost contribution
-
-    utility = relevance_weight * base_relevance + boost_weight * boost_effect
-    return position_bias * utility
-
-# Static boost weights: w_discount = 2.0 (aggressive discounting)
-product_scores = [8.5, 8.0, 7.8, 7.5, 7.2]  # After applying w_discount=2.0
-
-# User 1: Price hunter clicks aggressively on boosted items
-clicks_hunter = [simulate_click_probability(s, i+1, "price_hunter")
-                 for i, s in enumerate(product_scores)]
-
-# User 2: Premium shopper is less responsive to discount boosts
-clicks_premium = [simulate_click_probability(s, i+1, "premium")
-                  for i, s in enumerate(product_scores)]
-
-print("Click probabilities with static discount boost (w=2.0):")
-print(f"Price hunter:    {[f'{p:.3f}' for p in clicks_hunter]}")
-print(f"Premium shopper: {[f'{p:.3f}' for p in clicks_premium]}")
-print(f"\nExpected clicks (price hunter):    {sum(clicks_hunter):.2f}")
-print(f"Expected clicks (premium shopper): {sum(clicks_premium):.2f}")
-```
-
-**Output:**
-```
-Click probabilities with static discount boost (w=2.0):
-Price hunter:    ['0.476', '0.214', '0.131', '0.100', '0.076']
-Premium shopper: ['0.204', '0.092', '0.056', '0.043', '0.033']
-
-Expected clicks (price hunter):    0.997
-Expected clicks (premium shopper): 0.428
-```
-
-**Analysis**: The static boost weight $w_{\text{discount}} = 2.0$ is **over-optimized for price hunters** and **under-performs for premium shoppers**. Ideally, we'd adapt:
-- Price hunters: $w_{\text{discount}} \approx 2.0$ (high)
-- Premium shoppers: $w_{\text{discount}} \approx 0.5$ (low)
-
-But production systems use **one global $\mathbf{w}$** for all users. This is wasteful.
-
-> **Note (Toy vs. Production Models):** The simplified click model above uses **linear utility** and multiplicative position bias for clarity. The production simulator (`zoosim/dynamics/behavior.py:83`) uses:
-> - **Sigmoid click probability:** `sigmoid(utility)` for bounded probabilities $\in [0,1]$
-> - **Calibrated position bias:** `_position_bias()` with data-driven parameters from `BehaviorConfig`
-> - **Examination-click-purchase cascade:** Users examine $\rightarrow$ click $\rightarrow$ potentially purchase (not just click)
->
-> The toy model suffices to show **user heterogeneity** (different sensitivities to boosts). Chapter 2 develops the production click model (PBM/DBN) with full measure-theoretic foundations.
+> **Note (Toy vs. Production Models):** The toy model uses linear utility and multiplicative position bias. Production uses sigmoid probabilities, calibrated position bias from `BehaviorConfig`, and an examination--click--purchase cascade. The toy suffices to show **user heterogeneity**; Chapter 2 develops the full PBM/DBN click model with measure-theoretic foundations.
 
 ### The Context Space
 
@@ -609,69 +457,30 @@ Typical range: $a_{\max} \in [0.3, 1.0]$ (determined by domain experts).
 
 ### Implementation: Bounded Action Space
 
-Let's implement the action space with bounds and verify clipping:
+The key operation is **clipping** uncalibrated policy outputs to the bounded space $\mathcal{A}$:
 
 ```python
-from dataclasses import dataclass
 import numpy as np
 
-@dataclass
-class ActionSpace:
-    """Continuous bounded action space: [-a_max, +a_max]^K.
+# Project action onto A = [-a_max, +a_max]^K (full class: Lab 1.7)
+def clip_action(a, a_max=0.5):
+    """Enforce #EQ-1.11 bounds. Critical for safety."""
+    return np.clip(a, -a_max, a_max)
 
-    Mathematical correspondence: action space A = [-a_max, +a_max]^K, a subset of R^K.
-    """
-    K: int           # Dimensionality (number of boost features)
-    a_max: float     # Bound on each coordinate
-
-    def sample(self, rng: np.random.Generator) -> np.ndarray:
-        """Sample uniformly from A (for exploration)."""
-        return rng.uniform(-self.a_max, self.a_max, size=self.K)
-
-    def clip(self, a: np.ndarray) -> np.ndarray:
-        """Project action onto A (enforces bounds).
-
-        This is crucial: if a policy network outputs unbounded logits,
-        we must clip to ensure a in A.
-        """
-        return np.clip(a, -self.a_max, self.a_max)
-
-    def contains(self, a: np.ndarray) -> bool:
-        """Check if a in A."""
-        return np.all(np.abs(a) <= self.a_max)
-
-# Example: K=5 boost features (discount, margin, PL, bestseller, recency)
-action_space = ActionSpace(K=5, a_max=0.5)
-
-# Sample random action
-rng = np.random.default_rng(seed=42)
-a_random = action_space.sample(rng)
-print(f"Random action: {a_random}")
-print(f"In bounds? {action_space.contains(a_random)}")
-
-# Try an out-of-bounds action (e.g., from an uncalibrated policy)
+# Neural policy might output unbounded values
 a_bad = np.array([1.2, -0.3, 0.8, -1.5, 0.4])
-print(f"\nBad action: {a_bad}")
-print(f"In bounds? {action_space.contains(a_bad)}")
-
-# Clip to enforce bounds
-a_clipped = action_space.clip(a_bad)
-print(f"Clipped:    {a_clipped}")
-print(f"In bounds? {action_space.contains(a_clipped)}")
+a_safe = clip_action(a_bad)  # -> [0.5, -0.3, 0.5, -0.5, 0.4]
 ```
 
-**Output:**
-```
-Random action: [-0.14 -0.36  0.47 -0.03  0.21]
-In bounds? True
+| Action | Before | After Clipping |
+|--------|--------|----------------|
+| $a_1$ | 1.2 | 0.5 |
+| $a_2$ | -0.3 | -0.3 |
+| $a_3$ | 0.8 | 0.5 |
+| $a_4$ | -1.5 | -0.5 |
+| $a_5$ | 0.4 | 0.4 |
 
-Bad action: [ 1.2 -0.3  0.8 -1.5  0.4]
-In bounds? False
-Clipped:    [ 0.5 -0.3  0.5 -0.5  0.4]
-In bounds? True
-```
-
-**Key takeaway**: Always **clip actions before applying** them to the scoring function. Neural policies can output unbounded values; we must project them onto $\mathcal{A}$. Align `a_max` with `SimulatorConfig.action.a_max` in `zoosim/core/config.py:208` to ensure consistency between experiments and production.
+**Key takeaway**: Always **clip actions before applying** them to the scoring function. Neural policies can output unbounded values; we must project them onto $\mathcal{A}$. Align `a_max` with `SimulatorConfig.action.a_max` in `zoosim/core/config.py` to ensure consistency. See **Lab 1.7** for the full `ActionSpace` class with sampling, validation, and volume computation.
 
 ::: {.note title="Code $\leftrightarrow$ Env (clipping)"}
 The production simulator (`MOD-zoosim.env`) enforces #EQ-1.11 action space bounds at ranking time.
@@ -746,7 +555,7 @@ reward= 0.100, terminated=True, truncated=False
 
 ## 1.5 From Optimization to Learning: Why RL?
 
-At this point, you might ask: **Why not just optimize equation (1.6) directly?** If we can evaluate $R(a, x)$ for any $(a, x)$, can't we use gradient descent?
+At this point, one might ask: **Why not just optimize equation (1.6) directly?** If we can evaluate $R(a, x)$ for any $(a, x)$, can we not use gradient descent?
 
 ### The Sample Complexity Bottleneck
 
@@ -824,371 +633,335 @@ Before implementing RL algorithms, we need a **realistic environment** to test t
 
 ### Part III: Policies (Chapters 6-8)
 
-With a simulator, we can now develop **algorithms**: discrete template bandits (Chapter 6), continuous action Q-learning (Chapter 7), and constrained optimization for CM2/exposure/stability (Chapter 8). Each chapter proves regret bounds and provides PyTorch implementations.
+With a simulator, we can now develop **algorithms**: discrete template bandits (Chapter 6), continuous action Q-learning (Chapter 7), and policy gradients (Chapter 8). Constraint enforcement for CM2 floors and rank stability appears in Chapter 10 (Guardrails), with the underlying duality theory in Appendix C. Chapter 6 develops bandits with formal regret bounds; Chapter 7 establishes convergence under realizability (but no regret guarantees for continuous actions); Chapter 8 proves the Policy Gradient Theorem and analyzes the theory-practice gap. All three provide PyTorch implementations.
 
 **Chapter 6**: Discrete template bandits (LinUCB, Thompson Sampling over fixed strategies)
 **Chapter 7**: Continuous actions via $Q(x, a)$ regression (neural Q-functions)
-**Chapter 8**: Constraints (Lagrangian methods for CM2/exposure floors)
+**Chapter 8**: Policy gradient methods (REINFORCE, PPO, theory-practice gap)
 
-### Part IV: Evaluation & Deployment (Chapters 9-11)
+### Part IV: Evaluation, Robustness & Multi-Episode MDPs (Chapters 9-11)
 
-Before production deployment, we need **safety guarantees**: off-policy evaluation to test policies on historical data (Chapter 9), robustness checks and guardrails (Chapter 10), and production infrastructure (Chapter 11: A/B testing, monitoring, latency).
+Before production deployment, we need **safety guarantees**: off-policy evaluation to test policies on historical data (Chapter 9), robustness checks and guardrails with production monitoring (Chapter 10), and the extension to multi-episode dynamics where user engagement compounds across sessions (Chapter 11).
 
-**Chapter 9**: Off-policy evaluation (IPS, SNIPS, DR—how to test policies safely)
-**Chapter 10**: Robustness and guardrails (drift detection, rank stability, fallback policies)
-**Chapter 11**: Production deployment (A/B testing, latency, monitoring)
+**Chapter 9**: Off-policy evaluation (IPS, SNIPS, DR---how to test policies safely)
+**Chapter 10**: Robustness and guardrails (drift detection, rank stability, CM2 floors, A/B testing, monitoring)
+**Chapter 11**: Multi-episode MDPs (inter-session retention, hazard modeling, long-term user value)
 
 ### The Journey Ahead
 
-By the end, you will:
+By the end of this chapter, we will:
 - **Prove** convergence of bandit algorithms under general conditions
-- **Implement** production-quality deep RL agents (PyTorch/JAX)
+- **Implement** production-quality deep RL agents (NumPy/PyTorch)
 - **Understand** when theory applies and when it breaks (the deadly triad, function approximation divergence)
 - **Deploy** RL systems safely (OPE, constraints, monitoring)
 
 Let's begin.
 
+::: {.note title="How to read this chapter on first pass."}
+Sections 1.1--1.6, 1.9, and 1.10 form the core path: they set up search as a constrained contextual bandit and explain why we use RL rather than static tuning.
+Sections 1.7--1.8 are advanced/optional previews of measure-theoretic foundations, the Bellman operator, and off-policy evaluation. Skim or skip these on first reading and return after Chapters 2--3.
+:::
+
+
+
+---
+## 1.7 (Advanced) Optimization Under Uncertainty and Off‑Policy Evaluation
+
+*This section is optional on a first reading.*
+
+Readers primarily interested in the **contextual bandit formulation** and motivation for RL can safely skim this section and jump to \S1.9 (Constraints) or Chapter 2. Here we take an early, slightly more formal look at:
+
+* **Expected reward and well‑posedness** (why the expectations we write down actually exist)
+* **Off‑policy evaluation (OPE)** at a *conceptual* level
+* Two preview results: **existence of an optimal policy** and a **regret lower bound**
+
+The full measure‑theoretic machinery (Radon–Nikodym, conditional expectation) lives in **Chapter 2**. The full OPE toolbox (IPS, SNIPS, DR, FQE, SWITCH, MAGIC) lives in **Chapter 9**.
+
 ---
 
-## 1.7 Mathematical Foundations: Optimization Under Uncertainty
+### 1.7.1 Expected Utility and Well‑Defined Rewards
 
-Before diving into RL algorithms, we need precise mathematical tools. This section establishes the **decision-theoretic framework** underlying contextual bandits—and, crucially, the foundations for **off-policy evaluation** that will enable safe policy testing in Chapter 9.
+Up to now we’ve treated expressions like
+$\mathbb{E}[R(\mathbf{w}, x, \omega)]$ as if they were obviously meaningful. Let’s make that explicit.
 
-### The Hidden Challenge: Testing Policies Safely
+Recall the stochastic reward from section 1.2:
 
-We've formulated search ranking as contextual bandits (Section 1.4), but glossed over a critical deployment question: **How do we evaluate a new policy $\pi_{\text{eval}}$ using data collected under an old policy $\pi_{\text{log}}$?**
+* Context $x \in \mathcal{X}$ (user, query, etc.)
+* Action $a \in \mathcal{A}$ (boost weights $\mathbf{w}$)
+* Outcome $\omega \in \Omega$ (user behavior: clicks, purchases, abandonment)
+* Reward $R(x, a, \omega) \in \mathbb{R}$ (scalarized GMV/CM2/STRAT/CLICKS)
 
-In production, we can't afford to test every policy candidate with live users. Imagine we've logged 100,000 search sessions under the current policy $\pi_{\text{log}}$ (say, static boost weights). Now we propose a new policy $\pi_{\text{eval}}$ (context-adaptive weights from a trained neural net). **Can we estimate $\pi_{\text{eval}}$'s value without deploying it?**
-
-This is **off-policy evaluation (OPE)**. The key idea: reweight logged data by the **importance sampling ratio**:
-
-$$
-w(x,a) = \frac{\pi_{\text{eval}}(a \mid x)}{\pi_{\text{log}}(a \mid x)}
-$$
-
-to correct for the distribution shift between policies. Then the OPE estimator is:
+We define the **expected utility** ($Q$‑function) of action $a$ in context $x$ as
 
 $$
-\hat{V}(\pi_{\text{eval}}) = \frac{1}{T} \sum_{t=1}^{T} w(x_t, a_t) R_t
-$$
-
-where $(x_t, a_t, R_t)$ come from logged data under $\pi_{\text{log}}$.
-
-**Critical requirement**: This ratio is only well-defined when **$\pi_{\text{log}}$ assigns positive probability whenever $\pi_{\text{eval}}$ does**. Formally, we need $\pi_{\text{eval}} \ll \pi_{\text{log}}$ (absolute continuity): whenever $\pi_{\text{eval}}(a \mid x) > 0$, we must have $\pi_{\text{log}}(a \mid x) > 0$. Without this, importance weights are undefined or infinite, and OPE fails.
-
-This motivates the measure-theoretic rigor below: we must establish probability foundations that make OPE sound. The mathematics here isn't abstract formalism—it's the **bedrock of safe RL deployment**.
-
-### Expected Utility and Risk
-
-The reward function $R(x, a, \omega)$ is **stochastic**—even with fixed $(x, a)$, outcomes vary due to $\omega$ (user behavior). We aggregate risk by taking expectations:
-
-$$
-Q(x, a) := \mathbb{E}_{\omega \sim P(\cdot \mid x, a)}[R(x, a, \omega)]
+Q(x, a) := \mathbb{E}_{\omega \sim P(\cdot \mid x, a)}[R(x, a, \omega)].
 \tag{1.12}
 $$
 {#EQ-1.12}
 
-where $P(\omega \mid x, a)$ is the **outcome distribution** conditioned on context and action.
+Here $P(\cdot \mid x, a)$ is the outcome distribution induced by showing the ranking determined by $(x,a)$ in our click model.
 
-**Assumption 1.7.1** (Well-Defined Rewards). {#ASM-1.7.1}
+To even *define* $Q(x,a)$, we need basic regularity conditions. These are made rigorous in Chapter 2 (Assumption 2.6.1); we preview them informally here:
 
-For all $(x, a) \in \mathcal{X} \times \mathcal{A}$:
-1. $R(x, a, \omega)$ is measurable in $\omega$
-2. $\mathbb{E}[|R(x, a, \omega)|] < \infty$ (finite first moment)
-3. $P(\omega \mid x, a)$ is absolutely continuous w.r.t. a reference measure $\mu$
+**Regularity conditions for well-defined rewards (informal):**
 
-These conditions ensure $Q(x, a)$ is well-defined and finite. Condition (3) is needed for off-policy evaluation (importance sampling)—let's see why with code.
+1. **Measurability**: $R(x, a, \omega)$ is measurable as a function of $\omega$.
+2. **Integrability**: Rewards have finite expectation: $\mathbb{E}[|R(x, a, \omega)|] < \infty$.
+3. **Coverage / overlap**: If the evaluation policy ever plays an action in a context, the logging policy must have taken that action with positive probability there. This is **absolute continuity** $\pi_{\text{eval}} \ll \pi_{\text{log}}$, ensuring importance weights $\pi_{\text{eval}}(a\mid x) / \pi_{\text{log}}(a\mid x)$ are finite.
 
-### Why Naive Off-Policy Evaluation Fails
+Conditions (1)–(2) ensure $Q(x,a) = \mathbb{E}[R(x,a,\omega) \mid x,a]$ is a well-defined finite Lebesgue integral. Condition (3) is critical for **off-policy evaluation** (§1.7.2 below): when we estimate the value of a new policy using data from an old policy, we reweight observations by likelihood ratios. Absolute continuity guarantees these ratios exist (the denominator is never zero where the numerator is positive).
 
-Here's a toy example showing why absolute continuity matters:
+**Chapter 2, §2.6** formalizes these conditions as **Assumption 2.6.1 (OPE Probability Conditions)** and proves that the IPS estimator is unbiased under these assumptions. For now, note that our search setting satisfies all three: rewards are bounded (GMV and CM2 are finite), and we'll use exploration policies (e.g., $\varepsilon$-greedy with $\varepsilon > 0$) that ensure coverage.
+
+---
+
+### 1.7.2 The Offline Evaluation Problem (Toy Cat‑Food Example)
+
+In §1.4 we defined the value of a policy $\pi$ as
+
+$$
+V(\pi) = \mathbb{E}_{x \sim \rho,\, \omega}[ R(x, \pi(x), \omega) ],
+\tag{1.7a}
+$$
+{#EQ-1.7a}
+
+where $\rho$ is the context distribution (query/user stream).
+
+So far we implicitly assumed we can just *deploy* any candidate policy $\pi$ to estimate $V(\pi)$ online:
+
+1. Pick boost weights $a = \pi(x)$.
+2. Show ranking to users.
+3. Observe reward $R(x,a,\omega)$.
+4. Average over many sessions.
+
+In a real search system, this is often **too risky**:
+
+* Every exploratory policy hits **GMV** and **CM2**.
+* It affects **real users** and competes with other experiments.
+* It may violate **constraints** (CM2 floor, rank stability, strategic exposure).
+
+This is where **off‑policy evaluation (OPE)** enters:
+
+> Can we estimate $V(\pi_e)$ for a new evaluation policy $\pi_e$
+> using only logs collected under an old behavior policy $\pi_b$?
+
+Formally, suppose we have a log
+
+$$
+\mathcal{D} = {(x_i, a_i, r_i)}_{i=1}^n,
+$$
+
+where $x_i \sim \rho$, $a_i \sim \pi_b(\cdot \mid x_i)$, and $r_i = R(x_i, a_i, \omega_i)$.
+
+A **naïve idea** is to just average rewards in the logs:
+
+$$
+\hat{V}_{\text{naive}} := \frac{1}{n} \sum_{i=1}^n r_i.
+$$
+
+This clearly estimates $V(\pi_b)$, not $V(\pi_e)$.
+
+#### Toy example: two cat‑food templates
+
+Take a single query type “cat food” and two ranking templates:
+
+* $a_{\text{GMV}}$ — aggressive discount boosts (high GMV, risky CM2),
+* $a_{\text{SAFE}}$ — conservative boosts (lower GMV, safer CM2).
+
+Consider:
+
+* Logging policy $\pi_b$: always uses $a_{\text{SAFE}}$,
+* Evaluation policy $\pi_e$: would always use $a_{\text{GMV}}$.
+
+The log contains $n$ sessions:
+
+$$
+\mathcal{D} = {(x_i, a_i, r_i)}_{i=1}^n, \quad a_i \equiv a_{\text{SAFE}}.
+$$
+
+The empirical average
+
+$$
+\hat{V}_{\text{naive}} = \frac{1}{n} \sum_{i=1}^n r_i
+$$
+
+tells us how good **$a_{\text{SAFE}}$** is. It tells us **nothing** about $a_{\text{GMV}}$, because that action was never taken: there are *no facts in the data* about what would have happened under $a_{\text{GMV}}$.
+
+> **Key lesson:** OPE cannot recover counterfactuals from **purely deterministic logging** that never explores the actions of interest.
+
+We need a way to reuse logs from $\pi_b$ while “pretending” they came from $\pi_e$. That is exactly what **importance sampling** does.
+
+A tiny NumPy sketch makes this concrete:
 
 ```python
 import numpy as np
 
-# Scenario: We logged 5 sessions under pi_log (uniform random policy)
-logged_actions = np.array([0, 1, 0, 1, 1])  # Actions chosen by pi_log
-logged_rewards = np.array([1.0, 0.5, 1.2, 0.3, 0.6])  # Observed rewards
+# Logged under pi_b: always choose SAFE (action 0)
+logged_actions = np.array([0, 0, 0, 0, 0])
+logged_rewards = np.array([0.8, 1.1, 0.9, 1.0, 1.2])  # CM2-safe template
 
-# pi_log is uniform: each action has probability 0.5
-def pi_log(a):
-    return 0.5  # Uniform over {0, 1}
+# New policy pi_e: always choose GMV-heavy (action 1)
+def pi_b(a):
+    return 1.0 if a == 0 else 0.0  # deterministic SAFE
+def pi_e(a):
+    return 1.0 if a == 1 else 0.0  # deterministic GMV
 
-# New policy pi_eval: deterministic, always chooses action 0
-def pi_eval(a):
-    return 1.0 if a == 0 else 0.0
-
-# WRONG: Naive estimate (just average logged rewards)
-naive_estimate = np.mean(logged_rewards)
-print(f"Naive estimate (ignores policy shift): {naive_estimate:.3f}")
-
-# CORRECT: Importance-weighted estimate
-weights = np.array([pi_eval(a) / pi_log(a) for a in logged_actions])
-print(f"Importance weights: {weights}")
-
-# Only sessions where pi_eval would take the same action contribute
-ope_estimate = np.average(logged_rewards, weights=weights)
-print(f"OPE estimate (importance sampling): {ope_estimate:.3f}")
-
-# Analysis: Which sessions contributed?
-for i, (a, r, w) in enumerate(zip(logged_actions, logged_rewards, weights)):
-    status = "contributes (pi_eval agrees)" if w > 0 else "discarded (pi_eval disagrees)"
-    print(f"  Session {i}: action={a}, reward={r:.1f}, weight={w:.1f} -> {status}")
+naive = logged_rewards.mean()
+print(f"Naive log average: {naive:.3f}  (this is V(pi_b), not V(pi_e))")
 ```
 
-**Output:**
-```
-Naive estimate (ignores policy shift): 0.720
-Importance weights: [2. 0. 2. 0. 0.]
-OPE estimate (importance sampling): 1.100
-  Session 0: action=0, reward=1.0, weight=2.0 -> contributes (pi_eval agrees)
-  Session 1: action=1, reward=0.5, weight=0.0 -> discarded (pi_eval disagrees)
-  Session 2: action=0, reward=1.2, weight=2.0 -> contributes (pi_eval agrees)
-  Session 3: action=1, reward=0.3, weight=0.0 -> discarded (pi_eval disagrees)
-  Session 4: action=1, reward=0.6, weight=0.0 -> discarded (pi_eval disagrees)
-```
+There is *no* way to estimate what would have happened under action 1 from this dataset: the required probabilities and rewards simply do not appear.
 
-**Analysis**: The naive estimate (0.72) averages all rewards equally, but $\pi_{\text{eval}}$ would **never choose action 1**. The correct OPE estimate (1.10) upweights sessions where $\pi_{\text{log}}$ happened to choose action 0 (which $\pi_{\text{eval}}$ prefers), and zeros out the rest. The weight factor 2.0 = $\pi_{\text{eval}}(0) / \pi_{\text{log}}(0)$ = 1.0 / 0.5 corrects for the fact that $\pi_{\text{log}}$ chose action 0 only 50% of the time, but $\pi_{\text{eval}}$ would choose it 100% of the time.
+---
 
-**Why absolute continuity (ASM-1.7.1 condition 3) is essential**: If $\pi_{\text{log}}$ had **never** tried action 0 (i.e., $\pi_{\text{log}}(a=0) = 0$), the weight would be $1.0 / 0.0 = \infty$—undefined! We need $\pi_{\text{log}}$ to assign positive probability to every action $\pi_{\text{eval}}$ might choose. This is absolute continuity. Without it, OPE is impossible.
+### 1.7.3 Importance Sampling at a High Level
 
-### The Coverage Problem: When OPE Fails
+To estimate $V(\pi_e)$ from data generated under $\pi_b$, we reweight logged samples by how much more (or less) likely they would be under $\pi_e$.
 
-The example above was benign: uniform $\pi_{\text{log}}$ with 50% coverage. Real systems face **sparse logging**:
-
-```python
-# Dangerous scenario: pi_log rarely explores the action pi_eval prefers
-def pi_log_sparse(a):
-    return 0.95 if a == 1 else 0.05  # Rarely tries action 0
-
-def pi_eval_deterministic(a):
-    return 1.0 if a == 0 else 0.0  # Always wants action 0
-
-# Now importance weights explode
-w_action_0 = pi_eval_deterministic(0) / pi_log_sparse(0)  # 1.0 / 0.05 = 20!
-w_action_1 = pi_eval_deterministic(1) / pi_log_sparse(1)  # 0.0 / 0.95 = 0
-
-print(f"Importance weight for action 0: {w_action_0}")
-print(f"Importance weight for action 1: {w_action_1}")
-
-# Simulate what happens with sparse coverage
-np.random.seed(42)
-n_samples = 100
-actions = np.random.choice([0, 1], size=n_samples, p=[0.05, 0.95])
-rewards = np.where(actions == 0, 1.0, 0.3)  # Action 0 has higher reward
-
-# Count how often we even see action 0
-n_action_0 = np.sum(actions == 0)
-print(f"\nWith {n_samples} samples, action 0 appears {n_action_0} times")
-print(f"Effective sample size for OPE: ~{n_action_0} observations")
-print(f"Each weighted by {w_action_0}x -> massive variance!")
-
-# Compute OPE estimate with high variance
-weights = np.where(actions == 0, w_action_0, 0)
-if weights.sum() > 0:
-    ope_estimate = np.average(rewards, weights=weights)
-    print(f"\nOPE estimate: {ope_estimate:.3f}")
-    print("(Dominated by a handful of heavily-weighted samples)")
-```
-
-**Output:**
-```
-Importance weight for action 0: 20.0
-Importance weight for action 1: 0.0
-
-With 100 samples, action 0 appears 4 times
-Effective sample size for OPE: ~4 observations
-Each weighted by 20.0x -> massive variance!
-
-OPE estimate: 1.000
-(Dominated by a handful of heavily-weighted samples)
-```
-
-**The deadly triad for OPE**: deterministic $\pi_{\text{eval}}$ + sparse $\pi_{\text{log}}$ + noisy rewards. With only 4 samples for action 0, each inflated by 20$\times$, the OPE estimate has catastrophic variance. A single outlier observation can dominate.
-
-**Solutions** (Chapter 9 develops these fully):
-- **Clipping (SNIPS)**: Cap importance weights at some $w_{\max}$ to reduce variance at cost of bias
-- **Doubly-robust estimators**: Combine importance sampling with a learned reward model for lower variance
-- **Better logging policies**: Use $\varepsilon$-greedy with sufficient $\varepsilon$ to ensure coverage
-
-**Practical guideline**: Monitor **effective sample size (ESS)** = $(\sum_i w_i)^2 / \sum_i w_i^2$. If ESS $\ll T$, your OPE estimate is unreliable. Require ESS $\geq 0.1T$ for trustworthy evaluation.
-
-This concrete example shows why the measure-theoretic machinery isn't pedantry—it's the foundation for testing policies safely before deployment. Chapter 9 develops the full OPE framework (IPS, SNIPS, doubly-robust estimators), but the mathematical rigor starts here.
-
-**Remark 1.7.1a** (Why Absolute Continuity?). Condition (3) ensures we can reweight outcomes from one policy to evaluate another. In off-policy evaluation (Chapter 9), we estimate the value of a new policy $\pi_{\text{eval}}$ using data collected under a logging policy $\pi_{\text{log}}$. The importance weight is:
-$$
-w(x,a) = \frac{d\pi_{\text{eval}}}{d\pi_{\text{log}}}(a \mid x)
-$$
-which requires $\pi_{\text{log}}(a \mid x) > 0$ whenever $\pi_{\text{eval}}(a \mid x) > 0$ (absolute continuity $\pi_{\text{eval}} \ll \pi_{\text{log}}$). Without this, we cannot correct for distribution shift, and off-policy estimates are undefined. See [@precup:eligibility_traces:2000] for the foundation of importance-sampled RL estimators. We verify this condition holds in our simulator by design: the logging policy is $\varepsilon$-greedy with $\varepsilon > 0$, ensuring all actions have positive probability.
-
-**Remark 1.7.1b** (Verifying Hypotheses for Our Setting). {#REM-1.7.1b}
-
-The theorem below requires metrizability, compactness, and semicontinuity. In our search ranking setup:
-
-- **$\mathcal{A}$ compact metrizable**: By definition, $\mathcal{A} = [-a_{\max}, +a_{\max}]^K \subset \mathbb{R}^K$ is closed and bounded, hence compact by Heine-Borel, and metrizable as a subset of Euclidean space.
-
-- **$\mathcal{X}$ metrizable**: For finite user segments and discrete query types, $\mathcal{X}$ is finite (hence metrizable). For embedding-based contexts with bounded features, $\mathcal{X} \subset \mathbb{R}^{d_x}$ inherits the Euclidean metric.
-
-- **$Q(x,a)$ upper semicontinuous in $a$**: Scores $s(p,q,u) = r_{\text{ES}}(q,p) + a^\top \phi(p,u,q)$ are **continuous** (linear) in $a$. Click probabilities under sigmoid models are **smooth** in scores. Continuity implies upper semicontinuity. For discrete templates (Chapter 6), the condition is automatic.
-
-**Theorem 1.7.2** (Existence of Optimal Policy). {#THM-1.7.2}
-Let $\mathcal{X}$ be a metrizable space and $\mathcal{A}$ a compact metrizable space. If $Q: \mathcal{X} \times \mathcal{A} \to \mathbb{R}$ is jointly measurable and upper semicontinuous in $a$ for each $x$, then there exists a Borel measurable $\pi^*: \mathcal{X} \to \mathcal{A}$ such that:
+For a logged triplet $(x,a,r)$, define the **importance weight**
 
 $$
-V(\pi^*) = \max_{\pi} V(\pi) = V^*
+w(x,a) = \frac{\pi_e(a \mid x)}{\pi_b(a \mid x)}.
+\tag{1.7b}
 $$
+{#EQ-1.7b}
 
-*Proof.* For each $x \in \mathcal{X}$, the function $a \mapsto Q(x, a)$ is upper semicontinuous on the compact set $\mathcal{A}$, hence attains its maximum (Weierstrass). Define $f(x,a) = -Q(x,a)$, which is lower semicontinuous in $a$. By the measurable selection theorem ([@bertsekas_shreve:stochastic_optimal_control:1978, Proposition 7.33]), there exists a Borel measurable $\pi^*: \mathcal{X} \to \mathcal{A}$ such that $f(x, \pi^*(x)) = \min_a f(x,a)$, equivalently $\pi^*(x) \in \arg\max_a Q(x, a)$ for all $x$.
+Intuition:
 
-$\square$
+* If $\pi_e(a \mid x) > \pi_b(a \mid x)$, then $w > 1$: this sample should count **more**, because $\pi_e$ would have produced it more often.
+* If $\pi_e(a \mid x) < \pi_b(a \mid x)$, then $w < 1$: it should count **less**.
 
-**Remark 1.7.2a** (Measurable Selection). The existence of a measurable optimal policy $\pi^*(x) \in \arg\max_a Q(x,a)$ follows from Bertsekas-Shreve's measurable selection theorem [@bertsekas_shreve:stochastic_optimal_control:1978, Proposition 7.33]: *If $\mathcal{X}$ is metrizable, $\mathcal{A}$ is compact metrizable, and $f: \mathcal{X} \times \mathcal{A} \to \mathbb{R}$ is lower semicontinuous in $a$, then the minimizer $\varphi(x) \in \arg\min_a f(x,a)$ can be chosen Borel measurably.* We apply this with $f = -Q$ (converting max to min). The key requirements—$\mathcal{A}$ compact (by construction) and $Q$ upper semicontinuous in $a$ (see REM-1.7.1b)—are satisfied in our setting.
-
-**Remark 1.7.2b** (Why This Theorem Matters). {#REM-1.7.2b}
-
-In finite state spaces, finding an optimal policy is straightforward: enumerate states, pick the best action for each, done. In **continuous** state spaces, a subtle crisis emerges. The pointwise $\arg\max$ exists for each $x$ (by compactness), but the resulting *function* $\pi^*: \mathcal{X} \to \mathcal{A}$ may fail to be **measurable**. Without measurability:
-
-- We cannot compute $\mathbb{E}[R(X, \pi^*(X))]$ (the integral is undefined)
-- The Bellman equation becomes meaningless (the "max" inside an expectation is ill-posed)
-- The entire theory of stochastic optimal control collapses
-
-Proposition 7.33 is the **safety net**: it guarantees that a measurable selector exists under weak assumptions (lower semicontinuity, not full continuity). This covers most practical cost functions, including those with constraint boundaries where costs jump to $+\infty$. The theorem allows researchers to treat continuous spaces almost as simply as discrete ones, confident that the measure theory "just works." This is why [@bertsekas_shreve:stochastic_optimal_control:1978] remains the canonical citation for rigorous continuous-state dynamic programming.
-
-**RL Payoff:** This theorem guarantees that our optimization problem **has a solution**—there exists a best policy $\pi^*$. Without compactness (e.g., unbounded action spaces), we might only have a supremum that's never achieved, making learning algorithms chase a moving target. Bounded actions $\mathcal{A} = [-a_{\max}, +a_{\max}]^K$ ensure $\pi^*$ exists, giving algorithms a well-defined target.
-
-**Practical note**: This theorem assumes we know $Q(x, a)$. In reality, we must **estimate** $Q$ from samples, and the **measurable selection** is approximated by a neural network $\pi_\theta(x)$. The theorem tells us the problem is **well-posed**—an optimal policy exists—but doesn't tell us how to find it efficiently.
-
-### Regret: Measuring Sub-Optimality
-
-Define the **instantaneous regret** at round $t$ as:
+The **inverse propensity scoring (IPS)** estimator for the value of $\pi_e$ is
 
 $$
-\text{regret}_t = Q(x_t, \pi^*(x_t)) - Q(x_t, \pi(x_t))
+\hat{V}_{\text{IPS}}(\pi_e)
+= \frac{1}{n} \sum_{i=1}^n w(x_i,a_i) \cdot r_i
+= \frac{1}{n} \sum_{i=1}^n \frac{\pi_e(a_i \mid x_i)}{\pi_b(a_i \mid x_i)} \cdot r_i.
+\tag{1.7c}
+$$
+{#EQ-1.7c}
+
+Under the regularity conditions (measurability, integrability) and an additional **coverage** condition (next subsection), IPS is **unbiased**: in expectation, it recovers the true value $V(\pi_e)$ from data logged under $\pi_b$. Chapter 2, §2.6 formalizes these as **Assumption 2.6.1** and proves unbiasedness rigorously.
+
+We will:
+
+* Prove the general change‑of‑measure identity behind (1.7c) in **Chapter 2** (Radon–Nikodym). 
+* Implement IPS, SNIPS, DR, FQE, and friends in **Chapter 9**, including variance and diagnostics. 
+
+For this chapter, the only thing to remember is:
+
+> **OPE ≈ “reweight logged rewards by importance weights.”**
+
+---
+
+### 1.7.4 Coverage / Overlap and Logging Design
+
+The formula (1.7b) only makes sense when the denominator is non‑zero whenever the numerator is:
+
+$$
+\pi_e(a \mid x) > 0 \quad \Rightarrow \quad \pi_b(a \mid x) > 0.
+\tag{1.7d}
+$$
+{#EQ-1.7d}
+
+This is the **coverage** or **overlap** condition: any action that $\pi_e$ might take in context $x$ must have been tried with *some* positive probability by $\pi_b$.
+
+If $\pi_b(a \mid x) = 0$ but $\pi_e(a \mid x) > 0$, the weight $w(x,a)$ would be infinite. Informally:
+
+> If the logging policy never took action $a$ in context $x$, the data contains **no information** about that counterfactual.
+
+For real systems, this translates into concrete requirements: avoid fully deterministic logging (use $\varepsilon$-greedy or mixture policies with $\varepsilon \in [0.01, 0.10]$), store propensities $\pi_b(a \mid x)$ alongside each interaction, and design logging with future evaluation policies in mind---if we plan to evaluate aggressive boost strategies later, we must explore them occasionally now.
+
+**Chapter 9, §9.5** develops these requirements into a full logging protocol with formal assumptions (common support, propensity tracking), diagnostics (effective sample size), and production implementation guidance. The key intuition: **if we never explore an action, we can never evaluate it offline**.
+
+---
+
+### 1.7.5 Preview: Existence of an Optimal Policy
+
+In §1.4 we wrote
+
+$$
+\pi^*(x) = \arg\max_{a \in \mathcal{A}} Q(x,a), \qquad
+V^* = \max_{\pi} V(\pi),
+$$
+
+as if the maximizer always existed and was a nice measurable function. In continuous spaces, this is surprisingly non‑trivial.
+
+Roughly, we need:
+
+* A **compact** and nicely behaved action space $\mathcal{A}$,
+* A **measurable** and upper semicontinuous $Q(x,a)$,
+* A bit of measure‑theory to ensure the argmax can be chosen **measurably** in $x$.
+
+**Existence guarantee.** Under mild topological conditions (compact action space, upper semicontinuous $Q$), a measurable optimal policy $\pi^*(x) = \arg\max_a Q(x,a)$ exists via measurable selection theorems—see **Chapter 2, §2.8.2 (Advanced: Measurable Selection)** for the Kuratowski--Ryll--Nardzewski theorem (Theorem 2.8.3). For our search setting—where $\mathcal{A} = [-a_{\max}, a_{\max}]^K$ is a compact box and scoring functions are continuous—this guarantees the optimization problem in §1.4 is well-posed: there exists a best policy $\pi^*$, and our learning algorithms will be judged by how close they get to it.
+
+---
+
+### 1.7.6 Preview: Regret and Fundamental Limits
+
+The last concept we preview is **regret**—how far a learning algorithm falls short of the optimal policy over time.
+
+For a fixed policy $\pi$ and the optimal policy $\pi^*$, define the **instantaneous regret** at round $t$:
+
+$$
+\text{regret}_t = Q(x_t, \pi^*(x_t)) - Q(x_t, \pi(x_t)),
 \tag{1.13}
 $$
 {#EQ-1.13}
 
-The **cumulative regret** over $T$ rounds is:
+and the **cumulative regret** over $T$ rounds:
 
 $$
-\text{Regret}_T = \sum_{t=1}^{T} \text{regret}_t = \sum_{t=1}^{T} \left[Q(x_t, \pi^*(x_t)) - Q(x_t, \pi(x_t))\right]
+\text{Regret}_T = \sum_{t=1}^{T} \text{regret}_t.
 \tag{1.14}
 $$
 {#EQ-1.14}
 
-**Goal**: Design learning algorithms with **sublinear regret** $\text{Regret}_T = o(T)$, meaning:
+We say an algorithm has **sublinear regret** if
 
 $$
-\lim_{T \to \infty} \frac{\text{Regret}_T}{T} = 0
+\lim_{T \to \infty} \frac{\text{Regret}_T}{T} = 0,
 \tag{1.15}
 $$
 {#EQ-1.15}
 
-This ensures the **average per-round regret vanishes**—the policy converges to optimal performance.
+i.e., average per‑round regret goes to zero.
 
-**Notation (Asymptotic Lower Bounds).** We write $g(T) = \Omega(f(T))$ if there exist constants $c > 0$ and $T_0$ such that $g(T) \geq c \cdot f(T)$ for all $T \geq T_0$. Equivalently, $\liminf_{T \to \infty} g(T)/f(T) > 0$.
-
-**Theorem 1.7.3** (Lower Bound for Stochastic Multi-Armed Bandits). {#THM-1.7.3}
-For any algorithm, there exists a $K$-armed stochastic bandit instance such that:
+Information-theoretic lower bounds for stochastic bandits establish a fundamental limit on learning speed. **Theorem 6.0** (Minimax Lower Bound) in Chapter 6 states: for any learning algorithm and any time horizon $T$, there exists a $K$-armed bandit instance such that
 
 $$
-\mathbb{E}[\text{Regret}_T] = \Omega\left(\sqrt{KT}\right)
+\mathbb{E}[\mathrm{Regret}_T] \geq c\sqrt{KT}
 $$
 
-*Proof sketch.* Consider a family of bandit instances where the optimal arm is difficult to identify. Any algorithm must distinguish arms with similar means, which by **Fano's inequality** (information-theoretic bound on error probability) requires sufficient samples to resolve uncertainty. The fundamental tradeoff: exploring to identify the best arm incurs regret, while exploiting too early risks choosing suboptimally. Across $T$ samples distributed over $K$ arms, this yields $\Omega(\sqrt{KT})$ cumulative regret. See [@lattimore:bandit_algorithms:2020, Theorem 19.3] for the full argument using mutual information lower bounds and the construction of hard instances. $\square$
+for a universal constant $c > 0$. No algorithm can do better than $\Omega(\sqrt{KT})$ regret uniformly over all bandit problems. We must pay at least this price to discover which arms are good. UCB and Thompson Sampling are "optimal" because they match this bound up to logarithmic factors. For contextual bandits, the lower bound becomes $\Omega(d\sqrt{T})$ where $d$ is the feature dimension; see Chapter 6 and **Appendix D** for the complete treatment via Fano's inequality and the data processing inequality. Here, the message is simply:
 
-**Remark 1.7.3a** (Contextual Bandits). The theorem above applies to **context-free** stochastic bandits (the $|\mathcal{X}| = 1$ case). For contextual bandits with $|\mathcal{X}|$ contexts, the naive lower bound treating each context independently is $\Omega(|\mathcal{X}| \sqrt{KT})$—potentially much worse! However, with **linear structure** (LinUCB, where $Q(x,a) = \theta_a^\top \phi(x)$ for $d$-dimensional features), the bound improves to $\Omega(d\sqrt{T})$ by exploiting shared structure across contexts. See [@chu:contextual_bandits:2011] for contextual bandit bounds and [@lattimore:bandit_algorithms:2020, Ch. 19] for the MAB case.
-
-**Remark 1.7.3b** (Continuous Actions). For **continuous action spaces** $\mathcal{A} = [-a_{\max}, +a_{\max}]^K$ with linear structure (i.e., $Q(x,a) = \theta(x)^\top a$ for some context-dependent $\theta(x) \in \mathbb{R}^K$), the regret lower bound becomes $\Omega(d\sqrt{T})$ where $d$ is the effective dimension of the context embedding. Discretizing continuous actions into $M$ bins per dimension gives $K = M^d$ discrete arms—exponential in feature dimension!—making the finite-armed bound impractical. **Function approximation** (linear models, neural networks) is essential for continuous action spaces. We focus on the finite-armed result here because our toy problem (Chapter 0) has discrete boost templates.
-
-**RL Payoff:** This lower bound tells us **no algorithm can do better than $\Omega(\sqrt{T})$ regret** in expectation. Any algorithm claiming $o(\sqrt{T})$ regret either has hidden assumptions or is incorrect. This establishes a **performance ceiling**—it shapes our expectations for Chapter 6 algorithms (LinUCB, Thompson Sampling), which we'll prove achieve $\tilde{O}(\sqrt{T})$ regret (matching the lower bound up to logarithmic factors).
-
-### Verifying the Regret Lower Bound Empirically
-
-Let's confirm THM-1.7.3's $\sqrt{T}$ scaling with a simple experiment. We'll run uniform exploration on a toy bandit and watch cumulative regret grow:
-
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-
-# Toy bandit: K=5 arms with known mean rewards
-K = 5
-T = 10000
-true_means = np.array([0.1, 0.3, 0.5, 0.7, 0.9])  # Arm rewards (Bernoulli)
-optimal_arm = np.argmax(true_means)
-optimal_value = true_means[optimal_arm]
-
-# Uniform exploration policy (no learning—just for lower bound verification)
-cumulative_regret = 0.0
-regret_over_time = []
-
-rng = np.random.default_rng(42)
-for t in range(1, T+1):
-    # Choose arm uniformly at random
-    arm = rng.integers(0, K)
-
-    # Observe reward (Bernoulli with arm's true mean)
-    reward = rng.random() < true_means[arm]
-
-    # Accumulate regret
-    instantaneous_regret = optimal_value - true_means[arm]
-    cumulative_regret += instantaneous_regret
-    regret_over_time.append(cumulative_regret)
-
-# Theoretical prediction: Regret_T ~ c * sqrt(K*T) for some constant c
-# Check: does cumulative_regret / sqrt(K*T) stabilize?
-theoretical_scaling = np.sqrt(K * np.arange(1, T+1))
-normalized_regret = np.array(regret_over_time) / theoretical_scaling
-
-# Plot results
-plt.figure(figsize=(12, 4))
-plt.subplot(1, 3, 1)
-plt.plot(regret_over_time, label='Cumulative Regret', linewidth=1.5)
-plt.plot(theoretical_scaling * 0.3, 'k--', label=r'$0.3\sqrt{KT}$ (theory)', linewidth=1.5)
-plt.xlabel('Time t')
-plt.ylabel('Regret')
-plt.legend()
-plt.title('Regret grows as O(sqrt(T))')
-plt.grid(alpha=0.3)
-
-plt.subplot(1, 3, 2)
-plt.plot(normalized_regret, linewidth=1.5)
-plt.xlabel('Time t')
-plt.ylabel('Regret / sqrt(Kt)')
-plt.title('Normalized regret stabilizes\n(confirms sqrt(T) scaling)')
-plt.grid(alpha=0.3)
-
-plt.subplot(1, 3, 3)
-plt.loglog(np.arange(1, T+1), regret_over_time, label='Empirical', linewidth=1.5)
-plt.loglog(np.arange(1, T+1), theoretical_scaling * 0.3, 'k--',
-           label=r'$0.3\sqrt{KT}$', linewidth=1.5)
-plt.xlabel('Time t (log scale)')
-plt.ylabel('Regret (log scale)')
-plt.title('Log-log plot:\nslope = 0.5 confirms sqrt(T)')
-plt.legend()
-plt.grid(alpha=0.3, which='both')
-plt.tight_layout()
-plt.show()
-
-print(f"Final regret: {cumulative_regret:.1f}")
-print(f"Normalized: {cumulative_regret / np.sqrt(K*T):.3f}")
-print(f"Theoretical lower bound confirmed: regret scales as Omega(sqrt(KT))")
-```
-
-**Output:**
-```
-Final regret: 1897.3
-Normalized: 0.268
-Theoretical lower bound confirmed: regret scales as Omega(sqrt(KT))
-```
-
-**Analysis**: The cumulative regret grows linearly with $\sqrt{T}$, as predicted by THM-1.7.3. The normalized regret (cumulative regret divided by $\sqrt{KT}$) stabilizes around a constant ($\approx 0.27$ in this run), confirming the $\Omega(\sqrt{KT})$ lower bound. The log-log plot shows slope $\approx 0.5$, confirming the square-root scaling.
-
-**Key insight**: No algorithm can achieve better than $\Omega(\sqrt{T})$ regret asymptotically—this is a fundamental limit imposed by exploration. Even optimal algorithms like UCB or Thompson Sampling (which we'll develop in Chapters 6-7) **match** this lower bound (up to logarithmic factors), but cannot beat it. This theorem tells us what's possible, and sets expectations for real deployments: regret will always grow (you can't learn without some mistakes), but smart algorithms make it grow as slowly as information theory permits.
+> **There is a built‑in price for exploration**, and even the best algorithm cannot beat it asymptotically.
 
 ---
 
-## 1.8 Preview: The Neural Q-Function
+### 1.7.7 Where the Real Math Lives
+
+This section deliberately kept things at a **preview** level:
+
+* We introduced **expected utility** $Q(x,a)$ and stated regularity conditions (measurability, integrability, coverage) to make expectations like (1.12) well-posed; these are formalized in Chapter 2 as Assumption 2.6.1.
+* We sketched **off‑policy evaluation** via importance sampling and stressed the coverage condition (1.7d).
+* We previewed two structural results: existence of an optimal policy (discussed in \S1.7.5, rigorous treatment in Ch2 \S2.8.2 via measurable selection) and a fundamental regret lower bound ([THM-6.0] in Chapter 6, proof via Fano's inequality in Appendix D).
+
+The full story is split across later chapters:
+
+* **Chapter 2** builds the measure‑theoretic foundation (probability spaces, conditional expectation, Radon–Nikodym), and proves the change‑of‑measure identities that justify importance weights. 
+* **Chapter 6** develops bandit algorithms (LinUCB, Thompson Sampling) and proves regret upper bounds that match this lower‑bound rate up to logs. 
+* **Chapter 9** turns IPS into a full‑blown OPE toolbox, with model‑based and doubly‑robust estimators, variance analysis, and production diagnostics. 
+
+For the rest of this chapter, only the high-level picture is needed:
+
+> We treat search as a contextual bandit with a well‑defined expected reward,
+> we will sometimes need to evaluate policies **offline** via importance weights,
+> and there are fundamental limits on how quickly any algorithm can learn.
+
+---
+
+## 1.8 (Advanced) Preview: Neural Q-Functions and Bellman Operators
 
 How do we represent $Q(x, a)$ for high-dimensional $\mathcal{X}$ (user embeddings, query text) and continuous $\mathcal{A}$? Answer: **neural networks**.
 
@@ -1210,104 +983,7 @@ $$
 
 where $\mathcal{D}$ is a dataset of $(x, a, r)$ triples from past search sessions.
 
-### Minimal Implementation: Tabular Q-Table
-
-Before neural networks, let's implement a **tabular Q-function** for discrete $\mathcal{X}$ and $\mathcal{A}$. This is the foundation—everything else is function approximation.
-
-```python
-from typing import Dict, Tuple
-import numpy as np
-
-class TabularQFunction:
-    """Tabular Q-function: Q(x, a) stored in a dictionary.
-
-    Mathematical correspondence: Q: X x A -> R represented as a lookup table.
-    """
-    def __init__(self, n_contexts: int, n_actions: int,
-                 initial_value: float = 0.0):
-        """Initialize Q-table with uniform values."""
-        self.Q: Dict[Tuple[int, int], float] = {}  # (context_id, action_id) -> Q-value
-        self.n_contexts = n_contexts
-        self.n_actions = n_actions
-
-        # Initialize all (x, a) pairs
-        for x in range(n_contexts):
-            for a in range(n_actions):
-                self.Q[(x, a)] = initial_value
-
-    def get(self, x: int, a: int) -> float:
-        """Retrieve Q(x, a)."""
-        return self.Q.get((x, a), 0.0)
-
-    def update(self, x: int, a: int, target: float, lr: float = 0.1):
-        """Update Q(x, a) <- (1 - alpha) * Q(x, a) + alpha * target.
-
-        This implements stochastic gradient descent on loss (Q - target)^2.
-        """
-        current = self.get(x, a)
-        self.Q[(x, a)] = (1 - lr) * current + lr * target
-
-    def get_optimal_action(self, x: int) -> int:
-        """Compute pi*(x) = argmax_a Q(x, a)."""
-        q_values = [self.get(x, a) for a in range(self.n_actions)]
-        return int(np.argmax(q_values))
-
-    def get_optimal_value(self, x: int) -> float:
-        """Compute V*(x) = max_a Q(x, a)."""
-        q_values = [self.get(x, a) for a in range(self.n_actions)]
-        return float(np.max(q_values))
-
-# Example: 3 contexts (user segments), 4 actions (boost strategies)
-Q = TabularQFunction(n_contexts=3, n_actions=4, initial_value=0.0)
-
-# Simulate observing rewards (seeded for reproducibility)
-rng = np.random.default_rng(42)
-for _ in range(100):
-    x = rng.integers(0, 3)
-    a = rng.integers(0, 4)
-    # True Q-function: Q(x, a) = x + a + noise
-    r = x + a + rng.normal(0, 0.5)
-    Q.update(x, a, target=r, lr=0.1)
-
-# Check learned values
-print("Learned Q-function:")
-for x in range(3):
-    print(f"Context {x}: Q-values = {[f'{Q.get(x, a):.2f}' for a in range(4)]}")
-    print(f"           -> pi*(x={x}) = action {Q.get_optimal_action(x)}, " +
-          f"V*(x={x}) = {Q.get_optimal_value(x):.2f}")
-```
-
-**Output:**
-```
-Learned Q-function:
-Context 0: Q-values = ['0.08', '1.12', '1.93', '2.89']
-           -> pi*(x=0) = action 3, V*(x=0) = 2.89
-Context 1: Q-values = ['0.98', '1.96', '3.03', '4.06']
-           -> pi*(x=1) = action 3, V*(x=1) = 4.06
-Context 2: Q-values = ['1.89', '3.15', '4.01', '4.94']
-           -> pi*(x=2) = action 3, V*(x=2) = 4.94
-```
-
-**Analysis**: The optimal action is always $a=3$ (highest index), consistent with true $Q(x, a) = x + a$. The learned values approximate the truth despite noise.
-
-**Scalability problem**: With $|\mathcal{X}| = 10^6$ contexts and $|\mathcal{A}| = 100$ actions, we'd need $10^8$ table entries. **Function approximation** (neural nets) solves this by **generalizing** across similar $(x, a)$ pairs.
-
-!!! warning "The Deadly Triad (Sutton-Barto)"
-    Neural Q-functions introduce **the deadly triad** [@sutton:rl_book:2018, Section 11.3]:
-
-    1. **Function approximation**: $Q_\theta$ cannot represent all value functions perfectly
-    2. **Bootstrapping**: TD targets $r + \gamma Q_\theta(x', a')$ use the same network being trained
-    3. **Off-policy learning**: Data from $\pi_{\text{log}}$, evaluating/improving $\pi_{\text{eval}}$
-
-    Together, these can cause **divergence**—$Q_\theta$ explodes rather than converges to $Q^*$.
-
-    **Empirical fixes** (DQN and successors):
-
-    - **Target networks**: Use slow-moving $\theta' \leftarrow \tau \theta + (1-\tau)\theta'$ for TD targets
-    - **Experience replay**: Store $(x, a, r, x')$ tuples; sample mini-batches to decorrelate updates
-    - **Gradient clipping**: Bound $\|\nabla_\theta \mathcal{L}\|$ to prevent explosive updates
-
-    **Theoretical status** (2024): We lack general convergence proofs for deep RL with all three components. Neural Tangent Kernel (NTK) theory [@jacot:ntk:2018] provides partial explanations for overparameterized networks. Recent work on implicit regularization and representation learning offers hope, but rigorous guarantees remain elusive. See Chapter 3 for what theory *does* guarantee (tabular convergence, linear function approximation) and Chapter 7 for practical neural implementations.
+If the number of contexts and actions were tiny, we could represent $Q$ as a **table** $Q[x,a]$ and fit it directly by regression on observed rewards. Chapter 7 begins with such a tabular warm‑up example before moving to neural networks that can handle high‑dimensional $\mathcal{X}$ and continuous $\mathcal{A}$.
 
 ### Preview: The Bellman Operator (Chapter 3)
 
@@ -1319,9 +995,9 @@ In an MDP, actions have consequences that ripple forward: today's ranking affect
 
 $$
 V(x) = \max_a \left\{R(x, a) + \gamma \mathbb{E}_{x' \sim P(\cdot | x, a)}[V(x')]\right\}
-\tag{1.22}
+\tag{1.18}
 $$
-{#EQ-1.22}
+{#EQ-1.18}
 
 where:
 - $P(x' | x, a)$ is the **transition probability** to next state $x'$ given current state $x$ and action $a$
@@ -1332,17 +1008,17 @@ where:
 
 $$
 (\mathcal{T}V)(x) := \max_a \left\{R(x, a) + \gamma \mathbb{E}_{x'}[V(x')]\right\}
-\tag{1.23}
+\tag{1.19}
 $$
-{#EQ-1.23}
+{#EQ-1.19}
 
 The operator $\mathcal{T}$ takes a value function $V: \mathcal{X} \to \mathbb{R}$ and produces a new value function $\mathcal{T}V$. The optimal value function $V^*$ is the **fixed point** of $\mathcal{T}$:
 
 $$
 V^* = \mathcal{T}V^* \quad \Leftrightarrow \quad V^*(x) = \max_a \left\{R(x, a) + \gamma \mathbb{E}_{x'}[V^*(x')]\right\}
-\tag{1.24}
+\tag{1.20}
 $$
-{#EQ-1.24}
+{#EQ-1.20}
 
 **How contextual bandits fit**: In our single-step formulation, there is **no next state**—the episode ends after one search. Mathematically, this means $\gamma = 0$ (no future) or equivalently $P(x' | x, a) = \delta_{\text{terminal}}$ (deterministic transition to a terminal state with zero value). Then:
 
@@ -1370,7 +1046,7 @@ Real-world RL requires **constrained optimization**. Maximizing #EQ-1.2 alone ca
 - **Ignoring strategic products**: Optimizing short-term revenue at the expense of long-term goals
 - **Rank instability**: Reordering the top-10 drastically between queries, confusing users
 
-We enforce constraints via **Lagrangian methods** (Chapter 8) and **rank stability penalties**.
+We enforce constraints via **Lagrangian methods** (Chapter 10, with theory in Appendix C) and **rank stability penalties**.
 
 ### Lagrangian Formulation
 
@@ -1381,139 +1057,44 @@ Transform constrained problem:
 \text{s.t.} \quad & \mathbb{E}[\text{CM2}(\pi(x))] \geq \tau_{\text{CM2}} \\
 & \mathbb{E}[\text{STRAT}(\pi(x))] \geq \tau_{\text{STRAT}}
 \end{aligned}
-\tag{1.18}
+\tag{1.21}
 \end{equation}
-{#EQ-1.18}
+{#EQ-1.21}
 
 into unconstrained:
 
 $$
 \max_{\pi} \min_{\boldsymbol{\lambda} \geq 0} \mathcal{L}(\pi, \boldsymbol{\lambda}) = \mathbb{E}[R(\pi(x))] + \lambda_1(\mathbb{E}[\text{CM2}] - \tau_{\text{CM2}}) + \lambda_2(\mathbb{E}[\text{STRAT}] - \tau_{\text{STRAT}})
-\tag{1.19}
+\tag{1.22}
 $$
-{#EQ-1.19}
+{#EQ-1.22}
 
 where $\boldsymbol{\lambda} = (\lambda_1, \lambda_2) \in \mathbb{R}_+^2$ are Lagrange multipliers. This is a **saddle-point problem**: maximize over $\pi$, minimize over $\boldsymbol{\lambda}$.
 
-**Theorem 1.9.1** (Slater's Condition for Bandits). {#THM-1.9.1}
-If there exists a policy $\tilde{\pi}$ such that $\mathbb{E}[\text{CM2}(\tilde{\pi}(x))] > \tau_{\text{CM2}}$ (strictly feasible), then strong duality holds: the optimal values of (1.18) and (1.19) coincide.
-
-*Proof.* Consider the space of **randomized policies** $\Pi_{\text{rand}}$, which are probability distributions over deterministic policies. Any randomized policy can be written as:
+**Theorem 1.9.1 (Slater's Condition, informal).** {#THM-1.9.1}
+If there exists at least one policy that strictly satisfies all constraints (e.g., a policy with CM2 and exposure above the required floors and acceptable rank stability), then the **Lagrangian saddle-point problem**
 $$
-\pi_{\text{rand}}(a \mid x) = \sum_{i=1}^{N} \alpha_i \pi_i(a \mid x)
+\min_{\boldsymbol{\lambda} \ge 0} \max_{\pi} \mathcal{L}(\pi, \boldsymbol{\lambda})
 $$
-where $\{\pi_i\}$ are deterministic policies, $\alpha_i \geq 0$, and $\sum_i \alpha_i = 1$.
+is equivalent to the original constrained optimization problem: they have the same optimal value.
 
-The expected reward under $\pi_{\text{rand}}$ is:
-$$
-\mathbb{E}[R(\pi_{\text{rand}})] = \sum_{i=1}^{N} \alpha_i \mathbb{E}[R(\pi_i)]
-$$
-which is **affine** in the mixture weights $\{\alpha_i\}$. Similarly, each constraint $\mathbb{E}[\text{CM2}(\pi_{\text{rand}})] \geq \tau$ is affine in $\{\alpha_i\}$.
-
-The feasible set $\{\boldsymbol{\alpha} \in \Delta_N : \text{constraints hold}\}$ is a polytope (convex), and the objective is linear. By Slater's condition (strict feasibility: $\exists \tilde{\pi}$ with $\mathbb{E}[\text{CM2}(\tilde{\pi})] > \tau$), strong duality holds for the Lagrangian saddle-point problem. See [@boyd:convex_optimization:2004, Section 5.2.3].
-
-$\square$
+*Interpretation.* Under mild convexity assumptions, we can treat Lagrange multipliers $\boldsymbol{\lambda}$ as "prices" for violating constraints and search for a saddle point instead of solving the constrained problem directly. **Appendix C** proves this rigorously (Theorem C.2.1) for the contextual bandit setting using the theory of randomized policies and convex duality ([@boyd:convex_optimization:2004, Section 5.2.3]). Chapter 10 exploits this to implement **primal--dual RL** for search: we update the policy parameters to increase reward and constraint satisfaction (primal step) while adapting multipliers that penalize violations (dual step).
 
 **What this tells us:**
 
-Strong duality means we can solve the constrained problem #EQ-1.18 by solving the unconstrained Lagrangian #EQ-1.19---no duality gap. Practically, this justifies **primal-dual algorithms**: alternate between improving the policy (primal) and adjusting constraint penalties (dual), confident that convergence to the saddle point yields the constrained optimum.
+Strong duality means we can solve the constrained problem #EQ-1.21 by solving the unconstrained Lagrangian #EQ-1.22---no duality gap. Practically, this justifies **primal-dual algorithms**: alternate between improving the policy (primal) and adjusting constraint penalties (dual), confident that convergence to the saddle point yields the constrained optimum.
 
-The strict feasibility requirement ($\exists \tilde{\pi}$ with slack in the CM2 constraint) is typically easy to verify: the baseline production policy usually satisfies constraints with margin. If no such policy exists, the constraints may be infeasible---you're asking for profitability floors that no ranking can achieve. Chapter 8 develops diagnostics for detecting infeasible constraint configurations.
+The strict feasibility requirement ($\exists \tilde{\pi}$ with slack in the CM2 constraint) is typically easy to verify: the baseline production policy usually satisfies constraints with margin. If no such policy exists, the constraints may be infeasible---one is asking for profitability floors that no ranking can achieve. **Appendix C, §C.4.3** discusses diagnosing infeasible constraint configurations: diverging dual variables, Pareto frontiers below constraint thresholds, and $\varepsilon$-relaxation remedies.
 
-**Implementation preview**: In Chapter 8, we'll implement constraint-aware RL using primal-dual optimization:
+**Implementation preview**: In **Chapter 10 (§10.4.2)**, we implement constraint-aware RL using primal-dual optimization (theory in **Appendix C, §C.5**):
 1. **Primal step**: $\theta \leftarrow \theta + \eta \nabla_\theta \mathcal{L}(\theta, \boldsymbol{\lambda})$ (improve policy toward higher reward and constraint satisfaction)
 2. **Dual step**: $\boldsymbol{\lambda} \leftarrow \max(0, \boldsymbol{\lambda} - \eta' \nabla_{\boldsymbol{\lambda}} \mathcal{L}(\theta, \boldsymbol{\lambda}))$ (tighten constraints if violated, relax if satisfied)
 
-The saddle-point $(\theta^*, \boldsymbol{\lambda}^*)$ satisfies the Karush-Kuhn-Tucker (KKT) conditions for the constrained problem #EQ-1.18. For now, just note that **constraints require dual variables** $\boldsymbol{\lambda}$—we're not just learning a policy, but also learning how to trade off GMV, CM2, and strategic exposure dynamically.
+The saddle-point $(\theta^*, \boldsymbol{\lambda}^*)$ satisfies the Karush-Kuhn-Tucker (KKT) conditions for the constrained problem #EQ-1.21. For now, just note that **constraints require dual variables** $\boldsymbol{\lambda}$—we're not just learning a policy, but also learning how to trade off GMV, CM2, and strategic exposure dynamically.
 
 ---
 
-## 1.10 Connecting to Classical Control Theory
-
-For readers with control theory background, here's the bridge to familiar territory. **If you're unfamiliar with control theory, you can skip this section now and return when these tools appear in later chapters.** The key takeaway: **RL generalizes classical control from known dynamics and quadratic costs to unknown dynamics and arbitrary rewards.**
-
-### Linear Quadratic Regulator (LQR) Analogy
-
-In LQR, we have:
-- **State dynamics**: $x_{t+1} = Ax_t + Bu_t + w_t$
-- **Quadratic cost**: $c(x, u) = x^\top Q x + u^\top R u$
-- **Optimal control**: $u^*(x) = -Kx$ where $K$ solves the Riccati equation
-
-In our search problem:
-- **Context** $x$ (user/query) analogous to **state**
-- **Boost weights** $a$ analogous to **control**
-- **Reward** $R(x, a)$ analogous to **negative cost**
-- **Single-step** (bandit) $\rightarrow$ no dynamics (no $x_{t+1}$ term)
-
-If we had quadratic rewards $R(x, a) = x^\top Q x - a^\top H a$, the optimal policy would be **linear**: $a^*(x) = K x$ for some gain matrix $K$. But our rewards are **non-quadratic** (clicks are nonlinear, purchases are discrete)—hence we need **nonlinear function approximation** (neural nets).
-
-### Hamilton-Jacobi-Bellman (HJB) Connection
-
-In continuous-time optimal control with dynamics $\dot{x} = f(x, u)$, running reward $r(x,u)$, and discount rate $\rho > 0$, the infinite-horizon value function $V(x)$ satisfies the Hamilton-Jacobi-Bellman (HJB) PDE:
-
-$$
-\rho V(x) = \max_u \left\{r(x, u) + \nabla V(x)^\top f(x, u)\right\}
-\tag{1.20}
-$$
-{#EQ-1.20}
-
-where $\nabla V(x) \in \mathbb{R}^n$ is the gradient of $V$ and the $\max$ is over admissible controls $u \in \mathcal{U}$. For finite-horizon problems, the time-dependent form is $-\frac{\partial V}{\partial t}(x,t) = \max_u \{r(x,u) + \nabla_x V(x,t)^\top f(x,u)\}$.
-
-The discrete-time Bellman equation:
-$$
-V(x) = \max_a \left\{R(x, a) + \gamma \mathbb{E}_{x'}[V(x')]\right\}
-$$
-can be viewed as a **discretization** of HJB: with time step $\Delta t$, $\gamma = e^{-\rho \Delta t}$, and the transition $x' \approx x + f(x,u)\Delta t + \text{noise}$.
-
-For our single-step problem (no dynamics), this reduces to:
-
-$$
-V(x) = \max_a Q(x, a)
-\tag{1.21}
-$$
-{#EQ-1.21}
-
-which is exactly equation (1.9)! The **discrete-time Bellman equation** is the **finite-difference approximation** of the HJB PDE.
-
-**Why this matters**: Control theory provides tools we'll use throughout this book:
-- **Lyapunov analysis** (Chapter 10): Prove algorithms converge by constructing "energy functions" that decrease
-- **Robust control** (Chapter 10): Handle model mismatch when simulator differs from real search
-- **Trajectory optimization** (Chapter 11): Multi-step session dynamics with cart building
-
-### From Control Theory to RL Algorithms
-
-The connections above are not just abstract parallels—they inspire concrete algorithms:
-
-**From LQR to Policy Gradient:**
-
-The LQR optimal gain $K^* = (R + B^\top P B)^{-1} B^\top P A$ (where $P$ solves the Riccati equation) can be found by **policy gradient** on the linear policy $u = -Kx$:
-
-$$
-\nabla_K J(K) = 2(R K - B^\top P A) \Sigma_K
-$$
-
-where $\Sigma_K$ is the state covariance under policy $K$. Setting gradient to zero recovers $K^*$. This is the foundation of **DDPG** [@lillicrap:ddpg:2016] and **TD3** [@fujimoto:td3:2018] for nonlinear policies—replace linear $Kx$ with neural network $\pi_\theta(x)$, estimate $\nabla_\theta J$ via critic, and descend.
-
-**From HJB to Fitted Value Iteration:**
-
-The HJB fixed-point $V^* = \mathcal{T}V^*$ motivates **fitted value iteration**:
-1. Collect transitions $(x, a, r, x')$
-2. Fit $V_\theta$ to minimize $\|V_\theta(x) - (r + \gamma V_{\theta'}(x'))\|^2$
-3. Repeat with updated targets
-
-This is the continuous-state analog of our tabular updates. Convergence requires additional assumptions (complete function class, sufficient exploration)—theory is incomplete here, but DQN [@mnih:dqn:2015] empirically succeeds with neural $V_\theta$ via target networks and experience replay.
-
-**Timeline of Deep RL Milestones:**
-- **DQN** (Mnih et al., 2015): First deep RL success (Atari games)
-- **A3C** (Mnih et al., 2016): Asynchronous actor-critic for parallel training
-- **PPO** (Schulman et al., 2017): Stable policy gradients via clipped objectives
-- **SAC** (Haarnoja et al., 2018): Maximum entropy RL for robust exploration
-- **MuZero** (Schrittwieser et al., 2020): Model-based planning without known dynamics
-- **Decision Transformer** (Chen et al., 2021): Sequence modeling for offline RL
-
----
-
-## 1.11 Summary and Looking Ahead
+## 1.10 Summary and Looking Ahead
 
 We've established the foundation:
 
@@ -1522,9 +1103,9 @@ We've established the foundation:
 - **Mathematical formulation**: Contextual bandit with $Q(x, a)$ to learn
 - **Action space**: Continuous bounded $\mathcal{A} = [-a_{\max}, +a_{\max}]^K$
 - **Objective**: Maximize $\mathbb{E}[R]$ subject to CM2/exposure/stability constraints
-- **Regret bounds**: $\tilde{\Omega}(\sqrt{KT})$ lower bound for any algorithm
+- **Regret limits (preview)**: Bandit algorithms incur a $\tilde{\Omega}(\sqrt{KT})$ exploration cost; later bandit chapters formalize this lower bound and show algorithms that match it up to logs
 - **Implementation**: Tabular Q-table (baseline), preview of neural Q-function
-- **OPE foundations**: Absolute continuity and importance sampling for safe policy evaluation
+- **OPE foundations (conceptual)**: Why absolute continuity and importance sampling matter for safe policy evaluation (full measure-theoretic treatment in Chapters 2 and 9)
 
 **What we need**:
 - **Probability foundations** (Chapter 2): Measure theory for OPE reweighting; position bias models (PBM/DBN) for realistic user simulation; counterfactual reasoning to test "what if?" scenarios safely
@@ -1534,17 +1115,19 @@ We've established the foundation:
 - **Evaluation** (Chapter 9): Off-policy evaluation (IPS, SNIPS, DR) for testing policies before deployment
 - **Deployment** (Chapters 10-11): Robustness, A/B testing, production ops for real-world systems
 
+> **For Readers with Control Theory Background.** Readers familiar with LQR, HJB equations, or optimal control will find **Appendix B** provides a detailed bridge to RL: we show how the discrete Bellman equation arises as a discretization of HJB, how policy gradients relate to Riccati solutions, and how Lyapunov analysis informs convergence proofs. That appendix also traces the lineage from classical control to modern deep RL algorithms (DDPG, PPO, SAC). Readers new to control theory may skip it for now and return when these connections appear in Chapters 8, 10, and 11.
+
 ### Why Chapter 2 Comes Next
 
 We've formulated search ranking as contextual bandits, but left two critical gaps unresolved:
 
 1. **User behavior is a black box.** Section 1.3's illustrative click model (position bias = 1/k) was helpful pedagogically, but production search requires **rigorous click models** that capture examination, clicks, purchases, and abandonment. We need to formalize "How do users interact with rankings?" at the level of **probability measures and stopping times**, not heuristics. Without this, our simulator won't reflect real user behavior, and algorithms trained in simulation will fail in production.
 
-2. **We can't afford online-only learning.** Evaluating each policy candidate with real users (Section 1.5's "sample complexity bottleneck") is too expensive and risky. We need **off-policy evaluation (OPE)** to test policies on historical data logged under old policies. But OPE requires reweighting probabilities across different policies (importance sampling)—the weights $w(x,a) = \pi_{\text{eval}}(a|x) / \pi_{\text{log}}(a|x)$ are only well-defined when both policies are absolutely continuous w.r.t. a common measure (ASM-1.7.1 condition 3). This is **measure theory**, and it's not optional.
+2. **We can't afford online-only learning.** Evaluating each policy candidate with real users (Section 1.5's "sample complexity bottleneck") is too expensive and risky. We need **off-policy evaluation (OPE)** to test policies on historical data logged under old policies. But OPE requires reweighting probabilities across different policies (importance sampling)—the weights $w(x,a) = \pi_{\text{eval}}(a|x) / \pi_{\text{log}}(a|x)$ are only well-defined when both policies are absolutely continuous w.r.t. a common measure (the **coverage condition** in **Assumption 2.6.1** of Chapter 2, §2.6). This is **measure theory**, and it's not optional.
 
 **Chapter 2 addresses both gaps**: We'll build **position-biased click models (PBM/DBN)** that mirror real user behavior with examination, relevance-dependent clicks, and session abandonment. Then we'll develop the **measure-theoretic foundations** (Radon-Nikodym derivatives, change of measure, importance sampling) that make OPE sound. This is not abstract mathematics for its own sake—it's the **foundation of safe RL deployment**.
 
-By the end of Chapter 2, you'll be able to:
+By the end of Chapter 2, we will be able to:
 - Simulate realistic user sessions with position bias and abandonment
 - Formalize "what would have happened if we'd shown a different ranking?" (counterfactuals)
 - Understand why naive off-policy estimates are biased and how to correct them
@@ -1555,7 +1138,7 @@ Let's build.
 
 ## Exercises
 
-Note. If you completed Chapter 0's toy bandit experiment: (i) compare your regret curves from Exercise 0.3 to the $\tilde{\Omega}(\sqrt{KT})$ lower bound in THM-1.7.3; (ii) restate the Chapter 0 environment in this chapter's notation by identifying $(\mathcal{X}, \mathcal{A}, \rho, R)$.
+Note. Readers who completed Chapter 0's toy bandit experiment should: (i) compare the regret curves from Exercise 0.3 to the $\tilde{\Omega}(\sqrt{KT})$ lower bound discussed in \S1.7.6 (and revisited in Chapter 6); (ii) restate the Chapter 0 environment in this chapter's notation by identifying $(\mathcal{X}, \mathcal{A}, \rho, R)$.
 
 !!! tip "Production Checklist (Chapter 1)"
     - **Seed deterministically**: `SimulatorConfig.seed` in `zoosim/core/config.py:231` and module-level RNGs.
@@ -1563,12 +1146,12 @@ Note. If you completed Chapter 0's toy bandit experiment: (i) compare your regre
     - **Use config-driven weights**: `RewardConfig` for $(\alpha,\beta,\gamma,\delta)$; avoid hard-coded numbers.
     - **Validate engagement weight**: Assert $\delta/\alpha \in [0.01, 0.10]$ in `zoosim/dynamics/reward.py:25` (see Section 1.2.1).
     - **Monitor CVR**: Log $\text{CVR}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i$; alert if drops $>10\%$ (clickbait detection).
-    - **Enforce constraints early**: CM2 and exposure floors via Lagrange multipliers (Chapter 8 implementation).
+    - **Enforce constraints early**: CM2 and exposure floors via Lagrange multipliers (**Chapter 10, §10.4.2**; theory in **Appendix C**).
     - **Ensure reproducible ranking**: Enable `ActionConfig.standardize_features` in `zoosim/core/config.py:210`.
 
 **Exercise 1.1** (Reward Function Sensitivity). [20 min]
 (a) Implement equation (1.2) with $(\alpha, \beta, \gamma, \delta) = (1, 0, 0, 0)$ (GMV-only) and $(0.3, 0.6, 0.1, 0)$ (profit-focused). Generate 1000 random outcomes and plot the reward distributions.
-(b) Compute the correlation between GMV and CM2 in your simulated data. Are they aligned or conflicting?
+(b) Compute the correlation between GMV and CM2 in the simulated data. Are they aligned or conflicting?
 (c) Find business weights that make the two strategies from Section 1.2 achieve equal reward.
 
 **Exercise 1.2** (Action Space Geometry). [30 min]
@@ -1578,7 +1161,7 @@ Note. If you completed Chapter 0's toy bandit experiment: (i) compare your regre
 
 **Exercise 1.3** (Regret Bounds). [extended: 45 min]
 (a) Implement a naive **uniform exploration** policy that samples $a_t \sim \text{Uniform}(\mathcal{A})$ for $T$ rounds.
-(b) Assume true $Q(x, a) = x + a + \epsilon$ where $\epsilon \sim \mathcal{N}(0, 0.1)$. Compute empirical regret $\text{Regret}_T$ for $T = 100, 1000, 10000$.
+(b) Assume true $Q(x, a) = \mathbf{1}^\top x + \mathbf{1}^\top a + \epsilon$ where $\mathbf{1}^\top v := \sum_i v_i$ denotes the sum of components of vector $v$, and $\epsilon \sim \mathcal{N}(0, 0.1)$. Compute empirical regret $\text{Regret}_T$ for $T = 100, 1000, 10000$.
 (c) Verify that $\text{Regret}_T / T \to \Delta$ where $\Delta = \max_a Q(x, a) - \mathbb{E}_a[Q(x, a)]$ (constant regret rate—suboptimal!).
 (d) **Challenge**: Implement $\varepsilon$-greedy (with $\varepsilon = 0.1$) and compare regret curves. Does it achieve sublinear regret?
 
@@ -1602,7 +1185,7 @@ $$
 
 when $\gamma = 0$ (no future states). What happens if $\gamma > 0$?
 
-**Hint for MDP extension:** In the MDP Bellman equation, the term $\gamma \mathbb{E}_{x'}[V(x')]$ represents expected future value starting from next state $x'$ (sampled from transition dynamics $P(x' \mid x, a)$). For contextual bandits, there is no next state—the episode terminates after one action. Setting $\gamma = 0$ eliminates future rewards, reducing to the bandit case. When $\gamma > 0$, you get multi-step RL with inter-session dynamics (Chapter 11).
+**Hint for MDP extension:** In the MDP Bellman equation, the term $\gamma \mathbb{E}_{x'}[V(x')]$ represents expected future value starting from next state $x'$ (sampled from transition dynamics $P(x' \mid x, a)$). For contextual bandits, there is no next state---the episode terminates after one action. Setting $\gamma = 0$ eliminates future rewards, reducing to the bandit case. When $\gamma > 0$, we get multi-step RL with inter-session dynamics (Chapter 11).
 
 ---
 

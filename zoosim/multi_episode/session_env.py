@@ -61,20 +61,20 @@ class MultiSessionEnv:
         ranking = np.argsort(-blended).tolist()
         return ranking, feat_mat.tolist()
 
-    def reset(self) -> Dict[str, Any]:
+    def reset(self) -> SessionMDPState:
         self._t = 0
         self._user = sample_user(config=self.cfg, rng=self.rng)
         self._query = queries.sample_query(user=self._user, config=self.cfg, rng=self.rng)
         self._last_clicks = 0
         self._last_satisfaction = 0.0
-        return {
-            "t": self._t,
-            "user_segment": self._user.segment,
-            "query_type": self._query.query_type,
-            "phi_cat": self._query.phi_cat,
-            "last_clicks": self._last_clicks,
-            "last_satisfaction": self._last_satisfaction,
-        }
+        return SessionMDPState(
+            t=self._t,
+            user_segment=self._user.segment,
+            query_type=self._query.query_type,
+            phi_cat=self._query.phi_cat,
+            last_satisfaction=self._last_satisfaction,
+            last_clicks=self._last_clicks,
+        )
 
     def step(self, action: Sequence[float]) -> Tuple[SessionMDPState, float, bool, Dict[str, Any]]:
         ranking, feat_mat = self._rank(action)

@@ -960,7 +960,7 @@ $$
 
 Bounding $\delta / \alpha$ between $0.01$ and $0.10$ keeps the **engagement term** in [EQ-5.7] small relative to the GMV term so that revenue remains the primary driver of the policy, in line with the Chapter&nbsp;1 discussion ([EQ-1.2], [REM-1.2.1]).
 
-**Limitation.** Constraint&nbsp;5.8 is a **heuristic guideline**, not a formal guarantee of incentive compatibility. A rigorous analysis would require explicit assumptions on the click and conversion probabilities and a comparison of expected rewards under competing policies (see the exercises in `docs/book/drafts/ch05/exercises_labs.md` for counterexamples and further discussion).
+**Limitation.** Constraint&nbsp;5.8 is a **heuristic guideline**, not a formal guarantee of incentive compatibility. A rigorous analysis would require explicit assumptions on the click and conversion probabilities and a comparison of expected rewards under competing policies (see the exercises in `docs/book/ch05/exercises_labs.md` for counterexamples and further discussion).
 
 **Remark 5.1** (Engagement as Soft Viability Constraint) {#REM-5.1}
 
@@ -1442,7 +1442,7 @@ BERT Transformer (12 layers, 768-dim)
 1. **Stage 1 (Retrieval)**: Fast model (BM25, hybrid semantic+lexical) retrieves top 500 candidates (<10ms)
 2. **Stage 2 (Reranking)**: BERT reranks top 500 → top 20 (~50ms)
 
-For our simulator, we stick with **hybrid model** (Stage 1 equivalent) for speed and interpretability. In production RL deployment (Chapter 11), consider adding Stage 2 reranking.
+For our simulator, we stick with **hybrid model** (Stage 1 equivalent) for speed and interpretability. In production RL deployments, teams often add a Stage‑2 reranker (e.g., a BERT reranking head) on top of this hybrid model.
 
 ### 5.8.2 Learned Embeddings for Products and Queries
 
@@ -1471,7 +1471,7 @@ For our simulator, we stick with **hybrid model** (Stage 1 equivalent) for speed
 2. **Data requirements**: Need millions of sessions (we're building a simulator)
 3. **Embedding drift**: Must retrain frequently (weekly) as catalog changes
 
-For **Chapters 6-10**, fixed embeddings are sufficient. In **Chapter 11 (Production Deployment)**, we'll discuss embedding updates and cold-start strategies.
+For **Chapters 6-10**, fixed embeddings are sufficient. In production systems, embedding updates and cold-start strategies become critical; later chapters on robustness and long-horizon behavior will refer back to these issues, but we do not attempt a full MLOps treatment.
 
 ### 5.8.3 Recent Research: Multi-Task Learning and Bias Correction
 

@@ -498,7 +498,7 @@ Our agent optimized $R_{\text{toy}}$ without guardrails. Real systems must enfor
 - Exposure targets (strategic products get visibility)
 - Rank stability (limit reordering volatility)
 
-**Solution:** Chapter 10 introduces production **guardrails** (CM2 floors, $\Delta$Rank@k stability), with Chapter 3 (Section 3.6) providing the formal CMDP theory and Lagrangian methods.
+**Solution:** Chapter 10 introduces production **guardrails** (CM2 floors, $\Delta$Rank@k stability), with Chapter 3 (Section 3.5) providing the formal CMDP theory and Lagrangian methods.
 
 ### 4. Simplified Position Bias
 
@@ -533,7 +533,7 @@ Here's how our toy connects to the rigorous treatment ahead:
 | Stochastic outcomes      | Probability spaces, click models (PBM/DBN)    | 2           |
 | Learning curves          | Regret bounds, sample complexity              | 6           |
 | Static best vs oracle    | Importance sampling, off-policy evaluation    | 9           |
-| Guardrails (missing)     | CMDP (Section 3.6), production guardrails            | 3, 10       |
+| Guardrails (missing)     | CMDP (Section 3.5), production guardrails            | 3, 10       |
 | Engagement proxy         | Multi-episode MDP, retention modeling         | 11          |
 
 **Chapters 1--3** provide foundations: contextual bandits, measure theory, Bellman operators.
@@ -669,7 +669,7 @@ def choose_action_constrained(x, eps, tau_cm2):
 
 (c) Plot the Pareto frontier: GMV vs CM2 as you sweep $\tau \in [0.0, 0.5]$.
 
-**Connection:** This is a **Constrained MDP (CMDP)**. Chapter 3 (Section 3.6) develops the Lagrangian theory, and Chapter 10 implements production guardrails for multi-constraint optimization.
+**Connection:** This is a **Constrained MDP (CMDP)**. Chapter 3 (Section 3.5) develops the Lagrangian theory, and Chapter 10 implements production guardrails for multi-constraint optimization.
 
 ---
 

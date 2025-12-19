@@ -1,28 +1,27 @@
-# Chapter 3 — Lab Solutions
+# Chapter 3 --- Lab Solutions
 
 *Vlad Prytula*
 
-These solutions demonstrate the operator-theoretic foundations of reinforcement learning. Every solution weaves rigorous theory ([DEF-3.3.1], [THM-3.3.2], [THM-3.3.3]) with runnable implementations, following the principle: **proofs illuminate practice, code verifies theory**.
+These solutions demonstrate the operator-theoretic foundations of reinforcement learning. Every solution weaves rigorous theory ([DEF-3.3.1], [THM-3.6.2-Banach], [THM-3.7.1]) with runnable implementations, following the principle: **proofs illuminate practice, code verifies theory**.
 
 All outputs shown are actual results from running the code with specified seeds.
 
 ---
 
-## Lab 3.1 — Contraction Ratio Tracker
+## Lab 3.1 --- Contraction Ratio Tracker
 
 **Goal:** Log $\| \mathcal{T}V_1 - \mathcal{T}V_2 \|_\infty / \|V_1 - V_2\|_\infty$ and compare it to $\gamma$.
 
 ### Theoretical Foundation
 
-Recall from [THM-3.3.3] that the Bellman operator for an MDP with discount factor $\gamma < 1$ is a **$\gamma$-contraction** in the $\|\cdot\|_\infty$ norm:
+Recall from [THM-3.7.1] that the Bellman operator for an MDP with discount factor $\gamma < 1$ is a **$\gamma$-contraction** in the $\|\cdot\|_\infty$ norm:
 
 $$
 \|\mathcal{T}V_1 - \mathcal{T}V_2\|_\infty \leq \gamma \|V_1 - V_2\|_\infty \quad \forall V_1, V_2
 \tag{3.3}
 $$
-{#EQ-3.3}
 
-This property is fundamental: it guarantees that value iteration converges to a unique fixed point $V^*$ exponentially fast ([THM-3.3.2], Banach Fixed-Point Theorem).
+This property is fundamental: it guarantees that value iteration converges to a unique fixed point $V^*$ exponentially fast ([THM-3.6.2-Banach], Banach Fixed-Point Theorem).
 
 This lab empirically verifies the contraction inequality by sampling random value function pairs and measuring the actual ratio.
 
@@ -44,7 +43,7 @@ MDP Configuration:
   States: 3, Actions: 2
   Discount factor γ = 0.9
 
-Theoretical bound [THM-3.3.3]: ||TV₁ - TV₂||∞ ≤ 0.9·||V₁ - V₂||∞
+Theoretical bound [THM-3.7.1]: ||TV₁ - TV₂||∞ ≤ 0.9·||V₁ - V₂||∞
 
 Computing contraction ratios across 20 random V pairs...
 
@@ -73,7 +72,7 @@ CONTRACTION RATIO STATISTICS
 
 **Why is the observed ratio strictly less than $\gamma$?**
 
-The proof of [THM-3.3.3] uses several inequalities that are not always tight:
+The proof of [THM-3.7.1] uses several inequalities that are not always tight:
 
 1. **The max operator is 1-Lipschitz**: The key step uses
    $$|\max_a f(a) - \max_a g(a)| \leq \max_a |f(a) - g(a)|$$
@@ -105,21 +104,21 @@ Max ratio: 0.8956
 Slack (γ - max): 0.0044
 ```
 
-The maximum observed ratio approaches but never exceeds $\gamma = 0.9$, confirming [THM-3.3.3].
+The maximum observed ratio approaches but never exceeds $\gamma = 0.9$, confirming [THM-3.7.1].
 
 ### Key Insight
 
-> **The contraction inequality is a *bound*, not an equality.** In practice, convergence is often faster than theory predicts. However, the bound provides *guaranteed* worst-case behavior—essential for algorithm analysis and safety-critical applications.
+> **The contraction inequality is a *bound*, not an equality.** In practice, convergence is often faster than theory predicts. However, the bound provides *guaranteed* worst-case behavior---essential for algorithm analysis and safety-critical applications.
 
 ---
 
-## Lab 3.2 — Value Iteration Wall-Clock Profiling
+## Lab 3.2 --- Value Iteration Wall-Clock Profiling
 
 **Goal:** Verify the $O\!\left(\frac{1}{1-\gamma}\right)$ convergence rate numerically.
 
 ### Theoretical Foundation
 
-From [THM-3.3.2] (Banach Fixed-Point Theorem), value iteration satisfies:
+From [THM-3.6.2-Banach] (Banach Fixed-Point Theorem), value iteration satisfies:
 
 $$
 \|V_k - V^*\|_\infty \leq \gamma^k \|V_0 - V^*\|_\infty
@@ -257,7 +256,7 @@ All perturbation bounds satisfied: ✓ YES
 
 ## Extended Lab: Banach Fixed-Point Theorem Verification
 
-**Goal:** Empirically verify [THM-3.3.2]:
+**Goal:** Empirically verify [THM-3.6.2-Banach]:
 1. **Existence**: A unique fixed point $V^*$ exists
 2. **Convergence**: From ANY $V_0$, value iteration converges to $V^*$
 3. **Rate**: $\|V_k - V^*\|_\infty \leq \gamma^k \|V_0 - V^*\|_\infty$
@@ -303,7 +302,7 @@ Init #   ||V₀||∞      Iters    ||V_final - V*||∞
 BANACH FIXED-POINT THEOREM VERIFICATION
 ==================================================
 
-[THM-3.3.2] Verification Results:
+[THM-3.6.2-Banach] Verification Results:
   (1) Existence:   V* exists ✓
   (2) Uniqueness:  All 10 initializations → same V*: ✓
   (3) Convergence: All trials converged ✓
@@ -314,11 +313,11 @@ BANACH FIXED-POINT THEOREM VERIFICATION
 
 The Banach Fixed-Point Theorem provides **ironclad guarantees**:
 
-1. **Global convergence**: No matter where you start, you WILL converge to $V^*$. This is why value iteration is so robust—no clever initialization required.
+1. **Global convergence**: No matter where you start, you WILL converge to $V^*$. This is why value iteration is so robust---no clever initialization required.
 
 2. **Unique optimum**: There's exactly one optimal value function. No local optima to worry about, no sensitivity to initialization (for finding the optimal value).
 
-3. **Exponential convergence**: Error shrinks by factor $\gamma$ each iteration. This is FAST—much faster than the $O(1/k)$ rate of gradient descent.
+3. **Exponential convergence**: Error shrinks by factor $\gamma$ each iteration. This is FAST---much faster than the $O(1/k)$ rate of gradient descent.
 
 **Contrast with general optimization**: In neural network training, local optima, saddle points, and initialization sensitivity are major concerns. The Bellman operator's contraction property eliminates all these issues. This is why dynamic programming works so reliably when it's applicable.
 
@@ -386,15 +385,15 @@ These labs validated the operator-theoretic foundations of Chapter 3:
 
 | Lab | Key Discovery | Chapter Reference |
 |-----|--------------|-------------------|
-| Lab 3.1 | Contraction ratio ≤ γ always (with slack) | [THM-3.3.3], [EQ-3.3] |
-| Lab 3.2 | Iterations scale as O(1/(1-γ)) | [THM-3.3.2] |
+| Lab 3.1 | Contraction ratio ≤ γ always (with slack) | [THM-3.7.1], [EQ-3.16] |
+| Lab 3.2 | Iterations scale as O(1/(1-γ)) | [THM-3.6.2-Banach] |
 | Extended: Perturbation | Value errors ≤ reward errors / (1-γ) | Corollary 3.7.3 |
-| Extended: Discount | γ controls horizon, sensitivity, complexity | §3.4 |
-| Extended: Banach | Global convergence from ANY initialization | [THM-3.3.2] |
+| Extended: Discount | γ controls horizon, sensitivity, complexity | Section 3.4 |
+| Extended: Banach | Global convergence from ANY initialization | [THM-3.6.2-Banach] |
 
 **Key Lessons:**
 
-1. **Contractions guarantee convergence**: The $\gamma$-contraction property [THM-3.3.3] is why value iteration works. It provides existence, uniqueness, AND exponential convergence—all in one theorem.
+1. **Contractions guarantee convergence**: The $\gamma$-contraction property [THM-3.7.1] is why value iteration works. It provides existence, uniqueness, AND exponential convergence---all in one theorem.
 
 2. **The bound is worst-case**: Actual convergence is often faster than $\gamma^k$. The theoretical bound is for analysis and safety guarantees, not runtime prediction.
 
@@ -402,7 +401,7 @@ These labs validated the operator-theoretic foundations of Chapter 3:
 
 4. **Global convergence is remarkable**: Unlike deep learning where initialization matters enormously, value iteration converges to the same $V^*$ from ANY starting point. This robustness comes from the contraction property.
 
-5. **Perturbation sensitivity scales with horizon**: The $1/(1-\gamma)$ amplification factor appears everywhere—in iteration count, value magnitude, and error sensitivity. Long-horizon RL is fundamentally harder.
+5. **Perturbation sensitivity scales with horizon**: The $1/(1-\gamma)$ amplification factor appears everywhere---in iteration count, value magnitude, and error sensitivity. Long-horizon RL is fundamentally harder.
 
 **Connection to Practice:**
 
@@ -441,7 +440,9 @@ python scripts/ch03/lab_solutions.py
 
 ## Appendix: Mathematical Proofs
 
-### Proof of [THM-3.3.3]: Bellman Operator is a $\gamma$-Contraction
+> **Note:** The following proofs are included for standalone reference and reproduce arguments from the main chapter. For the canonical presentation with full context and remarks, see Sections 3.6--3.7.
+
+### Proof of [THM-3.7.1]: Bellman Operator is a $\gamma$-Contraction
 
 **Theorem.** For an MDP with discount factor $\gamma < 1$, the Bellman operator
 $$(\mathcal{T}V)(s) = \max_a \left\{ R(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s') \right\}$$
@@ -467,7 +468,7 @@ Taking supremum over all $s$: $\|\mathcal{T}V_1 - \mathcal{T}V_2\|_\infty \leq \
 When $\gamma = 0$, the Bellman equation reduces to:
 $$V^*(s) = \max_a R(s, a)$$
 
-This is exactly [EQ-1.8] from Chapter 1—the contextual bandit value function. The Bellman operator becomes $(\mathcal{T}V)(s) = \max_a R(s,a)$, which is independent of $V$! This is why bandits converge in one iteration.
+This is exactly the Chapter 1 bandit optimality condition [EQ-1.9]--[EQ-1.10]: the optimal value equals the max Q-value. The Bellman operator becomes $(\mathcal{T}V)(s) = \max_a R(s,a)$, which is independent of $V$! This is why bandits converge in one iteration.
 
 ---
 

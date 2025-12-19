@@ -1,8 +1,8 @@
-# Chapter 3 — Exercises & Labs (Application Mode)
+# Chapter 3 --- Exercises & Labs (Application Mode)
 
-Use these labs to keep the operator theory proofs in sync with runnable Bellman code. Each snippet is self-contained so you can execute it directly (e.g., `uv run python - <<'PY' ... PY`) while cross-referencing §§3.7–3.9.
+Use these labs to keep the operator theory proofs in sync with runnable Bellman code. Each snippet is self-contained so you can execute it directly (e.g., `uv run python - <<'PY' ... PY`) while cross-referencing Sections 3.7--3.9.
 
-## Lab 3.1 — Contraction Ratio Tracker
+## Lab 3.1 --- Contraction Ratio Tracker
 
 Objective: log $\| \mathcal{T}V_1 - \mathcal{T}V_2 \|_\infty / \|V_1 - V_2\|_\infty$ and compare it to $\gamma$.
 
@@ -48,7 +48,7 @@ Contraction ratio: 0.872 (theory bound = 0.900)
 1. Explain the slack between the bound and the observation (hint: the max operator is 1-Lipschitz, so the true ratio is often strictly less than $\gamma$).
 2. Log the ratio across multiple seeds and include the extrema in Chapter 3 to make #EQ-3.18 concrete.
 
-## Lab 3.2 — Value Iteration Wall-Clock Profiling
+## Lab 3.2 --- Value Iteration Wall-Clock Profiling
 
 Objective: verify the $O\!\left(\frac{1}{1-\gamma}\right)$ convergence rate numerically by reusing the same toy kernel.
 
@@ -93,5 +93,5 @@ Output:
 ```
 
 **Tasks**
-1. Plot the iteration counts against $\frac{1}{1-\gamma}$ and reference the figure when explaining Theorem 3.9.
+1. Plot the iteration counts against $\frac{1}{1-\gamma}$ and reference the figure when explaining [COR-3.7.3] (value iteration convergence rate).
 2. Re-run the sweep after perturbing `R` with zero-mean noise to visualize how Corollary 3.7.3 bounds the effect of modeling errors.

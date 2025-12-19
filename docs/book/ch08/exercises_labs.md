@@ -1,4 +1,4 @@
-# Chapter 8: Policy Gradients — Exercises & Labs
+# Chapter 8: Policy Gradients --- Exercises & Labs
 
 **Companion to Chapter 8: Policy Gradient Methods**
 
@@ -127,7 +127,7 @@ $$
 \quad \text{(Boltzmann/softmax policy)}
 $$
 
-The Lagrange multiplier $\lambda$ is the **inverse temperature** (often denoted $\beta$). High $\lambda$ (low temperature) → deterministic policy (argmax). Low $\lambda$ (high temperature) → uniform policy (maximum entropy).
+The Lagrange multiplier $\lambda$ is the **inverse temperature** (often denoted $\beta$). High $\lambda$ (low temperature) -> deterministic policy (argmax). Low $\lambda$ (high temperature) -> uniform policy (maximum entropy).
 
 **Connection to Maximum Entropy RL:** SAC [haarnoja:soft_actor_critic:2018] maximizes $J(\pi) = \mathbb{E}[R] + \alpha H(\pi)$, which is the unconstrained version of this problem. The optimal policy is softmax w.r.t. the "soft" Q-function $Q_{\text{soft}}(s,a)$.
 
@@ -148,8 +148,8 @@ $$
 where $\hat{g}_k = \sum_t \nabla_\theta \log \pi_{\theta_k}(a_t|s_t) (G_t - b)$ is the gradient estimate at episode $k$.
 
 **Conditions (Robbins-Monro):**
-1. $\mathbb{E}[\hat{g}_k \mid \theta_k] = \nabla_\theta J(\theta_k)$ (unbiased) — Proven in [THM-8.2]
-2. $\text{Var}[\hat{g}_k \mid \theta_k] < \infty$ — Requires bounded rewards and policy smoothness
+1. $\mathbb{E}[\hat{g}_k \mid \theta_k] = \nabla_\theta J(\theta_k)$ (unbiased) --- Proven in [THM-8.2]
+2. $\text{Var}[\hat{g}_k \mid \theta_k] < \infty$ --- Requires bounded rewards and policy smoothness
 3. Learning rate schedule: $\sum_k \alpha_k = \infty$ and $\sum_k \alpha_k^2 < \infty$ (e.g., $\alpha_k = 1/k$)
 
 Under these conditions, $\theta_k$ converges to a **stationary point** $\theta^*$ where $\nabla_\theta J(\theta^*) = 0$ with probability 1.
@@ -207,8 +207,8 @@ print(f"K* = {discounted_lqr_gain():.4f}")
 
 System:  s_{t+1} = s_t + a_t
 Reward:  r_t = -(s_t^2 + a_t^2)
-Policy:  π_θ(a|s) = N(θ·s, σ^2)
-Target:  θ* ≈ -0.615 (DARE)
+Policy:  pi_theta(a|s) = N(theta * s, sigma^2)
+Target:  theta* ~= -0.615 (DARE)
 """
 
 import numpy as np
@@ -259,22 +259,22 @@ def lqr_policy_gradient(
         if episode % 50 == 0:
             avg_return = np.mean(returns)
             err = abs(theta - target_gain)
-            print(f"Ep {episode:3d} | θ={theta:6.3f} | Return={avg_return:7.2f} | |θ-K*|={err:6.3f}")
+            print(f"Ep {episode:3d} | theta={theta:6.3f} | Return={avg_return:7.2f} | |theta-K*|={err:6.3f}")
 
     return theta, theta_history
 
 theta_star = -0.615  # from discounted_lqr_gain()
 theta_final, history = lqr_policy_gradient(target_gain=theta_star)
 
-print(f"\nFinal θ = {theta_final:.4f}")
-print(f"Analytical θ* = {theta_star:.4f}")
-print(f"|θ - θ*| = {abs(theta_final - theta_star):.4f}")
+print(f"\nFinal theta = {theta_final:.4f}")
+print(f"Analytical theta* = {theta_star:.4f}")
+print(f"|theta - theta*| = {abs(theta_final - theta_star):.4f}")
 
 plt.figure(figsize=(10, 4))
-plt.plot(history, label='θ (policy gradient)')
-plt.axhline(theta_star, color='red', linestyle='--', label='θ* (DARE)')
+plt.plot(history, label='theta (policy gradient)')
+plt.axhline(theta_star, color='red', linestyle='--', label='theta* (DARE)')
 plt.xlabel('Episode')
-plt.ylabel('Policy Parameter θ')
+plt.ylabel('Policy Parameter theta')
 plt.title('Policy Gradient vs. DARE Solution')
 plt.legend()
 plt.grid(alpha=0.3)
@@ -285,16 +285,16 @@ print("Plot saved: lqr_policy_gradient.png")
 
 **Expected Output:**
 ```
-Ep   0 | θ=-0.022 | Return=-27.91 | |θ-K*|= 0.593
-Ep  50 | θ=-0.392 | Return=-22.83 | |θ-K*|= 0.223
-Ep 100 | θ=-0.541 | Return=-21.10 | |θ-K*|= 0.074
-Ep 150 | θ=-0.594 | Return=-20.58 | |θ-K*|= 0.021
-Ep 200 | θ=-0.611 | Return=-20.45 | |θ-K*|= 0.004
+Ep   0 | theta=-0.022 | Return=-27.91 | |theta-K*|= 0.593
+Ep  50 | theta=-0.392 | Return=-22.83 | |theta-K*|= 0.223
+Ep 100 | theta=-0.541 | Return=-21.10 | |theta-K*|= 0.074
+Ep 150 | theta=-0.594 | Return=-20.58 | |theta-K*|= 0.021
+Ep 200 | theta=-0.611 | Return=-20.45 | |theta-K*|= 0.004
 ...
 
-Final θ = -0.6148
-Analytical θ* = -0.6150
-|θ - θ*| = 0.0002
+Final theta = -0.6148
+Analytical theta* = -0.6150
+|theta - theta*| = 0.0002
 ```
 
 **Analysis.**
@@ -304,7 +304,7 @@ Analytical θ* = -0.6150
 
 **Extension:** Extend to $s \in \mathbb{R}^2$ with matrix gains $K \in \mathbb{R}^{2 \times 2}$ and verify convergence to the DARE solution on each axis.
 
-!!! note "Status — Advanced Labs"
+!!! note "Status --- Advanced Labs"
     Lab 8.1 (REINFORCE with rich features) and Lab 8.2 (Deep end-to-end REINFORCE) are fully wired to existing scripts under `scripts/ch08/`. Lab 8.3 (Gaussian policy ablations) and Lab 8.4 (RLHF simulation) now ship with concrete demo scripts (`scripts/ch08/policy_ablation.py` and `scripts/ch08/rlhf_demo.py`), but remain advanced: readers are encouraged to treat them as starting points for their own ablation pipelines and RLHF variants rather than fixed production code.
 
 ---
@@ -355,10 +355,10 @@ Ep  3000 | Return:  11.56 | Entropy:  1.95 | Loss: -43.12
 
 Final 100-ep Average Return: 11.56
 Improvement: 9.02 -> 11.56
-✓ Agent learned to improve policy.
+Agent learned to improve policy.
 ```
 
-**Step 2: Ablation — No Entropy Regularization**
+**Step 2: Ablation --- No Entropy Regularization**
 
 ```bash
 python scripts/ch08/reinforce_demo.py \
@@ -369,7 +369,7 @@ python scripts/ch08/reinforce_demo.py \
 
 **Observation:** Policy entropy collapses to near-zero by episode 500, final return ~9.0 (worse than baseline). This demonstrates necessity of entropy regularization.
 
-**Step 3: Ablation — Learning Rate Sweep**
+**Step 3: Ablation --- Learning Rate Sweep**
 
 Run with $\alpha \in \{1e-5, 1e-4, 3e-4, 1e-3, 3e-3\}$:
 
@@ -400,17 +400,17 @@ python scripts/ch07/continuous_actions_demo.py \
   --seed 2025
 ```
 
-**Expected:** Q-learning achieves ~25.0 (2.2× better than REINFORCE).
+**Expected:** Q-learning achieves ~25.0 (2.2x better than REINFORCE).
 
 **Analysis Questions:**
-1. Why does Q-learning outperform REINFORCE by 2×?
+1. Why does Q-learning outperform REINFORCE by 2x?
 2. Plot variance of returns: REINFORCE vs. Q-learning. Which is noisier?
 3. Compute sample efficiency: episodes to reach return 10.0. Q-learning ~300, REINFORCE ~1500.
 
 #### Deliverables
 
 **Plots:**
-1. Learning curves: return vs. episode (3 seeds, mean ± std)
+1. Learning curves: return vs. episode (3 seeds, mean +/- std)
 2. Entropy trajectory: $H(\pi_\theta)$ vs. episode
 3. Gradient norm: $\|\nabla J\|$ vs. episode
 
@@ -428,7 +428,7 @@ python scripts/ch07/continuous_actions_demo.py \
 
 **Objective:** Empirically verify the benefit of a learned baseline in a stochastic environment.
 
-This lab directly implements the "Failure → Diagnosis → Fix" narrative from §8.5: we run Vanilla REINFORCE (Act I), observe the variance problem, then run REINFORCE + Baseline (Act III) to see the fix in action.
+This lab directly implements the "Failure -> Diagnosis -> Fix" narrative from Section 8.5: we run Vanilla REINFORCE (Act I), observe the variance problem, then run REINFORCE + Baseline (Act III) to see the fix in action.
 
 #### Protocol
 
@@ -446,7 +446,7 @@ python scripts/ch08/reinforce_demo.py \
 
 **What to observe:**
 - Jagged loss curves with large spikes
-- "Forgetting" — performance spikes up then suddenly drops
+- "Forgetting" --- performance spikes up then suddenly drops
 - Oscillating returns between 3-17, never stabilizing
 - Final 100-episode average: ~7.99 (worse than random baseline 8.7!)
 
@@ -473,9 +473,9 @@ python scripts/ch08/reinforce_baseline_demo.py \
 
 | Method | Architecture | Final Return | Convergence | Stability |
 |:-------|:-------------|:------------|:-----------|:----------|
-| **Vanilla REINFORCE** | Single policy net | ~7.99 | Never (tested to 50k episodes) | ❌ High variance, oscillates |
-| **REINFORCE + Baseline** | Policy + Value nets | **~13.19** | ~5,000 episodes | ✅ Stable monotonic improvement |
-| **Improvement** | - | **+65%** | **10× faster** | - |
+| **Vanilla REINFORCE** | Single policy net | ~7.99 | Never (tested to 50k episodes) | High variance, oscillates |
+| **REINFORCE + Baseline** | Policy + Value nets | **~13.19** | ~5,000 episodes | Stable, monotonic improvement |
+| **Improvement** | - | **+65%** | **10x faster** | - |
 
 #### Analysis Tasks
 
@@ -533,9 +533,9 @@ By adapting the baseline to each state's intrinsic value, we eliminate the noise
 | Metric | Vanilla REINFORCE | REINFORCE + Baseline | Improvement |
 |:-------|:-----------------|:--------------------|:------------|
 | Final Return | 7.99 | **13.19** | **+65%** |
-| Convergence Episodes | Never (50k+) | ~5,000 | **10× faster** |
+| Convergence Episodes | Never (50k+) | ~5,000 | **10x faster** |
 | Gradient Std Dev | ~15 | ~7 | **50% reduction** |
-| Stability | ❌ Oscillates | ✅ Monotonic | Qualitative |
+| Stability | Oscillates | Monotonic | Qualitative |
 
 ---
 
@@ -600,7 +600,7 @@ Modify `neural_reinforce_demo.py` to pretrain feature layers on supervised task:
 
 ```python
 # Pretrain feature extractor on category prediction
-# Input: user segment + query type → Output: clicked category (classification)
+# Input: user segment + query type -> Output: clicked category (classification)
 
 # Load logged data from Chapter 6
 logged_data = load_logged_trajectories()  # (s, a, r, clicked_cat)
@@ -669,8 +669,8 @@ class BetaPolicy(nn.Module):
 
     def forward(self, obs: torch.Tensor) -> Distribution:
         x = self.net(obs)
-        alpha = torch.exp(self.alpha_head(x)) + 1.0  # α > 1 for unimodal
-        beta = torch.exp(self.beta_head(x)) + 1.0    # β > 1 for unimodal
+        alpha = torch.exp(self.alpha_head(x)) + 1.0  # alpha > 1 for unimodal
+        beta = torch.exp(self.beta_head(x)) + 1.0    # beta > 1 for unimodal
         return Beta(alpha, beta)
 
     def sample_action(self, obs: torch.Tensor, a_max: float) -> torch.Tensor:
@@ -697,7 +697,7 @@ class SquashedGaussianPolicy(nn.Module):
         action = torch.tanh(z)
 
         # Compute log-prob with change-of-variables
-        # log π(a) = log π(z) - log |da/dz|
+        # log pi(a) = log pi(z) - log |da/dz|
         # |da/dz| = 1 - tanh^2(z)
         log_prob = Normal(mu, std).log_prob(z).sum(dim=-1)
         log_prob -= torch.log(1 - action.pow(2) + 1e-6).sum(dim=-1)
@@ -743,10 +743,10 @@ done
 
 | Policy | Mean Return | Std Dev | Entropy (final) | Training Stability |
 |:-------|:------------|:--------|:----------------|:-------------------|
-| Gaussian | 11.56 | 0.42 | 1.95 | ✓ Stable |
-| Beta | 10.87 | 0.68 | 1.72 | ✗ Mode collapse |
-| Squashed | 11.34 | 0.51 | 1.88 | ✓ Stable |
-| Fixed Std | 10.21 | 0.73 | 2.30 (const) | ✗ Underexplores late |
+| Gaussian | 11.56 | 0.42 | 1.95 | Stable |
+| Beta | 10.87 | 0.68 | 1.72 | Mode collapse |
+| Squashed | 11.34 | 0.51 | 1.88 | Stable |
+| Fixed Std | 10.21 | 0.73 | 2.30 (const) | Underexplores late |
 
 **Findings:**
 - **Gaussian**: Best performance, standard choice
@@ -762,18 +762,18 @@ done
 
 We do not introduce new core theory here. Instead, we **compose three ingredients you already know**—(i) a supervised Gaussian policy (Chapter 8 + SFT), (ii) a learned scalar reward model from pairwise preferences (Bradley–Terry), and (iii) a REINFORCE-style policy gradient with a KL regularizer—to build an InstructGPT-style pipeline in the Zoosim search environment.
 
-!!! note "Big Picture — What’s Reused vs New?"
+!!! note "Big Picture — What's Reused vs New?"
     **Reused from earlier chapters and labs**
     - Gaussian policy $\pi_\theta(a|s)$ with entropy regularization (Chapter 8, Lab 8.1).
     - Policy gradient / REINFORCE update with log-prob weights (Chapter 8, [ALG-8.1]).
-    - KL divergence as a regularizer (previewed in PPO §8.7.2; used here to keep the RL policy close to the SFT policy).
+    - KL divergence as a regularizer (previewed in PPO Section 8.7.2; used here to keep the RL policy close to the SFT policy).
     
     **New in this lab (structural additions)**
     - Trajectory-level reward model $r_\phi(\tau)$ trained from pairwise preferences via a Bradley–Terry objective.
-    - Three-phase workflow: SFT → reward modeling → RL fine-tuning with KL penalty, mirroring the InstructGPT RLHF pipeline.
-    - Simple “expert” template policy in Zoosim used to generate demonstration data and preference pairs (standing in for human raters).
+    - Three-phase workflow: SFT -> reward modeling -> RL fine-tuning with KL penalty, mirroring the InstructGPT RLHF pipeline.
+    - Simple "expert" template policy in Zoosim used to generate demonstration data and preference pairs (standing in for human raters).
 
-Turnkey demo: `scripts/ch08/rlhf_demo.py` provides a compact, runnable version of the three-phase RLHF-style pipeline described here (SFT → reward modeling → KL-regularized REINFORCE on the learned reward).
+Turnkey demo: `scripts/ch08/rlhf_demo.py` provides a compact, runnable version of the three-phase RLHF-style pipeline described here (SFT -> reward modeling -> KL-regularized REINFORCE on the learned reward).
 
 #### Three-Phase Protocol
 
@@ -800,7 +800,7 @@ for epoch in range(50):
         loss.backward()
         optimizer.step()
 
-# This policy π_SFT mimics expert behavior
+# This policy pi_SFT mimics expert behavior
 ```
 
 **Phase 2: Reward Modeling (Bradley-Terry)**
@@ -818,16 +818,16 @@ from torch.optim import Adam
 
 trajectories = generate_trajectory_pairs(policy_sft, env, num_pairs=1000)
 
-# For each pair (τ_1, τ_2), ask: "Which ranking is better?"
+# For each pair (tau_1, tau_2), ask: "Which ranking is better?"
 # Simulate with ground-truth GMV: prefer higher GMV
 preferences = []
 for tau1, tau2 in trajectories:
     if GMV(tau1) > GMV(tau2):
-        preferences.append((tau1, tau2, torch.tensor(1.0)))  # τ1 preferred → label 1
+        preferences.append((tau1, tau2, torch.tensor(1.0)))  # tau1 preferred -> label 1
     else:
-        preferences.append((tau1, tau2, torch.tensor(0.0)))  # τ2 preferred → label 0
+        preferences.append((tau1, tau2, torch.tensor(0.0)))  # tau2 preferred -> label 0
 
-# Train reward model: r_φ(τ) such that P(τ1 > τ2) = sigmoid(r_φ(τ1) - r_φ(τ2))
+# Train reward model: r_phi(tau) such that P(tau1 > tau2) = sigmoid(r_phi(tau1) - r_phi(tau2))
 reward_model = RewardMLP(state_dim, hidden=128)
 optimizer = Adam(reward_model.parameters(), lr=1e-3)
 
@@ -836,7 +836,7 @@ for epoch in range(20):
         r1 = reward_model(tau1)  # Aggregate trajectory features
         r2 = reward_model(tau2)
 
-        # Bradley-Terry loss: logit = r1 - r2, target = 1 if τ1 preferred
+        # Bradley-Terry loss: logit = r1 - r2, target = 1 if tau1 preferred
         logit = r1 - r2
         loss = F.binary_cross_entropy_with_logits(logit, label)
 
@@ -852,14 +852,14 @@ The target `label` equals 1 when $\tau_1 \succ \tau_2$ so that $\sigma(r_\phi(\t
 Optimize learned reward + KL penalty from SFT policy:
 
 ```python
-# Objective: max E[r_φ(τ)] - β * KL(π_θ || π_SFT)
+# Objective: max E[r_phi(tau)] - beta * KL(pi_theta || pi_SFT)
 # This prevents the policy from deviating too far from safe SFT behavior
 
 policy_rl = copy.deepcopy(policy_sft)  # Initialize from SFT
 policy_sft.eval()  # Freeze SFT policy as reference
 
 for episode in range(2000):
-    # Generate trajectory under π_θ
+    # Generate trajectory under pi_theta
     tau = rollout(policy_rl, env)
 
     # Compute rewards from learned model
@@ -901,9 +901,9 @@ for episode in range(2000):
 #### Connection to LLM RLHF
 
 This is structurally identical to InstructGPT [ouyang:training_language:2022]:
-- **SFT**: Train on human demonstrations → mimics expert search rankers
-- **RM**: Learn from pairwise preferences → "which result set is better?"
-- **PPO**: Optimize learned reward + KL penalty → improves while staying safe
+- **SFT**: Train on human demonstrations -> mimics expert search rankers
+- **RM**: Learn from pairwise preferences -> "which result set is better?"
+- **PPO**: Optimize learned reward + KL penalty -> improves while staying safe
 
 The key insight: **RL on learned rewards** is more sample-efficient than RL on sparse ground-truth rewards (GMV), especially when human feedback is available.
 
@@ -924,7 +924,7 @@ The key insight: **RL on learned rewards** is more sample-efficient than RL on s
 - Measure gradient variance: $\text{Var}[\nabla J]$ across episodes
 - Plot bias-variance tradeoff: GAE $\lambda$ vs. final return
 
-**Expected:** GAE with $\lambda=0.95$ reduces variance by 5× while introducing <10% bias.
+**Expected:** GAE with $\lambda=0.95$ reduces variance by 5x while introducing <10% bias.
 
 ---
 
@@ -956,7 +956,7 @@ if kl_div > kl_threshold:
 **Theoretical Question:** Is REINFORCE's sample inefficiency fundamental or fixable?
 
 **Analysis:**
-- Compare sample complexity: REINFORCE O(1/ε²), Q-learning O(1/ε)
+- Compare sample complexity: REINFORCE $O(1/\varepsilon^2)$, Q-learning $O(1/\varepsilon)$
 - Derive information-theoretic lower bound for policy gradient (see [agarwal:theory_of_reinforcement_learning:2021])
 - Show that Monte Carlo estimation inherently has higher variance than TD
 

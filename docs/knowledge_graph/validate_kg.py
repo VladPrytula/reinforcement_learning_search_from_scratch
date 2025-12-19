@@ -241,7 +241,7 @@ class KGValidator:
         valid_kinds = {
             'chapter', 'section', 'equation', 'definition', 'theorem',
             'remark', 'concept', 'algorithm', 'module', 'test', 'plan', 'doc',
-            'assumption', 'lemma', 'proposition'
+            'assumption', 'lemma', 'proposition', 'corollary'
         }
 
         for node_id, data in self.kg.G.nodes(data=True):

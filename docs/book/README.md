@@ -24,7 +24,7 @@ I wanted to write an RL book in that spirit, though I'm not sure I've fully succ
 
 **Mathematics with full precision.** When I claim a value function exists and is unique, I try to prove it—with explicit assumptions, named theorems, and complete arguments. When I say an algorithm converges, I specify in what norm, at what rate, under what conditions. You shouldn't have to guess whether something is a theorem or a heuristic.
 
-**Code you could actually run.** Not pseudocode that gestures at an implementation, but working PyTorch and JAX that demonstrates the concepts. Every theorem gets a numerical verification. Every algorithm gets tested against edge cases. The code might not be production-ready in every detail, but it's honest about what actually works.
+**Code you could actually run.** Not pseudocode that gestures at an implementation, but working NumPy and PyTorch that demonstrates the concepts—including GPU-accelerated variants for the computationally intensive experiments. Every theorem gets a numerical verification. Every algorithm gets tested against edge cases. The code might not be production-ready in every detail, but it's honest about what actually works.
 
 **Honesty about the gaps.** Theory makes assumptions that practice violates. Rewards aren't always bounded; state spaces aren't always finite; we rarely know the transition kernel exactly. I try not to pretend these gaps don't exist. Instead, I name them, explore when they matter, and point toward research that's working to close them. Sometimes the most valuable lesson is understanding *why* something works despite violating its theoretical assumptions.
 
@@ -63,6 +63,6 @@ If you want pure mathematics without implementation details, dedicated functiona
 
 But if you're the kind of person who reads a policy gradient theorem and finds yourself wondering about the dominated convergence conditions that justify swapping the derivative and expectation—*and* you want to see that gradient computed on actual hardware—then I hope this book will resonate.
 
-I wrote it for the version of myself who was searching library shelves for exactly this: a text that takes both the mathematics and the engineering seriously, and doesn't treat them as separate concerns.
+I wrote it for the version of myself who was searching library shelves for exactly this: a text that takes both the mathematics and the engineering seriously, and doesn't treat them as separate concerns. If you've felt that same gap, I hope this book serves you well.
 
 Welcome. Let's begin.

@@ -4,14 +4,14 @@ This syllabus lays out a chapter-by-chapter path from foundations and a working 
 
 ## Part I — Foundations
 
-0) Chapter 0 — Motivation: A Tiny Search Engine That Learns (draft exists: `docs/book/drafts/ch00_motivation_first_experiment.md`)
+0) Chapter 0 — Motivation: A Tiny Search Engine That Learns (`docs/book/ch00/ch00_motivation_first_experiment_revised.md`)
 - Objectives: Run a complete small RL experiment (toy bandit with boosts); build intuition for exploration, reward design, and regret.
 - Theory: Minimal and informal in Ch0; rigor deferred to Ch1–Ch3.
 - Implementation: `scripts/ch00/toy_problem_solution.py`; sanity in `tests/ch00/test_toy_example.py`.
 - Labs: Plot learning curves; compare to baselines; simple CM2 floor; action‑space geometry.
 - Acceptance: Reproduce representative outputs in Ch0; explain limitations and the need for formalization.
 
--1) Chapter 1 — Search Ranking as Optimization (draft exists: `docs/book/drafts/ch01_foundations.md`)
+1) Chapter 1 — Search Ranking as Optimization (`docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md`)
 - Objectives: Formalize multi-objective reward and the contextual bandit formulation for the Chapter 0 toy and real search; introduce #EQ-1.2 and the multi-episode preview #EQ-1.2-prime.
 - Theory: Contextual bandit vs MDP; constraints (CM2, exposure, rank stability); engagement as soft viability.
 - Implementation: Reward weights in `zoosim/core/config.py` and aggregation in `zoosim/dynamics/reward.py`.
@@ -118,14 +118,35 @@ This syllabus lays out a chapter-by-chapter path from foundations and a working 
 - Labs: Regret under synthetic shifts; recovery speed.
 - Acceptance: Bounded regret; quick recovery to baseline; no guardrail breaches.
 
-## Part V — Optional Bayesian Appendix
+## Part V — Appendices
 
 Appendix A — Bayesian Preference Models (Hierarchical, Optional)
 - Objectives: Infer user-level price and PL preferences (θ_price, θ_pl) from logged interactions via hierarchical Bayes; connect these estimates to the rich context features used in Chapter 6.
 - Theory: Hierarchical priors over segments and users; partial pooling and shrinkage; simple hierarchical logistic/normal models; how posterior means and variances relate to the Bellman / value-function framing from Chapter 3.
-- Implementation (planned): `bayes/price_sensitivity_model.py` (hierarchical model over segments and users, fit on simulator logs); hooks for exporting posterior means as φ_rich_est-style features.
+- Implementation:
+  - Text: `docs/book/appendix_a_bayesian_preference_models.md` (complete Bayesian appendix with hierarchical preference models and Thompson-style bandit integration).
+  - Future code hook: `bayes/price_sensitivity_model.py` (hierarchical model over segments and users, fit on simulator logs); exports posterior means as φ_rich_est-style features for Chapter 6 bandits.
 - Labs: Fit the model on simulated logs; compare posterior means to true simulator θ_price, θ_pl; plug these estimates into the template bandit (in place of oracle latents) and compare performance across φ_simple, φ_rich (oracle), and φ_rich_est (estimated).
 - Acceptance: Posterior estimates shrink sensibly toward segment means for low-data users; bandit performance with Bayesian θ̂ sits between φ_simple and oracle φ_rich, illustrating realistic gains from better preference modeling.
+
+Appendix B — Control Theory Connections
+- Objectives: Bridge RL to classical control; show LQR as special case of value iteration; connect Bellman to HJB.
+- Theory: LQR/LQG; Riccati equations; Lyapunov stability; HJB equation as continuous-time Bellman.
+- Implementation: Text only (`docs/book/appendix_b_control_theory.md`); optional numerical demos.
+- Referenced by: Ch3 (Bellman operators), Ch7 (continuous actions), Ch11 (multi-episode dynamics).
+
+Appendix C — Convex Optimization for RL
+- Objectives: Provide background on Lagrangian duality, KKT conditions, and primal-dual methods for constrained RL.
+- Theory: Convex sets and functions; Lagrangian and dual problems; KKT conditions; primal-dual algorithms.
+- Implementation: Text only (`docs/book/appendix_c_convex_optimization.md`).
+- Referenced by: Ch1 §1.9 (Lagrangian view), Ch8 (constraints), Ch14 (multi-objective CMDP).
+
+Appendix D — Information-Theoretic Lower Bounds
+- Objectives: Prove fundamental limits on bandit learning; establish optimality of UCB/TS algorithms.
+- Theory: KL divergence and mutual information; data processing inequality; Fano's inequality (THM-D.1); bandit lower bound via hypothesis testing (THM-D.2: $\Omega(\sqrt{KT})$); extensions to contextual and continuous-action settings.
+- Implementation: Text only (`docs/book/appendix_d_information_theory.md`).
+- Referenced by: Ch1 §1.7.6 (regret preview), Ch6 THM-6.0 (formal lower bound statement).
+- Acceptance: Complete proofs for Fano's inequality and the $\Omega(\sqrt{KT})$ lower bound; forward references from Ch1 and Ch6 resolve correctly.
 
 ## Milestones and Estimates
 

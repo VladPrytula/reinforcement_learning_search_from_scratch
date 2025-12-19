@@ -207,7 +207,7 @@ The continuous action space from Chapter 1 is $\mathcal{A} = [-a_{\max}, +a_{\ma
 
 We define a small set of **boost templates** $\mathcal{T} = \{t_1, \ldots, t_M\}$ where each template $t_i$ is a **boost policy** that maps products to adjustments based on business logic.
 
-**Definition 6.1** (Boost Template) {#DEF-6.1}
+**Definition 6.1.1** (Boost Template) {#DEF-6.1.1}
 
 Let $\mathcal{C}$ denote the **product catalog**, modeled as a finite set of products. A **boost template** is a function
 $$
@@ -228,6 +228,8 @@ The final ranking is obtained by sorting products in descending order of $s'_i$.
 2. **Finite catalog**: $|\mathcal{C}| < \infty$, so all argmax operations over $\mathcal{C}$ are well-defined
 3. **Deterministic**: Given a fixed catalog and template definition, $t$ is a fixed function (no internal randomness)
 4. **Product-only (baseline library)**: In this chapter, templates depend only on product attributes $(p.\text{category}, p.\text{margin}, p.\text{popularity}, \ldots)$, not on query or user---context enters later via the contextual bandit policy.
+
+This formulation aligns with the Bandit Bellman Operator defined in [DEF-3.8.1], where $\gamma = 0$ eliminates the need for temporal credit assignment. Templates become arms in a contextual bandit; the learner's job is to discover which arm maximizes immediate reward given the context.
 
 **Example 6.1** (Template Application)
 
@@ -345,7 +347,7 @@ Let's implement the template library in `zoosim/policies/templates.py`:
 ```python
 """Discrete boost templates for contextual bandit policies.
 
-Mathematical basis: [DEF-6.1] (Boost Template)
+Mathematical basis: [DEF-6.1.1] (Boost Template)
 
 Templates define interpretable boost strategies that can be selected
 by contextual bandit algorithms (LinUCB, Thompson Sampling).
@@ -364,7 +366,7 @@ from zoosim.world.catalog import Product
 class BoostTemplate:
     """Single boost template with semantic label.
 
-    Mathematical correspondence: Template $t: \\mathcal{C} \\to \\mathbb{R}$ from [DEF-6.1]
+    Mathematical correspondence: Template $t: \\mathcal{C} \\to \\mathbb{R}$ from [DEF-6.1.1]
 
     Attributes:
         id: Template identifier (0 to M-1)
@@ -624,7 +626,23 @@ $$
 $$
 {#EQ-6.4}
 
-This measures the **loss from not always playing the optimal action**.
+Here $\pi^*(x) := \arg\max_{a \in \mathcal{A}} \mu(x, a)$ is the optimal policy *within the template class* $\mathcal{A} = \{1, \ldots, M\}$. If the true optimal policy lies outside this template space (model misspecification), [EQ-6.4] measures regret relative to the *best template*, not the globally optimal action---a distinction we exploit diagnostically in Section 6.6.
+
+**Theorem 6.0** (Minimax Lower Bound for Stochastic Bandits) {#THM-6.0}
+
+For any learning algorithm and any time horizon $T \geq K$, there exists a $K$-armed stochastic bandit instance such that the expected cumulative regret satisfies:
+
+$$
+\mathbb{E}[\mathrm{Regret}(T)] \geq c \sqrt{KT}
+\tag{6.5}
+$$
+{#EQ-6.5}
+
+where $c > 0$ is a universal constant (e.g., $c = 1/20$ suffices).
+
+*Proof.* The proof uses information-theoretic tools: KL divergence between bandit instances, the data processing inequality, and Fano's inequality. We construct $K$ "hard" instances differing only in which arm is optimal, then show that distinguishing between them requires $\Omega(\sqrt{KT})$ samples. The complete argument appears in **Appendix D, Theorem D.3.1**. $\square$
+
+**Remark 6.0.1** (Interpretation and significance). This theorem establishes that no algorithm---however clever---can achieve regret better than $\Omega(\sqrt{KT})$ uniformly over all bandit instances. The upper bounds we prove for Thompson Sampling and LinUCB in this chapter match this rate up to logarithmic factors, which is why they are called "optimal" in the bandit literature. For contextual bandits with feature dimension $d$, the lower bound becomes $\Omega(d\sqrt{T})$ (see Appendix D, [EQ-D.10]); for continuous-action bandits, the relevant complexity measure is the eluder dimension. We return to these extensions when discussing feature richness and model misspecification in Sections 6.5--6.7.
 
 **Why this matters:**
 
@@ -888,7 +906,7 @@ $$
 
 Thompson Sampling is naturally analyzed in the Bayesian sense (it explicitly uses a prior), whereas LinUCB is usually analyzed in the frequentist sense (no prior, worst-case guarantees over all admissible $\theta^*$). When the prior is well-calibrated and concentrates around the true parameters, the two perspectives tend to agree asymptotically, but they answer slightly different questions: "average performance across plausible worlds" vs. "performance in this particular world".  
 
-If you want to go deeper on the Bayesian side---hierarchical priors over user and segment preferences, posterior shrinkage, and how those posteriors feed rich features into Chapter 6's bandits---see the **"Part V --- Optional Bayesian Appendix"** in the syllabus (`docs/book/drafts/syllabus.md`, **Appendix A --- Bayesian Preference Models**). That appendix will eventually host the planned `bayes/price_sensitivity_model.py` module and labs that plug Bayesian preference estimates into the template bandit in place of oracle latents.
+For deeper treatment of the Bayesian perspective---hierarchical priors over user and segment preferences, posterior shrinkage, and how those posteriors feed into bandit features---see [@russo:tutorial_ts:2018] and [@chapelle:empirical_ts:2011]. The survey by [@lattimore:bandit_algorithms:2020, Chapters 35--37] provides rigorous foundations for Bayesian regret analysis in linear bandits. **Appendix A** develops these ideas for our search setting: hierarchical user preference models, posterior inference for price sensitivity and brand affinity, and how Bayesian estimates integrate with the template bandits of this chapter.
 
 **Theorem 6.1** (Thompson Sampling Regret Bound) {#THM-6.1}
 
@@ -1893,7 +1911,7 @@ The linear model $\theta_a^\top \phi(x)$ can represent these patterns: each coor
     - **Yes** Faster to train (lower-dimensional posteriors)
     - **Yes** Avoids premature overfitting (letting the model "see" everything)
 
-    **This simplification is pedagogically intentional:** We *want* the simple features to fail so we can diagnose **why**---teaching you the diagnostic thinking you'll use when your production RL system underperforms.
+    **This simplification is pedagogically intentional:** We are inducing model misspecification to demonstrate [REM-6.1.1]. We *want* the simple features to fail so we can diagnose **why**---teaching you the diagnostic thinking you'll use when your production RL system underperforms.
 
     **In practice:** You'd iterate on features. Chapter 6 compresses that iteration into two experiments (simple -> fail -> diagnose -> rich -> succeed) to teach the *process* efficiently.
 
@@ -2435,7 +2453,7 @@ Production systems invariably have noisy features---estimated from clicks, infer
 
 **For hands-on practice:**
 
-`docs/book/drafts/ch06/exercises_labs.md` contains exercises and labs that walk you through:
+`docs/book/ch06/exercises_labs.md` contains exercises and labs that walk you through:
 
 - **Lab 6.1**: Reproducing the simple-feature failure (Stage 1)
 - **Lab 6.2a**: Rich features with oracle latents---Both excel (Stage 3a)
@@ -2473,7 +2491,7 @@ These appendices deepen and generalize the core narrative but are **optional**. 
 
 ## Exercises & Labs
 
-See `docs/book/drafts/ch06/exercises_labs.md` for:
+See `docs/book/ch06/exercises_labs.md` for:
 
 - **Exercise 6.1**: Prove [PROP-5.1] properties of semantic relevance (warmup)
 - **Exercise 6.2**: Implement epsilon-greedy baseline, compare regret to LinUCB
@@ -2561,11 +2579,11 @@ Test files:
 - **Yes** `tests/ch06/test_integration.py` (full training loops with mock environment)
 
 Documentation:
-- **Yes** `docs/book/drafts/ch06/discrete_template_bandits.md` (this chapter)
-- **Yes** `docs/book/drafts/ch06/exercises_labs.md` (exercises and labs)
+- **Yes** `docs/book/ch06/discrete_template_bandits.md` (this chapter)
+- **Yes** `docs/book/ch06/exercises_labs.md` (exercises and labs)
 
 Knowledge Graph entries:
-- **Yes** Chapter and theory nodes for Ch06 (`CH-6`, `DEF-6.1`--`DEF-6.4`, `ALG-6.1`, `ALG-6.2`, `THM-6.1`, `THM-6.2`, `PROP-6.1`, `PROP-6.2`, `EQ-6.1`--`EQ-6.17`)
+- **Yes** Chapter and theory nodes for Ch06 (`CH-6`, `DEF-6.1.1`--`DEF-6.4`, `ALG-6.1`, `ALG-6.2`, `THM-6.1`, `THM-6.2`, `PROP-6.1`, `PROP-6.2`, `EQ-6.1`--`EQ-6.17`)
 - **Yes** Module nodes for `zoosim/policies/templates.py`, `zoosim/policies/thompson_sampling.py`, `zoosim/policies/lin_ucb.py`
 - **Yes** Test nodes for `tests/ch06/test_templates.py`, `tests/ch06/test_thompson_sampling.py`, `tests/ch06/test_linucb.py`, `tests/ch06/test_integration.py`
 

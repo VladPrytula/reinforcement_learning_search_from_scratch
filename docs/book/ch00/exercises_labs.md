@@ -205,7 +205,7 @@ results = exercise_0_4_constrained_qlearning(seed=42)
 2. What causes the high violation rates?
 3. Propose an alternative approach (hint: Lagrangian relaxation, chance constraints)
 
-**Connection to Chapter 3:** This motivates the CMDP formalism in Section 3.6.
+**Connection to Chapter 3:** This motivates the CMDP formalism in Section 3.5 (Remark 3.5.3).
 
 **Time estimate:** 25 minutes
 

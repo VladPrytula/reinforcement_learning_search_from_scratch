@@ -555,7 +555,7 @@ Analysis:
 
 3. **Optimistic initialization:** We initialize CM2 estimates at $10.0$ (optimistic). As estimates converge to true values, many actions become infeasible, leading to policy instability.
 
-**Better Approaches (Chapter 3, Section 3.6):**
+**Better Approaches (Chapter 3, Section 3.5):**
 
 1. **Lagrangian relaxation:** Instead of hard constraints, penalize violations:
    $$\max_\pi \mathbb{E}[R] - \lambda(\tau - \mathbb{E}[\text{CM2}])$$

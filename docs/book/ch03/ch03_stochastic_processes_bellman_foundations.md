@@ -1,4 +1,4 @@
-# Chapter 3 — Stochastic Processes and Bellman Foundations
+# Chapter 3 --- Stochastic Processes and Bellman Foundations
 
 *Vlad Prytula*
 
@@ -15,7 +15,7 @@
 **What single-step rewards miss:**
 
 1. **Retention dynamics**: A policy that maximizes immediate GMV by showing aggressive discounts may erode brand perception, reducing next-week's return probability
-2. **Satisfaction evolution**: User satisfaction $S_t$ evolves stochastically based on clicks, purchases, and relevance—today's poor ranking affects tomorrow's abandonment risk
+2. **Satisfaction evolution**: User satisfaction $S_t$ evolves stochastically based on clicks, purchases, and relevance---today's poor ranking affects tomorrow's abandonment risk
 3. **Inter-query dependencies**: Cart state, browsing history, and implicit preferences persist across queries within a session
 
 **Why we need multi-step formalism.** To model these phenomena rigorously, we need:
@@ -27,14 +27,14 @@
 
 **This chapter's goal.** We build the **operator-theoretic foundations** for reinforcement learning:
 
-1. **§3.2–3.3**: Stochastic processes, filtrations, stopping times (measure-theoretic rigor for sequential randomness)
-2. **§3.4**: Markov Decision Processes (formal definition, standard Borel assumptions)
-3. **§3.5**: Bellman operators and value functions (from intuition to operators on function spaces)
-4. **§3.6**: Contraction mappings and Banach fixed-point theorem (**complete proof**, step-by-step)
-5. **§3.7**: Value iteration convergence (why dynamic programming works)
-6. **§3.8**: Connection to bandits (the $\gamma = 0$ special case from Chapter 1)
-7. **§3.9**: Computational verification (NumPy experiments)
-8. **§3.10**: RL bridges (preview of Chapter 11's multi-episode formulation)
+1. **Section 3.2--3.3**: Stochastic processes, filtrations, stopping times (measure-theoretic rigor for sequential randomness)
+2. **Section 3.4**: Markov Decision Processes (formal definition, standard Borel assumptions)
+3. **Section 3.5**: Bellman operators and value functions (from intuition to operators on function spaces)
+4. **Section 3.6**: Contraction mappings and Banach fixed-point theorem (**complete proof**, step-by-step)
+5. **Section 3.7**: Value iteration convergence (why dynamic programming works)
+6. **Section 3.8**: Connection to bandits (the $\gamma = 0$ special case from Chapter 1)
+7. **Section 3.9**: Computational verification (NumPy experiments)
+8. **Section 3.10**: RL bridges (preview of Chapter 11's multi-episode formulation)
 
 By the end, you will understand:
 
@@ -111,7 +111,7 @@ $$
 \{\tau \leq t\} \in \mathcal{F}_t \quad \text{for all } t \in T.
 $$
 
-**Intuition**: A stopping time is a **random time** whose occurrence is determined by information available *up to that time*. The event "$\tau$ has occurred by time $t$" must be $\mathcal{F}_t$-measurable—you can decide whether to stop using only observations $(X_0, \ldots, X_t)$, without peeking into the future.
+**Intuition**: A stopping time is a **random time** whose occurrence is determined by information available *up to that time*. The event "$\tau$ has occurred by time $t$" must be $\mathcal{F}_t$-measurable---you can decide whether to stop using only observations $(X_0, \ldots, X_t)$, without peeking into the future.
 
 **Example 3.2.4** (Session abandonment). Define:
 $$
@@ -119,7 +119,7 @@ $$
 $$
 the first time user satisfaction $S_t$ drops below threshold $\theta$. This is a stopping time: to check "$\tau \leq t$" (user has abandoned by time $t$), we only need to observe $(S_0, \ldots, S_t)$. We don't need to know future satisfaction $S_{t+1}, S_{t+2}, \ldots$.
 
-**Example 3.2.5** (Purchase event). Define $\tau$ as the first time the user makes a purchase. This is a stopping time: the event "$\tau = t$" means "user purchased at time $t$, having not purchased before"—determined by history up to $t$.
+**Example 3.2.5** (Purchase event). Define $\tau$ as the first time the user makes a purchase. This is a stopping time: the event "$\tau = t$" means "user purchased at time $t$, having not purchased before"---determined by history up to $t$.
 
 **Non-Example 3.2.6** (Last time satisfaction peaks). Define $\tau := \sup\{t : S_t = \max_{s \leq T} S_s\}$ (the last time satisfaction reaches its maximum over $[0, T]$). This is **NOT** a stopping time: to determine "$\tau = t$," you need to know future values $S_{t+1}, \ldots, S_T$ to verify satisfaction never exceeds $S_t$ afterward.
 
@@ -147,7 +147,7 @@ $$
 
 ## 3.3 Markov Chains and the Markov Property
 
-Before defining MDPs, we introduce **Markov chains**—stochastic processes with memoryless transitions.
+Before defining MDPs, we introduce **Markov chains**---stochastic processes with memoryless transitions.
 
 **Definition 3.3.1** (Markov Chain) {#DEF-3.3.1}
 
@@ -169,6 +169,8 @@ $$
 so $X_{t+1}$ depends only on $X_t$ and the new increment $\xi_t$ (independent of history). This is a Markov chain.
 
 **Example 3.3.2** (User state transitions). In an e-commerce session, let $X_t \in \{\text{browsing}, \text{engaged}, \text{ready\_to\_buy}, \text{abandoned}\}$ be the user's state after $t$ queries. If transitions depend only on current state (not on the path taken to reach it), then $(X_t)$ is a Markov chain.
+
+**Non-Example 3.3.3** (ARMA processes violate the Markov property). Consider $X_t = 0.5 X_{t-1} + 0.3 X_{t-2} + \varepsilon_t$ where $\varepsilon_t$ is white noise. Given only $X_t$, the distribution of $X_{t+1}$ depends on $X_{t-1}$ (through the $0.3$ term), violating the Markov property [EQ-3.1]. To restore Markovianity, **augment the state**: define $\tilde{X}_t = (X_t, X_{t-1})$. Then $\tilde{X}_{t+1}$ depends only on $\tilde{X}_t$, so $(\tilde{X}_t)$ is Markov. This **state augmentation** technique is fundamental in RL---frame stacking in video games (Remark 3.4.1), LSTM hidden states, and user history embeddings all restore the Markov property by expanding what we call "state."
 
 **Definition 3.3.2** (Transition Kernel) {#DEF-3.3.2}
 
@@ -218,7 +220,7 @@ A **Markov Decision Process (MDP)** is a tuple $(\mathcal{S}, \mathcal{A}, P, R,
 
 A **(stationary Markov) policy** is a measurable mapping $\pi: \mathcal{S} \times \mathcal{A} \to [0, 1]$ such that:
 - For each $s \in \mathcal{S}$, $a \mapsto \pi(a \mid s)$ is a probability distribution on $\mathcal{A}$
-- For each $A \in \mathcal{B}(\mathcal{A})$, $s \mapsto \pi(A \mid s)$ is measurable
+- For each $A \in \mathcal{B}(\mathcal{A})$, $s \mapsto \pi(A \mid s)$ is $\mathcal{B}(\mathcal{S})$-measurable
 
 **Deterministic policies**: A policy is deterministic if $\pi(\cdot | s)$ is a point mass for all $s$. We identify deterministic policies with measurable functions $\pi: \mathcal{S} \to \mathcal{A}$.
 
@@ -236,7 +238,7 @@ These properties ensure that **state $s_t$ summarizes all past information relev
 - **LSTM hidden states**: recurrent network state becomes part of MDP state
 - **User history embeddings**: include session features (past clicks, queries) in context vector
 
-This is engineering, not mathematics—but it's essential for applying MDP theory to reality.
+This is engineering, not mathematics---but it's essential for applying MDP theory to reality.
 
 ---
 
@@ -307,7 +309,7 @@ $$
 V^{\pi^*}(s) = V^*(s) \quad \text{for all } s \in \mathcal{S}.
 $$
 
-This is a deep result from [@puterman:mdps:2014, Theorem 6.2.10]. The proof uses measurable selection theorems and is beyond our scope. The key takeaway: **we can restrict attention to deterministic policies** when seeking optimal policies in discounted MDPs.
+This is a deep result from [@puterman:mdps:2014, Theorem 6.2.10]. The proof uses measurable selection theorems and is beyond our scope. The challenge is that $\arg\max_a [r(s,a) + \gamma \sum_{s'} P(s'|s,a) V^*(s')]$ defines a **set-valued mapping** $s \mapsto \mathcal{A}^*(s)$---there may be multiple optimal actions at each state. Selecting a single action *measurably* from this set requires tools from descriptive set theory, specifically the Kuratowski--Ryll-Nardzewski measurable selection theorem. For finite action spaces this is trivial (just pick the smallest index among optimal actions); for continuous $\mathcal{A}$ with uncountable optimal sets, it requires care. The key takeaway: **we can restrict attention to deterministic policies** when seeking optimal policies in discounted MDPs.
 
 ---
 
@@ -373,7 +375,7 @@ V^\pi(s) = \sum_a \pi(a|s) \left[\underbrace{\sum_{s'} P(s'|s,a) R(s,a,s')}_{=: 
 $$
 which is [EQ-3.7]. $\square$
 
-**Remark 3.5.1** (The dynamic programming principle). The proof uses the **principle of optimality**: breaking the infinite-horizon return into immediate reward plus discounted future value. This is the essence of dynamic programming. The Markov property [ASM-3.4.1] is crucial—without it, $V^\pi(s')$ would depend on the history leading to $s'$, and the recursion would fail.
+**Remark 3.5.1** (The dynamic programming principle). The proof uses the **principle of optimality**: breaking the infinite-horizon return into immediate reward plus discounted future value. This is the essence of dynamic programming. The Markov property [ASM-3.4.1] is crucial---without it, $V^\pi(s')$ would depend on the history leading to $s'$, and the recursion would fail.
 
 **Theorem 3.5.2** (Bellman Optimality Equation) {#THM-3.5.2-Bellman}
 
@@ -410,22 +412,18 @@ $$
 $$
 gives $V^{\pi^*}(s) = \max_a [\cdots] = (\mathcal{T} V^*)(s)$.
 
-**Step 2** (Lower bound and fixed point). For any $V$, the policy operator satisfies $\mathcal{T}^\pi V \leq \mathcal{T} V$ pointwise (maximum dominates average). Iterating yields $(\mathcal{T}^\pi)^k V \leq \mathcal{T}^k V$ for all $k$. By [THM-3.7.1], $\mathcal{T}$ is a $\gamma$-contraction on the Banach space $\mathcal{B}(\mathcal{S})$, so by [THM-3.6.2] it has a unique fixed point $V^*$ and $\mathcal{T}^k V \to V^*$. Since $(\mathcal{T}^\pi)^k V \to V^\pi$, we conclude $V^\pi \leq V^*$ for all $\pi$.
+**Step 2** (Lower bound and fixed point). For any $V$, the policy operator satisfies $\mathcal{T}^\pi V \leq \mathcal{T} V$ pointwise (since $\mathcal{T} V(s) = \max_a [r(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s')] \geq \sum_a \pi(a|s)[r(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s')] = \mathcal{T}^\pi V(s)$ for any distribution $\pi(\cdot|s)$ over actions---the max dominates the weighted average). Iterating yields $(\mathcal{T}^\pi)^k V \leq \mathcal{T}^k V$ for all $k$. By [THM-3.7.1], $\mathcal{T}$ is a $\gamma$-contraction on the Banach space $\mathcal{B}(\mathcal{S})$, so by [THM-3.6.2-Banach] it has a unique fixed point $V^*$ and $\mathcal{T}^k V \to V^*$. Since $(\mathcal{T}^\pi)^k V \to V^\pi$, we conclude $V^\pi \leq V^*$ for all $\pi$.
 
 If $V^*(s) > (\mathcal{T} V^*)(s)$ held for some $s$, define a greedy policy $\pi^*$ achieving the maximum in [EQ-3.12]. Then $V^{\pi^*} = \mathcal{T}^{\pi^*} V^{\pi^*} \leq \mathcal{T} V^{\pi^*}$ and contraction implies $V^{\pi^*} \leq V^*$. Evaluating at $s$ gives $(\mathcal{T} V^*)(s) \geq V^{\pi^*}(s)$, contradicting $V^*(s) > (\mathcal{T} V^*)(s)$. Hence $V^* = \mathcal{T} V^*$ ([EQ-3.11]), and the pointwise form [EQ-3.10] follows from the definition of $\mathcal{T}$. $\square$
+
+**Note on proof structure.** This proof invokes [THM-3.7.1] (Bellman contraction) and [THM-3.6.2-Banach] (Banach fixed-point), which we establish in Section 3.6--3.7. We state the optimality equation here because it is conceptually fundamental---*this is the equation RL algorithms solve*. The existence and uniqueness of $V^*$ follow once we prove $\mathcal{T}$ is a contraction in Section 3.7.
 
 **Remark 3.5.2** (Greedy policy extraction). Equation [EQ-3.10] not only characterizes $V^*$ but also defines the **optimal policy**:
 $$
 \pi^*(s) \in \arg\max_{a \in \mathcal{A}} \left[ r(s,a) + \gamma \sum_{s'} P(s'|s,a) V^*(s') \right].
 $$
 
-**Remark 3.5.3** (CMDP preview — Lagrangian relaxation). Many practical ranking problems impose constraints (e.g., CM2 floors, exposure parity). A standard approach is the **Lagrangian** formulation: introduce multipliers $\lambda \ge 0$ for constraint costs $c(s,a)$ and optimize the relaxed objective
-$$
-\mathcal{L}(\pi, \lambda) := \mathbb{E}^\pi\Big[\sum_{t=0}^\infty \gamma^t \big(R_t - \lambda\, c_t\big)\Big].
-\tag{3.21}
-$$
-{#EQ-3.21}
-For fixed $\lambda$, the relaxed problem is an unconstrained MDP with reward $r_\lambda = r - \lambda c$, so all Bellman theory in §3.5–3.7 applies. Chapter 8 develops primal–dual updates to recover feasible solutions and satisfy constraints in expectation.
+**Remark 3.5.3** (CMDP preview). Many practical ranking problems impose constraints (e.g., CM2 floors, exposure parity). **Constrained MDPs** (CMDPs) handle these by introducing Lagrange multipliers that convert the constrained problem into an unconstrained MDP with modified rewards $r_\lambda = r - \lambda c$---the Bellman theory of this section then applies directly to the relaxed problem. Appendix C develops the full CMDP framework with rigorous Lagrangian duality and primal--dual algorithms for satisfying constraints in expectation; Chapter 10 applies these ideas as production guardrails.
 
 Once we compute $V^*$ (via value iteration, which we'll prove converges next), extracting the optimal policy is straightforward.
 
@@ -478,7 +476,9 @@ $$
 $$
 Thus $\|f_n - f\|_\infty \leq \epsilon$ for all $n \geq N$, proving $f_n \to f$ in $\|\cdot\|_\infty$. $\square$
 
-**Remark 3.6.1** (Banach spaces). A complete normed space is called a **Banach space**. Proposition 3.6.1 shows $\mathcal{B}(\mathcal{S})$ is a Banach space—this is essential for applying the Banach fixed-point theorem.
+**Remark 3.6.1** (Banach spaces and uniform convergence). A complete normed space is called a **Banach space**. Proposition 3.6.1 shows $\mathcal{B}(\mathcal{S})$ is a Banach space---this is essential for applying the Banach fixed-point theorem.
+
+A crucial subtlety: Step 3 establishes **uniform convergence**, where $\sup_s |f_n(s) - f(s)| \to 0$. This is strictly stronger than **pointwise convergence** (where each $f_n(s) \to f(s)$ individually, which Step 1 provides). The space of bounded functions is complete under uniform convergence but *not* under pointwise convergence---a sequence of bounded continuous functions can converge pointwise to an unbounded or discontinuous function. This distinction matters: the Banach fixed-point theorem requires completeness in the norm topology, and value iteration convergence guarantees [COR-3.7.3] are statements about uniform convergence over all states.
 
 **Definition 3.6.3** (Contraction Mapping) {#DEF-3.6.3}
 
@@ -580,18 +580,26 @@ This proof deploys several fundamental techniques:
 
 1. **Telescoping series**: Write $\|v_n - v_m\| \leq \sum_{k=m}^{n-1} \|v_{k+1} - v_k\|$ to control differences
 2. **Geometric series**: Bound $\sum_{k=m}^\infty \gamma^k = \gamma^m / (1 - \gamma)$ using $\gamma < 1$
-3. **Completeness**: Cauchy sequences converge—this is **essential** and fails in incomplete spaces (e.g., rationals $\mathbb{Q}$)
+3. **Completeness**: Cauchy sequences converge---this is **essential** and fails in incomplete spaces (e.g., rationals $\mathbb{Q}$)
 4. **Continuity from contraction**: Contractions are uniformly continuous, so limits pass through $T$
 
-These techniques will reappear in convergence proofs for TD-learning (Chapter 9) and stochastic approximation (later chapters).
+These techniques will reappear in convergence proofs for TD-learning (Chapters 8, 12) and stochastic approximation (later chapters).
 
-**Remark 3.6.3** (The $1/(1-\gamma)$ factor). The bound [EQ-3.15] shows the convergence rate depends on $1/(1-\gamma)$. When $\gamma \to 1$ (nearly undiscounted), convergence slows dramatically—this explains why high-$\gamma$ RL (e.g., $\gamma = 0.99$) requires many iterations. The factor $\gamma^k$ gives **exponential convergence**: doubling $k$ squares the error.
+**Example 3.6.3** (Failure without completeness). Define $T: \mathbb{Q} \to \mathbb{Q}$ by $T(x) = (x + 2/x)/2$---Newton-Raphson iteration for finding $\sqrt{2}$. Near $x = 1.5$, this map is a contraction: $|T(x) - T(y)| < 0.5 |x - y|$ for $x, y \in [1, 2] \cap \mathbb{Q}$. Starting from $x_0 = 3/2 \in \mathbb{Q}$, the sequence $x_{k+1} = T(x_k)$ remains in $\mathbb{Q}$ and converges... but to $\sqrt{2} \notin \mathbb{Q}$. The fixed point exists in $\mathbb{R}$ but not in the incomplete space $\mathbb{Q}$. This is why completeness is essential for [THM-3.6.2-Banach]---and why we need $\mathcal{B}(\mathcal{S})$ to be a Banach space for value iteration to converge to a *valid* value function.
+
+**Remark 3.6.3** (The $1/(1-\gamma)$ factor). The bound [EQ-3.15] shows the convergence rate depends on $1/(1-\gamma)$. When $\gamma \to 1$ (nearly undiscounted), convergence slows dramatically---this explains why high-$\gamma$ RL (e.g., $\gamma = 0.99$) requires many iterations. The factor $\gamma^k$ gives **exponential convergence**: doubling $k$ squares the error.
 
 ---
 
 ## 3.7 Bellman Operator is a Contraction
 
 We now prove the central result: the Bellman optimality operator $\mathcal{T}$ is a $\gamma$-contraction on $(\mathcal{B}(\mathcal{S}), \|\cdot\|_\infty)$.
+
+**Remark 3.7.0** (Self-mapping property). Before proving contraction, we verify that $\mathcal{T}$ maps bounded functions to bounded functions. Under our standing assumptions---bounded rewards $|r(s,a)| \leq R_{\max}$ and discount $\gamma < 1$ ([DEF-3.4.1])---if $\|V\|_\infty < \infty$, then:
+$$
+\|\mathcal{T}V\|_\infty = \sup_s \left|\max_a \left[r(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s')\right]\right| \leq R_{\max} + \gamma \|V\|_\infty < \infty.
+$$
+Thus $\mathcal{T}: \mathcal{B}(\mathcal{S}) \to \mathcal{B}(\mathcal{S})$ is well-defined as a self-map.
 
 **Theorem 3.7.1** (Bellman Operator Contraction) {#THM-3.7.1}
 
@@ -648,7 +656,7 @@ $$
 (\mathcal{T} W)(s) - (\mathcal{T} V)(s) \geq -\gamma \|V - W\|_\infty.
 $$
 
-Combining Steps 3–4:
+Combining Steps 3--4:
 $$
 |(\mathcal{T} V)(s) - (\mathcal{T} W)(s)| \leq \gamma \|V - W\|_\infty.
 $$
@@ -659,7 +667,13 @@ $$
 $$
 $\square$
 
-**Remark 3.7.1** (The max-stability mechanism). The proof exploits **max-stability**: evaluating the max at two different actions (optimal for $V$ vs. optimal for $W$) and bounding the difference. This is a fundamental technique in dynamic programming theory, appearing in proofs of policy improvement theorems and error propagation bounds.
+**Remark 3.7.1** (The max-stability mechanism). The proof exploits **max-stability**: evaluating the max at two different actions (optimal for $V$ vs. optimal for $W$) and bounding the difference. Formally, this uses the fact that the max operator is **1-Lipschitz** (non-expansive): for any functions $f, g$,
+$$
+|\max_a f(a) - \max_a g(a)| \leq \max_a |f(a) - g(a)|.
+$$
+This is a fundamental technique in dynamic programming theory, appearing in proofs of policy improvement theorems and error propagation bounds.
+
+**Remark 3.7.2** (Norm specificity). The contraction [EQ-3.16] holds specifically in the **sup-norm** $\|\cdot\|_\infty$. The Bellman operator is generally **not** a contraction in $L^1$ or $L^2$ norms---the proof crucially uses $\sum_{s'} P(s'|s,a) |V(s') - W(s')| \leq \|V - W\|_\infty$, which fails for other $L^p$ norms. This norm choice has practical implications: error bounds in RL propagate through the $\|\cdot\|_\infty$ norm, meaning worst-case state errors matter most.
 
 **Corollary 3.7.2** (Existence and Uniqueness of $V^*$) {#COR-3.7.2}
 
@@ -685,18 +699,23 @@ $$
 
 *Proof.* Immediate from Theorems 3.6.2 and 3.7.1. $\square$
 
-**Remark 3.7.2** (Practical implications). Corollary 3.7.3 guarantees that **value iteration always converges**, regardless of initialization $V_0$. The rate [EQ-3.18] shows that after $k$ iterations, the error shrinks by $\gamma^k$. For $\gamma = 0.9$, we have $\gamma^{10} \approx 0.35$; for $\gamma = 0.99$, we need $k \approx 460$ iterations to reduce error by a factor of 100. This explains why high-discount RL is computationally expensive.
+**Remark 3.7.3** (Practical implications). Corollary 3.7.3 guarantees that **value iteration always converges**, regardless of initialization $V_0$. The rate [EQ-3.18] shows that after $k$ iterations, the error shrinks by $\gamma^k$. For $\gamma = 0.9$, we have $\gamma^{10} \approx 0.35$; for $\gamma = 0.99$, we need $k \approx 460$ iterations to reduce error by a factor of 100. This explains why high-discount RL is computationally expensive.
 
-**Remark 3.7.3** (OPE preview — Direct Method). Off-policy evaluation (Chapter 9) can be performed via a **model-based Direct Method**: estimate $(\hat P, \hat r)$ and apply the policy Bellman operator repeatedly under the model to obtain
+**Remark 3.7.4** (OPE preview --- Direct Method). Off-policy evaluation (Chapter 9) can be performed via a **model-based Direct Method**: estimate $(\hat P, \hat r)$ and apply the policy Bellman operator repeatedly under the model to obtain
 $$
 \widehat{V}^{\pi} := \lim_{k\to\infty} (\mathcal{T}^{\pi}_{\hat P, \hat r})^k V_0,
 \tag{3.22}
 $$
 {#EQ-3.22}
-for any bounded $V_0$. The contraction property (with $\gamma<1$ and bounded $\hat r$) guarantees existence and uniqueness of $\widehat{V}^{\pi}$. Chapter 9 compares Direct Method to importance-weighted estimators.
+for any bounded $V_0$. The contraction property (with $\gamma<1$ and bounded $\hat r$) guarantees existence and uniqueness of $\widehat{V}^{\pi}$. Chapter 9 develops full off-policy evaluation (IPS, DR, FQE), comparing the Direct Method previewed here to importance-weighted estimators.
 
-**Note — Cross-reference to Chapter 9 / OPE**
-A full treatment of off-policy evaluation appears in Chapter 9 (IPS/SNIPS/DR/SWITCH/MAGIC; FQE). The Direct Method previewed here connects via the policy Bellman operator under an estimated model. See `CH-9` in the Knowledge Graph and planned module `evaluation/ope.py`.
+**Remark 3.7.5** (The deadly triad --- when contraction fails). The contraction property [THM-3.7.1] guarantees convergence for **exact, tabular** value iteration. However, three ingredients common in deep RL can break this guarantee:
+
+1. **Function approximation**: Representing $V$ or $Q$ via neural networks restricts us to a function class $\mathcal{F}$. The composed operator $\Pi_{\mathcal{F}} \circ \mathcal{T}$ (project-then-Bellman) is generally **not** a contraction.
+2. **Bootstrapping**: TD methods update toward $r + \gamma V(s')$, using the current estimate $V$. Combined with function approximation, this can cause divergence.
+3. **Off-policy learning**: Learning about one policy while following another introduces distribution mismatch.
+
+The combination---function approximation + bootstrapping + off-policy---is Sutton's **deadly triad** ([@sutton:barto:2018, Section 11.3]). Baird's counterexample demonstrates divergence even with linear function approximation. Chapter 7 introduces target networks and experience replay as partial mitigations. The fundamental tension, however, remains unresolved in theory---deep RL succeeds empirically despite lacking the contraction guarantees we have established here. Understanding this gap between theory and practice is a central theme of Part III.
 
 ---
 
@@ -735,9 +754,9 @@ $$
 $$
 independent of $V$. Thus $V_1 = V^*$ for any $V_0$. $\square$
 
-**Remark 3.8.1** (Contrast with MDPs). For $\gamma > 0$, value iteration requires multiple steps because we must propagate value information backward through state transitions. For bandits, there are no state transitions—rewards are immediate—so the optimal value is directly the maximum Q-value. This is why Chapter 1 could focus on **learning $Q(x, a)$** without explicitly constructing value functions.
+**Remark 3.8.1** (Contrast with MDPs). For $\gamma > 0$, value iteration requires multiple steps because we must propagate value information backward through state transitions. For bandits, there are no state transitions---rewards are immediate---so the optimal value is directly the maximum Q-value. This is why Chapter 1 could focus on **learning $Q(x, a)$** without explicitly constructing value functions.
 
-**Remark 3.8.2** (Chapter 1 formulation). Recall from Chapter 1, equation [EQ-1.8]:
+**Remark 3.8.2** (Chapter 1 formulation). Recall from Chapter 1 the bandit optimality condition: the optimal value [EQ-1.9] is attained by the greedy policy [EQ-1.10], yielding
 $$
 V^*(x) = \max_{a \in \mathcal{A}} Q(x, a), \quad Q(x, a) = \mathbb{E}_\omega[R(x, a, \omega)].
 $$
@@ -923,7 +942,7 @@ def verify_convergence_theory():
     mdp = GridWorldMDP(size=5, gamma=0.9)
 
     print("="*60)
-    print("Experiment: Verify Banach Fixed-Point Theorem [THM-3.6.2]")
+    print("Experiment: Verify Banach Fixed-Point Theorem [THM-3.6.2-Banach]")
     print("="*60)
     print()
 
@@ -993,7 +1012,7 @@ if __name__ == "__main__":
 **Expected output** (representative):
 ```
 ============================================================
-Experiment: Verify Banach Fixed-Point Theorem [THM-3.6.2]
+Experiment: Verify Banach Fixed-Point Theorem [THM-3.6.2-Banach]
 ============================================================
 
 Value Iteration (gamma = 0.9):
@@ -1134,7 +1153,7 @@ The numerical experiment confirms:
 
 **Connection to this chapter**: The Bellman machinery developed here (operators, contractions, value iteration) extends directly to the multi-episode setting. The key difference: **state** $s$ now includes inter-session variables (satisfaction, recency, loyalty tier), and **transitions** $P(s'|s,a)$ model how today's actions affect tomorrow's user state.
 
-**Why we need this**: Chapter 1's reward function [EQ-1.2] included $\delta \cdot \text{CLICKS}$ as a **proxy** for long-term value. In Chapter 11, we'll show that engagement enters **implicitly** through retention dynamics—no need for a separate $\delta$ term if we model the full MDP correctly. This is the promise of **multi-episode RL**: optimize true long-term value, not hand-tuned proxies.
+**Why we need this**: Chapter 1's reward function [EQ-1.2] included $\delta \cdot \text{CLICKS}$ as a **proxy** for long-term value. In Chapter 11, we'll show that engagement enters **implicitly** through retention dynamics---no need for a separate $\delta$ term if we model the full MDP correctly. This is the promise of **multi-episode RL**: optimize true long-term value, not hand-tuned proxies.
 
 !!! note "Code ↔ Reward (MOD-zoosim.reward)"
     Chapter 1's single-step reward [EQ-1.2] maps to configuration and aggregation code:
@@ -1155,39 +1174,40 @@ The numerical experiment confirms:
 
 This chapter established the **operator-theoretic foundations** of reinforcement learning:
 
-**Stochastic processes** (§3.2–3.3):
+**Stochastic processes** (Section 3.2--3.3):
 - Filtrations $(\mathcal{F}_t)$ model information accumulation over time
 - Stopping times $\tau$ capture random termination (session abandonment, purchase events)
 - Adapted processes ensure causality (policies depend on history, not future)
 
-**Markov Decision Processes** (§3.4):
+**Markov Decision Processes** (Section 3.4):
 - Formal tuple $(\mathcal{S}, \mathcal{A}, P, R, \gamma)$ with standard Borel assumptions
 - Value functions $V^\pi(s)$, $Q^\pi(s, a)$ as expected cumulative rewards
 - Bellman equations [EQ-3.7, EQ-3.10] as recursive characterizations
 
-**Contraction theory** (§3.6–3.7):
-- Banach fixed-point theorem [THM-3.6.2] guarantees existence, uniqueness, and exponential convergence
-- Bellman operator $\mathcal{T}$ is a $\gamma$-contraction [THM-3.7.1]
+**Contraction theory** (Section 3.6--3.7):
+- Banach fixed-point theorem [THM-3.6.2-Banach] guarantees existence, uniqueness, and exponential convergence
+- Bellman operator $\mathcal{T}$ is a $\gamma$-contraction in sup-norm [THM-3.7.1]
 - Value iteration $V_{k+1} = \mathcal{T} V_k$ converges at rate $\gamma^k$ [COR-3.7.3]
+- **Caveat**: Contraction fails with function approximation (deadly triad, Remark 3.7.5)
 
-**Connection to bandits** (§3.8):
+**Connection to bandits** (Section 3.8):
 - Contextual bandits are the $\gamma = 0$ special case (no state transitions)
-- Chapter 1's formulation [EQ-1.8–1.10] is recovered exactly
+- Chapter 1's formulation [EQ-1.8--1.10] is recovered exactly
 
-**Numerical verification** (§3.9):
+**Numerical verification** (Section 3.9):
 - GridWorld experiment confirms theoretical convergence rate [EQ-3.18]
 - Exponential decay $\gamma^k$ observed empirically
 
 **What's next**:
 
-- **Chapter 4–5**: Build the simulator (`zoosim`) with catalog, users, queries, click models
+- **Chapter 4--5**: Build the simulator (`zoosim`) with catalog, users, queries, click models
 - **Chapter 6**: Implement LinUCB and Thompson Sampling for discrete template bandits
 - **Chapter 7**: Continuous action optimization via $Q(x, a)$ regression
-- **Chapter 10**: Production guardrails (CM2 floors, ΔRank@k stability) applying CMDP theory from §3.6
+- **Chapter 10**: Production guardrails (CM2 floors, ΔRank@k stability) applying CMDP theory from Section 3.5
 - **Chapter 9**: Off-policy evaluation (OPE) using importance sampling
 - **Chapter 11**: Multi-episode MDPs with retention dynamics
 
-All later algorithms—TD-learning, Q-learning, policy gradients—rest on the Bellman foundations we've built here. The contraction property ensures these algorithms converge; the fixed-point theorem tells us **what they converge to**.
+All later algorithms---TD-learning, Q-learning, policy gradients---rest on the Bellman foundations we've built here. The contraction property ensures these algorithms converge; the fixed-point theorem tells us **what they converge to**.
 
 ---
 
@@ -1223,7 +1243,7 @@ Prove that the Bellman expectation operator $\mathcal{T}^\pi$ for a fixed policy
 
 **Exercise 3.4** (Value iteration implementation) [extended: 30 min]
 
-Implement value iteration for the GridWorld MDP from §3.9.1, but with **stochastic transitions**: with probability 0.8, the agent moves in the intended direction; with probability 0.2, it moves in a random perpendicular direction. Verify that:
+Implement value iteration for the GridWorld MDP from Section 3.9.1, but with **stochastic transitions**: with probability 0.8, the agent moves in the intended direction; with probability 0.2, it moves in a random perpendicular direction. Verify that:
 
 (a) Value iteration still converges
 (b) The convergence rate satisfies [EQ-3.18]
@@ -1231,8 +1251,8 @@ Implement value iteration for the GridWorld MDP from §3.9.1, but with **stochas
 
 ### Labs
 
-- [Lab 3.1 — Contraction Ratio Tracker](./exercises_labs.md#lab-31--contraction-ratio-tracker): execute the GridWorld contraction experiment and compare empirical ratios against the $\gamma$ bound in #EQ-3.18.
-- [Lab 3.2 — Value Iteration Wall-Clock Profiling](./exercises_labs.md#lab-32--value-iteration-wall-clock-profiling): sweep multiple discounts, log iteration counts, and tie the scaling back to Theorem 3.9.
+- [Lab 3.1 --- Contraction Ratio Tracker](./exercises_labs.md#lab-31--contraction-ratio-tracker): execute the GridWorld contraction experiment and compare empirical ratios against the $\gamma$ bound in #EQ-3.18.
+- [Lab 3.2 --- Value Iteration Wall-Clock Profiling](./exercises_labs.md#lab-32--value-iteration-wall-clock-profiling): sweep multiple discounts, log iteration counts, and tie the scaling back to [COR-3.7.3] (value iteration convergence rate).
 
 **Exercise 3.5** (Bandit special case) [10 min]
 
@@ -1240,7 +1260,7 @@ Verify that for $\gamma = 0$, the Bellman operator [EQ-3.12] reduces to the band
 
 **Exercise 3.6** (Discount factor exploration) [20 min]
 
-Using the GridWorld code from §3.9.1, run value iteration for $\gamma \in \{0.5, 0.7, 0.9, 0.99\}$. Plot the number of iterations required for convergence (tolerance $10^{-6}$) as a function of $\gamma$. Explain the relationship using [EQ-3.18].
+Using the GridWorld code from Section 3.9.1, run value iteration for $\gamma \in \{0.5, 0.7, 0.9, 0.99\}$. Plot the number of iterations required for convergence (tolerance $10^{-6}$) as a function of $\gamma$. Explain the relationship using [EQ-3.18].
 
 **Exercise 3.7** (RL preview: Policy evaluation) [extended: 30 min]
 
@@ -1258,10 +1278,10 @@ Implement **policy evaluation** (iterative computation of $V^\pi$ for a fixed po
 See `docs/references.bib` for full citations.
 
 Key references for this chapter:
-- [@puterman:mdps:2014] — Definitive MDP textbook (Puterman)
-- [@bertsekas:dp:2012] — Dynamic programming and optimal control (Bertsekas)
-- [@folland:real_analysis:1999] — Measure theory and functional analysis foundations
-- [@brezis:functional_analysis:2011] — Banach space theory and operator methods
+- [@puterman:mdps:2014] --- Definitive MDP textbook (Puterman)
+- [@bertsekas:dp:2012] --- Dynamic programming and optimal control (Bertsekas)
+- [@folland:real_analysis:1999] --- Measure theory and functional analysis foundations
+- [@brezis:functional_analysis:2011] --- Banach space theory and operator methods
 
 ---
 
