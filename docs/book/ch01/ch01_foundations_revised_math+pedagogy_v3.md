@@ -226,132 +226,32 @@ Diagnostic: Compute $\text{CVR}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i$ af
 - `zoosim/multi_episode/{session_env.py,retention.py}`: Chapter 11's retention-aware MDP implementing #EQ-1.2-prime
 :::
 
-### Let's Verify the Reward Function with Code
+### Verifying the Reward Function
 
-Before diving into theory, let's implement #EQ-1.2 and see what it does. We'll use a minimal simulator to generate outcomes.
-
-```python
-from dataclasses import dataclass
-from typing import NamedTuple
-import numpy as np
-
-class SessionOutcome(NamedTuple):
-    """Outcomes from a single search session.
-
-    Mathematical correspondence: realization omega in Omega of random variables
-    (GMV, CM2, STRAT, CLICKS).
-    """
-    gmv: float          # Gross merchandise value (EUR)
-    cm2: float          # Contribution margin 2 (EUR)
-    strat_exposure: int # Number of strategic products in top-10
-    clicks: int         # Total clicks
-
-@dataclass
-class BusinessWeights:
-    """Business priority coefficients (alpha, beta, gamma, delta) in #EQ-1.2."""
-    alpha_gmv: float = 1.0
-    beta_cm2: float = 0.5
-    gamma_strat: float = 0.2
-    delta_clicks: float = 0.1
-
-def compute_reward(outcome: SessionOutcome, weights: BusinessWeights) -> float:
-    """Implements #EQ-1.2: R = alpha*GMV + beta*CM2 + gamma*STRAT + delta*CLICKS.
-
-    This is the **scalar objective** we will maximize via RL.
-
-    See `zoosim/dynamics/reward.py:1` for the production implementation that
-    aggregates GMV/CM2/strategic exposure/clicks using `RewardConfig`
-    parameters defined in `zoosim/core/config.py:193`.
-    """
-    return (weights.alpha_gmv * outcome.gmv +
-            weights.beta_cm2 * outcome.cm2 +
-            weights.gamma_strat * outcome.strat_exposure +
-            weights.delta_clicks * outcome.clicks)
-
-# Example: Compare two strategies
-# Strategy A: Maximize GMV (show expensive products)
-outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_exposure=1, clicks=3)
-
-# Strategy B: Balance GMV and CM2 (show profitable products)
-outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_exposure=3, clicks=4)
-
-weights = BusinessWeights(alpha_gmv=1.0, beta_cm2=0.5, gamma_strat=0.2, delta_clicks=0.1)
-
-R_A = compute_reward(outcome_A, weights)
-R_B = compute_reward(outcome_B, weights)
-
-print(f"Strategy A (GMV-focused): R = {R_A:.2f}")
-print(f"Strategy B (Balanced):    R = {R_B:.2f}")
-print(f"Delta = {R_B - R_A:.2f} (Strategy {'B' if R_B > R_A else 'A'} wins!)")
-```
-
-**Output:**
-```
-Strategy A (GMV-focused): R = 128.00
-Strategy B (Balanced):    R = 118.50
-Delta = -9.50 (Strategy A wins!)
-```
-
-Wait—Strategy A won? Let's recalibrate weights to prioritize profitability:
+Before diving into theory, let's implement #EQ-1.2 and see what it does:
 
 ```python
-weights_profit = BusinessWeights(alpha_gmv=0.5, beta_cm2=1.0, gamma_strat=0.5, delta_clicks=0.1)
-R_A_profit = compute_reward(outcome_A, weights_profit)
-R_B_profit = compute_reward(outcome_B, weights_profit)
+# Minimal implementation of #EQ-1.2 (full version: Lab 1.3 in exercises_labs.md)
+def compute_reward(gmv, cm2, strat, clicks, alpha=1.0, beta=0.5, gamma=0.2, delta=0.1):
+    """R = alpha*GMV + beta*CM2 + gamma*STRAT + delta*CLICKS"""
+    return alpha * gmv + beta * cm2 + gamma * strat + delta * clicks
 
-print(f"\nWith profitability weighting:")
-print(f"Strategy A: R = {R_A_profit:.2f}")
-print(f"Strategy B: R = {R_B_profit:.2f}")
-print(f"Delta = {R_B_profit - R_A_profit:.2f} (Strategy {'B' if R_B_profit > R_A_profit else 'A'} wins!)")
+# Strategy A (GMV-focused): gmv=120, cm2=15, strat=1, clicks=3
+# Strategy B (Balanced):    gmv=100, cm2=35, strat=3, clicks=4
+R_A = compute_reward(120, 15, 1, 3)  # = 128.00
+R_B = compute_reward(100, 35, 3, 4)  # = 118.50
 ```
 
-**Output:**
-```
-With profitability weighting:
-Strategy A: R = 75.80
-Strategy B: R = 86.90
-Delta = 11.10 (Strategy B wins!)
-```
+| Strategy | GMV | CM2 | STRAT | CLICKS | Reward |
+|----------|-----|-----|-------|--------|--------|
+| A (GMV-focused) | 120 | 15 | 1 | 3 | **128.00** |
+| B (Balanced) | 100 | 35 | 3 | 4 | 118.50 |
 
-Now let's add the **diagnostic metric** from Section 1.2.1 to detect clickbait risk:
+Wait---Strategy A won? With profitability-focused weights $(\alpha=0.5, \beta=1.0, \gamma=0.5, \delta=0.1)$, the result flips: Strategy A scores 75.80, Strategy B scores **86.90**. The optimal strategy depends on business weights---this is a multi-objective tradeoff, not a fixed optimization. See **Lab 1.3--1.4** for full implementations and weight sensitivity analysis.
 
-```python
-def compute_conversion_quality(outcome: SessionOutcome) -> float:
-    """GMV per click (conversion quality).
+**Conversion quality diagnostic** (clickbait detection): Strategy A gets fewer clicks (3 vs 4) but 60% higher GMV per click (EUR 40 vs EUR 25)---*quality over quantity*. The metric $\text{CVR} = \text{GMV}/\text{CLICKS}$ monitors for clickbait: if CVR drops while CTR rises, reduce $\delta$ immediately. See **Lab 1.5** for the full implementation with alerting thresholds.
 
-    Diagnostic for clickbait detection: high CTR with low CVR indicates
-    the agent is optimizing delta*CLICKS at expense of alpha*GMV.
-    See Section 1.2.1 for theory.
-    """
-    return outcome.gmv / outcome.clicks if outcome.clicks > 0 else 0.0
-
-cvr_A = compute_conversion_quality(outcome_A)
-cvr_B = compute_conversion_quality(outcome_B)
-
-print(f"\nConversion quality (GMV per click):")
-print(f"Strategy A: EUR {cvr_A:.2f}/click ({outcome_A.clicks} clicks -> EUR {outcome_A.gmv:.0f} GMV)")
-print(f"Strategy B: EUR {cvr_B:.2f}/click ({outcome_B.clicks} clicks -> EUR {outcome_B.gmv:.0f} GMV)")
-print(f"-> Strategy {'A' if cvr_A > cvr_B else 'B'} has higher-quality engagement")
-
-# Verify delta/alpha bound from Section 1.2.1
-print(f"\n[Validation] delta/alpha = {weights.delta_clicks / weights.alpha_gmv:.3f}")
-print(f"             Bound check: {'PASS' if weights.delta_clicks / weights.alpha_gmv <= 0.10 else 'FAIL'} (must be <= 0.10)")
-```
-
-**Output:**
-```
-Conversion quality (GMV per click):
-Strategy A: EUR 40.00/click (3 clicks -> EUR 120 GMV)
-Strategy B: EUR 25.00/click (4 clicks -> EUR 100 GMV)
--> Strategy A has higher-quality engagement
-
-[Validation] delta/alpha = 0.100
-             Bound check: PASS (must be <= 0.10)
-```
-
-**Analysis**: Strategy A gets **fewer clicks** (3 vs 4) but **60% higher GMV per click** (EUR 40 vs EUR 25)---this is *quality over quantity*. If we observe CVR dropping during training while CTR rises, that signals the need to reduce $\delta$ (see Section 1.2.1).
-
-The bound $\delta/\alpha = 0.10$ is at the upper limit. For initial experiments, we recommend starting with $\delta/\alpha = 0.05$ (half the bound) and monitoring CVR over time. If CVR remains stable as the agent learns, one can cautiously increase $\delta$. If CVR degrades, reduce $\delta$ immediately---the agent has learned to exploit the engagement term.
+The bound $\delta/\alpha = 0.10$ is at the upper limit. We recommend starting with $\delta/\alpha = 0.05$ and monitoring CVR over time. If CVR degrades, the agent has learned to exploit the engagement term.
 
 ::: {.note title="Code $\leftrightarrow$ Simulator"}
 The minimal example above mirrors the simulator's reward path. In production, `RewardConfig` (`MOD-zoosim.config`) in `zoosim/core/config.py` holds the business weights, and `compute_reward` (`MOD-zoosim.reward`) in `zoosim/dynamics/reward.py` implements #EQ-1.2 aggregation with a detailed breakdown. Keeping these constants in configuration avoids magic numbers in code and guarantees reproducibility across experiments.
@@ -369,91 +269,30 @@ Current production systems use **fixed boost weights** $\mathbf{w}_{\text{static
 
 ### Experiment: User Segment Heterogeneity
 
-Simulate two user types with different preferences.
-
-See `zoosim/dynamics/behavior.py:1` for the production click/abandonment model and
-position-bias parameters used throughout the simulator; the toy model below
-is intentionally simplified for exposition.
+Simulate two user types with different preferences. See `zoosim/dynamics/behavior.py` for the production click/abandonment model; the toy model in **Lab 1.6** is simplified for exposition.
 
 ::: {.note title="Code $\leftrightarrow$ Behavior (production click model)"}
-The simplified click function below models position bias as `1/k`. Production (`MOD-zoosim.behavior`, concept `CN-ClickModel`) implements an examination–click–purchase process with position bias and termination.
+Production (`MOD-zoosim.behavior`, concept `CN-ClickModel`) implements an examination--click--purchase process with position bias:
 
-- Click probability: `click_prob = sigmoid(utility)` inside `simulate_session()` (see `zoosim/dynamics/behavior.py`)
-- Position bias: `_position_bias()` (see `zoosim/dynamics/behavior.py`) using `BehaviorConfig.pos_bias` in `zoosim/core/config.py`
-- Purchase: `buy_logit = ...` then `sigmoid(buy_logit)` (see `zoosim/dynamics/behavior.py`)
+- Click probability: `click_prob = sigmoid(utility)` in `zoosim/dynamics/behavior.py`
+- Position bias: `_position_bias()` using `BehaviorConfig.pos_bias` in `zoosim/core/config.py`
+- Purchase: `sigmoid(buy_logit)` in `zoosim/dynamics/behavior.py`
 
-Chapter 2 formalizes click models and position bias; Chapter 5 connects these to off-policy evaluation for counterfactual testing.
+Chapter 2 formalizes click models and position bias; Chapter 5 connects these to off-policy evaluation.
 :::
 
-```python
-# User 1: Price hunter (discount-sensitive)
-# User 2: Premium shopper (quality-focused)
+**Experiment results** (full implementation: **Lab 1.6** in `exercises_labs.md`):
 
-def simulate_click_probability(product_score: float, position: int,
-                                user_type: str) -> float:
-    """Probability of click given score and position.
+With static discount boost $w = 2.0$, user segments respond dramatically differently:
 
-    Models position bias: P(click | position k) is proportional to 1/k.
-    User types have different sensitivities to boost features.
-    """
-    position_bias = 1.0 / position  # Top positions get more attention
+| User Type | Expected Clicks | Relative Performance |
+|-----------|-----------------|---------------------|
+| Price hunter | 0.997 | Baseline |
+| Premium shopper | 0.428 | **57% fewer clicks** |
 
-    if user_type == "price_hunter":
-        # Highly responsive to discount boosts
-        relevance_weight = 0.3
-        boost_weight = 0.7
-    else:  # premium
-        # Prioritizes base relevance, ignores discounts
-        relevance_weight = 0.8
-        boost_weight = 0.2
+**Analysis**: The static weight is **over-optimized for price hunters** and **under-performs for premium shoppers**. Ideally, we'd adapt per segment: price hunters get $w_{\text{discount}} \approx 2.0$, premium shoppers get $w_{\text{discount}} \approx 0.5$. But production systems use **one global $\mathbf{w}$**---this is wasteful.
 
-    # Simplified: score = relevance + boost_features
-    base_relevance = product_score * 0.6  # Assume fixed base
-    boost_effect = product_score * 0.4    # Boost contribution
-
-    utility = relevance_weight * base_relevance + boost_weight * boost_effect
-    return position_bias * utility
-
-# Static boost weights: w_discount = 2.0 (aggressive discounting)
-product_scores = [8.5, 8.0, 7.8, 7.5, 7.2]  # After applying w_discount=2.0
-
-# User 1: Price hunter clicks aggressively on boosted items
-clicks_hunter = [simulate_click_probability(s, i+1, "price_hunter")
-                 for i, s in enumerate(product_scores)]
-
-# User 2: Premium shopper is less responsive to discount boosts
-clicks_premium = [simulate_click_probability(s, i+1, "premium")
-                  for i, s in enumerate(product_scores)]
-
-print("Click probabilities with static discount boost (w=2.0):")
-print(f"Price hunter:    {[f'{p:.3f}' for p in clicks_hunter]}")
-print(f"Premium shopper: {[f'{p:.3f}' for p in clicks_premium]}")
-print(f"\nExpected clicks (price hunter):    {sum(clicks_hunter):.2f}")
-print(f"Expected clicks (premium shopper): {sum(clicks_premium):.2f}")
-```
-
-**Output:**
-```
-Click probabilities with static discount boost (w=2.0):
-Price hunter:    ['0.476', '0.214', '0.131', '0.100', '0.076']
-Premium shopper: ['0.204', '0.092', '0.056', '0.043', '0.033']
-
-Expected clicks (price hunter):    0.997
-Expected clicks (premium shopper): 0.428
-```
-
-**Analysis**: The static boost weight $w_{\text{discount}} = 2.0$ is **over-optimized for price hunters** and **under-performs for premium shoppers**. Ideally, we'd adapt:
-- Price hunters: $w_{\text{discount}} \approx 2.0$ (high)
-- Premium shoppers: $w_{\text{discount}} \approx 0.5$ (low)
-
-But production systems use **one global $\mathbf{w}$** for all users. This is wasteful.
-
-> **Note (Toy vs. Production Models):** The simplified click model above uses **linear utility** and multiplicative position bias for clarity. The production simulator (`zoosim/dynamics/behavior.py:83`) uses:
-> - **Sigmoid click probability:** `sigmoid(utility)` for bounded probabilities $\in [0,1]$
-> - **Calibrated position bias:** `_position_bias()` with data-driven parameters from `BehaviorConfig`
-> - **Examination-click-purchase cascade:** Users examine $\rightarrow$ click $\rightarrow$ potentially purchase (not just click)
->
-> The toy model suffices to show **user heterogeneity** (different sensitivities to boosts). Chapter 2 develops the production click model (PBM/DBN) with full measure-theoretic foundations.
+> **Note (Toy vs. Production Models):** The toy model uses linear utility and multiplicative position bias. Production uses sigmoid probabilities, calibrated position bias from `BehaviorConfig`, and an examination--click--purchase cascade. The toy suffices to show **user heterogeneity**; Chapter 2 develops the full PBM/DBN click model with measure-theoretic foundations.
 
 ### The Context Space
 
@@ -618,69 +457,30 @@ Typical range: $a_{\max} \in [0.3, 1.0]$ (determined by domain experts).
 
 ### Implementation: Bounded Action Space
 
-Let's implement the action space with bounds and verify clipping:
+The key operation is **clipping** uncalibrated policy outputs to the bounded space $\mathcal{A}$:
 
 ```python
-from dataclasses import dataclass
 import numpy as np
 
-@dataclass
-class ActionSpace:
-    """Continuous bounded action space: [-a_max, +a_max]^K.
+# Project action onto A = [-a_max, +a_max]^K (full class: Lab 1.7)
+def clip_action(a, a_max=0.5):
+    """Enforce #EQ-1.11 bounds. Critical for safety."""
+    return np.clip(a, -a_max, a_max)
 
-    Mathematical correspondence: action space A = [-a_max, +a_max]^K, a subset of R^K.
-    """
-    K: int           # Dimensionality (number of boost features)
-    a_max: float     # Bound on each coordinate
-
-    def sample(self, rng: np.random.Generator) -> np.ndarray:
-        """Sample uniformly from A (for exploration)."""
-        return rng.uniform(-self.a_max, self.a_max, size=self.K)
-
-    def clip(self, a: np.ndarray) -> np.ndarray:
-        """Project action onto A (enforces bounds).
-
-        This is crucial: if a policy network outputs unbounded logits,
-        we must clip to ensure a in A.
-        """
-        return np.clip(a, -self.a_max, self.a_max)
-
-    def contains(self, a: np.ndarray) -> bool:
-        """Check if a in A."""
-        return np.all(np.abs(a) <= self.a_max)
-
-# Example: K=5 boost features (discount, margin, PL, bestseller, recency)
-action_space = ActionSpace(K=5, a_max=0.5)
-
-# Sample random action
-rng = np.random.default_rng(seed=42)
-a_random = action_space.sample(rng)
-print(f"Random action: {a_random}")
-print(f"In bounds? {action_space.contains(a_random)}")
-
-# Try an out-of-bounds action (e.g., from an uncalibrated policy)
+# Neural policy might output unbounded values
 a_bad = np.array([1.2, -0.3, 0.8, -1.5, 0.4])
-print(f"\nBad action: {a_bad}")
-print(f"In bounds? {action_space.contains(a_bad)}")
-
-# Clip to enforce bounds
-a_clipped = action_space.clip(a_bad)
-print(f"Clipped:    {a_clipped}")
-print(f"In bounds? {action_space.contains(a_clipped)}")
+a_safe = clip_action(a_bad)  # -> [0.5, -0.3, 0.5, -0.5, 0.4]
 ```
 
-**Output:**
-```
-Random action: [-0.14 -0.36  0.47 -0.03  0.21]
-In bounds? True
+| Action | Before | After Clipping |
+|--------|--------|----------------|
+| $a_1$ | 1.2 | 0.5 |
+| $a_2$ | -0.3 | -0.3 |
+| $a_3$ | 0.8 | 0.5 |
+| $a_4$ | -1.5 | -0.5 |
+| $a_5$ | 0.4 | 0.4 |
 
-Bad action: [ 1.2 -0.3  0.8 -1.5  0.4]
-In bounds? False
-Clipped:    [ 0.5 -0.3  0.5 -0.5  0.4]
-In bounds? True
-```
-
-**Key takeaway**: Always **clip actions before applying** them to the scoring function. Neural policies can output unbounded values; we must project them onto $\mathcal{A}$. Align `a_max` with `SimulatorConfig.action.a_max` in `zoosim/core/config.py:208` to ensure consistency between experiments and production.
+**Key takeaway**: Always **clip actions before applying** them to the scoring function. Neural policies can output unbounded values; we must project them onto $\mathcal{A}$. Align `a_max` with `SimulatorConfig.action.a_max` in `zoosim/core/config.py` to ensure consistency. See **Lab 1.7** for the full `ActionSpace` class with sampling, validation, and volume computation.
 
 ::: {.note title="Code $\leftrightarrow$ Env (clipping)"}
 The production simulator (`MOD-zoosim.env`) enforces #EQ-1.11 action space bounds at ranking time.
@@ -1195,9 +995,9 @@ In an MDP, actions have consequences that ripple forward: today's ranking affect
 
 $$
 V(x) = \max_a \left\{R(x, a) + \gamma \mathbb{E}_{x' \sim P(\cdot | x, a)}[V(x')]\right\}
-\tag{1.22}
+\tag{1.18}
 $$
-{#EQ-1.22}
+{#EQ-1.18}
 
 where:
 - $P(x' | x, a)$ is the **transition probability** to next state $x'$ given current state $x$ and action $a$
@@ -1208,17 +1008,17 @@ where:
 
 $$
 (\mathcal{T}V)(x) := \max_a \left\{R(x, a) + \gamma \mathbb{E}_{x'}[V(x')]\right\}
-\tag{1.23}
+\tag{1.19}
 $$
-{#EQ-1.23}
+{#EQ-1.19}
 
 The operator $\mathcal{T}$ takes a value function $V: \mathcal{X} \to \mathbb{R}$ and produces a new value function $\mathcal{T}V$. The optimal value function $V^*$ is the **fixed point** of $\mathcal{T}$:
 
 $$
 V^* = \mathcal{T}V^* \quad \Leftrightarrow \quad V^*(x) = \max_a \left\{R(x, a) + \gamma \mathbb{E}_{x'}[V^*(x')]\right\}
-\tag{1.24}
+\tag{1.20}
 $$
-{#EQ-1.24}
+{#EQ-1.20}
 
 **How contextual bandits fit**: In our single-step formulation, there is **no next state**—the episode ends after one search. Mathematically, this means $\gamma = 0$ (no future) or equivalently $P(x' | x, a) = \delta_{\text{terminal}}$ (deterministic transition to a terminal state with zero value). Then:
 
@@ -1257,17 +1057,17 @@ Transform constrained problem:
 \text{s.t.} \quad & \mathbb{E}[\text{CM2}(\pi(x))] \geq \tau_{\text{CM2}} \\
 & \mathbb{E}[\text{STRAT}(\pi(x))] \geq \tau_{\text{STRAT}}
 \end{aligned}
-\tag{1.18}
+\tag{1.21}
 \end{equation}
-{#EQ-1.18}
+{#EQ-1.21}
 
 into unconstrained:
 
 $$
 \max_{\pi} \min_{\boldsymbol{\lambda} \geq 0} \mathcal{L}(\pi, \boldsymbol{\lambda}) = \mathbb{E}[R(\pi(x))] + \lambda_1(\mathbb{E}[\text{CM2}] - \tau_{\text{CM2}}) + \lambda_2(\mathbb{E}[\text{STRAT}] - \tau_{\text{STRAT}})
-\tag{1.19}
+\tag{1.22}
 $$
-{#EQ-1.19}
+{#EQ-1.22}
 
 where $\boldsymbol{\lambda} = (\lambda_1, \lambda_2) \in \mathbb{R}_+^2$ are Lagrange multipliers. This is a **saddle-point problem**: maximize over $\pi$, minimize over $\boldsymbol{\lambda}$.
 
@@ -1282,7 +1082,7 @@ is equivalent to the original constrained optimization problem: they have the sa
 
 **What this tells us:**
 
-Strong duality means we can solve the constrained problem #EQ-1.18 by solving the unconstrained Lagrangian #EQ-1.19---no duality gap. Practically, this justifies **primal-dual algorithms**: alternate between improving the policy (primal) and adjusting constraint penalties (dual), confident that convergence to the saddle point yields the constrained optimum.
+Strong duality means we can solve the constrained problem #EQ-1.21 by solving the unconstrained Lagrangian #EQ-1.22---no duality gap. Practically, this justifies **primal-dual algorithms**: alternate between improving the policy (primal) and adjusting constraint penalties (dual), confident that convergence to the saddle point yields the constrained optimum.
 
 The strict feasibility requirement ($\exists \tilde{\pi}$ with slack in the CM2 constraint) is typically easy to verify: the baseline production policy usually satisfies constraints with margin. If no such policy exists, the constraints may be infeasible---one is asking for profitability floors that no ranking can achieve. **Appendix C, §C.4.3** discusses diagnosing infeasible constraint configurations: diverging dual variables, Pareto frontiers below constraint thresholds, and $\varepsilon$-relaxation remedies.
 
@@ -1290,7 +1090,7 @@ The strict feasibility requirement ($\exists \tilde{\pi}$ with slack in the CM2 
 1. **Primal step**: $\theta \leftarrow \theta + \eta \nabla_\theta \mathcal{L}(\theta, \boldsymbol{\lambda})$ (improve policy toward higher reward and constraint satisfaction)
 2. **Dual step**: $\boldsymbol{\lambda} \leftarrow \max(0, \boldsymbol{\lambda} - \eta' \nabla_{\boldsymbol{\lambda}} \mathcal{L}(\theta, \boldsymbol{\lambda}))$ (tighten constraints if violated, relax if satisfied)
 
-The saddle-point $(\theta^*, \boldsymbol{\lambda}^*)$ satisfies the Karush-Kuhn-Tucker (KKT) conditions for the constrained problem #EQ-1.18. For now, just note that **constraints require dual variables** $\boldsymbol{\lambda}$—we're not just learning a policy, but also learning how to trade off GMV, CM2, and strategic exposure dynamically.
+The saddle-point $(\theta^*, \boldsymbol{\lambda}^*)$ satisfies the Karush-Kuhn-Tucker (KKT) conditions for the constrained problem #EQ-1.21. For now, just note that **constraints require dual variables** $\boldsymbol{\lambda}$—we're not just learning a policy, but also learning how to trade off GMV, CM2, and strategic exposure dynamically.
 
 ---
 
@@ -1361,7 +1161,7 @@ Note. Readers who completed Chapter 0's toy bandit experiment should: (i) compar
 
 **Exercise 1.3** (Regret Bounds). [extended: 45 min]
 (a) Implement a naive **uniform exploration** policy that samples $a_t \sim \text{Uniform}(\mathcal{A})$ for $T$ rounds.
-(b) Assume true $Q(x, a) = x + a + \epsilon$ where $\epsilon \sim \mathcal{N}(0, 0.1)$. Compute empirical regret $\text{Regret}_T$ for $T = 100, 1000, 10000$.
+(b) Assume true $Q(x, a) = \mathbf{1}^\top x + \mathbf{1}^\top a + \epsilon$ where $\mathbf{1}^\top v := \sum_i v_i$ denotes the sum of components of vector $v$, and $\epsilon \sim \mathcal{N}(0, 0.1)$. Compute empirical regret $\text{Regret}_T$ for $T = 100, 1000, 10000$.
 (c) Verify that $\text{Regret}_T / T \to \Delta$ where $\Delta = \max_a Q(x, a) - \mathbb{E}_a[Q(x, a)]$ (constant regret rate—suboptimal!).
 (d) **Challenge**: Implement $\varepsilon$-greedy (with $\varepsilon = 0.1$) and compare regret curves. Does it achieve sublinear regret?
 
