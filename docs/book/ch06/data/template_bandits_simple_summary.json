@@ -1,0 +1,254 @@
+{
+  "config": {
+    "seed": 20250349,
+    "n_static": 2000,
+    "n_bandit": 20000,
+    "feature_mode": "simple",
+    "feature_dim": 8,
+    "prior_weight": 0,
+    "lin_alpha": 1.0,
+    "ts_sigma": 1.0,
+    "rich_regularization": null,
+    "rich_regularization_params": null
+  },
+  "templates": [
+    {
+      "id": 0,
+      "name": "Neutral",
+      "description": "No boost adjustment (base ranker only)"
+    },
+    {
+      "id": 1,
+      "name": "High Margin",
+      "description": "Promote products with margin > 40%"
+    },
+    {
+      "id": 2,
+      "name": "CM2 Boost",
+      "description": "Promote own-brand (private-label) products"
+    },
+    {
+      "id": 3,
+      "name": "Popular",
+      "description": "Boost by log-popularity (bestseller score)"
+    },
+    {
+      "id": 4,
+      "name": "Premium",
+      "description": "Promote expensive items (price > 75th percentile)"
+    },
+    {
+      "id": 5,
+      "name": "Budget",
+      "description": "Promote cheap items (price < 25th percentile)"
+    },
+    {
+      "id": 6,
+      "name": "Discount",
+      "description": "Boost discounted products (max discount 30%)"
+    },
+    {
+      "id": 7,
+      "name": "Strategic",
+      "description": "Promote strategic categories"
+    }
+  ],
+  "static_results": {
+    "0": {
+      "reward": 5.746585085650774,
+      "gmv": 5.280658307804588,
+      "cm2": 0.5036919446154388,
+      "orders": 0.435
+    },
+    "1": {
+      "reward": 5.43903301748305,
+      "gmv": 5.073160878162713,
+      "cm2": 0.6325553483008052,
+      "orders": 0.4035
+    },
+    "2": {
+      "reward": 7.353779623070387,
+      "gmv": 6.729149808312096,
+      "cm2": 0.6114495368957179,
+      "orders": 0.578
+    },
+    "3": {
+      "reward": 4.787565916542771,
+      "gmv": 4.525088165578739,
+      "cm2": 0.5193193774100392,
+      "orders": 0.399
+    },
+    "4": {
+      "reward": 7.564609709854171,
+      "gmv": 7.111873550299372,
+      "cm2": 0.7359653988869408,
+      "orders": 0.3455
+    },
+    "5": {
+      "reward": 3.441760695872733,
+      "gmv": 3.0385082954357894,
+      "cm2": 0.25750600109233307,
+      "orders": 0.4705
+    },
+    "6": {
+      "reward": 5.041690028426199,
+      "gmv": 4.6154218566817375,
+      "cm2": 0.452920429361112,
+      "orders": 0.4175
+    },
+    "7": {
+      "reward": 4.834585866487057,
+      "gmv": 3.9896780349177456,
+      "cm2": -0.125980421076756,
+      "orders": 0.419
+    }
+  },
+  "static_best": {
+    "id": 4,
+    "name": "Premium",
+    "result": {
+      "reward": 7.564609709854171,
+      "gmv": 7.111873550299372,
+      "cm2": 0.7359653988869408,
+      "orders": 0.3455
+    },
+    "segments": {
+      "premium": {
+        "reward": 33.37323902148881,
+        "gmv": 31.599083467814975,
+        "cm2": 3.834384799773543,
+        "orders": 1.5170183798502384
+      },
+      "price_hunter": {
+        "reward": 0.00014086491055078179,
+        "gmv": 0.0,
+        "cm2": 0.0,
+        "orders": 0.0
+      },
+      "litter_heavy": {
+        "reward": 5.371218583460149,
+        "gmv": 4.942110136808584,
+        "cm2": 0.18316072701870942,
+        "orders": 0.26075487012987014
+      },
+      "pl_lover": {
+        "reward": 5.6739113583791285,
+        "gmv": 5.340602197414914,
+        "cm2": 0.5327267256480082,
+        "orders": 0.2711022840119166
+      }
+    }
+  },
+  "linucb": {
+    "global": {
+      "reward": 5.615944830085548,
+      "gmv": 5.124018528486439,
+      "cm2": 0.4565657539975745,
+      "orders": 0.4549
+    },
+    "segments": {
+      "pl_lover": {
+        "reward": 4.567224951894074,
+        "gmv": 4.177249239035252,
+        "cm2": 0.33943888021786567,
+        "orders": 0.3967041800643087
+      },
+      "litter_heavy": {
+        "reward": 6.647768910703395,
+        "gmv": 5.739424045327785,
+        "cm2": 0.18747798609527314,
+        "orders": 0.5773845840959935
+      },
+      "price_hunter": {
+        "reward": 0.004770443950760932,
+        "gmv": 0.0037499071341796386,
+        "cm2": 0.0003854565138293019,
+        "orders": 0.0007101264024996449
+      },
+      "premium": {
+        "reward": 18.54915747270012,
+        "gmv": 17.43223327765215,
+        "cm2": 2.1258068998835853,
+        "orders": 1.395955642530985
+      }
+    },
+    "diagnostics": {
+      "template_counts": [
+        1016,
+        891,
+        4786,
+        887,
+        881,
+        1064,
+        9589,
+        886
+      ],
+      "template_freqs": [
+        0.0508,
+        0.04455,
+        0.2393,
+        0.04435,
+        0.04405,
+        0.0532,
+        0.47945,
+        0.0443
+      ]
+    }
+  },
+  "ts": {
+    "global": {
+      "reward": 6.686962564041689,
+      "gmv": 6.182391636978594,
+      "cm2": 0.63013981765752,
+      "orders": 0.5032
+    },
+    "segments": {
+      "price_hunter": {
+        "reward": 0.0016346711401807512,
+        "gmv": 0.0008303569897952199,
+        "cm2": 0.0001448459472283633,
+        "orders": 0.00043060140663126167
+      },
+      "pl_lover": {
+        "reward": 8.589504495163792,
+        "gmv": 7.95908510469061,
+        "cm2": 0.8562046952852028,
+        "orders": 0.7108957880166107
+      },
+      "premium": {
+        "reward": 20.936514759691434,
+        "gmv": 19.773963917203027,
+        "cm2": 2.4443669118917866,
+        "orders": 1.435489009238611
+      },
+      "litter_heavy": {
+        "reward": 5.079805347174488,
+        "gmv": 4.408203748584449,
+        "cm2": 0.12385617757918192,
+        "orders": 0.40520984081041966
+      }
+    },
+    "diagnostics": {
+      "template_counts": [
+        4419,
+        6845,
+        4286,
+        829,
+        1179,
+        775,
+        850,
+        817
+      ],
+      "template_freqs": [
+        0.22095,
+        0.34225,
+        0.2143,
+        0.04145,
+        0.05895,
+        0.03875,
+        0.0425,
+        0.04085
+      ]
+    }
+  }
+}

@@ -1,0 +1,65 @@
+site_name: From Functional Anlaysis to Reinforcement Learning and personalized search — Docs
+site_description: RL-optimized boosting for personalized search and simulation
+theme:
+  name: mkdocs
+nav:
+  - Home: index.md
+  - Book:
+      - Overview: book/README.md
+      - Outline: book/outline.md
+      - Syllabus: book/syllabus.md
+      - Part I - Foundations:
+          - "Ch 0 — Motivation & First Experiment": book/ch00/ch00_motivation_first_experiment_revised.md
+          - "Ch 0 — Exercises & Labs": book/ch00/exercises_labs.md
+          - "Ch 1 — Search Ranking as Optimization": book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+          - "Ch 1 — Exercises & Labs": book/ch01/exercises_labs.md
+          - "Ch 2 — Probability, Measure, Click Models": book/ch02/ch02_probability_measure_click_models.md
+          - "Ch 2 — Exercises & Labs": book/ch02/exercises_labs.md
+          - "Ch 3 — Stochastic Processes & Bellman": book/ch03/ch03_stochastic_processes_bellman_foundations.md
+          - "Ch 3 — Exercises & Labs": book/ch03/exercises_labs.md
+      - Part II - Simulator:
+          - "Ch 4 — Generative World Design": book/ch04/ch04_generative_world_design.md
+          - "Ch 4 — Exercises & Labs": book/ch04/exercises_labs.md
+          - "Ch 5 — Relevance, Features & Reward": book/ch05/ch05_relevance_features_reward.md
+          - "Ch 5 — Exercises & Labs": book/ch05/exercises_labs.md
+      - Part III - Policies:
+          - "Ch 6 — Discrete Template Bandits": book/ch06/discrete_template_bandits.md
+          - "Ch 6 — Exercises & Labs": book/ch06/exercises_labs.md
+          - "Ch 6a — Neural Bandits": book/ch06a/ch06a_neural_bandits.md
+          - "Ch 6a — Exercises & Labs": book/ch06a/exercises_labs.md
+          - "Ch 7 — Continuous Actions": book/ch07/ch07_continuous_actions.md
+          - "Ch 7 — Exercises & Labs": book/ch07/exercises_labs.md
+          - "Ch 8 — Policy Gradients": book/ch08/chapter08_policy_gradients_complete.md
+          - "Ch 8 — Exercises & Labs": book/ch08/exercises_labs.md
+      - Part IV - Evaluation & Deployment:
+          - "Ch 9 — Off-Policy Evaluation": book/ch09/ch09_off_policy_evaluation.md
+          - "Ch 9 — Exercises & Labs": book/ch09/exercises_labs.md
+          - "Ch 10 — Robustness & Guardrails": book/ch10/ch10_robustness_guardrails.md
+          - "Ch 10 — Exercises & Labs": book/ch10/exercises_labs.md
+      - Appendices:
+          - "Appendix A — Bayesian Preference Models": book/appendix_a_bayesian_preference_models.md
+          - "Appendix B — Control Theory": book/appendix_b_control_theory.md
+          - "Appendix C — Convex Optimization": book/appendix_c_convex_optimization.md
+      - PDF Compilation Guide: book/PDF_COMPILATION_GUIDE.md
+  - Knowledge Graph:
+      - Overview: knowledge_graph/README.md
+      - Getting Started: knowledge_graph/START_HERE.md
+      - Tutorial: knowledge_graph/TUTORIAL.md
+      - Index: knowledge_graph/INDEX.md
+      - Schema: knowledge_graph/schema.yaml
+      - Graph: knowledge_graph/graph.yaml
+  - Scripts Reference: scripts_reference.md
+docs_dir: docs
+strict: false
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - footnotes
+  - def_list
+  - attr_list
+  - pymdownx.arithmatex:
+      generic: true
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

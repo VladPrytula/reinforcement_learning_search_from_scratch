@@ -1,0 +1,3990 @@
+version: 1
+updated: 2025-11-09
+
+nodes:
+  - id: CH-0
+    kind: chapter
+    title: "Chapter 0 — Motivation: Your First RL Experiment"
+    status: in_progress
+    file: docs/book/ch00/ch00_motivation_first_experiment_revised.md
+    summary: Informal, code-first toy bandit that learns context-adaptive boosts; bridges to formal Chapter 1.
+    depends_on: [CH-1]
+    defines: [SEC-CH0-EX-0.1, SEC-CH0-EX-0.2, SEC-CH0-EX-0.3, SEC-CH0-EX-0.4, SEC-CH0-EX-0.5]
+
+  - id: DOC-toy_problem_solution
+    kind: doc
+    title: Toy problem solution script
+    status: complete
+    file: scripts/ch00/toy_problem_solution.py
+    summary: Runs a minimal toy bandit with ε-greedy Q-learning and saves plots.
+    tested_by: [TEST-test_toy_example]
+    provides: [DOC-toy_problem_curves]
+
+  - id: TEST-test_toy_example
+    kind: test
+    title: Toy example tests
+    status: complete
+    file: tests/ch00/test_toy_example.py
+    summary: Sanity checks for the toy bandit script and learning curves generation.
+
+  - id: DOC-toy_problem_curves
+    kind: doc
+    title: Toy problem learning curves
+    status: complete
+    file: toy_problem_learning_curves.png
+    summary: Generated plot illustrating learning curves for the toy bandit.
+  - id: DOC-ch06-template_bandits_demo
+    kind: doc
+    title: Chapter 6 template bandits demo
+    status: in_progress
+    file: scripts/ch06/template_bandits_demo.py
+    summary: Runs LinUCB and Thompson Sampling over discrete templates on the Zoosim simulator with simple or rich context features and compares against static templates in terms of reward, GMV, CM2, orders, and per-segment performance.
+    uses: [MOD-zoosim.policies.templates, MOD-zoosim.policies.lin_ucb, MOD-zoosim.policies.thompson_sampling]
+
+  - id: DOC-ch06-compute-arc
+    kind: doc
+    title: Chapter 6 compute arc (simple → rich)
+    status: in_progress
+    file: scripts/ch06/ch06_compute_arc.py
+    summary: Runs paired simple-feature and rich-feature template bandit experiments, saves JSON summaries, and optionally generates figures for Chapter 6.
+    uses: [DOC-ch06-template_bandits_demo]
+
+  - id: DOC-ch06-plot-results
+    kind: doc
+    title: Chapter 6 bandit result plots
+    status: in_progress
+    file: scripts/ch06/plot_results.py
+    summary: Generates per-segment GMV and template selection frequency plots from Chapter 6 bandit experiment summaries.
+    uses: [DOC-ch06-compute-arc]
+
+  - id: DOC-ch06-optimization-gpu-core
+    kind: doc
+    title: Chapter 6 GPU template bandits core
+    status: in_progress
+    file: scripts/ch06/optimization_gpu/template_bandits_gpu.py
+    summary: GPU-accelerated implementation of Chapter 6 template bandit experiments using batched PyTorch tensors while preserving reward semantics and seed alignment with the canonical CPU path.
+    uses: [DOC-ch06-template_bandits_demo, MOD-zoosim.policies.templates, MOD-zoosim.policies.lin_ucb, MOD-zoosim.policies.thompson_sampling]
+
+  - id: DOC-ch06-optimization-gpu-compute-arc
+    kind: doc
+    title: Chapter 6 GPU compute arc
+    status: in_progress
+    file: scripts/ch06/optimization_gpu/ch06_compute_arc_gpu.py
+    summary: GPU-accelerated simple→rich feature compute arc for Chapter 6, reusing the canonical compute arc structure with batched simulation and optional CUDA execution.
+    uses: [DOC-ch06-optimization-gpu-core, DOC-ch06-compute-arc]
+
+  - id: DOC-ch06-optimization-gpu-matrix
+    kind: doc
+    title: Chapter 6 GPU batch runner
+    status: in_progress
+    file: scripts/ch06/optimization_gpu/run_bandit_matrix_gpu.py
+    summary: GPU-enabled batch runner for Chapter 6 scenarios (simple, rich, rich_est) with configurable batch size, device, and per-scenario summaries compatible with the CPU bandit_matrix artifacts.
+    uses: [DOC-ch06-optimization-gpu-core, DOC-ch06-template_bandits_demo]
+
+  - id: SEC-CH0-EX-0.1
+    kind: section
+    title: Exercise 0.1 — Reward Sensitivity (Toy)
+    status: in_progress
+    file: docs/book/ch00/ch00_motivation_first_experiment_revised.md
+    summary: Vary toy reward weights and observe impact on outcomes.
+
+  - id: SEC-CH0-EX-0.2
+    kind: section
+    title: Exercise 0.2 — Action Geometry (Toy)
+    status: in_progress
+    file: docs/book/ch00/ch00_motivation_first_experiment_revised.md
+    summary: Compare uniform sampling over the action grid vs local perturbations.
+
+  - id: SEC-CH0-EX-0.3
+    kind: section
+    title: Exercise 0.3 — Regret Shape (Toy)
+    status: in_progress
+    file: docs/book/ch00/ch00_motivation_first_experiment_revised.md
+    summary: Plot cumulative regret vs oracle and verify √T-like scaling.
+
+  - id: SEC-CH0-EX-0.4
+    kind: section
+    title: Exercise 0.4 — Constraints (Toy, Advanced)
+    status: in_progress
+    file: docs/book/ch00/ch00_motivation_first_experiment_revised.md
+    summary: Add a CM2 floor and compare performance with and without the constraint.
+
+  - id: SEC-CH0-EX-0.5
+    kind: section
+    title: Exercise 0.5 — Bandit Bellman Bridge (Toy)
+    status: in_progress
+    file: docs/book/ch00/ch00_motivation_first_experiment_revised.md
+    summary: Argue that value is max over actions of expected reward; connect to γ=0.
+  - id: CH-1
+    kind: chapter
+    title: Chapter 1 — Foundations
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    summary: Multi-objective reward; boosts-as-actions; #EQ-1.2 and preview #EQ-1.2-prime.
+    defines: [EQ-1.1, EQ-1.2, EQ-1.3, EQ-1.4, EQ-1.5, EQ-1.6, EQ-1.7, EQ-1.8, EQ-1.9, EQ-1.10, EQ-1.11, EQ-1.12, EQ-1.13, EQ-1.14, EQ-1.15, EQ-1.16, EQ-1.17, EQ-1.18, EQ-1.19, EQ-1.20, EQ-1.21, REM-1.2.1, EQ-1.2-prime, DEF-1.4.1]
+    proves: [THM-1.9.1]
+    forward_refs: [CH-11]
+
+  - id: EQ-1.1
+    kind: equation
+    title: Scoring function s(u,q,x) = r_ES(q,x) + Σ w_k φ_k(u,q,x)
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.1}"
+    summary: Base scoring function combining relevance and engineered features with manual weights.
+
+  - id: EQ-1.2
+    kind: equation
+    title: Scalar reward R = α·GMV + β·CM2 + γ·STRAT + δ·CLICKS
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.2}"
+    summary: Single-step reward combining business outcomes and engagement.
+    implements: []
+    see_also: [REM-1.2.1, MOD-zoosim.reward]
+
+  - id: REM-1.2.1
+    kind: remark
+    title: Engagement bounds and clickbait risk
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#REM-1.2.1}"
+    summary: Bound δ/α and monitor CVR to avoid clickbait policies.
+
+  - id: EQ-1.2-prime
+    kind: equation
+    title: Long-run value V^π(s0) = E[ Σ γ^t GMV_t ]
+    status: in_progress
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.2-prime}"
+    summary: Multi-episode value where engagement influences retention transitions.
+    forward_refs: [CH-11]
+
+  - id: CH-11
+    kind: chapter
+    title: Chapter 11 — Multi-Episode Inter-Session MDP
+    status: complete
+    file: docs/book/ch11/ch11_multi_episode_mdp.md
+    summary: Introduces retention/hazard state; operationalizes #EQ-1.2-prime with session_env + retention and validates policy ordering, retention curves, and value stability via Labs 11.1–11.3.
+    depends_on: [EQ-1.2-prime, MOD-zoosim.session_env, MOD-zoosim.retention]
+    provides: []
+    labs:
+      - Lab 11.1: Single-step vs multi-episode value
+      - Lab 11.2: Retention curves and ΔRank@k
+      - Lab 11.3: Value estimation stability
+
+  - id: MOD-zoosim.config
+    kind: module
+    title: Configuration (SimulatorConfig, RewardConfig, ActionConfig)
+    status: complete
+    file: zoosim/core/config.py
+    summary: Centralized configuration for reproducibility; defines all hyperparameters.
+    implements: [EQ-1.3]
+
+  - id: MOD-zoosim.reward
+    kind: module
+    title: Reward aggregation
+    status: complete
+    file: zoosim/dynamics/reward.py
+    summary: Aggregates GMV, CM2, STRAT, and CLICKS per #EQ-1.2.
+    implements: [EQ-1.2]
+    tested_by: [TEST-tests.test_env_basic, TEST-tests.ch05.test_ch05_core]
+
+  - id: MOD-zoosim.behavior
+    kind: module
+    title: Behavior (click/purchase + satisfaction)
+    status: complete
+    file: zoosim/dynamics/behavior.py
+    summary: Session dynamics with position bias and termination.
+    provides: [CN-ClickModel]
+    depends_on: []
+
+  - id: MOD-zoosim.session_env
+    kind: module
+    title: Multi-session environment
+    status: in_progress
+    file: zoosim/multi_episode/session_env.py
+    summary: Reuses single-step core; adds return transitions via retention.
+    implements: [EQ-1.2-prime]
+    depends_on: [MOD-zoosim.retention, MOD-zoosim.behavior]
+
+  - id: MOD-zoosim.retention
+    kind: module
+    title: Retention/hazard model
+    status: in_progress
+    file: zoosim/multi_episode/retention.py
+    summary: Logistic hazard; return probability as function of clicks and satisfaction.
+    provides: [CN-Retention]
+
+  - id: MOD-zoosim.env
+    kind: module
+    title: Single-step environment
+    status: complete
+    file: zoosim/envs/search_env.py
+    summary: One-shot session step; returns reward and info.
+    uses: [MOD-zoosim.behavior, MOD-zoosim.reward, MOD-zoosim.relevance, MOD-zoosim.features]
+
+  - id: MOD-zoosim.envs.gym_env
+    kind: module
+    title: Gym wrapper for Zoosim search environment
+    status: complete
+    file: zoosim/envs/gym_env.py
+    summary: Exposes Zoosim search environment as a Gymnasium-compatible interface with rich or standard observation features and continuous action bounds from SimulatorConfig.
+    depends_on: [MOD-zoosim.env, MOD-zoosim.config]
+
+  - id: CH-5
+    kind: chapter
+    title: Chapter 5 — Relevance, Features, and Reward
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    summary: Hybrid semantic/lexical relevance, engineered boost features, and multi-objective reward with safety constraint.
+
+  - id: MOD-zoosim.relevance
+    kind: module
+    title: Hybrid relevance model
+    status: complete
+    file: zoosim/ranking/relevance.py
+    summary: Implements hybrid semantic/lexical base relevance per #EQ-5.3.
+    implements: [EQ-5.1, EQ-5.2, EQ-5.3]
+    tested_by: [TEST-tests.ch05.test_ch05_core]
+
+  - id: MOD-zoosim.features
+    kind: module
+    title: Boost feature engineering
+    status: complete
+    file: zoosim/ranking/features.py
+    summary: Ten-dimensional feature vector and standardization per #EQ-5.5–#EQ-5.6.
+    implements: [EQ-5.5, EQ-5.6]
+    tested_by: [TEST-tests.ch05.test_ch05_core]
+
+  - id: EQ-5.1
+    kind: equation
+    title: Semantic relevance via cosine similarity
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#EQ-5.1}"
+    summary: Cosine similarity between query and product embeddings.
+
+  - id: EQ-5.2
+    kind: equation
+    title: Lexical relevance via log-overlap
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#EQ-5.2}"
+    summary: Log(1 + token overlap) between query and product category tokens.
+
+  - id: EQ-5.3
+    kind: equation
+    title: Hybrid base relevance
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#EQ-5.3}"
+    summary: Weighted combination of semantic and lexical relevance plus noise.
+
+  - id: EQ-5.5
+    kind: equation
+    title: Feature vector φ(u,q,p)
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#EQ-5.5}"
+    summary: Ten-dimensional boost feature vector combining product, personalization, and interaction terms.
+
+  - id: EQ-5.6
+    kind: equation
+    title: Feature standardization
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#EQ-5.6}"
+    summary: Z-score normalization of features with safe handling of constant coordinates.
+
+  - id: EQ-5.7
+    kind: equation
+    title: Multi-objective scalar reward (Chapter 5)
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#EQ-5.7}"
+    summary: α·GMV + β·CM2 + γ·STRAT + δ·CLICKS specialized to the Chapter-5 setting.
+    see_also: [EQ-1.2, MOD-zoosim.reward]
+
+  - id: EQ-5.8
+    kind: equation
+    title: Engagement weight bound
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#EQ-5.8}"
+    summary: Heuristic bound δ/α ∈ [0.01,0.10] limiting engagement reward relative to GMV.
+
+  - id: EQ-5.9
+    kind: equation
+    title: Multi-objective optimization problem
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#EQ-5.9}"
+    summary: Vector-valued objective over (GMV, CM2, Strategic, Clicks) whose scalarizations define Pareto trade-offs.
+
+  - id: DEF-5.1
+    kind: definition
+    title: Base Relevance Function
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#DEF-5.1}"
+    summary: Maps query–product pairs (q,p) ∈ 𝒬×𝒞 to real-valued base relevance scores.
+    depends_on: [CH-5, DEF-4.1]
+
+  - id: DEF-5.2
+    kind: definition
+    title: Semantic Relevance
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#DEF-5.2}"
+    summary: Cosine-similarity-based semantic relevance between query and product embeddings.
+    depends_on: [EQ-5.1]
+
+  - id: DEF-5.3
+    kind: definition
+    title: Lexical Relevance
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#DEF-5.3}"
+    summary: Log(1 + token overlap) lexical relevance between query and product category tokens.
+    depends_on: [EQ-5.2]
+
+  - id: DEF-5.4
+    kind: definition
+    title: Hybrid Base Relevance
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#DEF-5.4}"
+    summary: Linear combination of semantic and lexical relevance with independent Gaussian noise.
+    depends_on: [DEF-5.1, DEF-5.2, DEF-5.3, EQ-5.3]
+
+  - id: DEF-5.5
+    kind: definition
+    title: Feature Vector φ(u,q,p)
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#DEF-5.5}"
+    summary: Ten-dimensional boost feature vector decomposed into product, personalization, and interaction components.
+    depends_on: [EQ-5.5]
+
+  - id: DEF-5.6
+    kind: definition
+    title: Feature Standardization
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#DEF-5.6}"
+    summary: Z-score normalization of feature batches with simulator vs production batch specification.
+    depends_on: [EQ-5.6]
+
+  - id: DEF-5.7
+    kind: definition
+    title: Multi-Objective Reward
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#DEF-5.7}"
+    summary: Scalar reward R(x,a,ω) combining GMV, CM2, strategic purchases, and clicks over the outcome space Ω.
+    depends_on: [EQ-5.7, EQ-1.2, CN-ClickModel]
+
+  - id: DEF-5.8
+    kind: definition
+    title: Weak Pareto Optimality
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#DEF-5.8}"
+    summary: Policy is weakly Pareto optimal if no other policy improves all objectives and strictly improves at least one.
+    depends_on: [EQ-5.7, EQ-5.9]
+
+  - id: CONSTRAINT-5.8
+    kind: definition
+    title: Engagement Weight Safety Guideline
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#CONSTRAINT-5.8}"
+    summary: Heuristic bound δ/α ∈ [0.01,0.10] to keep engagement rewards small relative to GMV and discourage clickbait.
+    depends_on: [EQ-5.7, EQ-5.8, REM-1.2.1]
+
+  - id: REM-5.1
+    kind: remark
+    title: Engagement as Soft Viability Constraint
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#REM-5.1}"
+    summary: Interprets δ·Clicks as a proxy for satisfaction and long-run retention, not a business objective itself.
+    depends_on: [EQ-5.7, EQ-1.2, EQ-1.2-prime]
+
+  - id: REM-5.2.1
+    kind: remark
+    title: Zero-Norm Embeddings and Safe Defaults
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#REM-5.2.1}"
+    summary: Notes that the simulator almost surely avoids zero-norm embeddings but production should treat near-zero norms as “no semantic signal” and safely return 0 similarity.
+    depends_on: [EQ-5.1, MOD-zoosim.relevance]
+
+  - id: PROP-5.1
+    kind: theorem
+    title: Properties of Semantic Relevance
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#PROP-5.1}"
+    summary: Proves range, symmetry, scale invariance, and boundary cases for cosine-similarity-based semantic relevance.
+    depends_on: [EQ-5.1]
+
+  - id: PROP-5.2
+    kind: theorem
+    title: Properties of Z-Score Standardization
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#PROP-5.2}"
+    summary: Shows standardized coordinates have zero mean, unit variance, and preserve coordinate-wise order.
+    depends_on: [EQ-5.6]
+
+  - id: PROP-5.3
+    kind: theorem
+    title: Properties of Lexical Relevance
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#PROP-5.3}"
+    summary: Bounds lexical relevance in terms of token overlap and shows monotonicity with respect to the intersection size.
+    depends_on: [EQ-5.2]
+
+  - id: THM-5.1
+    kind: theorem
+    title: Scalarization Yields Weakly Pareto-Optimal Policies
+    status: in_progress
+    file: docs/book/ch05/ch05_relevance_features_reward.md
+    anchor: "{#THM-5.1}"
+    summary: Any policy maximizing a positively weighted scalarization of the objectives is weakly Pareto optimal.
+    depends_on: [DEF-5.8, EQ-5.7]
+
+  - id: DOC-ch05-validate-script
+    kind: doc
+    title: Chapter 5 validation script
+    status: in_progress
+    file: scripts/validate_ch05.py
+    summary: Runs small deterministic checks for base relevance, features, and reward in Chapter 5.
+    uses: [MOD-zoosim.relevance, MOD-zoosim.features, MOD-zoosim.reward]
+
+  - id: TEST-tests.ch05.test_ch05_core
+    kind: test
+    title: Chapter 5 core unit tests
+    status: in_progress
+    file: tests/ch05/test_ch05_core.py
+    summary: Pins base_score, feature engineering, and reward aggregation against simple synthetic patterns.
+    uses: [EQ-5.3, EQ-5.5, EQ-5.6, EQ-5.7, MOD-zoosim.relevance, MOD-zoosim.features, MOD-zoosim.reward]
+
+  - id: CN-ClickModel
+    kind: concept
+    title: Position-biased click model with abandonment
+    status: complete
+    summary: Examination → click → purchase pipeline; parameterized by BehaviorConfig.
+
+  - id: CN-Retention
+    kind: concept
+    title: Inter-session retention via hazard
+    status: in_progress
+    summary: Return probability modeled by logistic function of engagement.
+    depends_on: [CN-ClickModel]
+
+  - id: CH-6
+    kind: chapter
+    title: Chapter 6 — Discrete Template Bandits
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    summary: Linear contextual bandits (Thompson Sampling, LinUCB) for discrete boost template selection; complete regret analysis and production implementations.
+    defines: [DEF-6.1.1, DEF-6.2, DEF-6.3, DEF-6.4, ALG-6.1, ALG-6.2, THM-6.1, THM-6.2, PROP-6.1, PROP-6.2, EQ-6.1, EQ-6.2, EQ-6.3, EQ-6.4, EQ-6.5, EQ-6.6, EQ-6.7, EQ-6.8, EQ-6.9, EQ-6.10, EQ-6.11, EQ-6.12, EQ-6.13, EQ-6.14, EQ-6.15, EQ-6.16, EQ-6.17]
+    depends_on: [CH-5, EQ-5.5, DEF-5.5, MOD-zoosim.features]
+    forward_refs: [CH-7, CH-8]
+
+  - id: SEC-CH6-LAB-6A
+    kind: section
+    title: Advanced Lab 6.A — From CPU Loops to GPU Batches
+    status: in_progress
+    file: docs/book/ch06/ch06_advanced_gpu_lab.md
+    summary: End-to-end Chapter 6 lab guiding students from the canonical CPU implementation under scripts/ch06/ to the GPU-accelerated path under scripts/ch06/optimization_gpu/, including mental model, best practices, and hands-on CPU↔GPU comparisons.
+
+  - id: CH-7
+    kind: chapter
+    title: Chapter 7 — Continuous Actions via Q(x,a) Regression
+    status: in_progress
+    file: docs/book/ch07/ch07_continuous_actions.md
+    summary: Continuous boost optimization using Q-function approximation with neural network ensembles and CEM-based action selection with rigorous measure-theoretic foundations.
+    depends_on: [CH-6]
+    defines: [SEC-CH7-WARMUP-7.1, SETUP-7.1, DEF-7.1, DEF-7.2, DEF-7.3, PROB-7.1, ALG-7.1, ALG-7.2, THM-7.4.1, VERIFY-7.1, EQ-7.1, EQ-7.2, EQ-7.3, EQ-7.4, EQ-7.5, EQ-7.6, EQ-7.7, EQ-7.8, EQ-7.9, EQ-7.10, EQ-7.11, EQ-7.12, EQ-7.13]
+
+  - id: SEC-CH7-WARMUP-7.1
+    kind: section
+    title: Warm-up — Tabular Q as Regression
+    status: in_progress
+    file: docs/book/ch07/ch07_continuous_actions.md
+    summary: Minimal tabular Q-function example with 3 contexts and 4 actions, illustrating Q(x,a) as supervised regression before moving to neural function approximation and continuous actions.
+    depends_on: [CH-1, CH-6]
+
+  - id: SETUP-7.1
+    kind: section
+    title: Stochastic Reward Model
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#SETUP-7.1}"
+    summary: Probability space (Ω,ℱ,ℙ), compact context space 𝒳⊆ℝ^d_x, action space 𝒜=[-a_max,+a_max]^d_a, integrable reward R, joint distribution (X,A,R).
+    depends_on: [CH-1, CH-2, CH-3]
+
+  - id: DEF-7.1
+    kind: definition
+    title: State-Action Value Function
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#DEF-7.1}"
+    summary: Q-function Q*(x,a) := 𝔼[R | X=x, A=a] as conditional expectation; exists ℙ-a.s. by Kolmogorov's theorem.
+    depends_on: [SETUP-7.1]
+    see_also: [EQ-7.2, EQ-7.3]
+
+  - id: DEF-7.2
+    kind: definition
+    title: Q-Ensemble Regressor
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#DEF-7.2}"
+    summary: Collection of N neural networks {Q_θᵢ}ᵢ₌₁ᴺ with independent initialization and SGD, providing mean μ(x,a) and epistemic uncertainty σ(x,a).
+    depends_on: [DEF-7.1]
+    see_also: [EQ-7.7, EQ-7.8, EQ-7.9, MOD-zoosim.policies.q_ensemble]
+
+  - id: DEF-7.3
+    kind: definition
+    title: UCB Objective for Continuous Actions
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#DEF-7.3}"
+    summary: Upper confidence bound Q̃_β(x,a) = μ(x,a) + β·σ(x,a) for exploration via optimistic uncertainty bonus.
+    depends_on: [DEF-7.2]
+    see_also: [EQ-7.10, EQ-7.11]
+
+  - id: PROB-7.1
+    kind: section
+    title: Continuous Ranking Optimization
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#PROB-7.1}"
+    summary: "Given context distribution ℙ_X and unknown Q*, find policy π: 𝒳→𝒜 maximizing 𝔼[Q*(X,π(X))] via Q-regression and per-context optimization."
+    depends_on: [DEF-7.1]
+    see_also: [EQ-7.4, EQ-7.5]
+
+  - id: ALG-7.1
+    kind: algorithm
+    title: Cross-Entropy Method for Continuous Optimization
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#ALG-7.1}"
+    summary: Iterative sampling algorithm maintaining Gaussian search distribution; samples N_s actions, selects top ρN_s elites, updates distribution with Polyak smoothing.
+    depends_on: [DEF-7.3]
+    see_also: [EQ-7.12, MOD-zoosim.optimizers.cem]
+
+  - id: ALG-7.2
+    kind: algorithm
+    title: Continuous Q-Learning with CEM
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#ALG-7.2}"
+    summary: "Full learning loop: observe context, plan action via CEM with UCB objective, execute, store transition, update Q-ensemble periodically."
+    depends_on: [ALG-7.1, DEF-7.2, DEF-7.3]
+    see_also: [MOD-zoosim.policies.q_ensemble]
+
+  - id: THM-7.4.1
+    kind: theorem
+    title: CEM Convergence for Unimodal Functions
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#THM-7.4.1}"
+    summary: "For unimodal f with unique global maximum, CEM mean μ_t converges in probability to global maximizer a* as T→∞, N_s→∞ (Rubinstein & Kroese 2004)."
+    depends_on: [ALG-7.1]
+
+  - id: VERIFY-7.1
+    kind: test
+    title: Q-Ensemble Regression on Known Function
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#VERIFY-7.1}"
+    summary: "Numerical verification that Q-ensemble fits quadratic ground truth Q_true(x,a)=x^T a + 0.1‖a‖² with MSE<0.01 and ~95% coverage."
+    depends_on: [DEF-7.2]
+
+  - id: EQ-7.1
+    kind: equation
+    title: Q-function definition
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#EQ-7.1}"
+    summary: Q(x,a) = 𝔼[R | X=x, A=a]
+    depends_on: [DEF-7.1]
+
+  - id: EQ-7.2
+    kind: equation
+    title: State-action value function (formal)
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#EQ-7.2}"
+    summary: Q*(x,a) := 𝔼[R | X=x, A=a]
+    depends_on: [DEF-7.1]
+
+  - id: EQ-7.3
+    kind: equation
+    title: Q-regression loss
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#EQ-7.3}"
+    summary: L(θ) = 𝔼[(Q_θ(X,A) - R)²]
+    depends_on: [DEF-7.1]
+
+  - id: EQ-7.4
+    kind: equation
+    title: Optimal policy maximizes expected Q-value
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#EQ-7.4}"
+    summary: π* = argmax_π 𝔼_X[Q*(X,π(X))]
+    depends_on: [PROB-7.1]
+
+  - id: EQ-7.5
+    kind: equation
+    title: Per-context optimization
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#EQ-7.5}"
+    summary: π_θ(x) = argmax_{a∈𝒜} Q_θ(x,a)
+    depends_on: [PROB-7.1]
+
+  - id: EQ-7.6
+    kind: equation
+    title: Ranking score with continuous boosts
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#EQ-7.6}"
+    summary: s(q,p) = s_base(q,p) + Σₖ aₖ·φₖ(u,q,p)
+    depends_on: [CH-5]
+
+  - id: EQ-7.7
+    kind: equation
+    title: Q-ensemble collection
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#EQ-7.7}"
+    summary: "{Q_θᵢ : 𝒳×𝒜→ℝ}ᵢ₌₁ᴺ"
+    depends_on: [DEF-7.2]
+
+  - id: EQ-7.8
+    kind: equation
+    title: Ensemble mean prediction
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#EQ-7.8}"
+    summary: "μ(x,a) := (1/N)Σᵢ Q_θᵢ(x,a)"
+    depends_on: [DEF-7.2]
+
+  - id: EQ-7.9
+    kind: equation
+    title: Ensemble epistemic uncertainty (biased estimator)
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#EQ-7.9}"
+    summary: "σ(x,a) := √[(1/N)Σᵢ(Q_θᵢ(x,a) - μ(x,a))²]"
+    depends_on: [DEF-7.2]
+
+  - id: EQ-7.10
+    kind: equation
+    title: UCB objective
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#EQ-7.10}"
+    summary: Q̃_β(x,a) := μ(x,a) + β·σ(x,a)
+    depends_on: [DEF-7.3]
+
+  - id: EQ-7.11
+    kind: equation
+    title: UCB policy selection
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#EQ-7.11}"
+    summary: π_UCB(x) = argmax_{a∈𝒜} Q̃_β(x,a)
+    depends_on: [DEF-7.3]
+
+  - id: EQ-7.12
+    kind: equation
+    title: CEM Polyak smoothing update
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#EQ-7.12}"
+    summary: μᵢ ← αμᵢ + (1-α)μᵢᵉˡⁱᵗᵉ; σᵢ ← max{σ_min, ασᵢ + (1-α)σᵢᵉˡⁱᵗᵉ}
+    depends_on: [ALG-7.1]
+
+  - id: EQ-7.13
+    kind: equation
+    title: CEM computational complexity
+    status: complete
+    file: docs/book/ch07/ch07_continuous_actions.md
+    anchor: "{#EQ-7.13}"
+    summary: T × N_s × N × C_forward + O(T·N_s log N_s + T·N_s·d_a)
+    depends_on: [ALG-7.1]
+
+  - id: CH-8
+    kind: chapter
+    title: Chapter 8 — Policy Gradient Methods
+    status: in_progress
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    summary: Direct policy optimization via gradient ascent; REINFORCE algorithm, Policy Gradient Theorem, Gaussian policies for continuous actions, entropy regularization, variance reduction via learned baseline, empirical comparison to Q-learning.
+    depends_on: [CH-6, CH-7]
+    defines: [THM-8.2, THM-8.2.2, THM-8.5.1, THM-8.5.2, PROP-8.2.3, LEM-8.1, ALG-8.1, ALG-8.5, EQ-8.1, EQ-8.2, EQ-8.3, EQ-8.4, EQ-8.5, EQ-8.6, EQ-8.7, EQ-8.8, EQ-8.9, EQ-8.10, EQ-8.11, EQ-8.12, EQ-8.13, EQ-8.14, EQ-8.15, EQ-8.16, EQ-8.17, EQ-8.18, EQ-8.19, EQ-8.20, EQ-8.21, EQ-8.22, EQ-8.23, EQ-8.24, EQ-8.25, EQ-8.26, EQ-8.27, EQ-8.28]
+
+  - id: SEC-CH8-EX-8.1
+    kind: section
+    title: Exercise 8.1 — Baseline Variance Reduction
+    status: complete
+    file: docs/book/ch08/exercises_labs.md
+    anchor: "{#EX-8.1}"
+    summary: Derives the variance-minimizing state-dependent baseline b*(s) and relates it to the value-function baseline V^π(s).
+
+  - id: SEC-CH8-EX-8.2
+    kind: section
+    title: Exercise 8.2 — Entropy and Boltzmann Policy
+    status: complete
+    file: docs/book/ch08/exercises_labs.md
+    anchor: "{#EX-8.2}"
+    summary: Shows that maximum-entropy policies under an expected reward constraint yield Boltzmann/softmax policies.
+
+  - id: SEC-CH8-EX-8.3
+    kind: section
+    title: Exercise 8.3 — REINFORCE Convergence
+    status: complete
+    file: docs/book/ch08/exercises_labs.md
+    anchor: "{#EX-8.3}"
+    summary: Sketches convergence of REINFORCE via Robbins–Monro conditions and discusses local vs global optima.
+
+  - id: SEC-CH8-EX-8.4
+    kind: section
+    title: Exercise 8.4 — Policy Gradient for LQR
+    status: complete
+    file: docs/book/ch08/exercises_labs.md
+    anchor: "{#EX-8.4}"
+    summary: Implements 1D discounted LQR via policy gradient and verifies convergence to the Riccati gain from the DARE solution.
+
+  - id: DEF-6.1.1
+    kind: definition
+    title: Boost Template
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#DEF-6.1.1}"
+    summary: Interpretable function τ_a mapping Product → boost ∈ [-a_max, +a_max]; discrete action space reduces to finite templates {τ_0, …, τ_{M-1}}.
+    depends_on: [CH-6]
+
+  - id: DEF-6.2
+    kind: definition
+    title: Stochastic Contextual Bandit
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#DEF-6.2}"
+    summary: Tuple (𝒳, 𝒜, R̃) where contexts x ∼ ρ, agent selects a ∈ 𝒜, receives reward R̃(x,a,ω) with ω ~ P(·|x,a).
+    depends_on: [CH-6]
+
+  - id: DEF-6.3
+    kind: definition
+    title: Linear Contextual Bandit
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#DEF-6.3}"
+    summary: Linear contextual bandit where mean rewards satisfy μ(x,a) = θ_a^T φ(x) for a known feature map φ and unknown parameters θ_a with bounded norm.
+    depends_on: [DEF-6.2]
+
+  - id: DEF-6.4
+    kind: definition
+    title: Bayesian Regret
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#DEF-6.4}"
+    summary: Expected regret BayesReg(T) = 𝔼[Σ_t (max_a θ_a^T φ_t - θ_{A_t}^T φ_t)] where expectation is over context distribution, policy randomness, and Bayesian prior.
+    depends_on: [DEF-6.2]
+
+  - id: ALG-6.1
+    kind: algorithm
+    title: Thompson Sampling for Linear Contextual Bandits
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#ALG-6.1}"
+    summary: Bayesian posterior sampling; maintains Gaussian posterior N(θ̂_a, Σ_a), samples θ̃_a at each step, selects argmax_a θ̃_a^T φ.
+    depends_on: [DEF-6.2, DEF-6.3]
+
+  - id: ALG-6.2
+    kind: algorithm
+    title: LinUCB (Linear Upper Confidence Bound)
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#ALG-6.2}"
+    summary: Frequentist UCB; maintains ridge regression estimates θ̂_a, selects argmax_a {θ̂_a^T φ + α√(φ^T A_a^{-1} φ)}.
+    depends_on: [DEF-6.2, DEF-6.3]
+
+  - id: THM-6.1
+    kind: theorem
+    title: Thompson Sampling Regret Bound
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#THM-6.1}"
+    summary: For linear contextual bandits with d-dimensional features, M actions, and horizon T, Thompson Sampling achieves expected regret E[Regret(T)] ≤ C·d√(MT log T) under standard boundedness and sub-Gaussian assumptions.
+    depends_on: [ALG-6.1, DEF-6.4]
+
+  - id: THM-6.2
+    kind: theorem
+    title: LinUCB Frequentist Regret Bound
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#THM-6.2}"
+    summary: For linear contextual bandits with bounded parameters and features, LinUCB achieves regret Regret(T) ≤ α√(2dT log(1 + T/(dλ))) + √λ S with probability ≥ 1-δ.
+    depends_on: [ALG-6.2, EQ-6.16]
+
+  - id: PROP-6.1
+    kind: theorem
+    title: Posterior Mean Equivalence (Ridge Regression)
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#PROP-6.1}"
+    summary: The Bayesian posterior mean θ̂_a from Thompson Sampling equals the ridge regression solution θ̂_a = A_a^{-1} b_a with A_a = λI + Σ φφ^T and b_a = Σ r·φ.
+    depends_on: [ALG-6.1]
+
+  - id: PROP-6.2
+    kind: theorem
+    title: Exploration Bonus Interpretation
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#PROP-6.2}"
+    summary: The UCB exploration term α√(φ^T A_a^{-1} φ) measures posterior uncertainty; decreases as O(1/√n_a) with samples of action a.
+    depends_on: [ALG-6.2]
+
+  - id: EQ-6.1
+    kind: equation
+    title: Template-based adjusted scores
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.1}"
+    summary: Adjusted scores s'_i = s_base(q,p_i) + t(p_i) for products in a query result set, used to re-rank by templates.
+
+  - id: EQ-6.2
+    kind: equation
+    title: Mean reward function
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.2}"
+    summary: Mean reward μ(x,a) = 𝔼_{ω∼P(·|x,a)}[R(x,a,ω)] under the stochastic contextual bandit model.
+    depends_on: [DEF-6.2]
+
+  - id: EQ-6.3
+    kind: equation
+    title: Optimal policy
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.3}"
+    summary: Optimal policy π*(x) = argmax_{a∈𝒜} μ(x,a) selecting the best action for each context.
+    depends_on: [EQ-6.2]
+
+  - id: EQ-6.4
+    kind: equation
+    title: Cumulative regret
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.4}"
+    summary: Regret(T) = Σ_{t=1}^T [μ(x_t, π*(x_t)) − μ(x_t, a_t)] measuring loss from not playing the optimal action.
+    depends_on: [EQ-6.3]
+
+  - id: EQ-6.5
+    kind: equation
+    title: Linear mean reward model
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.5}"
+    summary: Linear contextual model μ(x,a) = θ_a^T φ(x) defining the hypothesis class for linear bandits.
+    depends_on: [DEF-6.3]
+
+  - id: EQ-6.6
+    kind: equation
+    title: Gaussian posterior over parameters
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.6}"
+    summary: Posterior parameterization θ_a ∼ 𝓝(θ̂_a, Σ_a) with mean θ̂_a and covariance Σ_a for each action a.
+
+  - id: EQ-6.7
+    kind: equation
+    title: Gaussian reward likelihood
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.7}"
+    summary: Reward model r_t | x_t,a_t,θ_{a_t} ∼ 𝓝(θ_{a_t}^T φ(x_t), σ²) for Gaussian noise.
+
+  - id: EQ-6.8
+    kind: equation
+    title: Posterior update (precision and mean)
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.8}"
+    summary: "Bayesian linear regression update: Σ_{a_t}^{-1} ← Σ_{a_t}^{-1} + σ^{-2} φφ^T and θ̂_{a_t} ← Σ_{a_t}(Σ_{a_t}^{-1} θ̂_{a_t} + σ^{-2} φ r)."
+
+  - id: EQ-6.9
+    kind: equation
+    title: Ridge regression objective
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.9}"
+    summary: θ̂_a = argmin_θ { Σ_{t:a_t=a} (r_t − θ^T φ(x_t))² + λ‖θ‖² }, the ridge regression estimator for action a.
+
+  - id: EQ-6.10
+    kind: equation
+    title: Probability matching property
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.10}"
+    summary: P(a_t = a | 𝓗_t) = P(θ_a^T φ_t > θ_{a'}^T φ_t for all a' ≠ a | 𝓗_t), i.e., Thompson Sampling selects each action with its posterior probability of being optimal.
+
+  - id: EQ-6.11
+    kind: equation
+    title: Thompson Sampling regret bound
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.11}"
+    summary: E[Regret(T)] ≤ C·d√(M T log T) for Thompson Sampling in linear contextual bandits.
+
+  - id: EQ-6.12
+    kind: equation
+    title: LinUCB predicted mean reward
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.12}"
+    summary: ŷ(x,a) = θ̂_a^T φ(x) giving the current mean reward estimate for context x and action a.
+
+  - id: EQ-6.13
+    kind: equation
+    title: UCB score with exploration bonus
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.13}"
+    summary: UCB(x,a) = μ̂(x,a) + α·Uncertainty(x,a) combining exploitation and exploration.
+
+  - id: EQ-6.14
+    kind: equation
+    title: Uncertainty term (prediction variance)
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.14}"
+    summary: Uncertainty(x,a) = √(φ(x)^T Σ_a φ(x)), the posterior standard deviation of predicted reward.
+
+  - id: EQ-6.15
+    kind: equation
+    title: LinUCB action selection rule
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.15}"
+    summary: a_t = argmax_a {θ̂_a^T φ(x_t) + α√(φ(x_t)^T Σ_a φ(x_t))} selecting the action with highest upper confidence bound.
+
+  - id: EQ-6.16
+    kind: equation
+    title: LinUCB regret bound
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.16}"
+    summary: Regret(T) ≤ α√(2dT log(1 + T/(dλ))) + √λ S for LinUCB under bounded parameters and features.
+
+  - id: EQ-6.17
+    kind: equation
+    title: Neural Linear bandit architecture
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#EQ-6.17}"
+    summary: μ(x,a) = θ_a^T f_ψ(x) with learned representation f_ψ and linear heads θ_a.
+    depends_on: [CH-6, CH-7]
+
+  - id: MOD-zoosim.policies.templates
+    kind: module
+    title: Boost template library
+    status: complete
+    file: zoosim/policies/templates.py
+    summary: Implements discrete boost templates (BoostTemplate dataclass, create_standard_templates, compute_catalog_stats).
+    implements: [DEF-6.1.1, EQ-6.17]
+    tested_by: [TEST-tests.ch06.test_templates]
+
+  - id: MOD-zoosim.policies.thompson_sampling
+    kind: module
+    title: Thompson Sampling for Linear Contextual Bandits
+    status: complete
+    file: zoosim/policies/thompson_sampling.py
+    summary: Bayesian posterior sampling implementation with Gaussian conjugate prior; maintains N(θ̂_a, Σ_a) and samples at each step.
+    implements: [ALG-6.1, EQ-6.6, EQ-6.7, EQ-6.8, EQ-6.10]
+    tested_by: [TEST-tests.ch06.test_thompson_sampling]
+
+  - id: MOD-zoosim.policies.lin_ucb
+    kind: module
+    title: LinUCB (Linear Upper Confidence Bound)
+    status: complete
+    file: zoosim/policies/lin_ucb.py
+    summary: Frequentist UCB implementation with ridge regression and deterministic action selection; maintains A_a, b_a, θ̂_a.
+    implements: [ALG-6.2, EQ-6.11, EQ-6.12, EQ-6.13, EQ-6.14, EQ-6.16]
+    tested_by: [TEST-tests.ch06.test_linucb]
+
+  - id: TEST-tests.ch06.test_templates
+    kind: test
+    title: Template library unit tests
+    status: complete
+    file: tests/ch06/test_templates.py
+    summary: Tests template application bounds, semantic correctness (high margin boosts high-margin products), catalog statistics computation.
+    uses: [MOD-zoosim.policies.templates, DEF-6.1.1, EQ-6.17]
+
+  - id: TEST-tests.ch06.test_thompson_sampling
+    kind: test
+    title: Thompson Sampling unit tests
+    status: complete
+    file: tests/ch06/test_thompson_sampling.py
+    summary: Tests TS initialization, posterior updates increase precision, convergence to true parameters on synthetic data, reproducibility with fixed seed.
+    uses: [MOD-zoosim.policies.thompson_sampling, ALG-6.1, EQ-6.6, EQ-6.7, EQ-6.8]
+
+  - id: TEST-tests.ch06.test_linucb
+    kind: test
+    title: LinUCB unit tests
+    status: complete
+    file: tests/ch06/test_linucb.py
+    summary: Tests LinUCB initialization, deterministic action selection, UCB exploration bonus, posterior mean identical to TS, adaptive alpha decay.
+    uses: [MOD-zoosim.policies.lin_ucb, ALG-6.2, EQ-6.11, EQ-6.12, EQ-6.13, EQ-6.14, EQ-6.16]
+
+  - id: TEST-tests.ch06.test_integration
+    kind: test
+    title: Chapter 6 integration tests
+    status: complete
+    file: tests/ch06/test_integration.py
+    summary: Full training loops for LinUCB and TS with mock environment; tests convergence to optimal template, exploration decay, reproducibility.
+    uses: [MOD-zoosim.policies.thompson_sampling, MOD-zoosim.policies.lin_ucb, MOD-zoosim.policies.templates]
+
+  - id: TEST-tests.ch06.test_feature_modes_integration
+    kind: test
+    title: Chapter 6 feature-mode integration tests
+    status: in_progress
+    file: tests/ch06/test_feature_modes_integration.py
+    summary: Verifies that rich context features reduce the GMV gap versus a strong static template and that template selection diagnostics are tracked correctly.
+    uses: [DOC-ch06-template_bandits_demo, MOD-zoosim.policies.templates, MOD-zoosim.policies.lin_ucb, MOD-zoosim.policies.thompson_sampling]
+
+  - id: MOD-zoosim.policies.q_ensemble
+    kind: module
+    title: Q-ensemble policy for continuous actions
+    status: in_progress
+    file: zoosim/policies/q_ensemble.py
+    summary: Neural network ensemble for Q(x,a) regression with a CEM-based policy wrapper for continuous boost optimization.
+    depends_on: [CH-6, CH-7]
+    implements: [DEF-7.2, ALG-7.2, EQ-7.7, EQ-7.8, EQ-7.9]
+    tested_by: [TEST-tests.ch07.test_q_ensemble]
+
+  - id: MOD-zoosim.optimizers.cem
+    kind: module
+    title: Cross-Entropy Method optimizer
+    status: in_progress
+    file: zoosim/optimizers/cem.py
+    summary: Cross-Entropy Method (CEM) optimizer for bounded continuous actions with optional trust-region projection.
+    depends_on: [CH-7]
+    implements: [ALG-7.1, EQ-7.12, EQ-7.13]
+    tested_by: [TEST-tests.ch07.test_cem]
+
+  - id: TEST-tests.ch07.test_q_ensemble
+    kind: test
+    title: Q-ensemble unit tests
+    status: in_progress
+    file: tests/ch07/test_q_ensemble.py
+    summary: Verifies that the Q-ensemble regressor learns a simple synthetic Q(x,a) mapping and returns correctly shaped mean/uncertainty estimates.
+    uses: [MOD-zoosim.policies.q_ensemble, CH-7]
+
+  - id: TEST-tests.ch07.test_cem
+    kind: test
+    title: CEM optimizer unit tests
+    status: in_progress
+    file: tests/ch07/test_cem.py
+    summary: Verifies that the CEM optimizer finds the maximum of a quadratic objective and respects ℓ2 trust-region constraints.
+    uses: [MOD-zoosim.optimizers.cem, CH-7]
+
+  - id: CH-12
+    kind: chapter
+    title: Slate RL & Differentiable Ranking
+    status: planned
+    file: docs/book/syllabus.md
+    summary: Top-k corrections, SoftSort/NeuralSort/Gumbel-Sinkhorn.
+
+  - id: CH-13
+    kind: chapter
+    title: Offline RL (Conservative)
+    status: planned
+    file: docs/book/syllabus.md
+    summary: CQL/IQL/TD3+BC for bounded actions; pessimistic selection.
+
+  - id: CH-14
+    kind: chapter
+    title: Multi-objective RL & Fairness
+    status: planned
+    file: docs/book/syllabus.md
+    summary: CMDP, Pareto fronts, exposure parity.
+
+  - id: CH-15
+    kind: chapter
+    title: Non-stationarity & Meta-Adaptation
+    status: planned
+    file: docs/book/syllabus.md
+    summary: Change-points, sliding window bandits.
+
+  - id: CH-16
+    kind: chapter
+    title: Appendix A — Bayesian Preference Models
+    status: planned
+    file: docs/book/syllabus.md
+    summary: Hierarchical Bayesian modeling of user-level price and PL preferences; provides realistic estimates for θ_price and θ_pl used in rich context features and connects to Chapter 6 bandit experiments.
+
+  - id: TEST-tests.test_env_basic
+    kind: test
+    title: Basic env tests
+    status: complete
+    file: tests/test_env_basic.py
+    summary: Smoke tests for env API & gym wrapper.
+    uses: [MOD-zoosim.env]
+
+  - id: TEST-tests.ch03.test_value_iteration
+    kind: test
+    title: GridWorld contraction regression
+    status: complete
+    file: tests/ch03/test_value_iteration.py
+    summary: Validates Chapter 3 value-iteration code, contraction bounds, and γ ratios.
+    uses: [EQ-3.18]
+
+  - id: TEST-test_ch01_reward
+    kind: test
+    title: Chapter 1 reward function validation
+    status: complete
+    file: tests/ch01/test_reward_examples.py
+    summary: Validates #EQ-1.2 code examples compile and produce expected output; tests CVR diagnostic and delta/alpha bounds.
+    uses: [EQ-1.2, REM-1.2.1]
+
+  - id: EQ-1.3
+    kind: equation
+    title: Constraints C = {cm2_floor, exposure_floors, rank_stability}
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.3}"
+    summary: Hard constraints on CM2 floor, exposure, and rank stability.
+
+  - id: EQ-1.7
+    kind: equation
+    title: Contextual bandit MDP tuple (𝒮, 𝒜, P, R, γ=1)
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.7}"
+    summary: Single-episode MDP formulation with context distribution.
+
+  - id: EQ-1.11
+    kind: equation
+    title: Action space 𝒜 = [-a_max, +a_max]^K
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.11}"
+    summary: Bounded boost weights; K engineered features.
+
+  - id: EQ-1.12
+    kind: equation
+    title: Action-value function Q(x,a) = 𝔼[R(x,a,ω)]
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.12}"
+    summary: Expected reward for context x and action a, marginalizing over stochastic outcomes ω.
+
+  - id: EQ-1.4
+    kind: equation
+    title: Context space x = (u, q, h, t) ∈ 𝒳
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.4}"
+    summary: Defines context as user features, query features, session history, and time features.
+
+  - id: EQ-1.5
+    kind: equation
+    title: Static optimization max_w E[R(w, x)]
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.5}"
+    summary: Traditional static boost optimization (one global w for all contexts).
+
+  - id: EQ-1.6
+    kind: equation
+    title: Contextual optimization max_π E[R(π(x), x)]
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.6}"
+    summary: Context-adaptive policy learning (w depends on x via policy π).
+
+  - id: EQ-1.8
+    kind: equation
+    title: Policy value function V(π) = E[Q(x,π(x))]
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.8}"
+    summary: Expected reward under policy π, averaging over context distribution ρ.
+
+  - id: EQ-1.9
+    kind: equation
+    title: Optimal value V* = max_π V(π) = E[max_a Q(x,a)]
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.9}"
+    summary: Best achievable value by optimizing action choice for each context.
+
+  - id: EQ-1.10
+    kind: equation
+    title: Optimal policy π*(x) = argmax_a Q(x,a)
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.10}"
+    summary: Greedy policy selecting action with highest Q-value for each context.
+
+  - id: EQ-1.13
+    kind: equation
+    title: Instantaneous regret = Q(x_t, π*(x_t)) - Q(x_t, π(x_t))
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.13}"
+    summary: Value gap between optimal policy and current policy at round t.
+
+  - id: EQ-1.14
+    kind: equation
+    title: Cumulative regret Regret_T = Σ_t regret_t
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.14}"
+    summary: Total value lost over T rounds due to suboptimal actions.
+
+  - id: EQ-1.15
+    kind: equation
+    title: Sublinear regret condition lim_{T→∞} Regret_T/T = 0
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.15}"
+    summary: Average per-round regret vanishes as algorithm converges to optimality.
+
+  - id: EQ-1.16
+    kind: equation
+    title: Parametric Q-function Q_θ(x,a)
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.16}"
+    summary: Neural network approximation of action-value function with weights θ.
+
+  - id: EQ-1.17
+    kind: equation
+    title: Q-function regression loss min_θ E[(Q_θ(x,a) - r)²]
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.17}"
+    summary: Supervised learning objective for estimating Q from (x,a,r) data.
+
+  - id: EQ-1.18
+    kind: equation
+    title: Constrained optimization max_π E[R] s.t. constraints
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.18}"
+    summary: MDP formulation with CM2 floor and strategic exposure constraints.
+
+  - id: EQ-1.19
+    kind: equation
+    title: Lagrangian formulation max_π min_λ L(π,λ)
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.19}"
+    summary: Saddle-point problem transforming constrained optimization to unconstrained.
+
+  - id: EQ-1.20
+    kind: equation
+    title: Hamilton-Jacobi-Bellman equation -∂V/∂t = max_u {R + ∂V/∂x·f}
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.20}"
+    summary: Continuous-time optimal control PDE connecting to discrete RL.
+
+  - id: EQ-1.21
+    kind: equation
+    title: Bandit Bellman equation V(x) = max_a Q(x,a)
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#EQ-1.21}"
+    summary: HJB reduction for single-step problem (no dynamics term).
+
+  - id: DEF-1.4.1
+    kind: definition
+    title: Contextual Bandit for Search Ranking
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#DEF-1.4.1}"
+    summary: Formal definition of (X, A, R, ρ) tuple for search ranking problem.
+    depends_on: [EQ-1.2, EQ-1.4]
+
+  - id: ASSUMP-2.6.1
+    kind: definition
+    title: OPE Probability Conditions
+    status: complete
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#ASSUMP-2.6.1}"
+    summary: "(1) Measurability: R(x,a,ω) measurable in ω; (2) Integrability: 𝔼[|R|] < ∞; (3) Absolute continuity (coverage): π_eval ≪ π_log ensures importance weights are well-defined."
+    depends_on: []
+
+  - id: THM-1.9.1
+    kind: theorem
+    title: Slater's condition for bandits
+    status: complete
+    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    anchor: "{#THM-1.9.1}"
+    summary: Strict feasibility ensures Lagrangian methods converge.
+
+  # Appendices (A reserved for Bayesian per syllabus)
+  - id: APPENDIX-B
+    kind: doc
+    title: "Appendix B — Control-Theoretic Background (LQR, HJB, Deep RL)"
+    status: complete
+    file: docs/book/appendix_b_control_theory.md
+    summary: Bridges classical control theory (LQR, HJB equations) to modern deep RL. Shows how Bellman optimality connects to Hamilton-Jacobi-Bellman PDEs and how control-theoretic insights inform algorithm design.
+    defines: [THM-B.1.1]
+    see_also: [CH-3, CH-8, CH-10, CH-11]
+
+  - id: THM-B.1.1
+    kind: theorem
+    title: Optimal LQR Solution
+    status: complete
+    file: docs/book/appendix_b_control_theory.md
+    anchor: "{#THM-B.1.1}"
+    summary: Under controllability, optimal LQR policy is linear in state with gain from discrete algebraic Riccati equation.
+
+  - id: APPENDIX-C
+    kind: doc
+    title: "Appendix C — Convex Optimization for Constrained MDPs"
+    status: complete
+    file: docs/book/appendix_c_convex_optimization.md
+    summary: Rigorous treatment of Lagrangian duality, Slater's condition, and primal-dual methods for constrained RL. Establishes strong duality for randomized policies and KKT conditions.
+    defines: [THM-C.2.1, THM-C.5.1, ALG-C.5.1]
+    see_also: [CH-1, CH-10, CH-14]
+
+  - id: THM-C.2.1
+    kind: theorem
+    title: Slater's Condition for Strong Duality
+    status: complete
+    file: docs/book/appendix_c_convex_optimization.md
+    anchor: "{#THM-C.2.1}"
+    summary: Under strict feasibility (∃π₀ with gᵢ(π₀) > 0 for all i), the constrained MDP problem has strong duality. Primal and dual optimal values coincide, Lagrangian saddle-point problem is equivalent, KKT conditions are necessary and sufficient.
+
+  - id: THM-C.5.1
+    kind: theorem
+    title: Primal-Dual Convergence
+    status: complete
+    file: docs/book/appendix_c_convex_optimization.md
+    anchor: "{#THM-C.5.1}"
+    summary: Under convexity + Slater + Robbins-Monro step sizes, primal-dual gradient ascent-descent converges to saddle point.
+    depends_on: [THM-C.2.1]
+
+  - id: ALG-C.5.1
+    kind: algorithm
+    title: Primal-Dual RL Algorithm
+    status: complete
+    file: docs/book/appendix_c_convex_optimization.md
+    anchor: "{#ALG-C.5.1}"
+    summary: Alternating primal step (policy gradient on Lagrangian) and dual step (multiplier adjustment for constraint violations).
+    depends_on: [THM-C.2.1, THM-C.5.1]
+
+  - id: CH-10
+    kind: chapter
+    title: "Chapter 10 — Robustness to Drift and Guardrails"
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    summary: Non-stationary MDPs, Lyapunov stability, CUSUM/Page-Hinkley drift detection, SafetyMonitor guardrails.
+    depends_on: [CH-3, CH-6, CH-8]
+    defines: [DEF-10.1, DEF-10.2, DEF-10.3, DEF-10.4, DEF-10.5, DEF-10.1.2, DEF-10.1.3, DEF-10.1.4, REM-10.1.5, ASM-10.2.1, ASM-10.4.1, THM-10.1, THM-10.2, THM-10.3, THM-10.4, THM-10.5, THM-10.6, THM-10.7, LEM-10.3, ALG-10.1, ALG-10.2, EQ-10.1, EQ-10.2, EQ-10.3, EQ-10.4, EQ-10.4-prime, EQ-10.5, EQ-10.6, EQ-10.7, EQ-10.8, EQ-10.9, EQ-10.10, EQ-10.10-prime, EQ-10.11, EQ-10.12, EQ-10.13]
+    see_also: [MOD-zoosim.monitoring.drift, MOD-zoosim.monitoring.guardrails, MOD-zoosim.monitoring.metrics]
+
+  - id: DEF-10.1
+    kind: definition
+    title: Bounded Drift Rate
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#DEF-10.1}"
+    summary: Non-stationary MDP with bounded rate of change in transition kernel and reward function.
+    see_also: [EQ-10.2, EQ-10.3]
+
+  - id: DEF-10.2
+    kind: definition
+    title: Lyapunov Stability for Policy Optimization
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#DEF-10.2}"
+    summary: Policy stability via sub-optimality gap Lyapunov function.
+    see_also: [THM-10.2, EQ-10.6]
+
+  - id: DEF-10.3
+    kind: definition
+    title: Detection Delay and False Alarm Rate
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#DEF-10.3}"
+    summary: Performance metrics for sequential change-point tests.
+    see_also: [THM-10.3, ALG-10.1, ALG-10.2]
+
+  - id: DEF-10.4
+    kind: definition
+    title: Delta-Rank@k Stability Metric
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#DEF-10.4}"
+    summary: Fraction of top-k items that changed between consecutive rankings.
+    see_also: [THM-10.6, EQ-10.9, MOD-zoosim.monitoring.metrics]
+
+  - id: DEF-10.5
+    kind: definition
+    title: CM2 Floor Constraint
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#DEF-10.5}"
+    summary: Business viability constraint ensuring non-negative contribution margin.
+    see_also: [EQ-10.11, EQ-10.12, MOD-zoosim.monitoring.metrics]
+
+  - id: DEF-10.1.2
+    kind: definition
+    title: Dynamic Regret
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#DEF-10.1.2}"
+    summary: Regret of a policy against the best time-varying policy sequence in a non-stationary MDP.
+    see_also: [EQ-10.4-prime, THM-10.1]
+
+  - id: DEF-10.1.3
+    kind: definition
+    title: Total Variation Distance
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#DEF-10.1.3}"
+    summary: Total variation distance between probability measures on a measurable space.
+
+  - id: DEF-10.1.4
+    kind: definition
+    title: Wasserstein-1 Distance
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#DEF-10.1.4}"
+    summary: Optimal transport-based Wasserstein-1 distance between probability measures on a metric space.
+
+  - id: REM-10.1.5
+    kind: remark
+    title: Comparing Wasserstein and Total Variation
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#REM-10.1.5}"
+    summary: Notes on when Wasserstein-1 requires a metric and how it reduces to finite optimal transport.
+
+  - id: THM-10.1
+    kind: theorem
+    title: Suboptimality Under Bounded Drift (LinUCB Dynamic Regret)
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#THM-10.1}"
+    summary: LinUCB suffers at least Ω(√(B_T·T)) dynamic regret under bounded drift via the variation-budget framework, where B_T is the variation budget.
+    depends_on: [DEF-10.1, DEF-10.1.2]
+    see_also: [EQ-10.5]
+
+  - id: THM-10.2
+    kind: theorem
+    title: Tracking Error Under Drift
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#THM-10.2}"
+    summary: Gradient ascent tracking error scales as δ/(μα) for drifting optimal parameter θ*_t.
+    depends_on: [DEF-10.2]
+    see_also: [EQ-10.7]
+
+  - id: THM-10.3
+    kind: theorem
+    title: Fundamental Tradeoff (CUSUM Lower Bound)
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#THM-10.3}"
+    summary: Any sequential test with false alarm rate α has detection delay ≥ |log α| / D_KL, with CUSUM asymptotically attaining the bound.
+    depends_on: [DEF-10.3, LEM-10.3]
+    see_also: [EQ-10.8, ALG-10.1]
+
+  - id: THM-10.4
+    kind: theorem
+    title: CUSUM Average Run Length
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#THM-10.4}"
+    summary: Two-sided CUSUM achieves ARL_0 ~ exp(λΔ/(2σ²)) and detection delay ~ 2λ/Δ.
+    depends_on: [ALG-10.1, DEF-10.3]
+    see_also: [MOD-zoosim.monitoring.drift]
+
+  - id: THM-10.5
+    kind: theorem
+    title: Page-Hinkley Detection Guarantee
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#THM-10.5}"
+    summary: Page-Hinkley achieves tighter one-sided bounds than CUSUM.
+    depends_on: [ALG-10.2, DEF-10.3]
+    see_also: [MOD-zoosim.monitoring.drift]
+
+  - id: THM-10.6
+    kind: theorem
+    title: Delta-Rank as Surrogate for User Satisfaction
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#THM-10.6}"
+    summary: Under linear dissatisfaction model, E[U_t] = U_max − βk·Δrank@k.
+    depends_on: [DEF-10.4]
+    see_also: [EQ-10.10]
+
+  - id: ASM-10.4.1
+    kind: remark
+    title: Linear Dissatisfaction Model
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#ASM-10.4.1}"
+    summary: Assumption that user satisfaction decreases linearly with the number of unexpected top-k changes.
+
+  - id: ASM-10.2.1
+    kind: remark
+    title: Local Strong Concavity
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#ASM-10.2.1}"
+    summary: Assumes J_t is L-smooth and μ-strongly concave on a fixed-radius ball around θ*_t and that the gradient ascent trajectory stays within this neighborhood.
+
+  - id: THM-10.7
+    kind: theorem
+    title: Performance Guarantee of Best Fixed Template
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#THM-10.7}"
+    summary: Best fixed template policy achieves reward ≥ min_t E[π*_t] − ε.
+    see_also: [EQ-10.13]
+
+  - id: ALG-10.1
+    kind: algorithm
+    title: Two-Sided CUSUM
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#ALG-10.1}"
+    summary: Cumulative sum control chart for detecting mean shifts.
+    see_also: [MOD-zoosim.monitoring.drift]
+
+  - id: ALG-10.2
+    kind: algorithm
+    title: Page-Hinkley Test
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#ALG-10.2}"
+    summary: One-sided drift detection optimized for reward degradation.
+    see_also: [MOD-zoosim.monitoring.drift]
+
+  - id: EQ-10.1
+    kind: equation
+    title: Bellman optimality operator in stationary MDP
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.1}"
+    summary: (TV)(s) = max_a { R(s,a) + γ Σ_{s'} P(s'|s,a) V(s') } defining the Bellman optimality operator.
+
+  - id: EQ-10.2
+    kind: equation
+    title: Non-stationary MDP family
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.2}"
+    summary: (𝒮,𝒜,P_t,R_t,γ), t∈ℕ.
+
+  - id: EQ-10.3
+    kind: equation
+    title: Bounded drift rate constraints
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.3}"
+    summary: Total variation and sup-norm drift bounds δ_P, δ_R between consecutive kernels and rewards.
+
+  - id: EQ-10.4
+    kind: equation
+    title: LinUCB ridge regression update
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.4}"
+    summary: θ̂_t = (Σ_{i<t} φφ^T + λI)^{-1} Σ_{i<t} φ r_i.
+
+  - id: EQ-10.4-prime
+    kind: equation
+    title: Dynamic regret definition
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.4-prime}"
+    summary: DynRegret_T(π) = Σ_t 𝔼_{π*_t}[R_t] − Σ_t 𝔼_π[R_t].
+
+  - id: EQ-10.5
+    kind: equation
+    title: LinUCB dynamic regret lower bound
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.5}"
+    summary: DynRegret_T(π_LinUCB) ≥ Ω(√(B_T·T)) in terms of variation budget B_T.
+
+  - id: EQ-10.6
+    kind: equation
+    title: Lyapunov sub-optimality gap
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.6}"
+    summary: V(θ) = J(θ*) − J(θ).
+
+  - id: EQ-10.7
+    kind: equation
+    title: Tracking error bound under drift
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.7}"
+    summary: 𝔼[‖θ_t − θ*_t‖] ≤ δ/(μα) + O(α).
+
+  - id: EQ-10.8
+    kind: equation
+    title: Detection delay lower bound via KL
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.8}"
+    summary: τ_d ≥ |log α| / D_KL(P_1∥P_0).
+
+  - id: EQ-10.9
+    kind: equation
+    title: Delta-Rank@k definition
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.9}"
+    summary: Δ-rank@k(σ_t,σ_{t-1}) = 1 − |Top_k(σ_t)∩Top_k(σ_{t-1})|/k.
+
+  - id: EQ-10.10
+    kind: equation
+    title: Expected satisfaction under linear dissatisfaction
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.10}"
+    summary: 𝔼[U_t] = U_max − βk·Δ-rank@k.
+
+  - id: EQ-10.10-prime
+    kind: equation
+    title: Position-weighted Delta-Rank churn metric
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.10-prime}"
+    summary: Δ-rank-weighted@k = Σ_{i≤k} w_i 1[σ_t(i) ≠ σ_{t-1}(i)] with decaying position weights.
+
+  - id: LEM-10.3
+    kind: theorem
+    title: Lorden's Lower Bound
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#LEM-10.3}"
+    summary: Any stopping time with false alarm probability ≤ α has worst-case detection delay ≥ |log α| / D_KL(P_1∥P_0) + o(|log α|).
+
+  - id: EQ-10.11
+    kind: equation
+    title: CM2 definition
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.11}"
+    summary: CM2 = GMV − COGS − Logistics − Marketing.
+
+  - id: EQ-10.12
+    kind: equation
+    title: CM2 floor constraint
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.12}"
+    summary: 𝔼_τ∼π[CM2(τ)] ≥ C_min.
+
+  - id: EQ-10.13
+    kind: equation
+    title: Best fixed template performance bound
+    status: in_progress
+    file: docs/book/ch10/ch10_robustness_guardrails.md
+    anchor: "{#EQ-10.13}"
+    summary: 𝔼_{π_BFT}[R] ≥ min_t 𝔼_{π*_t}[R] − ε.
+
+  - id: MOD-zoosim.monitoring.drift
+    kind: module
+    title: Drift Detection (CUSUM, Page-Hinkley)
+    status: complete
+    file: zoosim/monitoring/drift.py
+    summary: Sequential change-point detection algorithms.
+    implements: [ALG-10.1, ALG-10.2, THM-10.4, THM-10.5]
+    tested_by: [EXP-ch10-drift-demo]
+
+  - id: MOD-zoosim.monitoring.guardrails
+    kind: module
+    title: SafetyMonitor Orchestration
+    status: complete
+    file: zoosim/monitoring/guardrails.py
+    summary: Drift detection, fallback policies, automatic recovery.
+    uses: [MOD-zoosim.monitoring.drift]
+    tested_by: [EXP-ch10-drift-demo]
+
+  - id: MOD-zoosim.monitoring.metrics
+    kind: module
+    title: Business and Stability Metrics
+    status: complete
+    file: zoosim/monitoring/metrics.py
+    summary: Delta-Rank@k, CM2, GMV, CVR, latency computation.
+    implements: [DEF-10.4, DEF-10.5, EQ-10.9]
+
+  - id: EXP-ch10-drift-demo
+    kind: test
+    title: Chapter 10 Drift Detection Demo
+    status: complete
+    file: scripts/ch10/ch10_drift_demo.py
+    summary: Simulated seasonal drift with LinUCB + SafetyMonitor, demonstrating detection, fallback, and recovery.
+    uses: [MOD-zoosim.monitoring.drift, MOD-zoosim.monitoring.guardrails, MOD-zoosim.monitoring.metrics]
+    validates: [THM-10.3, THM-10.4, THM-10.5]
+
+  - id: CH-2
+    kind: chapter
+    title: Chapter 2 — Probability, Measure, and Click Models
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    summary: Measure-theoretic foundations for click models and OPE; PBM/DBN, conditional expectation, filtrations, IPS.
+    defines: [DEF-2.2.1, DEF-2.2.2, DEF-2.2.3, DEF-2.2.4, DEF-2.2.5, THM-2.2.1, THM-2.2.2, THM-2.2.3, DEF-2.3.1, DEF-2.3.2, THM-2.3.1, THM-2.3.2, THM-2.3.3, DEF-2.4.1, DEF-2.4.2, DEF-2.4.3, THM-2.4.1, DEF-2.5.1, DEF-2.5.2, THM-2.5.1, DEF-2.5.3, PROP-2.5.4, PROP-2.5.5, EQ-2.1, EQ-2.2, EQ-2.3, EQ-2.10, EQ-2.11, EQ-2.12, EQ-2.13, EQ-2.14, ASSUMP-2.6.1, DEF-2.6.1, DEF-2.6.2, THM-2.6.1, EQ-2.5, EQ-2.6, EQ-2.7, THM-2.6.2, EQ-2.8, THM-2.8.1, REM-2.8.2, THM-2.8.3, EQ-2.9]
+
+  - id: DEF-2.2.1
+    kind: definition
+    title: Measurable Space
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.2.1}"
+    summary: Pair (Ω, 𝔽) with 𝔽 a σ‑algebra on Ω.
+
+  - id: DEF-2.2.2
+    kind: definition
+    title: Probability Measure
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.2.2}"
+    summary: Normalization, non‑negativity, and countable additivity on (Ω, 𝔽).
+
+  - id: DEF-2.2.3
+    kind: definition
+    title: Random Variable
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.2.3}"
+    summary: "(𝔽, 𝔈)‑measurable function X: Ω→E."
+
+  - id: DEF-2.2.4
+    kind: definition
+    title: Expectation (Lebesgue integral)
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.2.4}"
+    summary: 𝔼[X] = ∫Ω X d𝔓 with standard construction.
+
+  - id: DEF-2.2.5
+    kind: definition
+    title: Measurable Function
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.2.5}"
+    summary: "f: (E,𝔈)→(F,𝔽) is measurable iff preimages of 𝔽-sets lie in 𝔈."
+
+  - id: THM-2.2.2
+    kind: theorem
+    title: Linearity of Expectation
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.2.2}"
+    summary: 𝔼[αX+βY] = α𝔼[X]+β𝔼[Y] for integrable X,Y.
+
+  - id: THM-2.2.3
+    kind: theorem
+    title: Monotone Convergence Theorem
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.2.3}"
+    summary: For X_n↑X≥0, 𝔼[X] = lim 𝔼[X_n].
+
+  - id: DEF-2.3.1
+    kind: definition
+    title: Conditional Probability
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.3.1}"
+    summary: 𝔓(A|B) = 𝔓(A∩B)/𝔓(B) for 𝔓(B)>0.
+
+  - id: THM-2.3.1
+    kind: theorem
+    title: Law of Total Probability
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.3.1}"
+    summary: Partition {B_n} implies 𝔓(A)=∑ 𝔓(A|B_n)𝔓(B_n).
+
+  - id: DEF-2.3.2
+    kind: definition
+    title: Conditional Expectation given σ‑algebra
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.3.2}"
+    summary: 𝔾‑measurable Y s.t. ∫_A Y d𝔓 = ∫_A X d𝔓 for all A∈𝔾.
+
+  - id: THM-2.3.2
+    kind: theorem
+    title: Tower Property
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.3.2}"
+    summary: 𝔼[𝔼[X|𝔥]|𝔾] = 𝔼[X|𝔾] for 𝔾⊆𝔥.
+
+  - id: THM-2.3.3
+    kind: theorem
+    title: Existence and Uniqueness of Conditional Expectation
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.3.3}"
+    summary: Existence via Radon–Nikodym; unique a.s.
+
+  - id: DEF-2.4.1
+    kind: definition
+    title: Filtration
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.4.1}"
+    summary: Increasing σ‑algebras {𝔽_t} representing information up to time t.
+
+  - id: DEF-2.4.2
+    kind: definition
+    title: Adapted Process
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.4.2}"
+    summary: X_t is 𝔽_t‑measurable for all t.
+
+  - id: DEF-2.4.3
+    kind: definition
+    title: Stopping Time
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.4.3}"
+    summary: "{τ=t} ∈ 𝔽_t for each t."
+
+  - id: THM-2.4.1
+    kind: theorem
+    title: Measurability at a Stopping Time
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.4.1}"
+    summary: X_τ is measurable with respect to 𝔽_τ.
+
+  - id: DEF-2.5.1
+    kind: definition
+    title: Position Bias Model (PBM)
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.5.1}"
+    summary: Examination θ_k by position; clicks require examination; per‑position independence.
+
+  - id: EQ-2.1
+    kind: equation
+    title: PBM click probability P(C_k=1) = rel(p_k)·θ_k
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.1}"
+    summary: Marginal CTR as product of relevance and examination.
+
+  - id: DEF-2.5.2
+    kind: definition
+    title: DBN Cascade Click Model
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.5.2}"
+    summary: Cascade over positions via satisfaction S_k; examination continues iff S_k=0.
+
+  - id: EQ-2.2
+    kind: equation
+    title: DBN examination cascade transition
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.2}"
+    summary: P(E_{k+1}=1 | E_k=1, S_k=0)=1; else 0.
+
+  - id: EQ-2.3
+    kind: equation
+    title: DBN marginal examination probability
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.3}"
+    summary: P(E_k=1) = ∏_{j<k} (1 − rel(p_j)·s(p_j)).
+
+  - id: DEF-2.6.1
+    kind: definition
+    title: Propensity Score
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.6.1}"
+    summary: "ρ(x,a) := π_0(a|x) for stochastic logging policy."
+
+  - id: DEF-2.6.2
+    kind: definition
+    title: IPS Estimator
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.6.2}"
+    summary: \hat V_IPS(π_1) = (1/N)∑ [π_1(a_i|x_i)/π_0(a_i|x_i)] r_i.
+
+  - id: THM-2.6.1
+    kind: theorem
+    title: Unbiasedness of IPS
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.6.1}"
+    summary: Under positivity and correct logging, 𝔼[\hat V_IPS(π_1)] = V(π_1).
+
+  - id: EQ-2.5
+    kind: equation
+    title: Plackett–Luce step probability
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.5}"
+    summary: π(p_k | x, p_1..p_{k-1}) = s_π(p_k|x)/∑_{p∈R_k} s_π(p|x).
+
+  - id: EQ-2.6
+    kind: equation
+    title: Plackett–Luce full ranking propensity
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.6}"
+    summary: π(a|x) = ∏_{k=1}^M s_π(p_k|x)/∑_{p∈R_k} s_π(p|x).
+
+  - id: EQ-2.7
+    kind: equation
+    title: Clipped IPS estimator
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.7}"
+    summary: IPS with weights capped at c to reduce variance.
+
+  - id: THM-2.6.2
+    kind: theorem
+    title: Negative bias of clipped IPS for nonnegative rewards
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.6.2}"
+    summary: min{c,w}·R underestimates w·R unless clipping never occurs.
+
+  - id: EQ-2.8
+    kind: equation
+    title: Self‑normalized IPS (SNIPS)
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.8}"
+    summary: Weighted average normalized by sum of weights.
+
+  - id: THM-2.8.1
+    kind: theorem
+    title: Bellman measurability and γ‑contraction
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.8.1}"
+    summary: T^π maps B_b(S) → B_b(S) and is a γ‑contraction; control operator measurable under mild conditions.
+
+  - id: EQ-2.9
+    kind: equation
+    title: Policy evaluation Bellman operator
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.9}"
+    summary: T^π V(s) = ∫ r(s,a) dπ + γ ∫ V(s') dP dπ.
+
+  - id: SEC-CH2-2.7.4
+    kind: section
+    title: 2.7.4 — Clipped IPS and SNIPS (Numerical)
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    summary: NumPy illustration of clipped IPS bias and SNIPS variance reduction.
+
+  - id: REM-2.8.2
+    kind: remark
+    title: Control operator measurability and measurable selection
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#REM-2.8.2}"
+    summary: Measurable selection (Kuratowski–Ryll‑Nardzewski) yields measurable greedy policies under mild assumptions.
+
+  - id: THM-2.8.3
+    kind: theorem
+    title: Kuratowski--Ryll--Nardzewski Selection (RL specialization)
+    status: complete
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.8.3}"
+    summary: "Under standard Borel state spaces and compact metric action spaces, if Q(s,a) is jointly measurable and upper semicontinuous in a, there exists a measurable greedy policy π*(s) = argmax_a Q(s,a). Ensures Bellman operators produce measurable functions."
+    depends_on: []
+
+  - id: SEC-CH2-2.7.3
+    kind: section
+    title: 2.7.3 — Tower Property (Numerical)
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    summary: NumPy verification that E[E[Z|H]|G] equals E[Z|G] by grouping.
+
+  - id: THM-2.2.1
+    kind: theorem
+    title: Measurability of compositions
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.2.1}"
+    summary: If X and f are measurable, then f∘X is measurable.
+
+  - id: THM-2.5.1
+    kind: theorem
+    title: DBN marginal examination probability
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.5.1}"
+    summary: 𝔓(E_k=1)=∏_{j<k}(1−rel(p_j)·s(p_j)) under cascade.
+
+  - id: DEF-2.5.3
+    kind: definition
+    title: Utility-Based Cascade Model
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.5.3}"
+    summary: Production click model extending DBN with position decay, utility-driven click probabilities, satisfaction dynamics, and stopping conditions.
+    depends_on: [DEF-2.5.1, DEF-2.5.2]
+    see_also: [EQ-2.10, EQ-2.11, EQ-2.12, EQ-2.13, EQ-2.14, MOD-zoosim.behavior]
+
+  - id: EQ-2.10
+    kind: equation
+    title: Utility function
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.10}"
+    summary: U(p,q) = alpha_rel*rel(p,q) - alpha_price*price(p) + alpha_pl*is_pl(p) + alpha_cat*cat_match(p,q) + epsilon.
+    depends_on: [DEF-2.5.3]
+
+  - id: EQ-2.11
+    kind: equation
+    title: Click probability given examination
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.11}"
+    summary: P(C_k=1 | E_k=1, U_k) = sigmoid(U_k); click probability given examination is logistic transform of utility.
+    depends_on: [DEF-2.5.3, EQ-2.10]
+
+  - id: EQ-2.12
+    kind: equation
+    title: Examination probability
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.12}"
+    summary: P(E_k=1 | F_{k-1}) = sigmoid(pos_bias_k + beta_exam * S_{k-1}); examination depends on position bias and running satisfaction.
+    depends_on: [DEF-2.5.3, DEF-2.5.1]
+
+  - id: EQ-2.13
+    kind: equation
+    title: Satisfaction dynamics
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.13}"
+    summary: S_k = S_{k-1} + gain*U_k*C_k - decay*(1-C_k) - fatigue*B_k; satisfaction evolves with clicks and purchases.
+    depends_on: [DEF-2.5.3, EQ-2.10]
+
+  - id: EQ-2.14
+    kind: equation
+    title: Stopping time
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.14}"
+    summary: "tau = min{k : E_k=0 or S_k < theta_abandon or sum B_j >= n_max}; session ends via examination failure, satisfaction threshold, or purchase limit."
+    depends_on: [DEF-2.5.3, EQ-2.12, EQ-2.13]
+
+  - id: PROP-2.5.4
+    kind: proposition
+    title: Nesting Property (Utility-Based to PBM)
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#PROP-2.5.4}"
+    summary: When utility weights alpha_price, alpha_pl, alpha_cat are zeroed and satisfaction dynamics disabled, the Utility-Based Cascade reduces to PBM with position-independent click probabilities (given examination).
+    depends_on: [DEF-2.5.3, DEF-2.5.1]
+
+  - id: PROP-2.5.5
+    kind: proposition
+    title: Stopping Time Validity
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#PROP-2.5.5}"
+    summary: The session stopping time tau from [EQ-2.14] is a valid stopping time with respect to the natural filtration; measurable at each position.
+    depends_on: [DEF-2.5.3, EQ-2.14, DEF-2.4.1]
+
+  - id: CH-3
+    kind: chapter
+    title: Chapter 3 — Stochastic Processes and Bellman Foundations
+    status: in_progress
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    summary: Stochastic processes, MDPs, Bellman operators, contractions; bridges to CMDP and OPE.
+    defines: [DEF-3.2.1, DEF-3.2.2, DEF-3.2.3, DEF-3.2.4, DEF-3.3.1, DEF-3.3.2, DEF-3.4.1, DEF-3.4.2, DEF-3.4.3, DEF-3.4.4, DEF-3.4.5, DEF-3.6.1, DEF-3.6.2, DEF-3.6.3, DEF-3.8.1, PROP-3.2.1, PROP-3.6.1, PROP-3.8.1, ASM-3.4.1, THM-3.5.1-Bellman, THM-3.5.2-Bellman, THM-3.6.2-Banach, THM-3.7.1, COR-3.7.2, COR-3.7.3, EQ-3.1, EQ-3.2, EQ-3.3, EQ-3.4, EQ-3.5, EQ-3.6, EQ-3.7, EQ-3.8, EQ-3.9, EQ-3.10, EQ-3.11, EQ-3.12, EQ-3.13, EQ-3.14, EQ-3.15, EQ-3.16, EQ-3.17, EQ-3.18, EQ-3.19, EQ-3.20, EQ-3.22]
+    forward_refs: [CH-9, CH-11]
+    uses: [MOD-zoosim.reward, MOD-zoosim.session_env, MOD-zoosim.retention, MOD-zoosim.config]
+
+  # Chapter 3 Definitions
+
+  - id: DEF-3.2.1
+    kind: definition
+    title: Stochastic Process
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.2.1}"
+    summary: "A collection of random variables {X_t}_{t∈T} indexed by time T on probability space (Ω, F, P); formalizes temporal uncertainty in RL."
+
+  - id: DEF-3.2.2
+    kind: definition
+    title: Filtration
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.2.2}"
+    summary: "Increasing family of σ-algebras {F_t}_{t∈T} with F_s ⊆ F_t for s ≤ t; represents information available at each time."
+    see_also: [DEF-3.2.3]
+
+  - id: DEF-3.2.3
+    kind: definition
+    title: Adapted Process
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.2.3}"
+    summary: "Process {X_t} where each X_t is F_t-measurable; process only depends on information available at time t."
+    see_also: [DEF-3.2.2]
+
+  - id: DEF-3.2.4
+    kind: definition
+    title: Stopping Time
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.2.4}"
+    summary: "Random time τ: Ω → T ∪ {∞} where {τ ≤ t} ∈ F_t for all t; decision to stop depends only on past/present."
+
+  - id: DEF-3.3.1
+    kind: definition
+    title: Markov Chain
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.3.1}"
+    summary: "Stochastic process satisfying P(X_{t+1}|X_0,...,X_t) = P(X_{t+1}|X_t); memoryless property."
+    see_also: [EQ-3.1, DEF-3.3.2]
+
+  - id: DEF-3.3.2
+    kind: definition
+    title: Transition Kernel
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.3.2}"
+    summary: "Mapping P: S × B(S) → [0,1] where P(s,·) is probability measure and P(·,A) is measurable; formalizes state transitions."
+    see_also: [DEF-3.3.1, DEF-3.4.1]
+
+  - id: DEF-3.4.1
+    kind: definition
+    title: Markov Decision Process (MDP)
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.4.1}"
+    summary: "Tuple (S, A, P, R, γ) — state space, action space, transition kernel, reward function, discount factor; foundational RL model."
+    see_also: [DEF-3.4.2, DEF-3.4.3, ASM-3.4.1]
+
+  - id: DEF-3.4.2
+    kind: definition
+    title: Policy
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.4.2}"
+    summary: "Mapping π: S → Δ(A) assigning action distribution to each state; can be deterministic (π(s) ∈ A) or stochastic."
+    see_also: [DEF-3.4.1, DEF-3.4.3]
+
+  - id: DEF-3.4.3
+    kind: definition
+    title: State-Value Function
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.4.3}"
+    summary: "V^π(s) = E^π[Σ_{t=0}^∞ γ^t R_t | S_0 = s]; expected discounted return starting from state s under policy π."
+    see_also: [EQ-3.2, DEF-3.4.4, THM-3.5.1-Bellman]
+
+  - id: DEF-3.4.4
+    kind: definition
+    title: Action-Value Function
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.4.4}"
+    summary: "Q^π(s,a) = E^π[Σ_{t=0}^∞ γ^t R_t | S_0 = s, A_0 = a]; expected return starting from state s, taking action a, then following π."
+    see_also: [EQ-3.3, EQ-3.4, DEF-3.4.3]
+
+  - id: DEF-3.4.5
+    kind: definition
+    title: Optimal Value Functions
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.4.5}"
+    summary: "V*(s) = sup_π V^π(s); Q*(s,a) = sup_π Q^π(s,a); maximum achievable value over all policies."
+    see_also: [EQ-3.5, EQ-3.6, THM-3.5.2-Bellman]
+
+  - id: DEF-3.6.1
+    kind: definition
+    title: Normed Vector Space
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.6.1}"
+    summary: "Vector space V with norm ||·||: V → [0,∞) satisfying positivity, homogeneity, triangle inequality; enables metric structure."
+    see_also: [DEF-3.6.2, PROP-3.6.1]
+
+  - id: DEF-3.6.2
+    kind: definition
+    title: Supremum Norm
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.6.2}"
+    summary: "||V||_∞ = sup_{s∈S} |V(s)|; standard norm for value function analysis."
+    see_also: [EQ-3.13, PROP-3.6.1, THM-3.6.2-Banach]
+
+  - id: DEF-3.6.3
+    kind: definition
+    title: Contraction Mapping
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.6.3}"
+    summary: "Mapping T: V → V with ||T(x) - T(y)|| ≤ γ||x - y|| for some γ ∈ [0,1); Bellman operator is γ-contraction."
+    see_also: [EQ-3.14, THM-3.6.2-Banach, THM-3.7.1]
+
+  - id: DEF-3.8.1
+    kind: definition
+    title: Bandit Bellman Operator
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#DEF-3.8.1}"
+    summary: "(T_bandit Q)(a) = E[R(a)]; γ=0 bandit special case where optimal Q* = E[R(a)], found in one iteration."
+    see_also: [EQ-3.19, PROP-3.8.1]
+
+  # Chapter 3 Assumptions
+
+  - id: ASM-3.4.1
+    kind: assumption
+    title: Markov Assumption
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#ASM-3.4.1}"
+    summary: "P(S_{t+1}|S_0,...,S_t,A_0,...,A_t) = P(S_{t+1}|S_t,A_t); future depends only on current state-action, not history."
+    see_also: [DEF-3.4.1, THM-3.5.1-Bellman]
+
+  # Chapter 3 Propositions
+
+  - id: PROP-3.2.1
+    kind: proposition
+    title: Measurability of Stopped Processes
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#PROP-3.2.1}"
+    summary: "If {X_t} is adapted and τ is a stopping time, then X_τ is F_τ-measurable; stopped process inherits measurability."
+    see_also: [DEF-3.2.3, DEF-3.2.4]
+
+  - id: PROP-3.6.1
+    kind: proposition
+    title: Completeness of (B(S), ||·||_∞)
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#PROP-3.6.1}"
+    summary: "Space of bounded functions on S with supremum norm is a Banach space; enables Banach fixed-point theorem application."
+    see_also: [DEF-3.6.2, THM-3.6.2-Banach]
+
+  - id: PROP-3.8.1
+    kind: proposition
+    title: Bandit Operator Fixed Point in One Iteration
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#PROP-3.8.1}"
+    summary: "For bandits (γ=0), Q* = T_bandit Q_0 for any initial Q_0; single iteration suffices since T_bandit Q = E[R(a)]."
+    see_also: [DEF-3.8.1, EQ-3.20]
+
+  # Chapter 3 Theorems
+
+  - id: THM-3.5.1-Bellman
+    kind: theorem
+    title: Bellman Expectation Equation
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#THM-3.5.1-Bellman}"
+    summary: "V^π(s) = Σ_a π(a|s)[r(s,a) + γ Σ_{s'} P(s'|s,a)V^π(s')]; recursive characterization of policy value. Equivalently V^π = T^π V^π."
+    see_also: [EQ-3.7, EQ-3.8, EQ-3.9, DEF-3.4.3, ASM-3.4.1]
+    used_by: [EQ-9.21, EQ-9.24]
+
+  - id: THM-3.5.2-Bellman
+    kind: theorem
+    title: Bellman Optimality Equation
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#THM-3.5.2-Bellman}"
+    summary: "V*(s) = max_a[r(s,a) + γ Σ_{s'} P(s'|s,a)V*(s')]; optimal value is fixed point of Bellman optimality operator T."
+    see_also: [EQ-3.10, EQ-3.11, EQ-3.12, DEF-3.4.5, THM-3.7.1]
+
+  - id: THM-3.6.2-Banach
+    kind: theorem
+    title: Banach Fixed-Point Theorem
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#THM-3.6.2-Banach}"
+    summary: "If T is γ-contraction on Banach space, then: (1) unique fixed point v* exists, (2) iteration v_{k+1}=T(v_k) converges to v*, (3) ||v_k-v*|| ≤ γ^k/(1-γ)||Tv_0-v_0||."
+    see_also: [EQ-3.15, DEF-3.6.3, PROP-3.6.1, THM-3.7.1]
+    used_by: [EQ-9.24]
+
+  - id: THM-3.7.1
+    kind: theorem
+    title: Bellman Operator Contraction
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#THM-3.7.1}"
+    summary: "The Bellman optimality operator T is a γ-contraction in ||·||_∞ norm: ||TV - TW||_∞ ≤ γ||V - W||_∞. Same for policy operator T^π."
+    see_also: [EQ-3.16, THM-3.6.2-Banach, DEF-3.6.3, COR-3.7.2, COR-3.7.3]
+
+  - id: COR-3.7.2
+    kind: corollary
+    title: Existence and Uniqueness of V*
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#COR-3.7.2}"
+    summary: "There exists a unique V* ∈ B(S) satisfying the Bellman optimality equation V* = T V*."
+    see_also: [THM-3.6.2-Banach, THM-3.7.1]
+
+  - id: COR-3.7.3
+    kind: corollary
+    title: Value Iteration Convergence
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#COR-3.7.3}"
+    summary: "For any V_0, V_{k+1} = T V_k converges to V* with rate ||V_k - V*||_∞ ≤ γ^k ||V_0 - V*||_∞."
+    see_also: [THM-3.6.2-Banach, THM-3.7.1, EQ-3.17, EQ-3.18]
+    tested_by: [TEST-tests.ch03.test_value_iteration]
+
+  # Chapter 3 Equations
+
+  - id: EQ-3.1
+    kind: equation
+    title: Markov Property
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.1}"
+    summary: "P(X_{n+1} ∈ A | X_0,...,X_n) = P(X_{n+1} ∈ A | X_n); conditional independence of future given present."
+
+  - id: EQ-3.2
+    kind: equation
+    title: State-Value Function Definition
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.2}"
+    summary: "V^π(s) = E^π[Σ_{t=0}^∞ γ^t R_t | S_0 = s]; expected discounted cumulative reward under policy π."
+
+  - id: EQ-3.3
+    kind: equation
+    title: Action-Value Function Definition
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.3}"
+    summary: "Q^π(s,a) = E^π[Σ_{t=0}^∞ γ^t R_t | S_0 = s, A_0 = a]; expected return starting with specific action."
+
+  - id: EQ-3.4
+    kind: equation
+    title: Q-V Relationship
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.4}"
+    summary: "V^π(s) = Σ_a π(a|s) Q^π(s,a); state value is expected action value under policy."
+
+  - id: EQ-3.5
+    kind: equation
+    title: Optimal State-Value Function
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.5}"
+    summary: "V*(s) = sup_π V^π(s); maximum value achievable from state s over all policies."
+
+  - id: EQ-3.6
+    kind: equation
+    title: Optimal Action-Value Function
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.6}"
+    summary: "Q*(s,a) = sup_π Q^π(s,a); maximum action value over all policies."
+
+  - id: EQ-3.7
+    kind: equation
+    title: Bellman Expectation Equation (Explicit Form)
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.7}"
+    summary: "V^π(s) = Σ_a π(a|s)[r(s,a) + γ Σ_{s'} P(s'|s,a)V^π(s')]; recursive decomposition of policy value."
+    see_also: [THM-3.5.1-Bellman]
+
+  - id: EQ-3.8
+    kind: equation
+    title: Bellman Expectation (Operator Form)
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.8}"
+    summary: "V^π = T^π V^π; value function is fixed point of policy Bellman operator."
+    see_also: [THM-3.5.1-Bellman, EQ-3.9]
+
+  - id: EQ-3.9
+    kind: equation
+    title: Policy Bellman Operator Definition
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.9}"
+    summary: "(T^π V)(s) = Σ_a π(a|s)[r(s,a) + γ Σ_{s'} P(s'|s,a)V(s')]; one-step Bellman backup under policy π."
+    see_also: [EQ-3.8, THM-3.7.1]
+
+  - id: EQ-3.10
+    kind: equation
+    title: Bellman Optimality Equation (Explicit Form)
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.10}"
+    summary: "V*(s) = max_a[r(s,a) + γ Σ_{s'} P(s'|s,a)V*(s')]; optimal value via maximizing over actions."
+    see_also: [THM-3.5.2-Bellman]
+
+  - id: EQ-3.11
+    kind: equation
+    title: Bellman Optimality (Operator Form)
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.11}"
+    summary: "V* = T V*; optimal value is fixed point of Bellman optimality operator."
+    see_also: [THM-3.5.2-Bellman, EQ-3.12]
+
+  - id: EQ-3.12
+    kind: equation
+    title: Bellman Optimality Operator Definition
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.12}"
+    summary: "(T V)(s) = max_a[r(s,a) + γ Σ_{s'} P(s'|s,a)V(s')]; one-step optimal Bellman backup."
+    see_also: [EQ-3.11, THM-3.7.1]
+
+  - id: EQ-3.13
+    kind: equation
+    title: Supremum Norm Definition
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.13}"
+    summary: "||V||_∞ = sup_{s∈S} |V(s)|; standard norm for bounded value functions."
+    see_also: [DEF-3.6.2]
+
+  - id: EQ-3.14
+    kind: equation
+    title: Contraction Property
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.14}"
+    summary: "||T(x) - T(y)|| ≤ γ||x - y|| for γ ∈ [0,1); contraction mapping definition."
+    see_also: [DEF-3.6.3]
+
+  - id: EQ-3.15
+    kind: equation
+    title: Banach Convergence Rate
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.15}"
+    summary: "||v_k - v*|| ≤ γ^k/(1-γ)||Tv_0 - v_0||; exponential convergence rate of fixed-point iteration."
+    see_also: [THM-3.6.2-Banach]
+
+  - id: EQ-3.16
+    kind: equation
+    title: Bellman Operator Contraction Proof Step
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.16}"
+    summary: "|(TV)(s) - (TW)(s)| ≤ γ max_a Σ_{s'} P(s'|s,a)|V(s') - W(s')| ≤ γ||V-W||_∞."
+    see_also: [THM-3.7.1]
+
+  - id: EQ-3.17
+    kind: equation
+    title: Value Iteration Update
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.17}"
+    summary: "V_{k+1} = T V_k; iterative application of Bellman operator converges to V*."
+    see_also: [EQ-3.18, THM-3.6.2-Banach]
+
+  - id: EQ-3.19
+    kind: equation
+    title: Bandit Bellman Operator
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.19}"
+    summary: "(T_bandit Q)(a) = E[R(a)]; degenerate γ=0 case where one iteration finds Q*."
+    see_also: [DEF-3.8.1]
+
+  - id: EQ-3.20
+    kind: equation
+    title: Bandit Optimal Q
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.20}"
+    summary: "Q*(a) = E[R(a)]; optimal action value equals expected reward (γ=0 case)."
+    see_also: [PROP-3.8.1]
+
+  # EQ-3.21 removed: CMDP Lagrangian concept covered by EQ-C.2 in Appendix C
+  # Original: Lagrangian relaxation L(π,λ) = E[Σ γ^t (R_t - λ c_t)]
+  # See EQ-C.2 for the generalized form: L(π,λ) = J(π) + Σ λᵢ gᵢ(π)
+
+  - id: EQ-3.22
+    kind: equation
+    title: Direct Method value via model Bellman operator
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.22}"
+    summary: DM computes V^π by iterating policy Bellman operator under (\hat P, \hat r).
+
+  - id: EQ-3.18
+    kind: equation
+    title: Value iteration rate bound
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.18}"
+    summary: "||V_k − V*||_∞ ≤ γ^k/(1−γ) ||T V_0 − V_0||_∞."
+    tested_by: [TEST-tests.ch03.test_value_iteration]
+
+  - id: CH-4
+    kind: chapter
+    title: Chapter 4 — Generative World Design
+    status: in_progress
+    file: docs/book/ch04/ch04_generative_world_design.md
+    summary: Defines a deterministic generative world for catalog, users, and queries with explicit seeds and statistical validation.
+    defines: [DEF-4.1, DEF-4.2, DEF-4.3, DEF-4.4, EQ-4.1, EQ-4.2, EQ-4.3, EQ-4.4, EQ-4.5, EQ-4.6, EQ-4.7, EQ-4.8, EQ-4.9, EQ-4.10, EQ-4.11]
+    uses: [MOD-zoosim.world.catalog, MOD-zoosim.world.users, MOD-zoosim.world.queries, TEST-tests.test_catalog_stats]
+
+  - id: DEF-4.1
+    kind: definition
+    title: Generative World Model
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#DEF-4.1}"
+    summary: Deterministic, seed-parameterized procedure generating catalog, user, and query samplers.
+    see_also: [EQ-4.10]
+
+  - id: DEF-4.2
+    kind: definition
+    title: Price Sampling
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#DEF-4.2}"
+    summary: Category-conditional lognormal price model with specified medians and moments.
+    see_also: [EQ-4.2]
+
+  - id: DEF-4.3
+    kind: definition
+    title: User Segment
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#DEF-4.3}"
+    summary: User representation with segment label and preference parameters (price, PL, category, embedding).
+    see_also: [EQ-4.7, EQ-4.8]
+
+  - id: DEF-4.4
+    kind: definition
+    title: Query
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#DEF-4.4}"
+    summary: Query object with intent category, type, categorical and embedding features, and tokens.
+    see_also: [EQ-4.9]
+
+  - id: EQ-4.1
+    kind: equation
+    title: Product tuple p = (id, cat, price, cm2, is_pl, discount, bs, e, strategic)
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#EQ-4.1}"
+    summary: Defines the attributes of a single catalog product in the simulator.
+
+  - id: EQ-4.2
+    kind: equation
+    title: Category-conditional lognormal price model
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#EQ-4.2}"
+    summary: price ∼ LogNormal(μ_c, σ_c) with support (0,∞), known median, mean, and mode.
+
+  - id: EQ-4.3
+    kind: equation
+    title: Linear margin model cm2 = β_c·price + ε
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#EQ-4.3}"
+    summary: Category-specific linear CM2 model with Gaussian noise and strategic negative margins for litter.
+    tested_by: [TEST-tests.test_catalog_stats]
+
+  - id: EQ-4.4
+    kind: equation
+    title: Private label sampling is_pl ∼ Bernoulli(p_c)
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#EQ-4.4}"
+    summary: Bernoulli model for private-label flags with category-dependent probabilities.
+
+  - id: EQ-4.5
+    kind: equation
+    title: Zero-inflated discount model
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#EQ-4.5}"
+    summary: Mixture model for discounts with mass at zero and uniform positive discounts.
+
+  - id: EQ-4.6
+    kind: equation
+    title: Clustered embedding model e_i = μ_c + ε_i
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#EQ-4.6}"
+    summary: Two-stage Gaussian cluster model for product embeddings with shared category centroids.
+
+  - id: EQ-4.7
+    kind: equation
+    title: User tuple u = (s, θ_price, θ_pl, θ_cat, θ_emb)
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#EQ-4.7}"
+    summary: Parametric user representation with simplex-constrained category affinities and embedding preferences.
+
+  - id: EQ-4.8
+    kind: equation
+    title: Utility model U(u,p) combining relevance, price, PL, and embedding terms
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#EQ-4.8}"
+    summary: Multinomial logit-style utility function used to motivate click behavior in later chapters.
+
+  - id: EQ-4.9
+    kind: equation
+    title: Query tuple q = (intent_cat, type, φ_cat, φ_emb, tokens)
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#EQ-4.9}"
+    summary: Defines query attributes including intent category, type, one-hot encoding, embedding, and tokens.
+
+  - id: EQ-4.10
+    kind: equation
+    title: Determinism requirement seed_1 = seed_2 ⇒ experiment(seed_1) = experiment(seed_2)
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#EQ-4.10}"
+    summary: "Formalizes reproducibility: same seed yields identical world, trajectories, and training dynamics."
+    tested_by: [TEST-tests.test_catalog_stats]
+
+  - id: EQ-4.11
+    kind: equation
+    title: Domain randomization heuristic E_{μ_real}[V^{π_robust}] ≥ E_{μ_real}[V^{π_narrow}]
+    status: complete
+    file: docs/book/ch04/ch04_generative_world_design.md
+    anchor: "{#EQ-4.11}"
+    summary: Heuristic inequality stating that policies trained on randomized simulators should perform no worse on the real distribution.
+
+  - id: SEC-CH4-EX-4.1
+    kind: section
+    title: Exercise 4.1 — Catalog Statistics
+    status: in_progress
+    file: docs/book/ch04/exercises_labs.md
+    summary: Generate a synthetic catalog and verify price and margin distributions match Chapter 4 specifications.
+
+  - id: SEC-CH4-EX-4.2
+    kind: section
+    title: Exercise 4.2 — User Segment Analysis
+    status: in_progress
+    file: docs/book/ch04/exercises_labs.md
+    summary: Sample users and inspect segment mix and preference clusters in (θ_price, θ_pl) space.
+
+  - id: SEC-CH4-EX-4.3
+    kind: section
+    title: Exercise 4.3 — Query Intent Coupling
+    status: in_progress
+    file: docs/book/ch04/exercises_labs.md
+    summary: Check that query intent categories and types align with user category affinities and query-type mix.
+
+  - id: SEC-CH4-EX-4.4
+    kind: section
+    title: Exercise 4.4 — Determinism Verification
+    status: in_progress
+    file: docs/book/ch04/exercises_labs.md
+    summary: Empirically verify that identical seeds yield identical catalogs and users, while different seeds change the world.
+
+  - id: SEC-CH4-EX-4.5
+    kind: section
+    title: Exercise 4.5 — Domain Randomization
+    status: in_progress
+    file: docs/book/ch04/exercises_labs.md
+    summary: Implement configuration perturbations for catalog and user parameters and study robustness across randomized worlds.
+
+  - id: SEC-CH4-EX-4.6
+    kind: section
+    title: Exercise 4.6 — Statistical Tests
+    status: in_progress
+    file: docs/book/ch04/exercises_labs.md
+    summary: Apply KS and chi-square goodness-of-fit tests to prices and segment mixes to validate simulator assumptions.
+
+  - id: SEC-CH4-EX-4.7
+    kind: section
+    title: Exercise 4.7 — Convergence of Catalog Statistics
+    status: in_progress
+    file: docs/book/ch04/exercises_labs.md
+    summary: Demonstrate law-of-large-numbers convergence of category mean prices toward their theoretical lognormal means as N grows.
+
+  - id: MOD-zoosim.world.catalog
+    kind: module
+    title: Catalog world generator
+    status: complete
+    file: zoosim/world/catalog.py
+    summary: Generates synthetic product catalogs with prices, margins, PL flags, discounts, bestseller scores, and clustered embeddings.
+    implements: [DEF-4.1, EQ-4.1, EQ-4.2, EQ-4.3, EQ-4.4, EQ-4.5, EQ-4.6]
+
+  - id: MOD-zoosim.world.users
+    kind: module
+    title: User and segment sampler
+    status: complete
+    file: zoosim/world/users.py
+    summary: Samples users from a segment mix with segment-specific preference distributions and embedding vectors.
+    implements: [DEF-4.1, DEF-4.3, EQ-4.7]
+
+  - id: MOD-zoosim.world.queries
+    kind: module
+    title: Query sampler
+    status: complete
+    file: zoosim/world/queries.py
+    summary: Samples queries conditional on a user, with intent categories, types, one-hot encodings, embeddings, and tokens.
+    implements: [DEF-4.1, DEF-4.4, EQ-4.9]
+
+  - id: TEST-tests.test_catalog_stats
+    kind: test
+    title: Catalog statistics and determinism tests
+    status: complete
+    file: tests/test_catalog_stats.py
+    summary: Validates catalog price and margin structure and checks bitwise determinism including embeddings.
+    uses: [MOD-zoosim.world.catalog, EQ-4.3, EQ-4.10]
+
+  - id: MOD-evaluation.ope
+    kind: module
+    title: Off-Policy Evaluation module
+    status: planned
+    summary: IPS/SNIPS/DR/SWITCH/MAGIC; FQE; logging ε-mix protocol.
+
+  # ==================== Chapter 8: Policy Gradient Methods ====================
+
+  - id: LEM-8.1
+    kind: theorem
+    title: Score Function Estimator (Log-Derivative Trick)
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#LEM-8.1}"
+    summary: For differentiable distribution p_θ, ∇_θ 𝔼[f(x)] = 𝔼[f(x) ∇_θ log p_θ(x)]; enables model-free gradient estimation.
+    depends_on: [CH-8]
+
+  - id: THM-8.2
+    kind: theorem
+    title: Policy Gradient Theorem
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#THM-8.2}"
+    summary: ∇_θ J(θ) = 𝔼_τ[Σ_t ∇_θ log π_θ(a_t|s_t) G_t]; gradient of expected return depends only on policy, not dynamics.
+    depends_on: [LEM-8.1, CH-3]
+    see_also: [ALG-8.1, EQ-8.6]
+
+  - id: THM-8.2.2
+    kind: theorem
+    title: Baseline Invariance
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#THM-8.2.2}"
+    summary: Subtracting state-dependent baseline b(s) from returns does not introduce bias; enables variance reduction.
+    depends_on: [THM-8.2]
+    see_also: [EQ-8.9]
+
+  - id: ALG-8.1
+    kind: algorithm
+    title: REINFORCE with Baseline
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#ALG-8.1}"
+    summary: Monte Carlo policy gradient algorithm; samples trajectories, computes returns G_t, updates θ ← θ + α·∇_θ log π(a_t|s_t)·(G_t - b).
+    depends_on: [THM-8.2, THM-8.2.2]
+    implements: [EQ-8.10]
+
+  - id: EQ-8.1
+    kind: equation
+    title: Parameterized Policy
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.1}"
+    summary: π_θ(a|s) = ℙ(A=a | S=s; θ) where θ ∈ ℝ^d are learnable parameters.
+
+  - id: EQ-8.2
+    kind: equation
+    title: Trajectory Return
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.2}"
+    summary: G(τ) = Σ_{t=0}^T γ^t r_t, the discounted sum of rewards for trajectory τ.
+
+  - id: EQ-8.3
+    kind: equation
+    title: Performance Objective
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.3}"
+    summary: J(θ) = 𝔼_{τ ~ π_θ}[G(τ)], expected return over trajectories sampled from policy π_θ.
+
+  - id: EQ-8.4
+    kind: equation
+    title: Trajectory Distribution
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.4}"
+    summary: p_θ(τ) = ρ_0(s_0) Π_t π_θ(a_t|s_t) P(s_{t+1}|s_t,a_t); factorization showing θ-dependence.
+
+  - id: EQ-8.5
+    kind: equation
+    title: Score Function Identity
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.5}"
+    summary: ∇_θ 𝔼[f(x)] = 𝔼[f(x) ∇_θ log p_θ(x)]; the log-derivative trick for expectations.
+    depends_on: [LEM-8.1]
+
+  - id: EQ-8.6
+    kind: equation
+    title: Policy Gradient Estimator
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.6}"
+    summary: ∇_θ J(θ) = 𝔼_τ[Σ_t ∇_θ log π_θ(a_t|s_t) G_t]; unbiased gradient estimate from trajectory samples.
+    depends_on: [THM-8.2]
+
+  - id: EQ-8.7
+    kind: equation
+    title: Expected Return via Trajectory Distribution
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.7}"
+    summary: ∇_θ J(θ) = 𝔼[G(τ) ∇_θ log p_θ(τ)]; intermediate step in Policy Gradient Theorem proof.
+
+  - id: EQ-8.8
+    kind: equation
+    title: Log-Probability Gradient (Trajectory)
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.8}"
+    summary: ∇_θ log p_θ(τ) = Σ_t ∇_θ log π_θ(a_t|s_t); dynamics terms vanish (model-free property).
+
+  - id: EQ-8.9
+    kind: equation
+    title: Baselined Gradient Estimator
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.9}"
+    summary: ĝ(θ) = Σ_t ∇_θ log π_θ(a_t|s_t) (G_t - b(s_t)); variance-reduced via baseline b.
+    depends_on: [THM-8.2.2]
+
+  - id: EQ-8.10
+    kind: equation
+    title: REINFORCE Update Rule
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.10}"
+    summary: ĝ = Σ_t ∇_θ log π_θ(a_t|s_t) (G_t - b); then θ ← θ + α ĝ.
+    see_also: [ALG-8.1]
+
+  - id: EQ-8.11
+    kind: equation
+    title: Gaussian Policy (Diagonal Covariance)
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.11}"
+    summary: π_θ(a|s) = 𝒩(a | μ_θ(s), σ²I) where μ_θ is an MLP and σ are learnable standard deviations.
+
+  - id: EQ-8.12
+    kind: equation
+    title: Log-Probability (Gaussian)
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.12}"
+    summary: log π_θ(a|s) = -½ Σ_i (a_i - μ_i(s))²/σ_i² - Σ_i log σ_i - const.
+    depends_on: [EQ-8.11]
+
+  - id: EQ-8.13
+    kind: equation
+    title: Gradient w.r.t. Mean Parameters
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.13}"
+    summary: ∇_{μ_θ} log π(a|s) = Σ_i (a_i - μ_i(s))·s / σ_i² ∇_{μ_θ} μ_i(s).
+    depends_on: [EQ-8.12]
+
+  - id: EQ-8.14
+    kind: equation
+    title: Gradient w.r.t. Log-Std Parameters
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.14}"
+    summary: ∇_{log σ_i} log π(a|s) = ((a_i - μ_i(s))²/σ_i² - 1).
+    depends_on: [EQ-8.12]
+
+  - id: EQ-8.15
+    kind: equation
+    title: Entropy-Regularized Objective
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.15}"
+    summary: J_ent(θ) = J(θ) + β 𝔼_s[H(π_θ(·|s))]; prevents premature convergence via entropy bonus.
+
+  - id: EQ-8.16
+    kind: equation
+    title: Gaussian Entropy
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.16}"
+    summary: H(π_θ(·|s)) = K/2 log(2πe) + Σ_i log σ_i; increases with σ.
+    depends_on: [EQ-8.11]
+
+  - id: EQ-8.17
+    kind: equation
+    title: Bellman Equation (Value Function)
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.17}"
+    summary: V^π(s) = 𝔼_{a~π}[R(s,a) + γ 𝔼_{s'}[V^π(s')]]; foundation for control theory connection.
+    depends_on: [CH-3]
+
+  - id: EQ-8.18
+    kind: equation
+    title: Hamilton-Jacobi-Bellman Equation (Continuous Time)
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.18}"
+    summary: -∂V/∂t = max_a {f(s,a)·∇_s V + r(s,a)}; optimal control via dynamic programming.
+
+  - id: EQ-8.19
+    kind: equation
+    title: Hamiltonian (Pontryagin)
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.19}"
+    summary: H(s, π, λ) = 𝔼_{a~π}[r(s,a) + λ^T f(s,a)]; Pontryagin's formulation for stochastic policies.
+
+  - id: EQ-8.20
+    kind: equation
+    title: Optimal Policy (Maximum Principle)
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.20}"
+    summary: π*(s) = argmax_π H(s, π, λ); maximizes Hamiltonian at each state.
+    depends_on: [EQ-8.19]
+
+  - id: EQ-8.21
+    kind: equation
+    title: Costate Dynamics (Adjoint Equation)
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.21}"
+    summary: λ̇ = -∇_s H; costate evolves backward in time, connects to value function gradient.
+    depends_on: [EQ-8.19]
+
+  - id: EQ-8.22
+    kind: equation
+    title: Advantage Actor-Critic Gradient
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.22}"
+    summary: ∇_θ J(θ) ≈ 𝔼[Σ_t ∇_θ log π_θ(a_t|s_t) A_t] where A_t = r_t + γV(s_{t+1}) - V(s_t).
+
+  - id: EQ-8.23
+    kind: equation
+    title: TRPO Trust Region Constraint
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.23}"
+    summary: max_θ 𝔼[...] s.t. 𝔼_s[KL(π_old || π_θ)] ≤ δ; constrains policy update size for stability.
+
+  - id: EQ-8.24
+    kind: equation
+    title: PPO Clipped Objective
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.24}"
+    summary: L_PPO(θ) = 𝔼[min(r_t(θ)·A_t, clip(r_t(θ), 1-ε, 1+ε)·A_t)] where r_t = π_θ/π_old; prevents large updates.
+
+  - id: EQ-8.25
+    kind: equation
+    title: Soft Actor-Critic Objective (Maximum Entropy RL)
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.25}"
+    summary: J_SAC(π) = 𝔼[Σ_t γ^t (r_t + α H(π(·|s_t)))]; combines Q-learning efficiency with stochastic policies.
+
+  - id: THM-8.5.1
+    kind: theorem
+    title: Gradient Estimator Variance with Scalar Baseline
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#THM-8.5.1}"
+    summary: "Var[ĝ_t] decomposes into action-dependent (irreducible) and state-dependent (removable) variance components: (G_t - b)² = (G_t - V(s))² + (V(s) - b)²"
+    depends_on: [THM-8.2, EQ-8.26]
+    see_also: [THM-8.5.2, PROP-8.2.3]
+
+  - id: THM-8.5.2
+    kind: theorem
+    title: Optimal Baseline is the Value Function
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#THM-8.5.2}"
+    summary: "The variance-minimizing baseline for policy gradient estimator is b*(s) = V^π(s) = 𝔼[G_t | s_t = s]"
+    depends_on: [THM-8.5.1, THM-8.2.2]
+    see_also: [ALG-8.5, EQ-8.28]
+
+  - id: PROP-8.2.3
+    kind: theorem
+    title: Variance Decomposition for State-Dependent Baseline
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#PROP-8.2.3}"
+    summary: "Var[G_t] = 𝔼_s[Var(G_t | s)] + Var_s(V^π(s)); learned baseline removes second term (state variance), leaving only within-state action variance"
+    depends_on: [THM-8.5.1]
+    see_also: [THM-8.5.2, EQ-8.29]
+
+  - id: ALG-8.5
+    kind: algorithm
+    title: REINFORCE with Learned Value Baseline
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#ALG-8.5}"
+    summary: "Two-network architecture: Policy π_θ and Value V_φ. Updates: θ ← θ + α·∇_θ log π(a|s)·(G_t - V_φ(s)), φ ← φ - α_V·∇_φ ||V_φ(s) - G_t||²"
+    depends_on: [THM-8.5.2, ALG-8.1]
+    see_also: [THM-8.2, CODE-reinforce_baseline, EQ-8.28, MOD-reinforce_baseline]
+
+  - id: EQ-8.26
+    kind: equation
+    title: Policy Gradient with Generic Baseline
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.26}"
+    summary: "ĝ_t = ∇_θ log π_θ(a_t|s_t) (G_t - b); baseline b can be scalar or state-dependent"
+    depends_on: [EQ-8.6, THM-8.2.2]
+
+  - id: EQ-8.27
+    kind: equation
+    title: Variance Formula for Gradient Estimator
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.27}"
+    summary: "Var[ĝ_t] = 𝔼_s[𝔼_a[||∇_θ log π_θ(a|s)||² (G_t - b)²]]; scales quadratically with return deviation"
+    depends_on: [EQ-8.26]
+    see_also: [THM-8.5.1]
+
+  - id: EQ-8.28
+    kind: equation
+    title: Advantage Definition (Value Baseline)
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.28}"
+    summary: "A_t = G_t - V(s_t); advantage measures action quality relative to state baseline"
+    depends_on: [THM-8.5.2]
+    see_also: [ALG-8.5]
+
+  - id: EQ-8.29
+    kind: equation
+    title: Variance Decomposition (Tower Property)
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    anchor: "{#EQ-8.29}"
+    summary: "Var[G_t] = 𝔼_s[Var(G_t | s)] + Var_s(𝔼[G_t | s]); state-dependent baseline removes cross-state variance"
+    depends_on: [PROP-8.2.3]
+
+  - id: MOD-reinforce_baseline
+    kind: module
+    title: REINFORCEBaselineAgent module
+    status: complete
+    file: zoosim/policies/reinforce_baseline.py
+    summary: "Production implementation of REINFORCE with learned value baseline (two-network Actor-Critic); adds ValueNetwork alongside GaussianPolicy, computes advantages A_t = G_t - V_φ(s_t)"
+    implements: [ALG-8.5, THM-8.5.2]
+    depends_on: [MOD-reinforce]
+    see_also: [CODE-reinforce_baseline, SCRIPT-reinforce_baseline_demo]
+
+  - id: CODE-reinforce_baseline
+    kind: module
+    title: REINFORCEBaselineAgent implementation
+    status: complete
+    file: zoosim/policies/reinforce_baseline.py
+    lines: "48-163"
+    summary: "Core agent class: dual networks (policy + value), separate optimizers, advantage-based policy gradient, MSE value loss"
+    implements: [ALG-8.5, EQ-8.28]
+    uses: [CODE-reinforce-policy]
+
+  - id: CODE-value_network
+    kind: module
+    title: ValueNetwork class
+    status: complete
+    file: zoosim/policies/reinforce_baseline.py
+    lines: "32-46"
+    summary: "MLP estimating state value V_φ(s) ≈ V^π(s); ReLU activations, scalar output, trained via MSE to Monte Carlo targets G_t"
+    implements: [THM-8.5.2]
+
+  - id: CODE-reinforce-policy
+    kind: module
+    title: GaussianPolicy class (shared)
+    status: complete
+    file: zoosim/policies/reinforce.py
+    lines: "54-79"
+    summary: "Diagonal Gaussian policy π_θ(a|s) = N(μ_θ(s), σ²I); MLP for mean, learnable log_std, used by both vanilla and baseline REINFORCE"
+    implements: [EQ-8.11, EQ-8.12]
+
+  - id: SCRIPT-reinforce_baseline_demo
+    kind: module
+    title: REINFORCE + Baseline training script
+    status: complete
+    file: scripts/ch08/reinforce_baseline_demo.py
+    summary: "Demonstrates variance reduction via learned baseline on GymZooplusEnv; achieves 13.19 avg return (vs 7.99 for vanilla)"
+    uses: [MOD-reinforce_baseline]
+    validates: [THM-8.5.2, ALG-8.5]
+
+  - id: SCRIPT-reinforce_demo
+    kind: module
+    title: Vanilla REINFORCE training script
+    status: complete
+    file: scripts/ch08/reinforce_demo.py
+    summary: "Baseline experiment showing vanilla REINFORCE instability (scalar baseline only); oscillates around 7.99 even after 50k episodes"
+    uses: [MOD-reinforce]
+    validates: [THM-8.5.1]
+
+  - id: MOD-reinforce
+    kind: module
+    title: REINFORCEAgent module (vanilla)
+    status: complete
+    file: zoosim/policies/reinforce.py
+    summary: "Vanilla REINFORCE with scalar EMA baseline; single GaussianPolicy network, entropy regularization, gradient clipping"
+    implements: [ALG-8.1, THM-8.2]
+    see_also: [MOD-reinforce_baseline]
+
+  - id: MOD-zoosim.policies.reinforce
+    kind: module
+    title: REINFORCE Policy Gradient Agent
+    status: complete
+    file: zoosim/policies/reinforce.py
+    summary: Production implementation of REINFORCE [ALG-8.1] with Gaussian policy, baseline variance reduction, entropy regularization, and gradient clipping.
+    depends_on: [CH-8]
+    implements: [ALG-8.1, EQ-8.11, EQ-8.12, EQ-8.15, EQ-8.16]
+    tested_by: [DOC-ch08-reinforce_demo, DOC-ch08-neural_reinforce_demo]
+
+  - id: DOC-ch08-reinforce_demo
+    kind: doc
+    title: Chapter 8 REINFORCE demo (rich features)
+    status: complete
+    file: scripts/ch08/reinforce_demo.py
+    summary: Trains REINFORCE agent on Zooplus search environment with rich context features; demonstrates entropy regularization, baseline variance reduction, and empirical comparison to Q-learning.
+    uses: [MOD-zoosim.policies.reinforce, MOD-zoosim.envs.gym_env]
+
+  - id: DOC-ch08-neural_reinforce_demo
+    kind: doc
+    title: Chapter 8 Deep REINFORCE demo (raw features, end-to-end)
+    status: complete
+    file: scripts/ch08/neural_reinforce_demo.py
+    summary: Attempts end-to-end feature learning from raw context (user segment ID, query type ID) without handcrafted features; documents failure case (return 5.9 < random 8.7) and credit assignment problem.
+    uses: [MOD-zoosim.policies.reinforce, MOD-zoosim.envs.gym_env]
+
+  - id: DOC-ch08-analysis
+    kind: doc
+    title: Chapter 8 empirical analysis (REINFORCE vs Q-learning)
+    status: complete
+    file: docs/book/ch08/chapter08_policy_gradients_complete.md
+    summary: Root cause analysis of 2.2× performance gap (REINFORCE 11.6 vs Q-learning 25.0); identifies action bounds, feature engineering, and sample efficiency as key factors.
+    depends_on: [CH-7, CH-8]
+
+  # === Chapter 9 — Off-Policy Evaluation ===
+
+  - id: CH-9
+    kind: chapter
+    title: "Chapter 9 — Off-Policy Evaluation"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    summary: Evaluates policies from logged data without online interaction; covers IPS, SNIPS, PDIS, DR, FQE, SWITCH, MAGIC estimators with theory-practice gap analysis.
+    depends_on: [CH-3, CH-7, CH-8]
+    defines: [DEF-9.1.1, DEF-9.1.2, DEF-9.1.3, DEF-9.2.1, DEF-9.2.2, DEF-9.2.3, DEF-9.3.1, DEF-9.4.1, DEF-9.4.2, DEF-9.4.3, DEF-9.4.4, ASSUMP-9.1.1, ASSUMP-9.1.2, ASSUMP-9.1.3, ASSUMP-9.1.4, THM-9.2.0-RN, THM-9.2.1, THM-9.2.2, THM-9.2.3, THM-9.4.1, LEM-9.2.1, PROP-9.6.0, PROP-9.6.1, REM-9.2.0, REM-9.5.1]
+
+  # Definitions
+
+  - id: DEF-9.1.1
+    kind: definition
+    title: Behavior and Evaluation Policies
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#DEF-9.1.1}"
+    summary: "Distinguishes behavior policy π_b (generates logged data) from evaluation policy π_e (candidate to evaluate); both are stochastic mappings from states to action distributions."
+    see_also: [DEF-3.4.1, EQ-9.1, EQ-9.2]
+
+  - id: DEF-9.1.2
+    kind: definition
+    title: Logged Dataset
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#DEF-9.1.2}"
+    summary: "Collection of n trajectories τ^(i) = (s_0, a_0, r_0, ..., s_T) generated by behavior policy π_b; actions sampled from π_b, transitions from environment dynamics P."
+    see_also: [EQ-9.1, DEF-9.1.1]
+
+  - id: DEF-9.1.3
+    kind: definition
+    title: Off-Policy Value Estimation
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#DEF-9.1.3}"
+    summary: "The problem of estimating expected return J(π_e) = E_π_e[Σ γ^t r_t] from data generated by π_b; counterfactual evaluation without online interaction."
+    see_also: [EQ-9.2, DEF-9.1.1, DEF-9.1.2]
+
+  - id: DEF-9.2.1
+    kind: definition
+    title: Importance Sampling Estimator (IPS)
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#DEF-9.2.1}"
+    summary: "Ĵ_IS(π_e) = (1/n) Σ w(τ^(i)) G(τ^(i)) where w(τ) = ∏_t π_e(a_t|s_t)/π_b(a_t|s_t) is trajectory importance weight; reweights logged data to correct distribution mismatch."
+    see_also: [EQ-9.9, THM-9.2.1, LEM-9.2.1, EQ-9.8]
+
+  - id: DEF-9.2.2
+    kind: definition
+    title: Self-Normalized Importance Sampling (SNIPS)
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#DEF-9.2.2}"
+    summary: "Ĵ_SNIPS(π_e) = (Σ w_i G_i) / (Σ w_i); normalizes importance weights to sum to 1, reducing variance at cost of bias (asymptotically unbiased)."
+    see_also: [EQ-9.11, THM-9.2.2, DEF-9.2.1]
+
+  - id: DEF-9.2.3
+    kind: definition
+    title: Per-Decision Importance Sampling (PDIS)
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#DEF-9.2.3}"
+    summary: "Ĵ_PDIS(π_e) = (1/n) Σ_i Σ_t γ^t w_{0:t} r_t where w_{0:t} = ∏_{k=0}^t π_e(a_k|s_k)/π_b(a_k|s_k); uses partial trajectory weights, lower variance than IPS."
+    see_also: [EQ-9.13, THM-9.2.3, DEF-9.2.1]
+
+  - id: DEF-9.3.1
+    kind: definition
+    title: Direct Method Estimator (DM)
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#DEF-9.3.1}"
+    summary: "Ĵ_DM(π_e) = (1/n) Σ_i V̂^π_e(s_0^(i)) where V̂^π_e is learned model-based estimate; uses learned Q-function to simulate π_e without importance weighting."
+    see_also: [EQ-9.15, EQ-9.16, EQ-9.21]
+
+  - id: DEF-9.4.1
+    kind: definition
+    title: Doubly Robust Estimator (DR)
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#DEF-9.4.1}"
+    summary: "Ĵ_DR(π_e) = (1/n) Σ_i [V̂^π_e(s_0^(i)) + Σ_t γ^t w_{0:t} (r_t + γV̂^π_e(s_{t+1}) - Q̂^π_e(s_t,a_t))]; combines IPS and DM, unbiased if either model is correct."
+    see_also: [EQ-9.22, THM-9.4.1, DEF-9.2.1, DEF-9.3.1]
+
+  - id: DEF-9.4.2
+    kind: definition
+    title: Weighted Doubly Robust (WDR)
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#DEF-9.4.2}"
+    summary: "Variance-optimized variant of DR using normalized weights; trades minimal bias for substantial variance reduction."
+    see_also: [EQ-9.24, DEF-9.4.1]
+
+  - id: DEF-9.4.3
+    kind: definition
+    title: SWITCH Estimator
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#DEF-9.4.3}"
+    summary: "Ĵ_SWITCH = (1/n) Σ_i Σ_t γ^t [𝟙(w_{0:t} ≤ τ) · Q̂^π_e(s_t,a_t) + 𝟙(w_{0:t} > τ) · w_{0:t} G_{t:H}]; switches from DM to IPS when weights exceed threshold τ."
+    see_also: [EQ-9.25, DEF-9.4.1]
+
+  - id: DEF-9.4.4
+    kind: definition
+    title: MAGIC Estimator (Simplified)
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#DEF-9.4.4}"
+    summary: "Model-Augmented Guided Importance-sampled Conditional estimator; soft weighting variant of SWITCH with state-dependent thresholds (simplified version presented)."
+    see_also: [EQ-9.26, DEF-9.4.3]
+
+  # Assumptions
+
+  - id: ASSUMP-9.1.1
+    kind: assumption
+    title: Common Support / Overlap
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#ASSUMP-9.1.1}"
+    summary: "supp(π_e) ⊆ supp(π_b); behavior policy must explore all actions that evaluation policy would take. Ensures π_b(a|s) > 0 whenever π_e(a|s) > 0, preventing divide-by-zero in importance weights."
+    see_also: [EQ-9.4, THM-9.2.1]
+
+  - id: ASSUMP-9.1.2
+    kind: assumption
+    title: Unconfounded Actions
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#ASSUMP-9.1.2}"
+    summary: "Logged actions a_t sampled from known π_b(·|s_t), not influenced by unobserved confounders; conditional independence of actions and potential outcomes given state."
+    see_also: [ASSUMP-9.1.1]
+
+  - id: ASSUMP-9.1.3
+    kind: assumption
+    title: Known Propensities
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#ASSUMP-9.1.3}"
+    summary: "Behavior policy probabilities π_b(a_t|s_t) are either known exactly or logged alongside (s,a,r) tuples; if estimated, introduces propensity estimation error."
+    see_also: [EQ-9.8, DEF-9.2.1]
+
+  - id: ASSUMP-9.1.4
+    kind: assumption
+    title: Bounded Rewards
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#ASSUMP-9.1.4}"
+    summary: "∃ R_max < ∞ such that |R(s,a,s')| ≤ R_max for all (s,a,s'); ensures importance-weighted returns have finite variance under moment conditions."
+    see_also: [THM-9.2.1]
+
+  # Theorems
+
+  - id: THM-9.2.0-RN
+    kind: theorem
+    title: Radon-Nikodym Theorem (Informal Statement)
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#THM-9.2.0-RN}"
+    summary: "For σ-finite measures ν ≪ μ, there exists a unique (μ-a.e.) measurable function dν/dμ such that ν(A) = ∫_A (dν/dμ) dμ; foundation for importance sampling density ratios."
+    see_also: [LEM-9.2.1, EQ-9.5, DEF-9.2.1, ASSUMP-9.1.1]
+
+  - id: THM-9.2.1
+    kind: theorem
+    title: Unbiasedness of IS Estimator
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#THM-9.2.1}"
+    summary: "Under common support (ASSUMP-9.1.1) and bounded rewards (ASSUMP-9.1.4), E_D~π_b[Ĵ_IS(π_e)] = J(π_e); importance sampling estimator is unbiased."
+    see_also: [DEF-9.2.1, LEM-9.2.1, EQ-9.10]
+
+  - id: THM-9.2.2
+    kind: theorem
+    title: Asymptotic Unbiasedness of SNIPS
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#THM-9.2.2}"
+    summary: "SNIPS is asymptotically unbiased: lim_{n→∞} E[Ĵ_SNIPS(π_e)] = J(π_e) almost surely; trades small bias for variance reduction."
+    see_also: [DEF-9.2.2, EQ-9.12]
+
+  - id: THM-9.2.3
+    kind: theorem
+    title: Unbiasedness of PDIS
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#THM-9.2.3}"
+    summary: "Per-decision IS is unbiased: E[Ĵ_PDIS(π_e)] = J(π_e); achieves lower variance than trajectory-level IPS by using partial trajectory weights."
+    see_also: [DEF-9.2.3, EQ-9.14]
+
+  - id: THM-9.4.1
+    kind: theorem
+    title: Doubly Robust Unbiasedness
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#THM-9.4.1}"
+    summary: "DR estimator is unbiased if EITHER model is correct (Q̂^π_e = Q^π_e) OR importance weights are correct with common support; provides robustness to model or propensity misspecification."
+    see_also: [DEF-9.4.1, EQ-9.23]
+
+  # Lemmas
+
+  - id: LEM-9.2.1
+    kind: lemma
+    title: Importance Sampling Identity
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#LEM-9.2.1}"
+    summary: "Foundational IS identity: E_{x~q}[f(x)] = E_{x~p}[(q(x)/p(x)) f(x)] for q ≪ p; reweights samples from distribution p to estimate expectations under q."
+    see_also: [THM-9.2.0-RN, EQ-9.5, THM-9.2.1]
+
+  # Propositions
+
+  - id: PROP-9.6.0
+    kind: proposition
+    title: Concentration Bound for IPS
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#PROP-9.6.0-IPS-concentration}"
+    summary: "Hoeffding-style bound for IPS: under ASSUMP-9.1.1–9.1.4, |Ĵ_IS - J(π_e)| ≤ (ρ_max^T · G_max)/√n · √(2 log(2/δ)) with probability ≥ 1-δ; highlights exponential horizon dependence and distribution shift penalty."
+    see_also: [ASSUMP-9.1.1, ASSUMP-9.1.4, THM-9.2.1, EQ-9.10]
+
+  - id: PROP-9.6.1
+    kind: proposition
+    title: Negative Bias for Nonnegative Rewards
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#PROP-9.6.1}"
+    summary: "For clipped IPS with nonnegative rewards, E[Ĵ_clip(π_e)] ≤ J(π_e), with strict inequality whenever clipping occurs on trajectories with positive reward; shows clipped IPS is a conservative estimator."
+    see_also: [EQ-9.36]
+
+  # Remarks
+
+  - id: REM-9.2.0
+    kind: remark
+    title: Radon-Nikodym Connection
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#REM-9.2.0}"
+    summary: "Connects importance sampling identity [LEM-9.2.1] to Radon-Nikodym theorem [THM-9.2.0-RN]; common support assumption ≡ absolute continuity p_{π_e} ≪ p_{π_b}."
+    see_also: [THM-9.2.0-RN, LEM-9.2.1, ASSUMP-9.1.1]
+
+  - id: REM-9.5.1
+    kind: remark
+    title: ε-Greedy for Continuous Actions
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#REM-9.5.1}"
+    summary: "Extends ε-greedy logging to continuous action spaces via PDF mixing; uniform density p_uniform(a) = 1/vol(A) where vol(A) = (2a_max)^K."
+    see_also: [EQ-9.27, DEF-9.1.3]
+
+  # Equations
+
+  - id: EQ-9.1
+    kind: equation
+    title: "Logged dataset D = {τ^(i)}_{i=1}^n"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.1}"
+    summary: "Defines logged dataset as collection of n trajectories τ^(i) = (s_0^(i), a_0^(i), r_0^(i), ..., s_{T_i}^(i)) generated by behavior policy."
+
+  - id: EQ-9.2
+    kind: equation
+    title: "Off-policy value J(π_e) = E_τ~π_e[Σ γ^t r_t]"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.2}"
+    summary: "Objective of OPE: estimate expected return of evaluation policy π_e from data generated by behavior policy π_b."
+
+  - id: EQ-9.3
+    kind: equation
+    title: "Naive estimator Ĵ_naive = (1/n) Σ G^(i) (BIASED)"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.3}"
+    summary: "Direct averaging of logged returns is biased: E[Ĵ_naive] = J(π_b) ≠ J(π_e); fails due to distribution shift."
+
+  - id: EQ-9.4
+    kind: equation
+    title: "Common support condition supp(π_e) ⊆ supp(π_b)"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.4}"
+    summary: "Overlap assumption: π_b(a|s) > 0 whenever π_e(a|s) > 0; prevents zero denominators in importance weights."
+
+  - id: EQ-9.5
+    kind: equation
+    title: "IS identity E_q[f(x)] = E_p[(q(x)/p(x)) f(x)]"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.5}"
+    summary: "Fundamental importance sampling formula; likelihood ratio w(x) = q(x)/p(x) corrects for distribution mismatch."
+
+  - id: EQ-9.6
+    kind: equation
+    title: "Trajectory distribution p_π(τ) = ρ_0(s_0) ∏_t π(a_t|s_t) P(s_{t+1}|s_t,a_t)"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.6}"
+    summary: "Full trajectory probability under policy π; factorizes into initial state, policy actions, and environment transitions."
+
+  - id: EQ-9.7
+    kind: equation
+    title: "Trajectory importance weight w(τ) = p_{π_e}(τ) / p_{π_b}(τ)"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.7}"
+    summary: "Ratio of trajectory probabilities under evaluation and behavior policies; environment dynamics P cancel."
+
+  - id: EQ-9.8
+    kind: equation
+    title: "Simplified trajectory weight w(τ) = ∏_t π_e(a_t|s_t) / π_b(a_t|s_t)"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.8}"
+    summary: "Trajectory importance weight after dynamics cancel; depends only on policy probabilities, not environment model."
+
+  - id: EQ-9.9
+    kind: equation
+    title: "IS estimator Ĵ_IS(π_e) = (1/n) Σ w(τ^(i)) G(τ^(i))"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.9}"
+    summary: "Importance sampling OPE estimator; reweights logged returns by trajectory importance weights."
+
+  - id: EQ-9.10
+    kind: equation
+    title: "IS unbiasedness E_D~π_b[Ĵ_IS(π_e)] = J(π_e)"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.10}"
+    summary: "Formal statement of IS estimator unbiasedness under common support and bounded rewards."
+
+  - id: EQ-9.11
+    kind: equation
+    title: "SNIPS estimator Ĵ_SNIPS = (Σ w_i G_i) / (Σ w_i)"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.11}"
+    summary: "Self-normalized IS; normalizes weights to sum to 1, reducing variance at cost of small bias."
+
+  - id: EQ-9.12
+    kind: equation
+    title: "SNIPS asymptotic unbiasedness lim_{n→∞} E[Ĵ_SNIPS] = J(π_e)"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.12}"
+    summary: "SNIPS converges to true value in large-sample limit; bias vanishes as n → ∞."
+
+  - id: EQ-9.13
+    kind: equation
+    title: "PDIS estimator Ĵ_PDIS = (1/n) Σ_i Σ_t γ^t w_{0:t} r_t"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.13}"
+    summary: "Per-decision IS using partial trajectory weights w_{0:t} = ∏_{k=0}^t π_e(a_k|s_k)/π_b(a_k|s_k); lower variance than full trajectory weights."
+
+  - id: EQ-9.14
+    kind: equation
+    title: "PDIS unbiasedness E[Ĵ_PDIS(π_e)] = J(π_e)"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.14}"
+    summary: "Formal unbiasedness statement for per-decision IS estimator."
+
+  - id: EQ-9.15
+    kind: equation
+    title: "Direct method Ĵ_DM = (1/n) Σ_i V̂^π_e(s_0^(i))"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.15}"
+    summary: "Model-based estimator using learned value function V̂^π_e; no importance weighting, relies on model accuracy."
+
+  - id: EQ-9.16
+    kind: equation
+    title: "Value function V̂^π_e(s) = E_π_e[Σ_t γ^t r_t | s_0 = s]"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.16}"
+    summary: "Value function definition for evaluation policy; expected return starting from state s."
+
+  - id: EQ-9.17
+    kind: equation
+    title: "Model-based bias E[Ĵ_DM] - J(π_e) depends on model error"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.17}"
+    summary: "DM estimator is biased when model is misspecified; bias scales with model approximation error."
+
+  - id: EQ-9.18
+    kind: equation
+    title: "Q-regression objective min_θ E[(Q_θ(s,a) - y)²]"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.18}"
+    summary: "Fitted Q-learning objective; regresses Q-function on logged (s,a,r,s') tuples."
+
+  - id: EQ-9.19
+    kind: equation
+    title: "Bellman target y_i = r_i + γ Σ_a' π_e(a'|s_i') Q̂_k(s_i', a')"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.19}"
+    summary: "Fitted Q evaluation (FQE) target; uses evaluation policy π_e for bootstrap value."
+
+  - id: EQ-9.20
+    kind: equation
+    title: "FQE iteration Q̂_{k+1} ← argmin_Q E[(Q(s,a) - y_k)²]"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.20}"
+    summary: "Iterative FQE update; alternates between computing Bellman targets and regression."
+
+  - id: EQ-9.21
+    kind: equation
+    title: "Bellman operator (T^π Q)(s,a) = E[r + γ Σ_a' π(a'|s') Q(s',a')]"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.21}"
+    summary: "Policy-specific Bellman operator from Chapter 3 (EQ-3.8); FQE approximates fixed-point iteration Q^π = T^π Q^π."
+    see_also: [THM-3.5.1-Bellman, THM-3.6.2-Banach, EQ-3.8]
+
+  - id: EQ-9.22
+    kind: equation
+    title: "DR estimator Ĵ_DR = (1/n) Σ [V̂(s_0) + Σ_t γ^t w_{0:t} δ_t]"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.22}"
+    summary: "Doubly robust estimator; combines DM baseline with IS-corrected residuals δ_t = r_t + γV̂(s_{t+1}) - Q̂(s_t,a_t)."
+
+  - id: EQ-9.23
+    kind: equation
+    title: "DR unbiasedness: E[Ĵ_DR] = J(π_e) if model OR weights correct"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.23}"
+    summary: "Doubly robust property: unbiased under either model correctness or propensity correctness, not both required."
+
+  - id: EQ-9.24
+    kind: equation
+    title: "WDR estimator (weighted doubly robust)"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.24}"
+    summary: "Variance-optimized DR using normalized weights; minimal bias trade-off for large variance reduction."
+
+  - id: EQ-9.25
+    kind: equation
+    title: "SWITCH estimator with threshold τ"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.25}"
+    summary: "Hybrid estimator switching from DM (low weights) to IPS (high weights) at threshold τ; balances bias-variance."
+
+  - id: EQ-9.26
+    kind: equation
+    title: "MAGIC estimator (simplified)"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.26}"
+    summary: "Model-Augmented Guided IS Conditional estimator; soft weighting variant of SWITCH."
+
+  - id: EQ-9.27
+    kind: equation
+    title: "ε-greedy logging policy π_log(a|s) = (1-ε)π_greedy(a|s) + ε/|A|"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.27}"
+    summary: "Epsilon-greedy exploration ensures π_log(a|s) ≥ ε/|A| > 0 for all actions, guaranteeing common support."
+
+  - id: EQ-9.28
+    kind: equation
+    title: "Mixture logging policy π_mix = Σ_k w_k π_k"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.28}"
+    summary: "Mixture of K policies with weights w_k ≥ 0, Σ w_k = 1; provides broader support than single policy."
+
+  - id: EQ-9.29
+    kind: equation
+    title: "Logged propensity p_i = π_log(a_i|s_i)"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.29}"
+    summary: "Propensity stored alongside (s,a,r) tuples when logging policy is stochastic or mixture."
+
+  - id: EQ-9.30
+    kind: equation
+    title: "Effective sample size ESS = (Σ w_i)² / Σ w_i²"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.30}"
+    summary: "Diagnostic for weight concentration; ESS ≈ n indicates uniform weights, ESS ≪ n indicates few trajectories dominate."
+
+  - id: EQ-9.31
+    kind: equation
+    title: "Bootstrap confidence interval [q_α/2, q_{1-α/2}]"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.31}"
+    summary: "Percentile bootstrap CI for OPE estimators; resamples dataset with replacement B times, computes quantiles."
+
+  - id: EQ-9.32
+    kind: equation
+    title: "Spearman rank correlation ρ_s between OPE estimates and ground truth"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.32}"
+    summary: "Rank correlation metric for OPE quality; ρ_s > 0.8 indicates reliable policy ranking even if point estimates are biased."
+
+  - id: EQ-9.33
+    kind: equation
+    title: "Imitation learning objective for discrete behavior policy estimation"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.33}"
+    summary: "MLE for classifier-based propensity estimation: φ* = argmin -Σ log π̂_b(aᵢ|sᵢ;φ); cross-entropy loss for discrete actions."
+
+  - id: EQ-9.34
+    kind: equation
+    title: "Gaussian density model for continuous behavior policy"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.34}"
+    summary: "Conditional density estimation: π̂_b(a|s) = N(a; μ_φ(s), Σ_φ(s)); extends propensity estimation to continuous action spaces."
+
+  - id: EQ-9.35
+    kind: equation
+    title: "Ground truth on-policy value J_true(π_e)"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.35}"
+    summary: "Gold standard: J_true(π_e) = E_{τ~π_e}[G(τ)]; requires online deployment, used to validate OPE estimators."
+
+  - id: EQ-9.36
+    kind: equation
+    title: "Weight clipping for variance reduction"
+    status: complete
+    file: docs/book/ch09/ch09_off_policy_evaluation.md
+    anchor: "{#EQ-9.36}"
+    summary: "Clipped importance weight: w̃ᵢ = min(wᵢ, w_max); introduces bias but dramatically reduces variance; see PROP-9.6.1 for bias direction."
+    see_also: [PROP-9.6.1]
+
+  # Labs
+
+  - id: SEC-CH9-LAB-9.1
+    kind: section
+    title: Lab 9.1 — IPS Variance Analysis
+    status: complete
+    file: docs/book/ch09/exercises_labs.md
+    summary: "Implements IPS and SNIPS with bootstrap CIs; analyzes variance across ε ∈ {0.01, 0.05, 0.10, 0.20}; tests low/high distribution shift; effective sample size diagnostics."
+
+  - id: SEC-CH9-LAB-9.2
+    kind: section
+    title: Lab 9.2 — FQE with Bellman Operator
+    status: complete
+    file: docs/book/ch09/exercises_labs.md
+    summary: "Explicit connection to Chapter 3's Bellman operator; implements FQE with convergence diagnostics, Bellman residual tracking, ground truth comparison."
+    see_also: [THM-3.5.1-Bellman, THM-3.6.2-Banach, EQ-9.21]
+
+  - id: SEC-CH9-LAB-9.3
+    kind: section
+    title: Lab 9.3 — Estimator Comparison
+    status: complete
+    file: docs/book/ch09/exercises_labs.md
+    summary: "Compares IPS, SNIPS, PDIS, DR across 10 policies; computes MSE, Spearman ρ, regret; reproduces Voloshin+ 2021 benchmarks (MSE < 5%, ρ > 0.8)."
+
+  - id: SEC-CH9-LAB-9.4
+    kind: section
+    title: Lab 9.4 — Distribution Shift Stress Test
+    status: complete
+    file: docs/book/ch09/exercises_labs.md
+    summary: "Tests mild/moderate/severe/extrapolation shift scenarios; documents ESS collapse, weight explosion, when OPE fails (90%+ shift)."
+
+edges:
+  - {src: CH-0, dst: DOC-toy_problem_solution, rel: uses, status: in_progress}
+  - {src: DOC-toy_problem_solution, dst: TEST-test_toy_example, rel: tested_by, status: complete}
+  - {src: DOC-toy_problem_solution, dst: DOC-toy_problem_curves, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.1, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.2, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.2-prime, rel: defines, status: complete}
+  - {src: CH-1, dst: REM-1.2.1, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.3, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.7, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.11, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.12, rel: defines, status: complete}
+  - {src: CH-1, dst: THM-1.9.1, rel: proves, status: complete}
+  - {src: MOD-zoosim.reward, dst: EQ-1.2, rel: implements, status: complete}
+  - {src: MOD-zoosim.env, dst: EQ-1.11, rel: implements, status: complete}
+  - {src: MOD-zoosim.config, dst: EQ-1.3, rel: implements, status: complete}
+  - {src: MOD-zoosim.session_env, dst: EQ-1.2-prime, rel: implements, status: in_progress}
+  - {src: MOD-zoosim.session_env, dst: MOD-zoosim.retention, rel: depends_on, status: in_progress}
+  - {src: CH-1, dst: CH-11, rel: refers_to_future, status: complete}
+  - {src: MOD-zoosim.env, dst: MOD-zoosim.reward, rel: uses, status: complete}
+  - {src: MOD-zoosim.env, dst: MOD-zoosim.behavior, rel: uses, status: complete}
+  - {src: TEST-tests.test_env_basic, dst: MOD-zoosim.env, rel: uses, status: complete}
+  - {src: EQ-1.2, dst: TEST-test_ch01_reward, rel: tested_by, status: complete}
+  - {src: SEC-CH2-2.7.3, dst: THM-2.3.2, rel: uses, status: in_progress}
+  - {src: REM-1.2.1, dst: TEST-test_ch01_reward, rel: tested_by, status: complete}
+  - {src: CH-1, dst: EQ-1.4, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.5, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.6, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.8, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.9, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.10, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.13, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.14, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.15, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.16, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.17, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.18, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.19, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.20, rel: defines, status: complete}
+  - {src: CH-1, dst: EQ-1.21, rel: defines, status: complete}
+  - {src: CH-1, dst: DEF-1.4.1, rel: defines, status: complete}
+  - {src: DEF-1.4.1, dst: EQ-1.2, rel: depends_on, status: complete}
+  - {src: CH-2, dst: DEF-2.2.1, rel: defines, status: in_progress}
+  - {src: CH-2, dst: DEF-2.2.2, rel: defines, status: in_progress}
+  - {src: CH-2, dst: DEF-2.2.3, rel: defines, status: in_progress}
+  - {src: CH-2, dst: DEF-2.2.4, rel: defines, status: in_progress}
+  - {src: CH-2, dst: THM-2.2.2, rel: defines, status: in_progress}
+  - {src: CH-2, dst: THM-2.2.3, rel: defines, status: in_progress}
+  - {src: CH-2, dst: DEF-2.3.1, rel: defines, status: in_progress}
+  - {src: CH-2, dst: THM-2.3.1, rel: defines, status: in_progress}
+  - {src: CH-2, dst: DEF-2.3.2, rel: defines, status: in_progress}
+  - {src: CH-2, dst: THM-2.3.2, rel: defines, status: in_progress}
+  - {src: CH-2, dst: THM-2.3.3, rel: defines, status: in_progress}
+  - {src: CH-2, dst: DEF-2.4.1, rel: defines, status: in_progress}
+  - {src: CH-2, dst: DEF-2.4.2, rel: defines, status: in_progress}
+  - {src: CH-2, dst: DEF-2.4.3, rel: defines, status: in_progress}
+  - {src: CH-2, dst: THM-2.4.1, rel: defines, status: in_progress}
+  - {src: CH-2, dst: DEF-2.5.1, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.1, rel: defines, status: in_progress}
+  - {src: CH-2, dst: DEF-2.5.2, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.2, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.3, rel: defines, status: in_progress}
+  - {src: CH-2, dst: DEF-2.5.3, rel: defines, status: in_progress}
+  - {src: CH-2, dst: PROP-2.5.4, rel: defines, status: in_progress}
+  - {src: CH-2, dst: PROP-2.5.5, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.10, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.11, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.12, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.13, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.14, rel: defines, status: in_progress}
+  - {src: MOD-zoosim.behavior, dst: DEF-2.5.3, rel: implements, status: in_progress}
+  - {src: CH-2, dst: ASSUMP-2.6.1, rel: defines, status: complete}
+  - {src: CH-2, dst: DEF-2.6.1, rel: defines, status: in_progress}
+  - {src: CH-2, dst: DEF-2.6.2, rel: defines, status: in_progress}
+  - {src: CH-2, dst: THM-2.6.1, rel: defines, status: in_progress}
+  - {src: THM-2.6.1, dst: ASSUMP-2.6.1, rel: depends_on, status: complete}
+  - {src: CH-2, dst: EQ-2.5, rel: defines, status: in_progress}
+  - {src: CH-2, dst: EQ-2.6, rel: defines, status: in_progress}
+  - {src: SEC-CH2-2.7.4, dst: THM-2.6.2, rel: uses, status: in_progress}
+  - {src: SEC-CH2-2.7.4, dst: EQ-2.8, rel: uses, status: in_progress}
+  # EQ-3.21 removed from Ch03: CMDP Lagrangian concept covered by EQ-C.2 in Appendix C
+  - {src: CH-3, dst: EQ-3.22, rel: defines, status: complete}
+  - {src: CH-3, dst: CH-11, rel: refers_to_future, status: in_progress}
+  - {src: CH-3, dst: CH-9, rel: refers_to_future, status: in_progress}
+  - {src: CH-4, dst: DEF-4.1, rel: defines, status: complete}
+  - {src: CH-4, dst: DEF-4.2, rel: defines, status: complete}
+  - {src: CH-4, dst: DEF-4.3, rel: defines, status: complete}
+  - {src: CH-4, dst: DEF-4.4, rel: defines, status: complete}
+  - {src: CH-4, dst: EQ-4.1, rel: defines, status: complete}
+  - {src: CH-4, dst: EQ-4.2, rel: defines, status: complete}
+  - {src: CH-4, dst: EQ-4.3, rel: defines, status: complete}
+  - {src: CH-4, dst: EQ-4.4, rel: defines, status: complete}
+  - {src: CH-4, dst: EQ-4.5, rel: defines, status: complete}
+  - {src: CH-4, dst: EQ-4.6, rel: defines, status: complete}
+  - {src: CH-4, dst: EQ-4.7, rel: defines, status: complete}
+  - {src: CH-4, dst: EQ-4.8, rel: defines, status: complete}
+  - {src: CH-4, dst: EQ-4.9, rel: defines, status: complete}
+  - {src: CH-4, dst: EQ-4.10, rel: defines, status: complete}
+  - {src: CH-4, dst: EQ-4.11, rel: defines, status: complete}
+  - {src: CH-4, dst: SEC-CH4-EX-4.1, rel: defines, status: in_progress}
+  - {src: CH-4, dst: SEC-CH4-EX-4.2, rel: defines, status: in_progress}
+  - {src: CH-4, dst: SEC-CH4-EX-4.3, rel: defines, status: in_progress}
+  - {src: CH-4, dst: SEC-CH4-EX-4.4, rel: defines, status: in_progress}
+  - {src: CH-4, dst: SEC-CH4-EX-4.5, rel: defines, status: in_progress}
+  - {src: CH-4, dst: SEC-CH4-EX-4.6, rel: defines, status: in_progress}
+  - {src: CH-4, dst: SEC-CH4-EX-4.7, rel: defines, status: in_progress}
+  - {src: CH-8, dst: SEC-CH8-EX-8.1, rel: defines, status: complete}
+  - {src: CH-8, dst: SEC-CH8-EX-8.2, rel: defines, status: complete}
+  - {src: CH-8, dst: SEC-CH8-EX-8.3, rel: defines, status: complete}
+  - {src: CH-8, dst: SEC-CH8-EX-8.4, rel: defines, status: complete}
+  - {src: MOD-zoosim.world.catalog, dst: DEF-4.1, rel: implements, status: complete}
+  - {src: MOD-zoosim.world.catalog, dst: EQ-4.1, rel: implements, status: complete}
+  - {src: MOD-zoosim.world.catalog, dst: EQ-4.2, rel: implements, status: complete}
+  - {src: MOD-zoosim.world.catalog, dst: EQ-4.3, rel: implements, status: complete}
+  - {src: MOD-zoosim.world.catalog, dst: EQ-4.4, rel: implements, status: complete}
+  - {src: MOD-zoosim.world.catalog, dst: EQ-4.5, rel: implements, status: complete}
+  - {src: MOD-zoosim.world.catalog, dst: EQ-4.6, rel: implements, status: complete}
+  - {src: MOD-zoosim.world.users, dst: DEF-4.3, rel: implements, status: complete}
+  - {src: MOD-zoosim.world.users, dst: EQ-4.7, rel: implements, status: complete}
+  - {src: MOD-zoosim.world.queries, dst: DEF-4.4, rel: implements, status: complete}
+  - {src: MOD-zoosim.world.queries, dst: EQ-4.9, rel: implements, status: complete}
+  - {src: EQ-4.3, dst: TEST-tests.test_catalog_stats, rel: tested_by, status: complete}
+  - {src: EQ-4.10, dst: TEST-tests.test_catalog_stats, rel: tested_by, status: complete}
+  - {src: CH-9, dst: MOD-evaluation.ope, rel: refers_to_future, status: in_progress}
+  - {src: MOD-evaluation.ope, dst: EQ-3.22, rel: uses, status: planned}
+  # Chapter 6 edges
+  - {src: CH-6, dst: DEF-6.1.1, rel: defines, status: complete}
+  - {src: CH-6, dst: DEF-6.2, rel: defines, status: complete}
+  - {src: CH-6, dst: DEF-6.3, rel: defines, status: complete}
+  - {src: CH-6, dst: DEF-6.4, rel: defines, status: complete}
+  - {src: CH-6, dst: ALG-6.1, rel: defines, status: complete}
+  - {src: CH-6, dst: ALG-6.2, rel: defines, status: complete}
+  - {src: CH-6, dst: THM-6.1, rel: defines, status: complete}
+  - {src: CH-6, dst: THM-6.2, rel: defines, status: complete}
+  - {src: CH-6, dst: PROP-6.1, rel: defines, status: complete}
+  - {src: CH-6, dst: PROP-6.2, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.1, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.2, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.3, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.4, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.5, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.6, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.7, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.8, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.9, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.10, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.11, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.12, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.13, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.14, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.15, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.16, rel: defines, status: complete}
+  - {src: CH-6, dst: EQ-6.17, rel: defines, status: complete}
+  - {src: CH-6, dst: CH-5, rel: depends_on, status: complete}
+  - {src: MOD-zoosim.policies.templates, dst: DEF-6.1.1, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.templates, dst: EQ-6.17, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.thompson_sampling, dst: ALG-6.1, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.thompson_sampling, dst: EQ-6.6, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.thompson_sampling, dst: EQ-6.7, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.thompson_sampling, dst: EQ-6.8, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.thompson_sampling, dst: EQ-6.10, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.lin_ucb, dst: ALG-6.2, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.lin_ucb, dst: EQ-6.11, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.lin_ucb, dst: EQ-6.12, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.lin_ucb, dst: EQ-6.13, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.lin_ucb, dst: EQ-6.14, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.lin_ucb, dst: EQ-6.16, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.templates, dst: TEST-tests.ch06.test_templates, rel: tested_by, status: complete}
+  - {src: MOD-zoosim.policies.thompson_sampling, dst: TEST-tests.ch06.test_thompson_sampling, rel: tested_by, status: complete}
+  - {src: MOD-zoosim.policies.lin_ucb, dst: TEST-tests.ch06.test_linucb, rel: tested_by, status: complete}
+  - {src: ALG-6.1, dst: PROP-6.1, rel: see_also, status: complete}
+  - {src: ALG-6.2, dst: PROP-6.1, rel: see_also, status: complete}
+  - {src: CH-6, dst: EQ-5.5, rel: depends_on, status: complete}
+  - {src: CH-6, dst: DEF-5.5, rel: depends_on, status: complete}
+  # Chapter 8 edges
+  - {src: CH-8, dst: CH-6, rel: depends_on, status: complete}
+  - {src: CH-8, dst: CH-7, rel: depends_on, status: complete}
+  - {src: CH-8, dst: LEM-8.1, rel: defines, status: complete}
+  - {src: CH-8, dst: THM-8.2, rel: defines, status: complete}
+  - {src: CH-8, dst: THM-8.2.2, rel: defines, status: complete}
+  - {src: CH-8, dst: ALG-8.1, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.1, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.2, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.3, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.4, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.5, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.6, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.7, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.8, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.9, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.10, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.11, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.12, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.13, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.14, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.15, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.16, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.17, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.18, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.19, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.20, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.21, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.22, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.23, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.24, rel: defines, status: complete}
+  - {src: CH-8, dst: EQ-8.25, rel: defines, status: complete}
+  - {src: MOD-zoosim.policies.reinforce, dst: ALG-8.1, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.reinforce, dst: EQ-8.11, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.reinforce, dst: EQ-8.12, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.reinforce, dst: EQ-8.15, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.reinforce, dst: EQ-8.16, rel: implements, status: complete}
+  - {src: MOD-zoosim.policies.reinforce, dst: DOC-ch08-reinforce_demo, rel: tested_by, status: complete}
+  - {src: MOD-zoosim.policies.reinforce, dst: DOC-ch08-neural_reinforce_demo, rel: tested_by, status: complete}
+  - {src: DOC-ch08-analysis, dst: CH-7, rel: depends_on, status: complete}
+  - {src: DOC-ch08-analysis, dst: CH-8, rel: depends_on, status: complete}

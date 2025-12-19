@@ -1,0 +1,12 @@
+% LaTeX preamble for PDF compilation
+% Minimal configuration - source files use proper LaTeX commands
+
+\usepackage{tcolorbox}
+
+% Define CalloutNote environment for callout boxes
+\newtcolorbox{CalloutNote}[1]{
+  colback=blue!5!white,
+  colframe=blue!75!black,
+  fonttitle=\bfseries,
+  title=#1
+}

@@ -1,0 +1,3 @@
+# Knowledge graph generated visualizations
+docs/knowledge_graph/viz_*.png
+docs/knowledge_graph/__pycache__/
