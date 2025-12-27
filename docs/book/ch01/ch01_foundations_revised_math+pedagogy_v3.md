@@ -78,7 +78,7 @@ Let's make the business objectives precise. Consider a single search session:
 1. **User** $u$ with segment $\sigma \in \{\text{price\_hunter}, \text{pl\_lover}, \text{premium}, \text{litter\_heavy}\}$ issues **query** $q$
 2. System scores products $\{p_1, \ldots, p_M\}$ using boost weights $\mathbf{w}$, producing ranking $\pi$
 3. User examines results with **position bias** (top slots get more attention), clicks on subset $C \subseteq \{1, \ldots, M\}$, purchases subset $B \subseteq C$
-4. Session generates **outcomes**: GMV, CM2 (contribution margin 2), clicks, strategic exposures
+4. Session generates **outcomes**: GMV, CM2 (contribution margin 2), clicks, strategic purchases
 
 We aggregate these into a **scalar reward**:
 
@@ -89,6 +89,12 @@ $$
 {#EQ-1.2}
 
 where $\omega \in \Omega$ represents the stochastic user behavior conditioned on the ranking $\pi_{\mathbf{w}}(u, q)$ induced by boost weights $\mathbf{w}$, and $(\alpha, \beta, \gamma, \delta) \in \mathbb{R}_+^4$ are **business weight parameters** reflecting strategic priorities. The outcome components (GMV, CM2, STRAT, CLICKS) depend on the full context $(\mathbf{w}, u, q)$ through the ranking, though we often abbreviate this dependence when clear from context.
+
+::: {.note title="Two strategic quantities: reward vs. constraints"}
+In the reward [EQ-1.2], $\text{STRAT}(\omega)$ counts **strategic purchases** in the session (purchased items whose `strategic_flag` is true). In guardrails like [EQ-1.3b], we instead track **strategic exposure**—how many strategic items were shown in the ranking, regardless of whether they were bought.
+
+We keep both on purpose: reward incentivizes realized strategic outcomes, while exposure floors enforce minimum visibility even before conversion. In code, the reward-side quantity appears as `RewardBreakdown.strat` in `zoosim/dynamics/reward.py:34-39`.
+:::
 
 **Standing assumption (Integrability).** Throughout this chapter, we assume $R: \mathcal{A} \times \mathcal{U} \times \mathcal{Q} \times \Omega \to \mathbb{R}$ is measurable in $\omega$ and $\mathbb{E}[|R(\mathbf{w}, u, q, \omega)|] < \infty$ for all $(\mathbf{w}, u, q)$. This ensures expectations like $\mathbb{E}[R \mid \mathbf{w}]$ are well-defined. The formal regularity conditions appear as **Assumption 2.6.1 (OPE Probability Conditions)** in Chapter 2, §2.6; verification for our bounded-reward setting is in Chapter 2.
 
@@ -121,11 +127,13 @@ High GMV alone is insufficient. A retailer must enforce **guardrails**:
 
 where the notation $\mathbb{E}[\cdot \mid \mathbf{w}]$ denotes expectation over stochastic user behavior $\omega$ and context distribution $\rho(x)$ when action (boost weights) $\mathbf{w}$ is applied, i.e., $\mathbb{E}[\text{CM2} \mid \mathbf{w}] := \mathbb{E}_{x \sim \rho, \omega \sim P(\cdot \mid x, \mathbf{w})}[\text{CM2}(\mathbf{w}, x, \omega)]$.
 
-**Definition** ($\Delta\text{rank@}k$). Let $\pi_{\mathbf{w}}(q) = (p_1, \ldots, p_M)$ be the ranking induced by boost weights $\mathbf{w}$ for query $q$, and let $\pi_{\text{base}}(q)$ be a reference ranking (e.g., the production baseline). Define:
+**Definition** ($\Delta\text{rank@}k$). Let $\pi_{\mathbf{w}}(q) = (p_1, \ldots, p_M)$ be the ranking induced by boost weights $\mathbf{w}$ for query $q$, and let $\pi_{\text{base}}(q)$ be a reference ranking (e.g., the production baseline). Let $\text{TopK}_{\mathbf{w}}(q)$ and $\text{TopK}_{\text{base}}(q)$ denote the *sets* of top-$k$ items under these rankings. Define:
 $$
-\Delta\text{rank@}k(\mathbf{w}, q) := \frac{1}{k} \sum_{i=1}^{k} \mathbf{1}[\pi_{\mathbf{w}}(q)_i \neq \pi_{\text{base}}(q)_i]
+\Delta\text{rank@}k(\mathbf{w}, q) := 1 - \frac{|\text{TopK}_{\mathbf{w}}(q) \cap \text{TopK}_{\text{base}}(q)|}{k}
 $$
-the fraction of top-$k$ positions where the rankings differ. Values range in $[0, 1]$; $\Delta\text{rank@}k = 0$ means identical top-$k$, and $\Delta\text{rank@}k = 1$ means completely different.
+the fraction of top-$k$ items that changed (set churn). Values range in $[0, 1]$; $\Delta\text{rank@}k = 0$ means identical top-$k$ *set* (reordering within the top-$k$ does not count), and $\Delta\text{rank@}k = 1$ means the two top-$k$ sets are disjoint.
+
+This is the set-based stability metric used in Chapter 10 [DEF-10.4] and implemented in `zoosim/monitoring/metrics.py:89-118`. A position-wise mismatch rate is a different metric; if we use it, we will name it explicitly and not call it “Delta-Rank@k”.
 
 - **CM2 floor** (1.3a): Prevent sacrificing profitability for revenue
 - **Exposure floor** (1.3b): Ensure strategic products (new launches, house brands) get visibility
@@ -147,9 +155,9 @@ the fraction of top-$k$ positions where the rankings differ. Values range in $[0
 ::: {.note title="Code $\leftrightarrow$ Config (constraints)"}
 Constraint-related knobs (`MOD-zoosim.config`) live in configuration so experiments remain reproducible and auditable. These implement #EQ-1.3 constraint definitions:
 
-- Rank stability penalty weight: `lambda_rank` in `zoosim/core/config.py`
-- Profitability floor (CM2): `cm2_floor` in `zoosim/core/config.py`
-- Exposure floors (strategic products): `exposure_floors` in `zoosim/core/config.py`
+- Rank stability penalty weight: `lambda_rank` in `zoosim/core/config.py:230`
+- Profitability floor (CM2): `cm2_floor` in `zoosim/core/config.py:232` (defined in config; enforcement is introduced in Chapter 10)
+- Exposure floors (strategic products): `exposure_floors` in `zoosim/core/config.py:233` (defined in config; enforcement is introduced in Chapter 10)
 
 These are surfaced in `ActionConfig` and wired into downstream modules as they mature.
 :::
@@ -178,11 +186,11 @@ We include $\delta \cdot \text{CLICKS}$ as a **soft viability term** in the rewa
 
 **Practical guideline**: Set $\delta/\alpha \in [0.01, 0.10]$—engagement is a *tiebreaker*, not the primary objective. We want clicks to be a **soft regularizer** that prevents GMV-maximizing policies from collapsing engagement, not a dominant term that drives the optimization.
 
-**Diagnostic metric**: Monitor **conversion quality**
+**Diagnostic metric**: Monitor **revenue per click (RPC)**
 $$
-\text{CVR}_t = \frac{\sum_{i=1}^t \text{GMV}_i}{\sum_{i=1}^t \text{CLICKS}_i}
+\text{RPC}_t = \frac{\sum_{i=1}^t \text{GMV}_i}{\sum_{i=1}^t \text{CLICKS}_i}
 $$
-(cumulative GMV per click up to episode $t$). If $\text{CVR}_t$ drops $>10\%$ below baseline while CTR rises during training, the agent is learning clickbait—reduce $\delta$ immediately.
+(cumulative GMV per click up to episode $t$). If $\text{RPC}_t$ drops $>10\%$ below baseline while CTR rises during training, the agent is learning clickbait—reduce $\delta$ immediately.
 
 **Control-theoretic analogy**: This is similar to LQR with **state and control penalties**: $c(x, u) = x^\top Q x + u^\top R u$. We penalize both deviation from target state (GMV, CM2) and control effort (engagement as "cost" of achieving GMV). The relative weights $Q, R$ encode the tradeoff. In our case, $\alpha, \beta, \gamma, \delta$ play the role of $Q$, and we're learning the optimal policy $\pi^*(x)$ under this cost structure. See Appendix B (and Section 1.10) for deeper connections to classical control.
 
@@ -212,9 +220,9 @@ Business weights in `RewardConfig` (`MOD-zoosim.config`) implement #EQ-1.2 param
 - $\gamma/\alpha$ (STRAT weight): Strategic priority, typically $\in [0.1, 0.3]$ (house brands, new products, clearance)
 - **$\delta/\alpha$ (CLICKS weight): Bounded $\in [0.01, 0.10]$ to prevent clickbait strategies**
 
-Validation (enforced in code): see `zoosim/dynamics/reward.py` for an assertion on $\delta/\alpha$ in the production reward path. **Appendix C** derives principled bounds from Lagrangian duality and Slater's condition [THM-C.2.1].
+Validation (enforced in code): see `zoosim/dynamics/reward.py:56` for an assertion on $\delta/\alpha$ in the production reward path. The numerical range $[0.01, 0.10]$ is an engineering guardrail motivated by clickbait failure modes; Appendix C provides the duality background for constrained optimization, not a derivation of this specific bound.
 
-Diagnostic: Compute $\text{CVR}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i$ after each policy update. If CVR drops $>10\%$ while CTR rises, reduce $\delta$ by 30–50%.
+Diagnostic: Compute $\text{RPC}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i$ after each policy update. If RPC drops $>10\%$ while CTR rises, reduce $\delta$ by 30–50%.
 :::
 
 ::: {.note title="Code $\leftrightarrow$ Simulator Layout"}
@@ -249,14 +257,14 @@ R_B = compute_reward(100, 35, 3, 4)  # = 118.50
 
 Wait---Strategy A won? With profitability-focused weights $(\alpha=0.5, \beta=1.0, \gamma=0.5, \delta=0.1)$, the result flips: Strategy A scores 75.80, Strategy B scores **86.90**. The optimal strategy depends on business weights---this is a multi-objective tradeoff, not a fixed optimization. See **Lab 1.3--1.4** for full implementations and weight sensitivity analysis.
 
-**Conversion quality diagnostic** (clickbait detection): Strategy A gets fewer clicks (3 vs 4) but 60% higher GMV per click (EUR 40 vs EUR 25)---*quality over quantity*. The metric $\text{CVR} = \text{GMV}/\text{CLICKS}$ monitors for clickbait: if CVR drops while CTR rises, reduce $\delta$ immediately. See **Lab 1.5** for the full implementation with alerting thresholds.
+**Revenue-per-click diagnostic** (clickbait detection): Strategy A gets fewer clicks (3 vs 4) but 60% higher GMV per click (EUR 40 vs EUR 25)---*quality over quantity*. The metric $\text{RPC} = \text{GMV}/\text{CLICKS}$ monitors for clickbait: if RPC drops while CTR rises, reduce $\delta$ immediately. See **Lab 1.5** for the full implementation with alerting thresholds.
 
-The bound $\delta/\alpha = 0.10$ is at the upper limit. We recommend starting with $\delta/\alpha = 0.05$ and monitoring CVR over time. If CVR degrades, the agent has learned to exploit the engagement term.
+The bound $\delta/\alpha = 0.10$ is at the upper limit. We recommend starting with $\delta/\alpha = 0.05$ and monitoring RPC over time. If RPC degrades, the agent has learned to exploit the engagement term.
 
 ::: {.note title="Code $\leftrightarrow$ Simulator"}
 The minimal example above mirrors the simulator's reward path. In production, `RewardConfig` (`MOD-zoosim.config`) in `zoosim/core/config.py` holds the business weights, and `compute_reward` (`MOD-zoosim.reward`) in `zoosim/dynamics/reward.py` implements #EQ-1.2 aggregation with a detailed breakdown. Keeping these constants in configuration avoids magic numbers in code and guarantees reproducibility across experiments.
 
-CVR monitoring (for production deployment): Log $\text{CVR}_t = \sum_{i=1}^t \text{GMV}_i / \sum_{i=1}^t \text{CLICKS}_i$ as a running average per Section 1.2.1. Alert if CVR drops $>10\%$ below baseline. See Chapter 10 (Robustness) for drift detection and automatic $\delta$ adjustment.
+RPC monitoring (for production deployment): Log $\text{RPC}_t = \sum_{i=1}^t \text{GMV}_i / \sum_{i=1}^t \text{CLICKS}_i$ as a running average per Section 1.2.1. Alert if RPC drops $>10\%$ below baseline. See Chapter 10 (Robustness) for drift detection and automatic $\delta$ adjustment.
 :::
 
 **Key observation**: The **optimal strategy depends on business weights** $(\alpha, \beta, \gamma, \delta)$. This is not a fixed optimization problem—it's a **multi-objective tradeoff** that requires careful calibration. In practice, these weights are set by business stakeholders, and the RL system must respect them.
@@ -485,9 +493,9 @@ a_safe = clip_action(a_bad)  # -> [0.5, -0.3, 0.5, -0.5, 0.4]
 ::: {.note title="Code $\leftrightarrow$ Env (clipping)"}
 The production simulator (`MOD-zoosim.env`) enforces #EQ-1.11 action space bounds at ranking time.
 
-- Action clipping: `np.clip(..., -a_max, +a_max)` in `zoosim/envs/search_env.py`
-- Bound parameter: `SimulatorConfig.action.a_max` in `zoosim/core/config.py`
-- Feature standardization toggle: `standardize_features` in `zoosim/core/config.py` (applied in env when enabled)
+- Action clipping: `np.clip(..., -a_max, +a_max)` in `zoosim/envs/search_env.py:50`
+- Bound parameter: `SimulatorConfig.action.a_max` in `zoosim/core/config.py:229`
+- Feature standardization toggle: `standardize_features` in `zoosim/core/config.py:231` (applied in env when enabled)
 
 Keeping examples consistent with these guards avoids silent discrepancies between notebooks and the simulator.
 :::
@@ -501,11 +509,11 @@ import numpy as np
 from zoosim.core import config
 from zoosim.envs import ZooplusSearchEnv
 
-cfg = config.load_default_config()  # uses SimulatorConfig.seed at `zoosim/core/config.py:231`
+cfg = config.load_default_config()  # uses SimulatorConfig.seed at `zoosim/core/config.py:252`
 env = ZooplusSearchEnv(cfg, seed=cfg.seed)
 state = env.reset()
 
-# Zero action of correct dimensionality; env will clip if needed (see `zoosim/envs/search_env.py:47`).
+# Zero action of correct dimensionality; env will clip if needed (see `zoosim/envs/search_env.py:50`).
 action = np.zeros(cfg.action.feature_dim, dtype=float)
 _, reward, done, info = env.step(action)
 
@@ -633,7 +641,11 @@ Before implementing RL algorithms, we need a **realistic environment** to test t
 
 ### Part III: Policies (Chapters 6-8)
 
-With a simulator, we can now develop **algorithms**: discrete template bandits (Chapter 6), continuous action Q-learning (Chapter 7), and policy gradients (Chapter 8). Constraint enforcement for CM2 floors and rank stability appears in Chapter 10 (Guardrails), with the underlying duality theory in Appendix C. Chapter 6 develops bandits with formal regret bounds; Chapter 7 establishes convergence under realizability (but no regret guarantees for continuous actions); Chapter 8 proves the Policy Gradient Theorem and analyzes the theory-practice gap. All three provide PyTorch implementations.
+With a simulator, we can now develop **algorithms**: discrete template bandits (Chapter 6), continuous action Q-learning (Chapter 7), and policy gradients (Chapter 8).
+
+Constraint enforcement for CM2 floors and rank stability appears in Chapter 10 (Guardrails), with the underlying duality theory in Appendix C.
+
+Chapter 6 develops bandits with formal regret bounds; Chapter 7 establishes convergence under realizability (but no regret guarantees for continuous actions); Chapter 8 proves the Policy Gradient Theorem and analyzes the theory-practice gap. All three provide PyTorch implementations.
 
 **Chapter 6**: Discrete template bandits (LinUCB, Thompson Sampling over fixed strategies)
 **Chapter 7**: Continuous actions via $Q(x, a)$ regression (neural Q-functions)
@@ -710,6 +722,8 @@ To even *define* $Q(x,a)$, we need basic regularity conditions. These are made r
 3. **Coverage / overlap**: If the evaluation policy ever plays an action in a context, the logging policy must have taken that action with positive probability there. This is **absolute continuity** $\pi_{\text{eval}} \ll \pi_{\text{log}}$, ensuring importance weights $\pi_{\text{eval}}(a\mid x) / \pi_{\text{log}}(a\mid x)$ are finite.
 
 Conditions (1)–(2) ensure $Q(x,a) = \mathbb{E}[R(x,a,\omega) \mid x,a]$ is a well-defined finite Lebesgue integral. Condition (3) is critical for **off-policy evaluation** (§1.7.2 below): when we estimate the value of a new policy using data from an old policy, we reweight observations by likelihood ratios. Absolute continuity guarantees these ratios exist (the denominator is never zero where the numerator is positive).
+
+**Continuous-action remark.** Our action space $\mathcal{A} = [-a_{\max}, +a_{\max}]^K$ is continuous. In this case, $\pi_e(a\mid x)$ and $\pi_b(a\mid x)$ should be read as *densities* (Radon–Nikodym derivatives) with respect to Lebesgue measure on $\mathcal{A}$, and importance weights are density ratios. The coverage condition becomes a support condition: $\operatorname{supp}(\pi_e(\cdot\mid x)) \subseteq \operatorname{supp}(\pi_b(\cdot\mid x))$.
 
 **Chapter 2, §2.6** formalizes these conditions as **Assumption 2.6.1 (OPE Probability Conditions)** and proves that the IPS estimator is unbiased under these assumptions. For now, note that our search setting satisfies all three: rewards are bounded (GMV and CM2 are finite), and we'll use exploration policies (e.g., $\varepsilon$-greedy with $\varepsilon > 0$) that ensure coverage.
 
@@ -1140,14 +1154,20 @@ Let's build.
 
 Note. Readers who completed Chapter 0's toy bandit experiment should: (i) compare the regret curves from Exercise 0.3 to the $\tilde{\Omega}(\sqrt{KT})$ lower bound discussed in \S1.7.6 (and revisited in Chapter 6); (ii) restate the Chapter 0 environment in this chapter's notation by identifying $(\mathcal{X}, \mathcal{A}, \rho, R)$.
 
+Companion files for Chapter 1:
+- Labs and tasks: `docs/book/ch01/exercises_labs.md`
+- Written solutions: `docs/book/ch01/ch01_lab_solutions.md`
+- Runnable reference implementation: `scripts/ch01/lab_solutions.py`
+- Regression tests for chapter snippets: `tests/ch01/test_reward_examples.py`
+
 !!! tip "Production Checklist (Chapter 1)"
-    - **Seed deterministically**: `SimulatorConfig.seed` in `zoosim/core/config.py:231` and module-level RNGs.
-    - **Align action bounds**: `SimulatorConfig.action.a_max` in `zoosim/core/config.py:208`; examples should respect the same value.
+    - **Seed deterministically**: `SimulatorConfig.seed` in `zoosim/core/config.py:252` and module-level RNGs.
+    - **Align action bounds**: `SimulatorConfig.action.a_max` in `zoosim/core/config.py:229`; examples should respect the same value.
     - **Use config-driven weights**: `RewardConfig` for $(\alpha,\beta,\gamma,\delta)$; avoid hard-coded numbers.
-    - **Validate engagement weight**: Assert $\delta/\alpha \in [0.01, 0.10]$ in `zoosim/dynamics/reward.py:25` (see Section 1.2.1).
-    - **Monitor CVR**: Log $\text{CVR}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i$; alert if drops $>10\%$ (clickbait detection).
+    - **Validate engagement weight**: Assert $\delta/\alpha \in [0.01, 0.10]$ in `zoosim/dynamics/reward.py:56` (see Section 1.2.1).
+    - **Monitor RPC**: Log $\text{RPC}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i$; alert if drops $>10\%$ (clickbait detection).
     - **Enforce constraints early**: CM2 and exposure floors via Lagrange multipliers (**Chapter 10, §10.4.2**; theory in **Appendix C**).
-    - **Ensure reproducible ranking**: Enable `ActionConfig.standardize_features` in `zoosim/core/config.py:210`.
+    - **Ensure reproducible ranking**: Enable `ActionConfig.standardize_features` in `zoosim/core/config.py:231`.
 
 **Exercise 1.1** (Reward Function Sensitivity). [20 min]
 (a) Implement equation (1.2) with $(\alpha, \beta, \gamma, \delta) = (1, 0, 0, 0)$ (GMV-only) and $(0.3, 0.6, 0.1, 0)$ (profit-focused). Generate 1000 random outcomes and plot the reward distributions.

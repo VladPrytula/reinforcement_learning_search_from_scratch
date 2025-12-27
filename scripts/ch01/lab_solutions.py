@@ -51,13 +51,13 @@ class SessionOutcome(NamedTuple):
     Attributes:
         gmv: Gross merchandise value in EUR
         cm2: Contribution margin 2 (profit) in EUR
-        strat_exposure: Number of strategic products in top-10
+        strat_purchases: Number of strategic purchases in session
         clicks: Total clicks in session
     """
 
     gmv: float
     cm2: float
-    strat_exposure: int
+    strat_purchases: int
     clicks: int
 
 
@@ -74,7 +74,7 @@ class RewardConfig:
     Attributes:
         alpha_gmv: Weight for gross merchandise value (typically 1.0 as reference)
         beta_cm2: Weight for contribution margin (profit priority)
-        gamma_strat: Weight for strategic product exposure
+        gamma_strat: Weight for strategic purchases (STRAT in [EQ-1.2])
         delta_clicks: Weight for engagement (bounded by [REM-1.2.1])
     """
 
@@ -164,17 +164,17 @@ def compute_reward(outcome: SessionOutcome, cfg: RewardConfig) -> float:
     return (
         cfg.alpha_gmv * outcome.gmv
         + cfg.beta_cm2 * outcome.cm2
-        + cfg.gamma_strat * outcome.strat_exposure
+        + cfg.gamma_strat * outcome.strat_purchases
         + cfg.delta_clicks * outcome.clicks
     )
 
 
-def compute_conversion_quality(outcome: SessionOutcome) -> float:
-    """Compute CVR diagnostic from [REM-1.2.1].
+def compute_rpc(outcome: SessionOutcome) -> float:
+    """Compute revenue-per-click (RPC) diagnostic from [REM-1.2.1].
 
-    CVR = GMV / CLICKS (GMV per click)
+    RPC = GMV / CLICKS (GMV per click)
 
-    Used to detect clickbait: if CVR drops >10% while CTR rises,
+    Used to detect clickbait: if RPC drops >10% while CTR rises,
     the agent is learning to inflate clicks at expense of conversion.
 
     Args:
@@ -260,15 +260,16 @@ def simulate_session(
         gmv = 0.0
         cm2 = 0.0
 
-    # Strategic products: random, weakly correlated with quality boost
-    strat_base = rng.poisson(2.0)
-    strat_modifier = 1.0 + 0.5 * w_quality  # Quality boost correlates with strategic
-    strat_exposure = max(0, min(10, int(strat_base * strat_modifier)))
+    # Strategic purchases: a subset of purchases, weakly correlated with quality boost.
+    # This matches the production semantics in `zoosim/dynamics/reward.py:34-38`:
+    # STRAT increments only when a purchase occurs and the purchased item is strategic.
+    strategic_prob = 0.3 + 0.2 * np.clip(w_quality, -1.0, 1.0)  # 10%-50% range
+    strat_purchases = sum(rng.random() < strategic_prob for _ in range(n_purchases))
 
     return SessionOutcome(
         gmv=round(gmv, 2),
         cm2=round(cm2, 2),
-        strat_exposure=strat_exposure,
+        strat_purchases=strat_purchases,
         clicks=clicks,
     )
 
@@ -311,7 +312,7 @@ def lab_1_1_reward_aggregation(seed: int = 11, verbose: bool = True) -> dict:
     R_computed = (
         cfg.alpha_gmv * outcome.gmv
         + cfg.beta_cm2 * outcome.cm2
-        + cfg.gamma_strat * outcome.strat_exposure
+        + cfg.gamma_strat * outcome.strat_purchases
         + cfg.delta_clicks * outcome.clicks
     )
     R_function = compute_reward(outcome, cfg)
@@ -324,7 +325,7 @@ def lab_1_1_reward_aggregation(seed: int = 11, verbose: bool = True) -> dict:
         print(f"\nOutcome breakdown:")
         print(f"  GMV:    €{outcome.gmv:6.2f} (gross merchandise value)")
         print(f"  CM2:    €{outcome.cm2:6.2f} (contribution margin 2)")
-        print(f"  STRAT:  {outcome.strat_exposure:d} items  (strategic products in top-10)")
+        print(f"  STRAT:  {outcome.strat_purchases:d} purchases  (strategic purchases in session)")
         print(f"  CLICKS: {outcome.clicks:d}        (total clicks)")
 
         print(f"\nReward weights (from RewardConfig):")
@@ -334,10 +335,10 @@ def lab_1_1_reward_aggregation(seed: int = 11, verbose: bool = True) -> dict:
         print(f"  delta (delta_clicks):  {cfg.delta_clicks:.2f}")
 
         print(f"\nManual computation of R = alpha*GMV + beta*CM2 + gamma*STRAT + delta*CLICKS:")
-        print(f"  = {cfg.alpha_gmv:.2f} x {outcome.gmv:.2f} + {cfg.beta_cm2:.2f} x {outcome.cm2:.2f} + {cfg.gamma_strat:.2f} x {outcome.strat_exposure} + {cfg.delta_clicks:.2f} x {outcome.clicks}")
+        print(f"  = {cfg.alpha_gmv:.2f} x {outcome.gmv:.2f} + {cfg.beta_cm2:.2f} x {outcome.cm2:.2f} + {cfg.gamma_strat:.2f} x {outcome.strat_purchases} + {cfg.delta_clicks:.2f} x {outcome.clicks}")
         gmv_term = cfg.alpha_gmv * outcome.gmv
         cm2_term = cfg.beta_cm2 * outcome.cm2
-        strat_term = cfg.gamma_strat * outcome.strat_exposure
+        strat_term = cfg.gamma_strat * outcome.strat_purchases
         clicks_term = cfg.delta_clicks * outcome.clicks
         print(f"  = {gmv_term:.2f} + {cm2_term:.2f} + {strat_term:.2f} + {clicks_term:.2f}")
         print(f"  = {R_computed:.2f}")
@@ -426,8 +427,8 @@ def lab_1_2_regression_tests(verbose: bool = True) -> dict:
     results = {"tests": [], "all_passed": True}
 
     # Test 1: Basic reward comparison (from chapter)
-    outcome_a = SessionOutcome(gmv=120.0, cm2=15.0, strat_exposure=1, clicks=3)
-    outcome_b = SessionOutcome(gmv=100.0, cm2=35.0, strat_exposure=3, clicks=4)
+    outcome_a = SessionOutcome(gmv=120.0, cm2=15.0, strat_purchases=1, clicks=3)
+    outcome_b = SessionOutcome(gmv=100.0, cm2=35.0, strat_purchases=3, clicks=4)
     weights = RewardConfig(alpha_gmv=1.0, beta_cm2=0.5, gamma_strat=0.2, delta_clicks=0.1)
 
     R_A = compute_reward(outcome_a, weights)
@@ -468,23 +469,23 @@ def lab_1_2_regression_tests(verbose: bool = True) -> dict:
         print(f"  Strategy B: R = {R_B_profit:.2f} (expected: 86.90)")
         print(f"  Result: {'✓ PASSED' if test2_passed else '✗ FAILED'}")
 
-    # Test 3: CVR diagnostic
-    cvr_a = compute_conversion_quality(outcome_a)
-    cvr_b = compute_conversion_quality(outcome_b)
+    # Test 3: RPC diagnostic
+    rpc_a = compute_rpc(outcome_a)
+    rpc_b = compute_rpc(outcome_b)
 
-    test3_passed = abs(cvr_a - 40.0) < 0.01 and abs(cvr_b - 25.0) < 0.01 and cvr_a > cvr_b
+    test3_passed = abs(rpc_a - 40.0) < 0.01 and abs(rpc_b - 25.0) < 0.01 and rpc_a > rpc_b
     results["tests"].append({
-        "name": "CVR diagnostic",
+        "name": "RPC diagnostic",
         "passed": test3_passed,
-        "expected": {"CVR_A": 40.0, "CVR_B": 25.0, "A_higher": True},
-        "actual": {"CVR_A": cvr_a, "CVR_B": cvr_b, "A_higher": cvr_a > cvr_b},
+        "expected": {"RPC_A": 40.0, "RPC_B": 25.0, "A_higher": True},
+        "actual": {"RPC_A": rpc_a, "RPC_B": rpc_b, "A_higher": rpc_a > rpc_b},
     })
     results["all_passed"] &= test3_passed
 
     if verbose:
-        print(f"\nTest 3: CVR diagnostic")
-        print(f"  Strategy A: CVR = {cvr_a:.2f} (expected: 40.00)")
-        print(f"  Strategy B: CVR = {cvr_b:.2f} (expected: 25.00)")
+        print("\nTest 3: RPC diagnostic")
+        print(f"  Strategy A: RPC = {rpc_a:.2f} (expected: 40.00)")
+        print(f"  Strategy B: RPC = {rpc_b:.2f} (expected: 25.00)")
         print(f"  Result: {'✓ PASSED' if test3_passed else '✗ FAILED'}")
 
     # Test 4: Delta/alpha bounds
@@ -517,21 +518,21 @@ def lab_1_2_regression_tests(verbose: bool = True) -> dict:
         print(f"  Result: {'✓ PASSED' if test4_passed else '✗ FAILED'}")
 
     # Test 5: Zero clicks edge case
-    outcome_zero = SessionOutcome(gmv=0.0, cm2=0.0, strat_exposure=0, clicks=0)
-    cvr_zero = compute_conversion_quality(outcome_zero)
-    test5_passed = cvr_zero == 0.0
+    outcome_zero = SessionOutcome(gmv=0.0, cm2=0.0, strat_purchases=0, clicks=0)
+    rpc_zero = compute_rpc(outcome_zero)
+    test5_passed = rpc_zero == 0.0
 
     results["tests"].append({
         "name": "Zero clicks edge case",
         "passed": test5_passed,
         "expected": 0.0,
-        "actual": cvr_zero,
+        "actual": rpc_zero,
     })
     results["all_passed"] &= test5_passed
 
     if verbose:
         print(f"\nTest 5: Zero clicks edge case")
-        print(f"  CVR with zero clicks: {cvr_zero} (expected: 0.0)")
+        print(f"  RPC with zero clicks: {rpc_zero} (expected: 0.0)")
         print(f"  Result: {'✓ PASSED' if test5_passed else '✗ FAILED'}")
 
     if verbose:
@@ -596,12 +597,12 @@ def weight_sensitivity_analysis(
         rewards = [compute_reward(o, cfg) for o in outcomes]
         gmvs = [o.gmv for o in outcomes]
         cm2s = [o.cm2 for o in outcomes]
-        strats = [o.strat_exposure for o in outcomes]
+        strats = [o.strat_purchases for o in outcomes]
         clicks = [o.clicks for o in outcomes]
 
         total_gmv = sum(gmvs)
         total_clicks = sum(clicks)
-        cvr = total_gmv / total_clicks if total_clicks > 0 else 0
+        rpc = total_gmv / total_clicks if total_clicks > 0 else 0
 
         results[name] = {
             "config": cfg,
@@ -611,7 +612,7 @@ def weight_sensitivity_analysis(
             "mean_cm2": np.mean(cm2s),
             "mean_strat": np.mean(strats),
             "mean_clicks": np.mean(clicks),
-            "cvr": cvr,
+            "rpc": rpc,
         }
 
         if verbose:
@@ -621,7 +622,7 @@ def weight_sensitivity_analysis(
             print(f"  Mean CM2:        EUR{results[name]['mean_cm2']:7.2f}")
             print(f"  Mean STRAT:        {results[name]['mean_strat']:.2f}")
             print(f"  Mean CLICKS:       {results[name]['mean_clicks']:.2f}")
-            print(f"  CVR (GMV/click): EUR{results[name]['cvr']:.2f}")
+            print(f"  RPC (GMV/click): EUR{results[name]['rpc']:.2f}")
 
     if verbose:
         print("\n" + "-" * 70)

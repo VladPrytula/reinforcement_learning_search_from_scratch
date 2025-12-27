@@ -7,8 +7,8 @@ Defines the canonical implementations for:
 
 References:
     - Chapter 10: Robustness & Guardrails
-    - [DEF-10.3]: Delta-Rank Stability
-    - [DEF-10.4]: CM2 (Contribution Margin 2) Definition
+    - [DEF-10.4]: Delta-Rank@k Stability
+    - [EQ-10.11]: CM2 definition (GMV - COGS - Logistics - Marketing)
 """
 
 from __future__ import annotations

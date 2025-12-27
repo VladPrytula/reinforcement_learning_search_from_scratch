@@ -240,7 +240,7 @@ If optimal policy is *not representable* as any template (or convex combination)
 - [@zhou:neural_ts:2020] Thompson Sampling with neural network priors
 - [@zhang:neural_ucb:2021] UCB for overparameterized neural networks with NTK analysis
 
-**4. Constrained bandits (relevant for Chapter 8)**
+**4. Constrained bandits (relevant for Chapter 10)**
 
 - [@garcelon:conservative:2020] Safe exploration under CM2 floor constraints
 - [@moradipari:primal_dual:2022] Primal-dual methods for contextual bandits with constraints
@@ -341,7 +341,7 @@ Before deploying template bandits in production, verify:
     - [ ] Exploration parameter $\alpha \in [0.5, 2.0]$ (LinUCB) or $\sigma \in [0.5, 2.0]$ (TS)
 
     **Guardrails:**
-    - [ ] CM2 floor $\geq 60\%$ enforced (Chapter 8 adds hard constraints)
+    - [ ] CM2 floor $\geq 60\%$ enforced (Chapter 10 adds hard constraints)
     - [ ] Rank stability: $\Delta \text{rank}@k < 3$ positions per episode
     - [ ] Fallback to best static template if bandit diverges (monitoring in Chapter 10)
 

@@ -16,7 +16,7 @@ class SessionOutcome(NamedTuple):
     """
     gmv: float          # Gross merchandise value (€)
     cm2: float          # Contribution margin 2 (€)
-    strat_exposure: int # Number of strategic products in top-10
+    strat_purchases: int # Number of strategic purchases in session
     clicks: int         # Total clicks
 
 
@@ -34,20 +34,20 @@ def compute_reward(outcome: SessionOutcome, weights: BusinessWeights) -> float:
 
     This is the **scalar objective** we will maximize via RL.
 
-    See `zoosim/dynamics/reward.py:1` for the production implementation that
-    aggregates GMV/CM2/strategic exposure/clicks using `RewardConfig`
-    parameters defined in `zoosim/core/config.py:193`.
+    See `zoosim/dynamics/reward.py:42-66` for the production implementation that
+    aggregates GMV/CM2/strategic purchases/clicks using `RewardConfig`
+    parameters defined in `zoosim/core/config.py:195`.
     """
     return (weights.alpha_gmv * outcome.gmv +
             weights.beta_cm2 * outcome.cm2 +
-            weights.gamma_strat * outcome.strat_exposure +
+            weights.gamma_strat * outcome.strat_purchases +
             weights.delta_clicks * outcome.clicks)
 
 
-def compute_conversion_quality(outcome: SessionOutcome) -> float:
-    """GMV per click (conversion quality).
+def compute_rpc(outcome: SessionOutcome) -> float:
+    """GMV per click (revenue per click, RPC).
 
-    Diagnostic for clickbait detection: high CTR with low CVR indicates
+    Diagnostic for clickbait detection: high CTR with low RPC indicates
     the agent is optimizing delta*CLICKS at expense of alpha*GMV.
     See [REM-1.2.1] for theory.
     """
@@ -61,10 +61,10 @@ def test_basic_reward_comparison():
     print("=" * 70)
 
     # Strategy A: Maximize GMV (show expensive products)
-    outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_exposure=1, clicks=3)
+    outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_purchases=1, clicks=3)
 
     # Strategy B: Balance GMV and CM2 (show profitable products)
-    outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_exposure=3, clicks=4)
+    outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_purchases=3, clicks=4)
 
     weights = BusinessWeights(alpha_gmv=1.0, beta_cm2=0.5, gamma_strat=0.2, delta_clicks=0.1)
 
@@ -89,8 +89,8 @@ def test_profitability_weighting():
     print("Test 2: Profitability Weighting")
     print("=" * 70)
 
-    outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_exposure=1, clicks=3)
-    outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_exposure=3, clicks=4)
+    outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_purchases=1, clicks=3)
+    outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_purchases=3, clicks=4)
 
     weights_profit = BusinessWeights(alpha_gmv=0.5, beta_cm2=1.0, gamma_strat=0.5, delta_clicks=0.1)
     R_A_profit = compute_reward(outcome_A, weights_profit)
@@ -109,23 +109,23 @@ def test_profitability_weighting():
     print("✓ Test passed: values match chapter output\n")
 
 
-def test_cvr_diagnostic():
-    """Test conversion quality diagnostic from [REM-1.2.1]."""
+def test_rpc_diagnostic():
+    """Test revenue-per-click (RPC) diagnostic from [REM-1.2.1]."""
     print("=" * 70)
-    print("Test 3: CVR Diagnostic (Clickbait Detection)")
+    print("Test 3: RPC Diagnostic (Clickbait Detection)")
     print("=" * 70)
 
-    outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_exposure=1, clicks=3)
-    outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_exposure=3, clicks=4)
+    outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_purchases=1, clicks=3)
+    outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_purchases=3, clicks=4)
     weights = BusinessWeights(alpha_gmv=1.0, beta_cm2=0.5, gamma_strat=0.2, delta_clicks=0.1)
 
-    cvr_A = compute_conversion_quality(outcome_A)
-    cvr_B = compute_conversion_quality(outcome_B)
+    rpc_A = compute_rpc(outcome_A)
+    rpc_B = compute_rpc(outcome_B)
 
-    print(f"Conversion quality (GMV per click):")
-    print(f"Strategy A: €{cvr_A:.2f}/click ({outcome_A.clicks} clicks → €{outcome_A.gmv:.0f} GMV)")
-    print(f"Strategy B: €{cvr_B:.2f}/click ({outcome_B.clicks} clicks → €{outcome_B.gmv:.0f} GMV)")
-    print(f"→ Strategy {'A' if cvr_A > cvr_B else 'B'} has higher-quality engagement")
+    print("Revenue per click (GMV per click):")
+    print(f"Strategy A: €{rpc_A:.2f}/click ({outcome_A.clicks} clicks → €{outcome_A.gmv:.0f} GMV)")
+    print(f"Strategy B: €{rpc_B:.2f}/click ({outcome_B.clicks} clicks → €{outcome_B.gmv:.0f} GMV)")
+    print(f"→ Strategy {'A' if rpc_A > rpc_B else 'B'} has higher-quality engagement")
 
     # Verify delta/alpha bound from [REM-1.2.1]
     delta_alpha_ratio = weights.delta_clicks / weights.alpha_gmv
@@ -133,12 +133,12 @@ def test_cvr_diagnostic():
     print(f"             Bound check: {'✓' if delta_alpha_ratio <= 0.10 else '✗'} (must be ≤ 0.10)")
 
     # Expected values
-    assert abs(cvr_A - 40.0) < 0.01, f"CVR_A should be 40.0, got {cvr_A:.2f}"
-    assert abs(cvr_B - 25.0) < 0.01, f"CVR_B should be 25.0, got {cvr_B:.2f}"
-    assert cvr_A > cvr_B, "Strategy A should have higher CVR (quality over quantity)"
+    assert abs(rpc_A - 40.0) < 0.01, f"RPC_A should be 40.0, got {rpc_A:.2f}"
+    assert abs(rpc_B - 25.0) < 0.01, f"RPC_B should be 25.0, got {rpc_B:.2f}"
+    assert rpc_A > rpc_B, "Strategy A should have higher RPC (quality over quantity)"
     assert delta_alpha_ratio <= 0.10, f"delta/alpha = {delta_alpha_ratio:.3f} exceeds bound of 0.10"
 
-    print("✓ Test passed: CVR diagnostic works correctly\n")
+    print("✓ Test passed: RPC diagnostic works correctly\n")
 
 
 def test_delta_alpha_bounds():
@@ -175,29 +175,29 @@ def test_delta_alpha_bounds():
     print("✓ Test passed: bound validation works correctly\n")
 
 
-def test_cvr_edge_cases():
-    """Test edge cases for CVR computation."""
+def test_rpc_edge_cases():
+    """Test edge cases for RPC computation."""
     print("=" * 70)
-    print("Test 5: CVR Edge Cases")
+    print("Test 5: RPC Edge Cases")
     print("=" * 70)
 
     # Zero clicks (should return 0.0, not divide-by-zero error)
-    outcome_zero_clicks = SessionOutcome(gmv=0.0, cm2=0.0, strat_exposure=0, clicks=0)
-    cvr_zero = compute_conversion_quality(outcome_zero_clicks)
-    assert cvr_zero == 0.0, f"CVR with zero clicks should be 0.0, got {cvr_zero}"
-    print(f"✓ Zero clicks: CVR = {cvr_zero:.2f} (no divide-by-zero)")
+    outcome_zero_clicks = SessionOutcome(gmv=0.0, cm2=0.0, strat_purchases=0, clicks=0)
+    rpc_zero = compute_rpc(outcome_zero_clicks)
+    assert rpc_zero == 0.0, f"RPC with zero clicks should be 0.0, got {rpc_zero}"
+    print(f"✓ Zero clicks: RPC = {rpc_zero:.2f} (no divide-by-zero)")
 
     # High GMV, few clicks (high quality)
-    outcome_high_quality = SessionOutcome(gmv=500.0, cm2=100.0, strat_exposure=2, clicks=2)
-    cvr_high = compute_conversion_quality(outcome_high_quality)
-    assert cvr_high == 250.0, f"High-quality CVR should be 250.0, got {cvr_high:.2f}"
-    print(f"✓ High quality: CVR = €{cvr_high:.2f}/click (€500 GMV / 2 clicks)")
+    outcome_high_quality = SessionOutcome(gmv=500.0, cm2=100.0, strat_purchases=2, clicks=2)
+    rpc_high = compute_rpc(outcome_high_quality)
+    assert rpc_high == 250.0, f"High-quality RPC should be 250.0, got {rpc_high:.2f}"
+    print(f"✓ High quality: RPC = €{rpc_high:.2f}/click (€500 GMV / 2 clicks)")
 
     # Low GMV, many clicks (clickbait)
-    outcome_clickbait = SessionOutcome(gmv=50.0, cm2=10.0, strat_exposure=1, clicks=20)
-    cvr_low = compute_conversion_quality(outcome_clickbait)
-    assert cvr_low == 2.5, f"Clickbait CVR should be 2.5, got {cvr_low:.2f}"
-    print(f"✓ Clickbait detected: CVR = €{cvr_low:.2f}/click (€50 GMV / 20 clicks)")
+    outcome_clickbait = SessionOutcome(gmv=50.0, cm2=10.0, strat_purchases=1, clicks=20)
+    rpc_low = compute_rpc(outcome_clickbait)
+    assert rpc_low == 2.5, f"Clickbait RPC should be 2.5, got {rpc_low:.2f}"
+    print(f"✓ Clickbait detected: RPC = €{rpc_low:.2f}/click (€50 GMV / 20 clicks)")
     print("  → This is the pathological case from [REM-1.2.1]")
 
     print("✓ Test passed: edge cases handled correctly\n")
@@ -210,9 +210,9 @@ if __name__ == "__main__":
 
     test_basic_reward_comparison()
     test_profitability_weighting()
-    test_cvr_diagnostic()
+    test_rpc_diagnostic()
     test_delta_alpha_bounds()
-    test_cvr_edge_cases()
+    test_rpc_edge_cases()
 
     print("="*70)
     print("All tests passed! ✓")

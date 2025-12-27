@@ -2546,7 +2546,7 @@ Run LinUCB with 10 different seeds, report mean +- std of final GMV. Verify robu
 **What's next:**
 
 - **Chapter 7**: Continuous actions via $Q(x, a)$ regression (move beyond discrete templates)
-- **Chapter 8**: Hard constraints (CM2 floor, exposure, rank stability) via Lagrangian methods
+- **Chapter 10**: Hard constraints (CM2 floor, exposure, rank stability) via Lagrangian methods
 - **Chapter 11**: Multi-session MDPs (retention, long-term value optimization)
 - **Chapter 13**: Offline RL (learn from logged data without online interaction)
 

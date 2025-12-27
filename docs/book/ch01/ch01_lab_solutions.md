@@ -27,7 +27,7 @@ This lab verifies that our simulator implements [EQ-1.2] correctly and explores 
 
 ### Solution
 
-Since the full `zoosim` simulator may not be fully implemented at this stage, we provide a self-contained solution that mirrors the production architecture. The code below demonstrates the reward computation with configurable weights and validates the mathematical relationship.
+To keep the lab fully reproducible, we provide a self-contained reference implementation in `scripts/ch01/lab_solutions.py` that mirrors the production architecture. The code below runs Lab 1.1 end-to-end with a fixed seed and prints the reward decomposition.
 
 ```python
 from scripts.ch01.lab_solutions import (
@@ -51,9 +51,9 @@ Session simulation (seed=11):
   Query: "cat food"
 
 Outcome breakdown:
-  GMV:    EUR 124.46 (gross merchandise value)
-  CM2:    EUR  18.67 (contribution margin 2)
-  STRAT:  3 items  (strategic products in top-10)
+  GMV:    €124.46 (gross merchandise value)
+  CM2:    € 18.67 (contribution margin 2)
+  STRAT:  0 purchases  (strategic purchases in session)
   CLICKS: 3        (total clicks)
 
 Reward weights (from RewardConfig):
@@ -63,13 +63,13 @@ Reward weights (from RewardConfig):
   delta (delta_clicks):  0.10
 
 Manual computation of R = alpha*GMV + beta*CM2 + gamma*STRAT + delta*CLICKS:
-  = 1.00 x 124.46 + 0.50 x 18.67 + 0.20 x 3 + 0.10 x 3
-  = 124.46 + 9.34 + 0.60 + 0.30
-  = 134.69
+  = 1.00 x 124.46 + 0.50 x 18.67 + 0.20 x 0 + 0.10 x 3
+  = 124.46 + 9.34 + 0.00 + 0.30
+  = 134.09
 
-Simulator-reported reward: 134.69
+Simulator-reported reward: 134.09
 
-Verification: |computed - reported| = 0.00 < 0.01 [PASS]
+Verification: |computed - reported| = 0.00 < 0.01 ✓
 
 The simulator correctly implements [EQ-1.2].
 ```
@@ -81,55 +81,55 @@ The solution above demonstrates that the reward is computed exactly as [EQ-1.2] 
 ```python
 # Different weight configurations
 configs = [
-    RewardConfig(alpha_gmv=1.0, beta_cm2=0.5, gamma_strat=0.2, delta_clicks=0.1),
-    RewardConfig(alpha_gmv=0.5, beta_cm2=1.0, gamma_strat=0.5, delta_clicks=0.1),  # Profit-focused
-    RewardConfig(alpha_gmv=1.0, beta_cm2=0.3, gamma_strat=0.0, delta_clicks=0.05), # GMV-focused
+    ("Balanced", RewardConfig(alpha_gmv=1.0, beta_cm2=0.5, gamma_strat=0.2, delta_clicks=0.1)),
+    ("Profit-focused", RewardConfig(alpha_gmv=0.5, beta_cm2=1.0, gamma_strat=0.5, delta_clicks=0.1)),
+    ("GMV-focused", RewardConfig(alpha_gmv=1.0, beta_cm2=0.3, gamma_strat=0.0, delta_clicks=0.05)),
 ]
 
-outcome = SessionOutcome(gmv=112.70, cm2=22.54, strat_exposure=3, clicks=4)
+outcome = SessionOutcome(gmv=112.70, cm2=22.54, strat_purchases=3, clicks=4)
 
-for i, cfg in enumerate(configs):
+for name, cfg in configs:
     R = (cfg.alpha_gmv * outcome.gmv +
          cfg.beta_cm2 * outcome.cm2 +
-         cfg.gamma_strat * outcome.strat_exposure +
+         cfg.gamma_strat * outcome.strat_purchases +
          cfg.delta_clicks * outcome.clicks)
-    print(f"Config {i+1}: R = {R:.2f}")
+    print(f"{name}: R = {R:.2f}")
 ```
 
 **Output:**
 ```
-Config 1 (Balanced):      R = 124.97
-Config 2 (Profit-focused): R = 80.39
-Config 3 (GMV-focused):    R = 119.66
+Balanced: R = 124.97
+Profit-focused: R = 80.79
+GMV-focused: R = 119.66
 ```
 
-**Analysis:** The same session outcome produces different rewards depending on business priorities. Config 2 (profit-focused with $\beta = 1.0$) amplifies the CM2 contribution but reduces the GMV weight, resulting in a lower total reward for this particular outcome. This illustrates why weight calibration is critical—the RL agent will learn to optimize whatever the weights incentivize.
+**Analysis:** The same session outcome produces different rewards depending on business priorities. The profit-focused configuration amplifies the CM2 contribution but reduces the GMV weight, resulting in a lower total reward for this particular outcome. This illustrates why weight calibration is critical—the RL agent will learn to optimize whatever the weights incentivize.
 
 ### Task 2: Delta/Alpha Bound Violation
 
 From [REM-1.2.1], we established that $\delta/\alpha \in [0.01, 0.10]$ to prevent clickbait strategies. Let's find the smallest violation that triggers a warning:
 
 ```python
-from scripts.ch01.lab_solutions import validate_delta_alpha_bound
+from scripts.ch01.lab_solutions import lab_1_1_delta_alpha_violation
 
-# Test progressively higher delta values
-test_ratios = [0.08, 0.10, 0.11, 0.12, 0.15, 0.20]
-
-for ratio in test_ratios:
-    cfg = RewardConfig(alpha_gmv=1.0, delta_clicks=ratio)
-    is_valid, message = validate_delta_alpha_bound(cfg)
-    status = "[PASS] VALID" if is_valid else "[FAIL] VIOLATION"
-    print(f"delta/alpha = {ratio:.2f}: {status}")
+lab_1_1_delta_alpha_violation(verbose=True)
 ```
 
 **Actual Output:**
 ```
-delta/alpha = 0.08: [PASS] VALID
-delta/alpha = 0.10: [PASS] VALID (at boundary)
-delta/alpha = 0.11: [FAIL] VIOLATION - delta/alpha = 0.110 exceeds bound of 0.10
-delta/alpha = 0.12: [FAIL] VIOLATION - delta/alpha = 0.120 exceeds bound of 0.10
-delta/alpha = 0.15: [FAIL] VIOLATION - delta/alpha = 0.150 exceeds bound of 0.10
-delta/alpha = 0.20: [FAIL] VIOLATION - delta/alpha = 0.200 exceeds bound of 0.10
+======================================================================
+Lab 1.1 Task 2: Delta/Alpha Bound Violation
+======================================================================
+
+Testing progressively higher delta values...
+Bound from [REM-1.2.1]: delta/alpha in [0.01, 0.10]
+
+delta/alpha = 0.08: ✓ VALID
+delta/alpha = 0.10: ✓ VALID
+delta/alpha = 0.11: ✗ VIOLATION
+delta/alpha = 0.12: ✗ VIOLATION
+delta/alpha = 0.15: ✗ VIOLATION
+delta/alpha = 0.20: ✗ VIOLATION
 
 Smallest violation: delta/alpha = 0.11 (1.10x the bound)
 ```
@@ -147,21 +147,26 @@ The bound enforcement connects directly to [REM-1.2.1] (The Role of Engagement i
 The bound $\delta/\alpha \leq 0.10$ ensures engagement remains a **tiebreaker**, not the primary signal. The code enforces this mathematically:
 
 ```python
-# Production implementation pattern (zoosim/dynamics/reward.py)
-def compute_reward(outcome: SessionOutcome, cfg: RewardConfig) -> float:
-    """Implements [EQ-1.2] with [REM-1.2.1] bound validation."""
-    # Validate bounds BEFORE computing reward
-    delta_alpha = cfg.delta_clicks / cfg.alpha_gmv
-    if delta_alpha > 0.10:
-        raise ValueError(
-            f"delta/alpha = {delta_alpha:.3f} exceeds [REM-1.2.1] bound of 0.10. "
-            f"Risk of clickbait strategies. Reduce delta_clicks."
-        )
+from typing import Sequence, Tuple
 
-    return (cfg.alpha_gmv * outcome.gmv +
-            cfg.beta_cm2 * outcome.cm2 +
-            cfg.gamma_strat * outcome.strat_exposure +
-            cfg.delta_clicks * outcome.clicks)
+from zoosim.core.config import SimulatorConfig
+from zoosim.dynamics.reward import RewardBreakdown, compute_reward
+from zoosim.world.catalog import Product
+
+# Production signature (see `zoosim/dynamics/reward.py:42-66`):
+# compute_reward(
+#     *,
+#     ranking: Sequence[int],
+#     clicks: Sequence[int],
+#     buys: Sequence[int],
+#     catalog: Sequence[Product],
+#     config: SimulatorConfig,
+# ) -> Tuple[float, RewardBreakdown]
+
+# Engagement bound (see `zoosim/dynamics/reward.py:52-59`):
+# alpha = float(cfg.alpha_gmv)
+# ratio = float("inf") if alpha == 0.0 else float(cfg.delta_clicks) / alpha
+# assert 0.01 <= ratio <= 0.10
 ```
 
 ---
@@ -181,140 +186,26 @@ Regression tests prevent both. They encode the mathematical relationships as exe
 
 ### Solution
 
-The test file `tests/ch01/test_reward_examples.py` already contains core validations. Let's extend it with constraint-focused tests:
+The canonical regression tests for Chapter 1 live in `tests/ch01/test_reward_examples.py`. They validate the worked examples from §1.2 and the engagement guardrail from [REM-1.2.1]. Constraint enforcement (CM2 floors, exposure floors, Delta-Rank guardrails) is introduced as an implementation pattern in Chapter 10; in Chapter 1 we keep tests focused on the reward contract and its immediate failure modes.
 
-```python
-import pytest
-from tests.ch01.test_reward_examples import (
-    BusinessWeights,
-    SessionOutcome,
-    compute_reward,
-    compute_conversion_quality,
-)
+Run:
 
-# =============================================================================
-# Task 1: Strategic Exposure Violation Fixture
-# =============================================================================
-
-def test_strategic_exposure_violation():
-    """Test that strategic exposure constraints can be monitored.
-
-    Connection to [EQ-1.3b]: E[Exposure_strategic | w] >= tau_strat
-
-    This test validates that we can detect when a policy systematically
-    under-exposes strategic products.
-    """
-    # Outcome with HIGH GMV but LOW strategic exposure
-    outcome_low_strat = SessionOutcome(gmv=200.0, cm2=40.0, strat_exposure=0, clicks=5)
-
-    # Outcome with MODERATE GMV but HIGH strategic exposure
-    outcome_high_strat = SessionOutcome(gmv=150.0, cm2=35.0, strat_exposure=5, clicks=4)
-
-    # With default weights, low_strat wins on reward
-    weights_default = BusinessWeights(alpha_gmv=1.0, beta_cm2=0.5, gamma_strat=0.2, delta_clicks=0.1)
-    R_low = compute_reward(outcome_low_strat, weights_default)
-    R_high = compute_reward(outcome_high_strat, weights_default)
-
-    print(f"Low strategic exposure:  R = {R_low:.2f}, STRAT = {outcome_low_strat.strat_exposure}")
-    print(f"High strategic exposure: R = {R_high:.2f}, STRAT = {outcome_high_strat.strat_exposure}")
-
-    # Without constraint enforcement, GMV dominates
-    assert R_low > R_high, "Without constraints, high-GMV outcomes win"
-
-    # But this violates the strategic exposure floor!
-    # In production, we'd add a Lagrangian penalty or filter actions
-    tau_strat = 2  # Minimum strategic products required
-    violates_constraint = outcome_low_strat.strat_exposure < tau_strat
-    assert violates_constraint, "Low-strat outcome should violate tau_strat=2"
-
-    print(f"\n[PASS] Constraint violation detected: STRAT={outcome_low_strat.strat_exposure} < tau={tau_strat}")
-    print("  -> In Chapter 8, we'll handle this via Lagrangian constraint optimization")
-
-
-def test_clickbait_detection_via_cvr():
-    """Test CVR diagnostic from [REM-1.2.1] for clickbait detection.
-
-    If CVR drops >10% while CTR rises, the agent is learning clickbait.
-    """
-    # Baseline: healthy engagement
-    baseline = SessionOutcome(gmv=100.0, cm2=25.0, strat_exposure=2, clicks=4)
-    cvr_baseline = compute_conversion_quality(baseline)  # EUR 25/click
-
-    # After training: clicks up, GMV down (clickbait!)
-    clickbait = SessionOutcome(gmv=80.0, cm2=20.0, strat_exposure=2, clicks=8)
-    cvr_clickbait = compute_conversion_quality(clickbait)  # EUR 10/click
-
-    # Compute CVR degradation
-    cvr_drop_pct = 100 * (cvr_baseline - cvr_clickbait) / cvr_baseline
-
-    print(f"Baseline CVR:  EUR {cvr_baseline:.2f}/click")
-    print(f"Clickbait CVR: EUR {cvr_clickbait:.2f}/click")
-    print(f"CVR drop: {cvr_drop_pct:.1f}%")
-
-    # Assert clickbait threshold
-    CLICKBAIT_THRESHOLD = 10.0  # From [REM-1.2.1]
-    is_clickbait = cvr_drop_pct > CLICKBAIT_THRESHOLD
-
-    assert is_clickbait, f"CVR drop of {cvr_drop_pct:.1f}% should trigger clickbait alert"
-    print(f"\n[PASS] Clickbait detected: CVR dropped {cvr_drop_pct:.1f}% > {CLICKBAIT_THRESHOLD}% threshold")
-    print("  -> Recommendation: Reduce delta by 30-50% per [REM-1.2.1]")
-
-
-def test_eq_1_2_component_isolation():
-    """Verify each component of [EQ-1.2] can be isolated.
-
-    This ensures we can attribute reward to specific business drivers.
-    """
-    outcome = SessionOutcome(gmv=100.0, cm2=30.0, strat_exposure=2, clicks=5)
-
-    # Isolate each component by zeroing others
-    weights_gmv_only = BusinessWeights(alpha_gmv=1.0, beta_cm2=0.0, gamma_strat=0.0, delta_clicks=0.0)
-    weights_cm2_only = BusinessWeights(alpha_gmv=0.0, beta_cm2=1.0, gamma_strat=0.0, delta_clicks=0.0)
-    weights_strat_only = BusinessWeights(alpha_gmv=0.0, beta_cm2=0.0, gamma_strat=1.0, delta_clicks=0.0)
-    weights_clicks_only = BusinessWeights(alpha_gmv=0.0, beta_cm2=0.0, gamma_strat=0.0, delta_clicks=1.0)
-
-    R_gmv = compute_reward(outcome, weights_gmv_only)
-    R_cm2 = compute_reward(outcome, weights_cm2_only)
-    R_strat = compute_reward(outcome, weights_strat_only)
-    R_clicks = compute_reward(outcome, weights_clicks_only)
-
-    # Verify isolation
-    assert R_gmv == outcome.gmv, f"GMV isolation failed: {R_gmv} != {outcome.gmv}"
-    assert R_cm2 == outcome.cm2, f"CM2 isolation failed: {R_cm2} != {outcome.cm2}"
-    assert R_strat == outcome.strat_exposure, f"STRAT isolation: {R_strat} != {outcome.strat_exposure}"
-    assert R_clicks == outcome.clicks, f"CLICKS isolation: {R_clicks} != {outcome.clicks}"
-
-    # Verify linearity (full reward = sum of isolated rewards with proper weights)
-    weights_full = BusinessWeights(alpha_gmv=0.6, beta_cm2=0.3, gamma_strat=0.2, delta_clicks=0.1)
-    R_full = compute_reward(outcome, weights_full)
-    R_reconstructed = (0.6 * R_gmv + 0.3 * R_cm2 + 0.2 * R_strat + 0.1 * R_clicks)
-
-    assert abs(R_full - R_reconstructed) < 1e-10, "Linearity verification failed"
-
-    print("Component isolation verified:")
-    print(f"  GMV:    {R_gmv:.2f}")
-    print(f"  CM2:    {R_cm2:.2f}")
-    print(f"  STRAT:  {R_strat:.2f}")
-    print(f"  CLICKS: {R_clicks:.2f}")
-    print(f"  Full:   {R_full:.2f} = 0.6x{R_gmv:.0f} + 0.3x{R_cm2:.0f} + 0.2x{R_strat:.0f} + 0.1x{R_clicks:.0f}")
-    print(f"\n[PASS] [EQ-1.2] linearity verified: reward is sum of weighted components")
-
-
-# Run with pytest
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+```bash
+pytest tests/ch01/test_reward_examples.py -v
 ```
 
 **Output:**
 ```
 ============================= test session starts =============================
-collected 3 items
+collecting ... collected 5 items
 
-tests/ch01/test_reward_examples.py::test_strategic_exposure_violation PASSED
-tests/ch01/test_reward_examples.py::test_clickbait_detection_via_cvr PASSED
-tests/ch01/test_reward_examples.py::test_eq_1_2_component_isolation PASSED
+tests/ch01/test_reward_examples.py::test_basic_reward_comparison PASSED  [ 20%]
+tests/ch01/test_reward_examples.py::test_profitability_weighting PASSED  [ 40%]
+tests/ch01/test_reward_examples.py::test_rpc_diagnostic PASSED           [ 60%]
+tests/ch01/test_reward_examples.py::test_delta_alpha_bounds PASSED       [ 80%]
+tests/ch01/test_reward_examples.py::test_rpc_edge_cases PASSED           [100%]
 
-============================== 3 passed in 0.02s ==============================
+============================== 5 passed in 0.15s ===============================
 ```
 
 ### Task 2: Explicit Ties to Chapter Text
@@ -323,9 +214,11 @@ Each test is explicitly tied to chapter equations and remarks:
 
 | Test | Chapter Reference | What It Validates |
 |------|-------------------|-------------------|
-| `test_strategic_exposure_violation` | [EQ-1.3b] | Constraint monitoring for strategic products |
-| `test_clickbait_detection_via_cvr` | [REM-1.2.1] | CVR diagnostic threshold (10% drop) |
-| `test_eq_1_2_component_isolation` | [EQ-1.2] | Reward function linearity and component attribution |
+| `test_basic_reward_comparison` | §1.2 (worked example) | Correct arithmetic for the published Strategy A vs. B comparison |
+| `test_profitability_weighting` | §1.2 (weight flip) | The profitability-weighted configuration flips the preference |
+| `test_rpc_diagnostic` | [REM-1.2.1] | RPC (GMV/click) diagnostic for clickbait detection |
+| `test_delta_alpha_bounds` | [REM-1.2.1] | Engagement bound $\delta/\alpha \in [0.01, 0.10]$ |
+| `test_rpc_edge_cases` | [REM-1.2.1] | Edge cases for RPC computation (e.g., zero clicks) |
 
 These connections ensure that:
 1. **Documentation stays accurate**: If [EQ-1.2] changes, tests fail
@@ -357,37 +250,38 @@ Weight Sensitivity Analysis
 Simulating 500 sessions across 4 weight configurations...
 
 Configuration: Balanced (alpha=1.0, beta=0.5, gamma=0.2, delta=0.1)
-  Mean reward:     EUR 235.70 +/- 225.34
-  Mean GMV:        EUR 212.05
-  Mean CM2:        EUR  45.80
-  Mean STRAT:        1.85
-  Mean CLICKS:       3.80
-  CVR (GMV/click): EUR 55.86
+  Mean reward:     EUR 237.64 +/- 224.52
+  Mean GMV:        EUR 213.65
+  Mean CM2:        EUR  46.98
+  Mean STRAT:        0.57
+  Mean CLICKS:       3.86
+  RPC (GMV/click): EUR55.35
 
 Configuration: GMV-Focused (alpha=1.0, beta=0.2, gamma=0.1, delta=0.05)
-  Mean reward:     EUR 221.59 +/- 212.35
-  Mean GMV:        EUR 212.05
-  Mean CM2:        EUR  45.80
-  Mean STRAT:        1.85
-  Mean CLICKS:       3.80
-  CVR (GMV/click): EUR 55.86
+  Mean reward:     EUR 223.30 +/- 211.42
+  Mean GMV:        EUR 213.65
+  Mean CM2:        EUR  46.98
+  Mean STRAT:        0.57
+  Mean CLICKS:       3.86
+  RPC (GMV/click): EUR55.35
 
 Configuration: Profit-Focused (alpha=0.5, beta=1.0, gamma=0.3, delta=0.05)
-  Mean reward:     EUR 152.57 +/- 145.35
-  Mean GMV:        EUR 212.05
-  Mean CM2:        EUR  45.80
-  Mean STRAT:        1.85
-  Mean CLICKS:       3.80
-  CVR (GMV/click): EUR 55.86
+  Mean reward:     EUR 154.17 +/- 145.20
+  Mean GMV:        EUR 213.65
+  Mean CM2:        EUR  46.98
+  Mean STRAT:        0.57
+  Mean CLICKS:       3.86
+  RPC (GMV/click): EUR55.35
 
 Configuration: Engagement-Heavy (alpha=1.0, beta=0.3, gamma=0.2, delta=0.09)
-  Mean reward:     EUR 226.50 +/- 216.70
-  Mean GMV:        EUR 212.05
-  Mean CM2:        EUR  45.80
-  Mean STRAT:        1.85
-  Mean CLICKS:       3.80
-  CVR (GMV/click): EUR 55.86
+  Mean reward:     EUR 228.21 +/- 215.83
+  Mean GMV:        EUR 213.65
+  Mean CM2:        EUR  46.98
+  Mean STRAT:        0.57
+  Mean CLICKS:       3.86
+  RPC (GMV/click): EUR55.35
 
+----------------------------------------------------------------------
 Key Insight:
   Same outcomes, different rewards! The underlying user behavior
   (GMV, CM2, STRAT, CLICKS) is IDENTICAL across configurations.
@@ -410,7 +304,7 @@ This is the core insight of [EQ-1.2]: the reward function is a **value judgment*
 **Practical implications:**
 1. **Weight changes are policy changes**: Increasing $\beta$ (CM2 weight) will cause the agent to favor high-margin products
 2. **Constraints are essential**: Without [EQ-1.3] constraints, weight optimization is unconstrained and can produce pathological policies
-3. **Monitoring is mandatory**: Track CVR, constraint satisfaction, and reward decomposition during training
+3. **Monitoring is mandatory**: Track RPC, constraint satisfaction, and reward decomposition during training
 
 ---
 
@@ -439,22 +333,22 @@ Simulating different user segments with same boost configuration...
 Static boost weights: w_discount=0.5, w_quality=0.3
 
 Results by user segment (static policy):
-  price_hunter:  Mean R = EUR 136.96 +/- 95.39 (n=100)
-  premium:       Mean R = EUR 317.67 +/- 230.68 (n=100)
-  bulk_buyer:    Mean R = EUR 386.63 +/- 302.66 (n=100)
-  pl_lover:      Mean R = EUR 165.93 +/- 121.15 (n=100)
+  price_hunter   : Mean R = EUR144.59 +/- 109.91 (n=100)
+  premium        : Mean R = EUR335.25 +/- 238.51 (n=100)
+  bulk_buyer     : Mean R = EUR374.17 +/- 279.94 (n=100)
+  pl_lover       : Mean R = EUR212.25 +/- 141.55 (n=100)
 
 Optimal boost per segment (grid search):
-  price_hunter:  w_discount=+0.8, w_quality=+1.0 -> R = EUR 174.32
-  premium:       w_discount=+0.0, w_quality=+1.0 -> R = EUR 424.47
-  bulk_buyer:    w_discount=+0.5, w_quality=+0.8 -> R = EUR 444.56
-  pl_lover:      w_discount=+0.8, w_quality=+0.8 -> R = EUR 273.59
+  price_hunter   : w_discount=+0.8, w_quality=+0.8 -> R = EUR182.49
+  premium        : w_discount=+0.2, w_quality=+1.0 -> R = EUR414.54
+  bulk_buyer     : w_discount=+0.5, w_quality=+0.8 -> R = EUR468.58
+  pl_lover       : w_discount=+1.0, w_quality=+0.8 -> R = EUR233.01
 
 Static vs Contextual Comparison:
-  Static (best single w):    Mean R = EUR 251.80 across all segments
-  Contextual (w per segment): Mean R = EUR 329.24 across all segments
+  Static (best single w):     Mean R = EUR266.57 across all segments
+  Contextual (w per segment): Mean R = EUR324.66 across all segments
 
-  Improvement: +30.8% by adapting to context!
+  Improvement: +21.8% by adapting to context!
 
 This validates [EQ-1.6]: contextual optimization > static optimization.
 The gap would widen with more user heterogeneity.
@@ -462,12 +356,12 @@ The gap would widen with more user heterogeneity.
 
 ### Analysis
 
-The 30.8% improvement from contextual policies is **free value**—it comes purely from adaptation, not from more data or better features. This is the fundamental motivation for contextual bandits:
+The 21.8% improvement from contextual policies is **free value**—it comes purely from adaptation, not from more data or better features. This is the fundamental motivation for contextual bandits:
 
 - **Static** [EQ-1.5]: $\max_{\mathbf{w}} \mathbb{E}[R]$ finds one compromise $\mathbf{w}$ for all users
 - **Contextual** [EQ-1.6]: $\max_{\pi} \mathbb{E}[R(\pi(x), x, \omega)]$ learns $\pi(x)$ that adapts
 
-In production search with millions of queries daily, a 30.8% reward improvement translates to substantial GMV gains. This is why we formulate search ranking as a contextual bandit, not a static optimization problem.
+In production search with millions of queries daily, a 21.8% reward improvement translates to substantial GMV gains. This is why we formulate search ranking as a contextual bandit, not a static optimization problem.
 
 ---
 
@@ -481,13 +375,13 @@ These labs validated the mathematical foundations of Chapter 1:
 | Lab 1.1 Task 2 | $\delta/\alpha > 0.10$ triggers violation | [REM-1.2.1] |
 | Lab 1.2 | Regression tests catch documentation drift | [EQ-1.2], [EQ-1.3] |
 | Weight Sensitivity | Same outcomes, different rewards | [EQ-1.2] weights |
-| Contextual Variation | 30.8% gain from adaptation | [EQ-1.5] vs [EQ-1.6] |
+| Contextual Variation | 21.8% gain from adaptation | [EQ-1.5] vs [EQ-1.6] |
 
 **Key Lessons:**
 
 1. **The reward function is a value judgment**: [EQ-1.2] encodes business priorities as mathematics. The agent optimizes whatever you specify—choose wisely.
 
-2. **Bounds prevent pathologies**: The $\delta/\alpha \leq 0.10$ constraint from [REM-1.2.1] isn't arbitrary—it's derived from the engagement-vs-conversion tradeoff.
+2. **Bounds prevent pathologies**: The $\delta/\alpha \leq 0.10$ constraint from [REM-1.2.1] isn't arbitrary—it's motivated by the engagement-vs-conversion tradeoff and clickbait failure modes.
 
 3. **Constraints are essential**: Without [EQ-1.3] constraints, reward maximization can produce degenerate policies (zero margin, no strategic exposure, etc.).
 

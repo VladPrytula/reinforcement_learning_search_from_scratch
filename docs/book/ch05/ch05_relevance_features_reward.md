@@ -1283,7 +1283,7 @@ The plot shows a **convex curve** (Pareto frontier):
 2. **Mature marketplace**: Choose low $\alpha$, high $\beta$ (maximize profit, accept lower revenue)
 3. **Balanced**: Choose $\alpha = \beta = 1.0$ (our default)
 
-**In Chapter 8 (Constraints)**, we'll add **hard constraints** (CM2 floor, exposure guarantees) and use **Lagrangian relaxation** to solve constrained MDPs.
+**In Chapter 10 (Robustness & Guardrails)**, we'll add **hard constraints** (CM2 floor, exposure guarantees) and use **Lagrangian relaxation** to solve constrained MDPs.
 
 ---
 
@@ -1726,7 +1726,7 @@ Total reward: 36.56
     - [ ] **Safety constraint**: Verify `delta_clicks / alpha_gmv ∈ [0.01, 0.10]` (assertion in `compute_reward()`)
     - [ ] **Breakdown logging**: Log `RewardBreakdown` for every episode (enables offline analysis)
     - [ ] **Pareto analysis**: Sweep weights and plot Pareto frontier (Section 5.6) before production launch
-    - [ ] **Constraint monitoring**: Track CM2 floor violations, exposure violations (Chapter 8)
+    - [ ] **Constraint monitoring**: Track CM2 floor violations, exposure violations (Chapter 10)
 
     **Integration:**
     - [ ] **Determinism**: Fix all seeds (`config.seed`, `rng` passed consistently) for reproducibility
@@ -1790,7 +1790,7 @@ This chapter built the **RL state-action-reward interface** for search ranking:
 With relevance, features, and reward in place, we're ready for **RL agents**:
 - **Chapter 6**: Discrete template bandits (LinUCB, Thompson Sampling)
 - **Chapter 7**: Continuous action spaces (Q-learning for boosts)
-- **Chapter 8**: Constrained optimization (CM2 floors, exposure guarantees)
+- **Chapter 10**: Robustness and Guardrails (CM2 floors, exposure guarantees)
 
 The **environment is complete**. Now we build the agents.
 

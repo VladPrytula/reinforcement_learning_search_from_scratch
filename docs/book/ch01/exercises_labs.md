@@ -6,65 +6,81 @@ Reward design is now backed both by the closed-form objective (Chapter 1, #EQ-
 
 Goal: inspect a real simulator step, record the GMV/CM2/STRAT/CLICKS decomposition, and verify that it matches the derivation of #EQ-1.2.
 
+Chapter 1 labs use the self-contained reference implementation in `scripts/ch01/lab_solutions.py`. The main chapter includes an optional end-to-end environment smoke test; the full `ZooplusSearchEnv` integration narrative begins in Chapter 5.
+
 ```python
-import numpy as np
-from zoosim.core import config
-from zoosim.envs import ZooplusSearchEnv
+from scripts.ch01.lab_solutions import lab_1_1_reward_aggregation
 
-cfg = config.load_default_config()
-sim = ZooplusSearchEnv(cfg, seed=11)
-_ = sim.reset()
-action = np.zeros(cfg.action.feature_dim, dtype=float)
-_, reward_value, _, info = sim.step(action)
-print(f"Reward: {reward_value:.2f}")
-print(info["reward_details"])
+_ = lab_1_1_reward_aggregation(seed=11, verbose=True)
 ```
 
-Output (representative):
+Output (actual):
 ```
-Reward: 142.87
-RewardBreakdown(gmv=112.7, cm2=22.5, strat=3.0, clicks=4)
+======================================================================
+Lab 1.1: Reward Aggregation in the Simulator
+======================================================================
+
+Session simulation (seed=11):
+  User segment: price_hunter
+  Query: "cat food"
+
+Outcome breakdown:
+  GMV:    €124.46 (gross merchandise value)
+  CM2:    € 18.67 (contribution margin 2)
+  STRAT:  0 purchases  (strategic purchases in session)
+  CLICKS: 3        (total clicks)
+
+Reward weights (from RewardConfig):
+  alpha (alpha_gmv):     1.00
+  beta (beta_cm2):       0.50
+  gamma (gamma_strat):   0.20
+  delta (delta_clicks):  0.10
+
+Manual computation of R = alpha*GMV + beta*CM2 + gamma*STRAT + delta*CLICKS:
+  = 1.00 x 124.46 + 0.50 x 18.67 + 0.20 x 0 + 0.10 x 3
+  = 124.46 + 9.34 + 0.00 + 0.30
+  = 134.09
+
+Simulator-reported reward: 134.09
+
+Verification: |computed - reported| = 0.00 < 0.01 ✓
+
+The simulator correctly implements [EQ-1.2].
 ```
 
 **Tasks**
-1. Recompute $R = \alpha \text{GMV} + \beta \text{CM2} + \gamma \text{STRAT} + \delta \text{CLICKS}$ using `cfg.reward` and confirm agreement with the printed value.
-2. Perturb `cfg.reward.delta_clicks` (keeping `cfg.reward.alpha_gmv` fixed) until the assertion in `zoosim/dynamics/reward.py` fires, and document the smallest violation.
-3. Push your findings back into the Chapter 1 text—this lab explains why the code enforces the same bounds as Remark 1.2.1.
+1. Recompute $R = \alpha \text{GMV} + \beta \text{CM2} + \gamma \text{STRAT} + \delta \text{CLICKS}$ from the printed outcome and confirm agreement with the reported value.
+2. Run the bound validator `validate_delta_alpha_bound()` (or `lab_1_1_delta_alpha_violation()`) and record the smallest $\delta/\alpha$ violation. *(Optional extension: reproduce the same failure via the production assertion in `zoosim/dynamics/reward.py:56` by calling the production `compute_reward` path.)*
+3. Push the findings back into the Chapter 1 text—this lab explains why the implementation enforces the same bounds as Remark 1.2.1.
 
 ## Lab 1.2 — Delta/Alpha Bound Regression Test
 
 Goal: keep the published examples executable via `pytest` so every edit to Chapter 1 remains tethered to code.
 
-```python
-import pytest
-from tests.ch01.test_reward_examples import (
-    BusinessWeights,
-    SessionOutcome,
-    compute_reward,
-    compute_conversion_quality,
-)
-
-def test_reward_section_examples():
-    outcome_a = SessionOutcome(gmv=120.0, cm2=15.0, strat_exposure=1, clicks=3)
-    outcome_b = SessionOutcome(gmv=100.0, cm2=35.0, strat_exposure=3, clicks=4)
-    weights = BusinessWeights(alpha_gmv=1.0, beta_cm2=0.5, gamma_strat=0.2, delta_clicks=0.1)
-    assert compute_reward(outcome_a, weights) > compute_reward(outcome_b, weights)
-    assert compute_conversion_quality(outcome_a) > compute_conversion_quality(outcome_b)
-
-pytest.main(["-k", "reward_section_examples"])
+```bash
+pytest tests/ch01/test_reward_examples.py -v
 ```
 
-Output:
+Output (actual):
 ```
 ============================= test session starts =============================
-collected 1 item
-tests/ch01/test_reward_examples.py .                                   [100%]
-============================== 1 passed in 0.02s =============================
+platform darwin -- Python 3.12.12, pytest-9.0.0, pluggy-1.6.0
+rootdir: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+configfile: pyproject.toml
+collecting ... collected 5 items
+
+tests/ch01/test_reward_examples.py::test_basic_reward_comparison PASSED  [ 20%]
+tests/ch01/test_reward_examples.py::test_profitability_weighting PASSED  [ 40%]
+tests/ch01/test_reward_examples.py::test_rpc_diagnostic PASSED           [ 60%]
+tests/ch01/test_reward_examples.py::test_delta_alpha_bounds PASSED       [ 80%]
+tests/ch01/test_reward_examples.py::test_rpc_edge_cases PASSED           [100%]
+
+============================== 5 passed in 0.15s ===============================
 ```
 
 **Tasks**
-1. Extend `tests/ch01/test_reward_examples.py` with at least one new fixture representing a strategic exposure violation; show how the change propagates to this lab.
-2. Tie the assertions explicitly to #EQ-1.2 and #REM-1.2.1 in your chapter text so MkDocs readers understand why the regression test matters.
+1. Identify which lines in the tests correspond to the worked examples in §1.2 and to the guardrail in [REM-1.2.1].
+2. Use the test names as an index: every time Chapter 1 changes a numerical claim, one of these tests should be updated in lockstep.
 
 ---
 
@@ -84,7 +100,7 @@ class SessionOutcome(NamedTuple):
     """
     gmv: float          # Gross merchandise value (EUR)
     cm2: float          # Contribution margin 2 (EUR)
-    strat_exposure: int # Number of strategic products in top-10
+    strat_purchases: int # Number of strategic purchases in session
     clicks: int         # Total clicks
 
 @dataclass
@@ -100,21 +116,21 @@ def compute_reward(outcome: SessionOutcome, weights: BusinessWeights) -> float:
 
     This is the **scalar objective** we will maximize via RL.
 
-    See `zoosim/dynamics/reward.py:1` for the production implementation that
-    aggregates GMV/CM2/strategic exposure/clicks using `RewardConfig`
-    parameters defined in `zoosim/core/config.py:193`.
+    See `zoosim/dynamics/reward.py:42-66` for the production implementation that
+    aggregates GMV/CM2/strategic purchases/clicks using `RewardConfig`
+    parameters defined in `zoosim/core/config.py:195`.
     """
     return (weights.alpha_gmv * outcome.gmv +
             weights.beta_cm2 * outcome.cm2 +
-            weights.gamma_strat * outcome.strat_exposure +
+            weights.gamma_strat * outcome.strat_purchases +
             weights.delta_clicks * outcome.clicks)
 
 # Example: Compare two strategies
 # Strategy A: Maximize GMV (show expensive products)
-outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_exposure=1, clicks=3)
+outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_purchases=1, clicks=3)
 
 # Strategy B: Balance GMV and CM2 (show profitable products)
-outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_exposure=3, clicks=4)
+outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_purchases=3, clicks=4)
 
 weights = BusinessWeights(alpha_gmv=1.0, beta_cm2=0.5, gamma_strat=0.2, delta_clicks=0.1)
 
@@ -151,7 +167,7 @@ from typing import NamedTuple
 class SessionOutcome(NamedTuple):
     gmv: float
     cm2: float
-    strat_exposure: int
+    strat_purchases: int
     clicks: int
 
 @dataclass
@@ -164,12 +180,12 @@ class BusinessWeights:
 def compute_reward(outcome: SessionOutcome, weights: BusinessWeights) -> float:
     return (weights.alpha_gmv * outcome.gmv +
             weights.beta_cm2 * outcome.cm2 +
-            weights.gamma_strat * outcome.strat_exposure +
+            weights.gamma_strat * outcome.strat_purchases +
             weights.delta_clicks * outcome.clicks)
 
 # Same outcomes as Lab 1.3
-outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_exposure=1, clicks=3)
-outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_exposure=3, clicks=4)
+outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_purchases=1, clicks=3)
+outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_purchases=3, clicks=4)
 
 # Original weights: Strategy A wins
 weights_gmv = BusinessWeights(alpha_gmv=1.0, beta_cm2=0.5, gamma_strat=0.2, delta_clicks=0.1)
@@ -202,9 +218,9 @@ With profitability-focused weights:
 
 ---
 
-## Lab 1.5 --- Conversion Quality Monitoring (Clickbait Detection)
+## Lab 1.5 --- RPC (Revenue per Click) Monitoring (Clickbait Detection)
 
-Goal: implement the CVR diagnostic from Section 1.2.1 to detect clickbait strategies. A healthy system has high GMV per click; clickbait produces high CTR with low conversion.
+Goal: implement the RPC diagnostic from Section 1.2.1 to detect clickbait strategies. A healthy system has high GMV per click; clickbait produces high CTR with low revenue per click.
 
 ```python
 from typing import NamedTuple
@@ -212,13 +228,13 @@ from typing import NamedTuple
 class SessionOutcome(NamedTuple):
     gmv: float
     cm2: float
-    strat_exposure: int
+    strat_purchases: int
     clicks: int
 
-def compute_conversion_quality(outcome: SessionOutcome) -> float:
-    """GMV per click (conversion quality).
+def compute_rpc(outcome: SessionOutcome) -> float:
+    """GMV per click (revenue per click, RPC).
 
-    Diagnostic for clickbait detection: high CTR with low CVR indicates
+    Diagnostic for clickbait detection: high CTR with low RPC indicates
     the agent is optimizing delta*CLICKS at expense of alpha*GMV.
     See Section 1.2.1 for theory.
     """
@@ -229,17 +245,17 @@ def validate_engagement_bound(delta: float, alpha: float, bound: float = 0.10) -
     ratio = delta / alpha if alpha > 0 else float('inf')
     return ratio <= bound
 
-# Compare conversion quality
-outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_exposure=1, clicks=3)
-outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_exposure=3, clicks=4)
+# Compare revenue per click
+outcome_A = SessionOutcome(gmv=120.0, cm2=15.0, strat_purchases=1, clicks=3)
+outcome_B = SessionOutcome(gmv=100.0, cm2=35.0, strat_purchases=3, clicks=4)
 
-cvr_A = compute_conversion_quality(outcome_A)
-cvr_B = compute_conversion_quality(outcome_B)
+rpc_A = compute_rpc(outcome_A)
+rpc_B = compute_rpc(outcome_B)
 
-print("Conversion quality (GMV per click):")
-print(f"Strategy A: EUR {cvr_A:.2f}/click ({outcome_A.clicks} clicks -> EUR {outcome_A.gmv:.0f} GMV)")
-print(f"Strategy B: EUR {cvr_B:.2f}/click ({outcome_B.clicks} clicks -> EUR {outcome_B.gmv:.0f} GMV)")
-print(f"-> Strategy {'A' if cvr_A > cvr_B else 'B'} has higher-quality engagement")
+print("Revenue per click (GMV per click):")
+print(f"Strategy A: EUR {rpc_A:.2f}/click ({outcome_A.clicks} clicks -> EUR {outcome_A.gmv:.0f} GMV)")
+print(f"Strategy B: EUR {rpc_B:.2f}/click ({outcome_B.clicks} clicks -> EUR {outcome_B.gmv:.0f} GMV)")
+print(f"-> Strategy {'A' if rpc_A > rpc_B else 'B'} has higher-quality engagement")
 
 # Verify delta/alpha bound
 delta, alpha = 0.1, 1.0
@@ -247,14 +263,14 @@ print(f"\n[Validation] delta/alpha = {delta/alpha:.3f}")
 print(f"             Bound check: {'PASS' if validate_engagement_bound(delta, alpha) else 'FAIL'} (must be <= 0.10)")
 
 # Simulate clickbait scenario
-clickbait_outcome = SessionOutcome(gmv=30.0, cm2=5.0, strat_exposure=0, clicks=15)
+clickbait_outcome = SessionOutcome(gmv=30.0, cm2=5.0, strat_purchases=0, clicks=15)
 print(f"\n[Clickbait scenario] GMV={clickbait_outcome.gmv}, clicks={clickbait_outcome.clicks}")
-print(f"  CVR = EUR {compute_conversion_quality(clickbait_outcome):.2f}/click <- RED FLAG: very low!")
+print(f"  RPC = EUR {compute_rpc(clickbait_outcome):.2f}/click <- RED FLAG: very low!")
 ```
 
 **Output:**
 ```
-Conversion quality (GMV per click):
+Revenue per click (GMV per click):
 Strategy A: EUR 40.00/click (3 clicks -> EUR 120 GMV)
 Strategy B: EUR 25.00/click (4 clicks -> EUR 100 GMV)
 -> Strategy A has higher-quality engagement
@@ -263,14 +279,14 @@ Strategy B: EUR 25.00/click (4 clicks -> EUR 100 GMV)
              Bound check: PASS (must be <= 0.10)
 
 [Clickbait scenario] GMV=30, clicks=15
-  CVR = EUR 2.00/click <- RED FLAG: very low!
+  RPC = EUR 2.00/click <- RED FLAG: very low!
 ```
 
 **Tasks**
-1. Generate 100 synthetic outcomes with varying click/GMV ratios. Plot CVR distribution.
-2. Define an alerting threshold: if CVR drops $>10\%$ below baseline, flag for review.
-3. Implement a running CVR tracker: $\text{CVR}_t = \sum_{i=1}^t \text{GMV}_i / \sum_{i=1}^t \text{CLICKS}_i$.
-4. What happens if `delta/alpha = 0.20` (above bound)? Simulate and observe CVR degradation.
+1. Generate 100 synthetic outcomes with varying click/GMV ratios. Plot the RPC distribution.
+2. Define an alerting threshold: if RPC drops $>10\%$ below baseline, flag for review.
+3. Implement a running RPC tracker: $\text{RPC}_t = \sum_{i=1}^t \text{GMV}_i / \sum_{i=1}^t \text{CLICKS}_i$.
+4. What happens if `delta/alpha = 0.20` (above bound)? Simulate and observe RPC degradation.
 
 ---
 
@@ -433,4 +449,36 @@ Action space volume: 0.0312
 1. Extend `ActionSpace` to support different norms: L2 ball ($\|a\|_2 \leq r$) vs. Linf box (current).
 2. For $K=2$ and $a_{\max}=1$, plot the action space. Sample 1000 points uniformly---how many fall within the L2 ball $\|a\|_2 \leq 1$?
 3. Implement action discretization: divide each dimension into $n$ bins and return the $n^K$ grid points. For $K=5, n=10$, how many discrete actions?
-4. Verify clipping behavior matches `zoosim/envs/search_env.py:47` by reading the production code.
+4. Verify clipping behavior matches `zoosim/envs/search_env.py:50` by reading the production code.
+
+---
+
+## Lab 1.8 — Rank-Stability Preview (Delta-Rank@k)
+
+Goal: connect the stability constraint [EQ-1.3c] to the production stability metric **Delta-Rank@k** (set churn), and verify what is (and is not) wired in the simulator at this stage.
+
+```python
+from zoosim.core import config as cfg_module
+from zoosim.monitoring.metrics import compute_delta_rank_at_k
+
+cfg = cfg_module.load_default_config()
+print("lambda_rank:", cfg.action.lambda_rank)
+
+# A pure swap within the top-10 changes order but not set membership.
+ranking_prev = list(range(10))
+ranking_curr = [1, 0, 2, 3, 4, 5, 6, 7, 8, 9]
+print("Delta-Rank@10:", compute_delta_rank_at_k(ranking_prev, ranking_curr, k=10))
+```
+
+**Output:**
+```
+lambda_rank: 0.0
+Delta-Rank@10: 0.0
+```
+
+**Tasks**
+1. Verify that the Delta-Rank implementation matches the set-based definition in Chapter 10 [DEF-10.4] by constructing examples where two top-$k$ sets differ by exactly $m$ items (expect $\Delta\text{-rank}@k = m/k$).
+2. Confirm that `lambda_rank` exists as a configuration knob (`zoosim/core/config.py:230`) but is not yet wired into the reward path in Chapter 1; treat it as a placeholder for Chapter 10 stability guardrails.
+
+!!! note "Status: guardrail wiring"
+    The configuration exposes `ActionConfig.lambda_rank` (`zoosim/core/config.py:230`), `ActionConfig.cm2_floor` (`zoosim/core/config.py:232`), and `ActionConfig.exposure_floors` (`zoosim/core/config.py:233`) so experiments remain reproducible. Guardrail enforcement is introduced in Chapter 10.

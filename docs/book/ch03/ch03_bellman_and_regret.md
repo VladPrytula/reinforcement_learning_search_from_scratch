@@ -429,6 +429,8 @@ $$
 $$
 {#EQ-3.7}
 
+> **Notation (scope: §3.6):** In constraint contexts, $\text{STRAT}$ denotes strategic *exposure* (items shown in the ranking). This differs from $\text{STRAT}$ in the reward [EQ-1.2], where it counts strategic *purchases*.
+
 into unconstrained saddle-point:
 
 $$

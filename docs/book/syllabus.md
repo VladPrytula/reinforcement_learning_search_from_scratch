@@ -15,7 +15,7 @@ This syllabus lays out a chapter-by-chapter path from foundations and a working 
 - Objectives: Formalize multi-objective reward and the contextual bandit formulation for the Chapter 0 toy and real search; introduce #EQ-1.2 and the multi-episode preview #EQ-1.2-prime.
 - Theory: Contextual bandit vs MDP; constraints (CM2, exposure, rank stability); engagement as soft viability.
 - Implementation: Reward weights in `zoosim/core/config.py` and aggregation in `zoosim/dynamics/reward.py`.
-- Labs: Compute reward under different weights; check CVR diagnostic; verify rank-stability penalty wiring.
+- Labs: Compute reward under different weights; check RPC diagnostic; verify rank-stability penalty wiring.
 - Acceptance: Reproduce example outputs in ch01; add assertion bound on δ/α in reward code.
 
 2) Chapter 2 — Probability, Measure, and Click Models (PBM/DBN)
@@ -139,7 +139,7 @@ Appendix C — Convex Optimization for RL
 - Objectives: Provide background on Lagrangian duality, KKT conditions, and primal-dual methods for constrained RL.
 - Theory: Convex sets and functions; Lagrangian and dual problems; KKT conditions; primal-dual algorithms.
 - Implementation: Text only (`docs/book/appendix_c_convex_optimization.md`).
-- Referenced by: Ch1 §1.9 (Lagrangian view), Ch8 (constraints), Ch14 (multi-objective CMDP).
+- Referenced by: Ch1 §1.9 (Lagrangian view), Ch10 (constraints), Ch14 (multi-objective CMDP).
 
 Appendix D — Information-Theoretic Lower Bounds
 - Objectives: Prove fundamental limits on bandit learning; establish optimality of UCB/TS algorithms.

@@ -47,6 +47,8 @@ In the search ranking problem, we have:
 
 The feasible set $\{\pi \in \Pi : g_i(\pi) \geq 0, \forall i\}$ consists of policies satisfying both business constraints.
 
+> **Notation (scope: Appendix C):** Here $\text{STRAT}$ denotes strategic *exposure* (items shown in the ranking). This is distinct from $\text{STRAT}$ in the reward [EQ-1.2], where it counts strategic *purchases*.
+
 ### C.1.2 The Lagrangian
 
 **Definition C.1.1** (Lagrangian) {#DEF-C.1.1}
