@@ -27,3 +27,7 @@ site/
 
 # Verification and experimental data
 **/data/verification_*/
+
+# Claude Code MCP memory (session state, not source)
+.claude/memory.jsonl
+.mcp.json

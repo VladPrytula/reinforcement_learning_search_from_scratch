@@ -1155,7 +1155,7 @@ nodes:
     title: Chapter 1 reward function validation
     status: complete
     file: tests/ch01/test_reward_examples.py
-    summary: Validates #EQ-1.2 code examples compile and produce expected output; tests CVR diagnostic and delta/alpha bounds.
+    summary: Validates #EQ-1.2 code examples compile and produce expected output; tests GMV/click (RPC) diagnostic and delta/alpha bounds.
     uses: [EQ-1.2, REM-1.2.1]
 
   - id: EQ-1.3
