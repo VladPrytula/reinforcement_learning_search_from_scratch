@@ -993,7 +993,7 @@ Typically $C_{\min} = 0$ (non-negative margin) or $C_{\min} = 0.15 \cdot \mathbb
    $$
    r'_t = r_t + \mu \max\bigl(0, C_{\min} - \text{CM2}_t\bigr),
    $$
-   where $\mu > 0$ is a Lagrange multiplier tuned (for example, via binary search) to enforce $\mathbb{E}[\text{CM2}_t] \geq C_{\min}$ on average. This is the standard **primal–dual method** for constrained MDPs (see **Appendix C** for Lagrangian duality theory and Slater's condition; [@altman:constrained_mdps:1999] for constrained MDP foundations).
+   where $\mu > 0$ is a Lagrange multiplier tuned (for example, via binary search) to enforce $\mathbb{E}[\text{CM2}_t] \geq C_{\min}$ on average. This is the standard **primal–dual method** for constrained MDPs (see **Appendix C** for Lagrangian duality theory and Slater's condition; [@altman:constrained_mdps:1999] for constrained MDP foundations). We return to this optimization viewpoint and implement `primal--dual` constrained RL in Chapter 14.
 
    **Regularity condition (Slater's condition).** Strong duality holds—meaning the Lagrangian approach finds the true constrained optimum—when Slater's condition is satisfied: there exists a **strictly feasible** policy $\pi$ with $\mathbb{E}_\pi[\text{CM2}] > C_{\min}$ (strict inequality). This is typically satisfied in e-commerce when at least one template has positive margin exceeding the floor. If all templates have margins exactly at $C_{\min}$, the constraint qualification fails and the Lagrangian method may not converge to the optimal constrained policy. See [@altman:constrained_mdps:1999, Chapter 4] for constrained MDP duality theory and [@boyd_vandenberghe:convex_optimization:2004, §5.2.3] for the general convex optimization perspective.
 
@@ -1006,7 +1006,7 @@ Typically $C_{\min} = 0$ (non-negative margin) or $C_{\min} = 0.15 \cdot \mathbb
     - **Inputs**: GMV, COGS, logistics cost, marketing cost (all in currency units).
     - **Formula**: Line 86 returns `gmv - costs - logistics_cost - marketing_cost`, exactly [EQ-10.11].
     - **Usage in experiments**: `scripts/ch10/ch10_drift_demo.py:102-103` computes CM2 as 40% of GMV (simplified model where margin is fixed at 40%).
-    - **Guardrail enforcement**: `SafetyMonitor` (§10.5) can check CM2 floors at line `zoosim/monitoring/guardrails.py:41-42` via config flag `enable_cm2_floor`.
+    - **Guardrails and CM2 floors**: `GuardrailConfig` includes CM2-related fields (`enable_cm2_floor`, `min_cm2`) at `zoosim/monitoring/guardrails.py:41-42`, but the `SafetyMonitor` reference implementation in §10.5 operates on scalar rewards and does not evaluate CM2 directly. A CM2 floor is therefore enforced as an action-feasibility filter at action selection time (Exercise 10.3).
 
 !!! warning "Sim-to-Real Note: Variable vs. Fixed Margins"
     In our production definition [EQ-10.11], CM2 depends on variable costs (COGS, logistics). In the `ch10_drift_demo.py` experiment, we simplify this by assuming a fixed 40% margin (`cm2 = gmv * 0.4`). This simplification is acceptable for demonstrating drift detection, but real-world implementations must use the full cost model. See **Exercise 10.3** for an extension with per-template margins.
@@ -1189,14 +1189,14 @@ def select_action(self, features: NDArray[np.float64]) -> int:
     action = self.primary_policy.select_action(features)  # Use primary
 
     if self.config.enable_stability_check:
-        self._check_stability(action)  # Monitor Delta-Rank indirectly via action switching
+        self._check_stability(action)  # Monitor action switching (proxy for churn)
 
     return action
 ```
 
 - **Line 100**: If in fallback mode, delegate to `safe_policy` (e.g., static template).
 - **Line 103**: Otherwise, use the primary policy (e.g., LinUCB).
-- **Line 106-109**: Optionally check stability (in our implementation, we track action switching rate as a proxy for ranking churn).
+- **Line 106-109**: Optionally check stability (in our implementation, we track action switching rate as a coarse proxy for ranking churn).
 
 **2. Reward Update and Drift Monitoring** (`guardrails.py:115-145`)
 
@@ -1318,7 +1318,7 @@ We now validate the theory with a controlled experiment simulating **abrupt pref
 **Safety Monitor:** Configured with:
 - `drift_patience = 5` (trigger fallback after 5 consecutive drift signals)
 - `probe_frequency = 100` (attempt recovery every 100 episodes in fallback)
-- `enable_stability_check = True` (monitor Delta-Rank@10)
+- `enable_stability_check = True` (monitor action switching rate; proxy for churn)
 
 **Metrics Tracked:**
 
@@ -1517,13 +1517,13 @@ Before deploying drift detection and guardrails in production, ensure the follow
 
     **Guardrails Configuration:**
     - ✅ **Stability SLO**: Define acceptable $\Delta\text{-rank}@k$ (e.g., $\leq 0.3$). Monitor via `compute_delta_rank_at_k` (`metrics.py:89`). Log to dashboards; trigger alerts if breached for >5% of queries.
-    - ✅ **CM2 floor**: Set `GuardrailConfig.min_cm2` to your business viability threshold (e.g., 0 for non-negative margin, or 15% of GMV). Enable via `enable_cm2_floor` flag (`guardrails.py:41`).
+    - ✅ **CM2 floor (hard feasibility)**: Enforce at action selection time (reject/resample infeasible actions; Exercise 10.3). The §10.5 reference monitor layer is intentionally agnostic to CM2 and operates on reward-based drift signals and stability diagnostics.
     - ✅ **Fallback policy**: Ensure `safe_policy` is truly safe (stable, profitable). Test it offline before deploying. Instantiate in `SafetyMonitor` constructor (`guardrails.py:71`).
     - ✅ **Probe frequency**: Set `GuardrailConfig.probe_frequency` based on expected drift recovery time. Too short → thrashing between primary and fallback. Too long → suboptimal for extended periods. Default 100 episodes is reasonable for daily drift patterns.
 
     **Monitoring Infrastructure:**
     - ✅ **Logging**: Log all metrics (reward, GMV, CVR, Delta-Rank, latency) to time-series database (e.g., Prometheus, InfluxDB). Enable in experiment via `SimulationMetrics` dataclass (`ch10_drift_demo.py:42-49`).
-    - ✅ **Alerting**: Configure alerts for: (1) Drift detected, (2) Fallback triggered, (3) Stability SLO breached, (4) CM2 floor breached. Use PagerDuty or similar on-call systems.
+    - ✅ **Alerting**: Configure alerts for: (1) Drift detected, (2) Fallback triggered, (3) Stability SLO breached, (4) CM2 floor breached (if CM2 floors are enforced and logged). Use PagerDuty or similar on-call systems.
     - ✅ **Dashboards**: Visualize drift detector state (`sum_diff`, `min_sum_diff` for Page-Hinkley), policy mode (primary vs. fallback), and business metrics. Use Grafana or similar.
     - ✅ **Reproducibility**: Set seeds for all RNGs (`SimulatorConfig.seed` in `zoosim/core/config.py`, policy seeds, drift detector seeds). Document hyperparameters in config files, not hard-coded.
 

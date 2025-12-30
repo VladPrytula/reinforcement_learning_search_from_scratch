@@ -478,7 +478,7 @@ Delta-Rank@10: 0.0
 
 **Tasks**
 1. Verify that the Delta-Rank implementation matches the set-based definition in Chapter 10 [DEF-10.4] by constructing examples where two top-$k$ sets differ by exactly $m$ items (expect $\Delta\text{-rank}@k = m/k$).
-2. Confirm that `lambda_rank` exists as a configuration knob (`zoosim/core/config.py:230`) but is not yet wired into the reward path in Chapter 1; treat it as a placeholder for Chapter 10 stability guardrails.
+2. Confirm that `lambda_rank` exists as a configuration knob (`zoosim/core/config.py:230`) but is not used by the simulator in Chapter 1; it is reserved for the soft-constraint (Lagrange multiplier) formulation introduced in Chapter 14 (theory in Appendix C).
 
 !!! note "Status: guardrail wiring"
-    The configuration exposes `ActionConfig.lambda_rank` (`zoosim/core/config.py:230`), `ActionConfig.cm2_floor` (`zoosim/core/config.py:232`), and `ActionConfig.exposure_floors` (`zoosim/core/config.py:233`) so experiments remain reproducible. Guardrail enforcement is introduced in Chapter 10.
+    The configuration exposes `ActionConfig.lambda_rank` (`zoosim/core/config.py:230`), `ActionConfig.cm2_floor` (`zoosim/core/config.py:232`), and `ActionConfig.exposure_floors` (`zoosim/core/config.py:233`) so experiments remain reproducible and auditable. Chapter 10 focuses on production guardrails (monitoring, fallback, and hard feasibility filters); Chapter 14 introduces `primal--dual` constrained RL where multipliers such as `lambda_rank` become operational in the optimization formulation (implementation status: Chapter 14 §14.6).

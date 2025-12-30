@@ -5,18 +5,32 @@ Modules:
 - lin_ucb: Linear Upper Confidence Bound contextual bandit (Chapter 6)
 - thompson_sampling: Bayesian contextual bandit (Chapter 6)
 - q_ensemble: Continuous-action Q(x,a) ensemble + CEM policy (Chapter 7)
-
-Upcoming modules:
-- constraints and fairness-aware policies (Chapters 8+)
+- reinforce: REINFORCE policy gradient (Chapter 8)
+- reinforce_baseline: REINFORCE with learned baseline (Chapter 8)
+- mo_cmdp: Multi-Objective CMDP with primal-dual optimization (Chapter 14)
 """
 
 from zoosim.policies.lin_ucb import LinUCB, LinUCBConfig
+from zoosim.policies.mo_cmdp import (
+    CMDPConfig,
+    CMDPMetrics,
+    ConstraintSense,
+    ConstraintSpec,
+    PrimalDualCMDPAgent,
+    create_standard_constraints,
+    extract_ranking_metrics,
+    train_cmdp_episode,
+)
 from zoosim.policies.q_ensemble import (
     QEnsembleConfig,
     QEnsemblePolicy,
     QEnsembleRegressor,
 )
 from zoosim.policies.reinforce import REINFORCEAgent, REINFORCEConfig
+from zoosim.policies.reinforce_baseline import (
+    REINFORCEBaselineAgent,
+    REINFORCEBaselineConfig,
+)
 from zoosim.policies.templates import (
     BoostTemplate,
     compute_catalog_stats,
@@ -43,4 +57,15 @@ __all__ = [
     # Policy Gradients (Chapter 8)
     "REINFORCEAgent",
     "REINFORCEConfig",
+    "REINFORCEBaselineAgent",
+    "REINFORCEBaselineConfig",
+    # Multi-Objective CMDP (Chapter 14)
+    "ConstraintSense",
+    "ConstraintSpec",
+    "CMDPConfig",
+    "CMDPMetrics",
+    "PrimalDualCMDPAgent",
+    "create_standard_constraints",
+    "train_cmdp_episode",
+    "extract_ranking_metrics",
 ]

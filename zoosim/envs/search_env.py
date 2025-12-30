@@ -1,13 +1,29 @@
-"""Environment API skeleton for Zooplus Search RL simulator."""
+"""Environment API skeleton for Zooplus Search RL simulator.
+
+Implements the core MDP interface for search ranking RL:
+- reset(): Sample user + query, return initial state
+- step(action): Apply boost action, simulate session, return reward and info
+
+Chapter 14 additions:
+- Baseline ranking computation (action=0) for stability measurement
+- delta_rank_at_k_vs_baseline in info for CMDP constraints
+- user_segment and query_type in step info for fairness reporting
+
+References:
+    - Chapter 3: MDP formulation
+    - Chapter 5: Relevance and features
+    - Chapter 14: CMDP constraints (stability, fairness)
+"""
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
 from zoosim.core import config as cfg_module
 from zoosim.dynamics import behavior, reward
+from zoosim.monitoring.metrics import compute_delta_rank_at_k
 from zoosim.ranking import features, relevance
 from zoosim.world import catalog, queries, users
 
@@ -32,7 +48,20 @@ class ZooplusSearchEnv:
         }
         return state
 
-    def _rank_products(self, action: Sequence[float]) -> Tuple[list[int], list[list[float]]]:
+    def _rank_products(
+        self, action: Sequence[float]
+    ) -> Tuple[List[int], List[int], List[List[float]]]:
+        """Compute action-adjusted ranking and baseline ranking.
+
+        The baseline ranking (action=0) is computed from the same base_scores
+        without additional RNG consumption. Used for stability measurement
+        in Chapter 14 CMDP constraints [EQ-14.6].
+
+        Returns:
+            ranking: Product IDs sorted by blended score (base + action*features)
+            baseline_ranking: Product IDs sorted by base score only (action=0)
+            feature_matrix: Features for all products (list of lists)
+        """
         base_scores = np.asarray(
             relevance.batch_base_scores(
                 query=self._query, catalog=self._catalog, config=self.cfg, rng=self.rng
@@ -47,13 +76,20 @@ class ZooplusSearchEnv:
             feature_rows = features.standardize_features(feature_rows, config=self.cfg)
 
         feature_matrix = np.asarray(feature_rows, dtype=float)
+
+        # Baseline ranking: sorting by base_scores alone (no action boost)
+        # No additional RNG consumption - uses same base_scores already computed
+        baseline_ranking = np.argsort(-base_scores).tolist()
+
+        # Action-adjusted ranking
         action = np.clip(np.asarray(action, dtype=float), -self.cfg.action.a_max, self.cfg.action.a_max)
         blended_scores = base_scores + feature_matrix @ action
         ranking = np.argsort(-blended_scores).tolist()
-        return ranking, feature_matrix.tolist()
+
+        return ranking, baseline_ranking, feature_matrix.tolist()
 
     def step(self, action: Sequence[float]) -> Tuple[None, float, bool, Dict[str, Any]]:  # type: ignore[override]
-        ranking, feature_matrix = self._rank_products(action)
+        ranking, baseline_ranking, feature_matrix = self._rank_products(action)
         outcome = behavior.simulate_session(
             user=self._user,
             query=self._query,
@@ -69,12 +105,22 @@ class ZooplusSearchEnv:
             catalog=self._catalog,
             config=self.cfg,
         )
+
+        # Compute stability metric for Chapter 14 CMDP constraints [EQ-14.6]
+        k = self.cfg.top_k
+        delta_rank = compute_delta_rank_at_k(baseline_ranking, ranking, k=k)
+
         info = {
             "reward_details": breakdown,
             "satisfaction": outcome.satisfaction,
-            "ranking": ranking[: self.cfg.top_k],
+            "ranking": ranking[:k],
             "clicks": outcome.clicks,
             "buys": outcome.buys,
-            "features": feature_matrix[: self.cfg.top_k],
+            "features": feature_matrix[:k],
+            # Chapter 14 additions for CMDP constraints
+            "baseline_ranking": baseline_ranking[:k],
+            "delta_rank_at_k_vs_baseline": delta_rank,
+            "user_segment": self._user.segment,
+            "query_type": self._query.query_type,
         }
         return None, reward_value, True, info

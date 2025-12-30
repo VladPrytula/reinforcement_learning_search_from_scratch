@@ -137,10 +137,10 @@ For internal authoring notes and more granular acceptance criteria, see `docs/bo
 
 ### Chapter 14 — Multi-Objective RL & Fairness at Scale
 
-- **Goal:** Handle multiple objectives and fairness constraints simultaneously using CMDPs and Pareto policies.
-- **Code:** `policies/mo_cmdp.py` (primal–dual optimization), fairness metrics in `evaluation/fairness.py`.
-- **What you’ll do:** Plot Pareto fronts, run fairness gap sweeps across segments/brands, and reason about exposure and utility parity.
-- **By the end:** You can design and evaluate policies that trade off GMV against fairness and other business constraints.
+- **Goal:** Handle multiple objectives and fairness constraints simultaneously using CMDPs and Pareto policies via the $\varepsilon$-constraint method.
+- **Code:** `zoosim/policies/mo_cmdp.py` (primal-dual optimization), fairness metrics in `zoosim/evaluation/fairness.py`.
+- **What you'll do:** Plot Pareto fronts via constraint sweeps, run fairness gap analysis across provider groups (private-label vs national-brand, category, strategic), and reason about exposure parity.
+- **By the end:** You can design and evaluate policies that trade off GMV against fairness and other business constraints, with the price of fairness explicitly quantified.
 
 ### Chapter 15 — Non‑Stationarity & Meta‑Adaptation
 

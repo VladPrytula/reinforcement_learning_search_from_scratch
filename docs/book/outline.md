@@ -73,12 +73,16 @@ Foundational mathematics supporting multiple chapters. Read as needed based on b
 |-----|-------|-----------|--------------|
 | A | [Bayesian Preference Models](appendix_a_bayesian_preference_models.md) | Hierarchical priors, shrinkage, bandit integration | Ch06 |
 | B | [Control-Theoretic Background](appendix_b_control_theory.md) | LQR, HJB, deep RL timeline | Ch01, Ch03 |
-| C | [Convex Optimization for Constrained MDPs](appendix_c_convex_optimization.md) | Lagrangian duality, Slater's condition | Ch01 §1.9, Ch10 |
+| C | [Convex Optimization for Constrained MDPs](appendix_c_convex_optimization.md) | Lagrangian duality, Slater's condition | Ch01 §1.9; Ch10 (guardrails context); Ch14 (primal--dual constrained RL) |
+| D | [Information-Theoretic Lower Bounds](appendix_d_information_theory.md) | KL divergence, Fano's inequality, bandit lower bounds | Ch01 §1.7.6; Ch06 (THM-6.0) |
+| E | [Vector-Reward Multi-Objective RL](appendix_e_vector_morl.md) | Pareto Q-learning, coverage sets, supported vs unsupported points | Ch14 (multi-objective context) |
 
 **When to read:**
 - **Appendix A**: When implementing Thompson Sampling or LinUCB with rich features (Chapter 6), or when modeling user preferences in the simulator (Chapter 4)
 - **Appendix B**: If you have control theory background (LQR, HJB) and want to see connections to RL, or when control-theoretic tools appear in Chapters 8, 10, and 11
-- **Appendix C**: Before implementing constrained RL (Chapter 10) if you want rigorous foundations for Lagrangian methods and primal-dual algorithms
+- **Appendix C**: For the Lagrangian-duality foundations used in Chapter 1 (§1.9), for the conceptual background behind constraints and guardrails in Chapter 10, and before implementing primal--dual constrained RL in Chapter 14
+- **Appendix D**: When you want to understand why $\Omega(\sqrt{KT})$ regret is unavoidable for bandits, or when Chapter 6 references the minimax lower bound
+- **Appendix E**: When Chapter 14's "multi-objective" framing raises questions about true vector-reward MORL, Pareto Q-learning, or when CMDP/$\varepsilon$-constraint is insufficient
 
 ---
 

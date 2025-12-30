@@ -107,10 +107,10 @@ This syllabus lays out a chapter-by-chapter path from foundations and a working 
 - Acceptance: Offline policy ≥ NL-Bandit; no constraint regressions; stable under ε changes.
 
 14) Chapter 14 — Multi-Objective RL & Fairness at Scale
-- Objectives: CMDP + Pareto policies; exposure/utility parity across segments/brands.
-- Implementation: `policies/mo_cmdp.py` with primal–dual; fairness metrics in `evaluation/fairness.py`.
-- Labs: Plot Pareto fronts; fairness gap sweeps.
-- Acceptance: <1% constraint violations; fair exposure within target bands with minimal GMV loss.
+- Objectives: CMDP + Pareto policies via $\varepsilon$-constraint method; exposure/utility parity across segments and provider groups (private-label vs national-brand, category, strategic).
+- Implementation: `zoosim/policies/mo_cmdp.py` with primal-dual; fairness metrics in `zoosim/evaluation/fairness.py`.
+- Labs: Plot Pareto fronts; fairness gap sweeps (`scripts/ch14/lab_01_pareto_fronts.py`, `scripts/ch14/lab_02_fairness_gap_sweeps.py`).
+- Acceptance: <1% constraint violations; fair exposure within target bands with minimal GMV loss (price of fairness quantified).
 
 15) Chapter 15 — Non‑Stationarity & Meta‑Adaptation
 - Objectives: Drift-aware bandits/RL; warm-start and adaptation playbooks.
@@ -147,6 +147,13 @@ Appendix D — Information-Theoretic Lower Bounds
 - Implementation: Text only (`docs/book/appendix_d_information_theory.md`).
 - Referenced by: Ch1 §1.7.6 (regret preview), Ch6 THM-6.0 (formal lower bound statement).
 - Acceptance: Complete proofs for Fano's inequality and the $\Omega(\sqrt{KT})$ lower bound; forward references from Ch1 and Ch6 resolve correctly.
+
+Appendix E — Vector-Reward Multi-Objective RL
+- Objectives: Explain true vector-reward MORL (Pareto Q-learning, coverage sets) and contrast with CMDP/$\varepsilon$-constraint; justify why CMDP suffices for production ranking.
+- Theory: Vector-reward MDPs; Pareto dominance and Pareto fronts; Pareto Q-learning and Q-sets; coverage sets; supported vs unsupported Pareto points; hypervolume indicator.
+- Implementation: Text only (`docs/book/appendix_e_vector_morl.md`).
+- Referenced by: Ch14 bridge subsection (forward reference for "true MORL"); Ch14 update plan (CRITICAL PREREQUISITE requirement #3).
+- Acceptance: Clear taxonomy of single-policy vs multi-policy MORL; explanation of when CMDP is sufficient vs when true MORL is needed; supported/unsupported distinction sharpens $\varepsilon$-constraint vs scalarization comparison.
 
 ## Milestones and Estimates
 

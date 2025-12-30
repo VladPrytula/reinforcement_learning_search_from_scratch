@@ -434,7 +434,7 @@ where $(\theta^*, \boldsymbol{\lambda}^*)$ is a saddle point of the Lagrangian.
 **When to consult this appendix:**
 
 - **Chapter 1, Section 1.9**: Verifying that the Lagrangian reformulation [EQ-1.19] is equivalent to the constrained problem [EQ-1.18]
-- **Chapter 10**: Implementing primal-dual algorithms for CM2/exposure constraints in the search ranking simulator
+- **Chapter 10**: Constraints in production: guardrails (monitoring, fallback, and hard feasibility filters)
 - **Chapter 14**: Multi-objective RL and fairness constraints (Pareto frontier computation)
 
 For readers familiar with convex optimization, this appendix transfers existing knowledge to constrained MDPs. For those new to duality theory, the key takeaway is: **if a strictly feasible policy exists, you can safely use Lagrangian methods**---they will find the constrained optimum without duality gap.

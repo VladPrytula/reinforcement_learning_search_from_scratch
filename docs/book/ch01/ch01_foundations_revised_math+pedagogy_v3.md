@@ -155,11 +155,11 @@ This is the set-based stability metric used in Chapter 10 [DEF-10.4] and impleme
 ::: {.note title="Code $\leftrightarrow$ Config (constraints)"}
 Constraint-related knobs (`MOD-zoosim.config`) live in configuration so experiments remain reproducible and auditable. These implement #EQ-1.3 constraint definitions:
 
-- Rank stability penalty weight: `lambda_rank` in `zoosim/core/config.py:230`
-- Profitability floor (CM2): `cm2_floor` in `zoosim/core/config.py:232` (defined in config; enforcement is introduced in Chapter 10)
-- Exposure floors (strategic products): `exposure_floors` in `zoosim/core/config.py:233` (defined in config; enforcement is introduced in Chapter 10)
+- Rank stability multiplier (soft constraint): `lambda_rank` in `zoosim/core/config.py:230` (reserved for `primal--dual` constrained RL in Chapter 14; not used by the Chapter 1 simulator; implementation status: Chapter 14 §14.6)
+- Profitability floor (CM2) threshold: `cm2_floor` in `zoosim/core/config.py:232` (hard feasibility-filter pattern in Chapter 10, Exercise 10.3)
+- Exposure floors (strategic products): `exposure_floors` in `zoosim/core/config.py:233` (handled analogously to CM2 floors; hard feasibility filters in Chapter 10 and soft constraints in Chapter 14)
 
-These are surfaced in `ActionConfig` and wired into downstream modules as they mature.
+These are surfaced in `ActionConfig` so experiments remain reproducible and auditable; later chapters separate hard production guardrails (Chapter 10) from soft constraint optimization via learned multipliers (Chapter 14).
 :::
 
 ### 1.2.1 The Role of Engagement in Reward Design {#REM-1.2.1}
@@ -643,7 +643,7 @@ Before implementing RL algorithms, we need a **realistic environment** to test t
 
 With a simulator, we can now develop **algorithms**: discrete template bandits (Chapter 6), continuous action Q-learning (Chapter 7), and policy gradients (Chapter 8).
 
-Constraint enforcement for CM2 floors and rank stability appears in Chapter 10 (Guardrails), with the underlying duality theory in Appendix C.
+Hard constraint handling (feasibility filters for CM2 floors) and operational stability monitoring are treated in Chapter 10 (Guardrails); the underlying duality theory is developed in Appendix C, and the `primal--dual` optimization viewpoint is implemented in Chapter 14.
 
 Chapter 6 develops bandits with formal regret bounds; Chapter 7 establishes convergence under realizability (but no regret guarantees for continuous actions); Chapter 8 proves the Policy Gradient Theorem and analyzes the theory-practice gap. All three provide PyTorch implementations.
 
@@ -656,7 +656,7 @@ Chapter 6 develops bandits with formal regret bounds; Chapter 7 establishes conv
 Before production deployment, we need **safety guarantees**: off-policy evaluation to test policies on historical data (Chapter 9), robustness checks and guardrails with production monitoring (Chapter 10), and the extension to multi-episode dynamics where user engagement compounds across sessions (Chapter 11).
 
 **Chapter 9**: Off-policy evaluation (IPS, SNIPS, DR---how to test policies safely)
-**Chapter 10**: Robustness and guardrails (drift detection, rank stability, CM2 floors, A/B testing, monitoring)
+**Chapter 10**: Robustness and guardrails (drift detection, stability metrics, hard feasibility filters for CM2 floors, A/B testing, monitoring)
 **Chapter 11**: Multi-episode MDPs (inter-session retention, hazard modeling, long-term user value)
 
 ### The Journey Ahead
@@ -1092,15 +1092,15 @@ $$
 $$
 is equivalent to the original constrained optimization problem: they have the same optimal value.
 
-*Interpretation.* Under mild convexity assumptions, we can treat Lagrange multipliers $\boldsymbol{\lambda}$ as "prices" for violating constraints and search for a saddle point instead of solving the constrained problem directly. **Appendix C** proves this rigorously (Theorem C.2.1) for the contextual bandit setting using the theory of randomized policies and convex duality ([@boyd:convex_optimization:2004, Section 5.2.3]). Chapter 10 exploits this to implement **primal--dual RL** for search: we update the policy parameters to increase reward and constraint satisfaction (primal step) while adapting multipliers that penalize violations (dual step).
+*Interpretation.* Under mild convexity assumptions, we can treat Lagrange multipliers $\boldsymbol{\lambda}$ as "prices" for violating constraints and search for a saddle point instead of solving the constrained problem directly. **Appendix C** proves this rigorously (Theorem C.2.1) for the contextual bandit setting using the theory of randomized policies and convex duality ([@boyd:convex_optimization:2004]). In Chapter 14 we exploit this to implement `primal--dual` constrained RL for search: we update the policy parameters to increase reward and constraint satisfaction (primal step) while adapting multipliers that penalize violations (dual step). Chapter 10 focuses instead on the production guardrail viewpoint (monitoring and fallback) rather than optimization over multipliers.
 
 **What this tells us:**
 
-Strong duality means we can solve the constrained problem #EQ-1.21 by solving the unconstrained Lagrangian #EQ-1.22---no duality gap. Practically, this justifies **primal-dual algorithms**: alternate between improving the policy (primal) and adjusting constraint penalties (dual), confident that convergence to the saddle point yields the constrained optimum.
+Strong duality means we can solve the constrained problem #EQ-1.21 by solving the unconstrained Lagrangian #EQ-1.22---no duality gap. Practically, this justifies **primal--dual algorithms**: alternate between improving the policy (primal) and adjusting constraint penalties (dual), confident that convergence to the saddle point yields the constrained optimum.
 
 The strict feasibility requirement ($\exists \tilde{\pi}$ with slack in the CM2 constraint) is typically easy to verify: the baseline production policy usually satisfies constraints with margin. If no such policy exists, the constraints may be infeasible---one is asking for profitability floors that no ranking can achieve. **Appendix C, §C.4.3** discusses diagnosing infeasible constraint configurations: diverging dual variables, Pareto frontiers below constraint thresholds, and $\varepsilon$-relaxation remedies.
 
-**Implementation preview**: In **Chapter 10 (§10.4.2)**, we implement constraint-aware RL using primal-dual optimization (theory in **Appendix C, §C.5**):
+**Implementation preview**: In **Chapter 14**, we implement constraint-aware RL using `primal--dual` optimization (theory in **Appendix C, §C.5**):
 1. **Primal step**: $\theta \leftarrow \theta + \eta \nabla_\theta \mathcal{L}(\theta, \boldsymbol{\lambda})$ (improve policy toward higher reward and constraint satisfaction)
 2. **Dual step**: $\boldsymbol{\lambda} \leftarrow \max(0, \boldsymbol{\lambda} - \eta' \nabla_{\boldsymbol{\lambda}} \mathcal{L}(\theta, \boldsymbol{\lambda}))$ (tighten constraints if violated, relax if satisfied)
 
@@ -1166,7 +1166,7 @@ Companion files for Chapter 1:
     - **Use config-driven weights**: `RewardConfig` for $(\alpha,\beta,\gamma,\delta)$; avoid hard-coded numbers.
     - **Validate engagement weight**: Assert $\delta/\alpha \in [0.01, 0.10]$ in `zoosim/dynamics/reward.py:56` (see Section 1.2.1).
     - **Monitor RPC**: Log $\text{RPC}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i$; alert if drops $>10\%$ (clickbait detection).
-    - **Enforce constraints early**: CM2 and exposure floors via Lagrange multipliers (**Chapter 10, §10.4.2**; theory in **Appendix C**).
+    - **Enforce constraints early**: Use hard feasibility filters for CM2 and exposure floors (Chapter 10, Exercise 10.3), or use Lagrange multipliers with `primal--dual` updates when optimizing under constraints (Appendix C; Chapter 14).
     - **Ensure reproducible ranking**: Enable `ActionConfig.standardize_features` in `zoosim/core/config.py:231`.
 
 **Exercise 1.1** (Reward Function Sensitivity). [20 min]

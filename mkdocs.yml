@@ -36,10 +36,14 @@ nav:
           - "Ch 9 — Exercises & Labs": book/ch09/exercises_labs.md
           - "Ch 10 — Robustness & Guardrails": book/ch10/ch10_robustness_guardrails.md
           - "Ch 10 — Exercises & Labs": book/ch10/exercises_labs.md
+      - Part V - Frontier Methods:
+          - "Ch 14 — Multi-Objective RL & Fairness": book/ch14/ch14_multiobjective_rl_and_fairness.md
       - Appendices:
           - "Appendix A — Bayesian Preference Models": book/appendix_a_bayesian_preference_models.md
           - "Appendix B — Control Theory": book/appendix_b_control_theory.md
           - "Appendix C — Convex Optimization": book/appendix_c_convex_optimization.md
+          - "Appendix D — Information-Theoretic Lower Bounds": book/appendix_d_information_theory.md
+          - "Appendix E — Vector-Reward MORL": book/appendix_e_vector_morl.md
       - PDF Compilation Guide: book/PDF_COMPILATION_GUIDE.md
   - Knowledge Graph:
       - Overview: knowledge_graph/README.md

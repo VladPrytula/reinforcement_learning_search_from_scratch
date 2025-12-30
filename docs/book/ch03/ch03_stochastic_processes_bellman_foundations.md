@@ -423,7 +423,7 @@ $$
 \pi^*(s) \in \arg\max_{a \in \mathcal{A}} \left[ r(s,a) + \gamma \sum_{s'} P(s'|s,a) V^*(s') \right].
 $$
 
-**Remark 3.5.3** (CMDP preview). Many practical ranking problems impose constraints (e.g., CM2 floors, exposure parity). **Constrained MDPs** (CMDPs) handle these by introducing Lagrange multipliers that convert the constrained problem into an unconstrained MDP with modified rewards $r_\lambda = r - \lambda c$---the Bellman theory of this section then applies directly to the relaxed problem. Appendix C develops the full CMDP framework with rigorous Lagrangian duality and primal--dual algorithms for satisfying constraints in expectation; Chapter 10 applies these ideas as production guardrails.
+**Remark 3.5.3** (CMDP preview). Many practical ranking problems impose constraints (e.g., CM2 floors, exposure parity). **Constrained MDPs** (CMDPs) handle these by introducing Lagrange multipliers that convert the constrained problem into an unconstrained MDP with modified rewards $r_\lambda = r - \lambda c$---the Bellman theory of this section then applies directly to the relaxed problem. Appendix C develops the full CMDP framework with rigorous Lagrangian duality and primal--dual algorithms for satisfying constraints in expectation. Chapter 10 treats constraints operationally as production guardrails (monitoring, fallback, and hard feasibility filters such as Exercise 10.3), while Chapter 14 implements soft constraint optimization via primal--dual methods.
 
 Once we compute $V^*$ (via value iteration, which we'll prove converges next), extracting the optimal policy is straightforward.
 
