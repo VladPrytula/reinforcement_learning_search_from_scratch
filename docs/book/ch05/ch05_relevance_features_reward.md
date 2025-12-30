@@ -938,10 +938,10 @@ $$
 
 **Weight selection:**
 
-From `RewardConfig` (production defaults):
+From `RewardConfig` (simulator defaults in this repo):
 - $\alpha = 1.0$: GMV weight (baseline)
-- $\beta = 1.0$: CM2 weight (equal to GMV)
-- $\gamma = 0.5$: Strategic weight (moderate incentive)
+- $\beta = 0.4$: CM2 weight (profit sensitivity)
+- $\gamma = 2.0$: Strategic weight (reward units per strategic purchase)
 - $\delta = 0.1$: Clicks weight (**small** to avoid clickbait)
 
 **Constraint 5.8** (Engagement Weight Safety Guideline) {#CONSTRAINT-5.8}
@@ -1071,8 +1071,8 @@ def compute_reward(
 
 !!! note "Code ↔ Config (Reward Weights)"
     The weights $(α, β, γ, δ)$ are configured in:
-    - **File**: `zoosim/core/config.py:192-197` (`RewardConfig`)
-    - **Defaults**: `alpha_gmv=1.0`, `beta_cm2=1.0`, `gamma_strat=0.5`, `delta_clicks=0.1`
+    - **File**: `zoosim/core/config.py:194-200` (`RewardConfig`)
+    - **Defaults**: `alpha_gmv=1.0`, `beta_cm2=0.4`, `gamma_strat=2.0`, `delta_clicks=0.1`
     - **Safety**: Assertion in `zoosim/dynamics/reward.py:56-59` enforces the guideline [CONSTRAINT-5.8]
     - **Tuning**: Adjust weights to match business priorities (see Section 5.6 for Pareto analysis)
 
@@ -1281,7 +1281,7 @@ The plot shows a **convex curve** (Pareto frontier):
 **Business decision:**
 1. **Growth phase**: Choose high $\alpha$, low $\beta$ (maximize revenue, accept lower margin)
 2. **Mature marketplace**: Choose low $\alpha$, high $\beta$ (maximize profit, accept lower revenue)
-3. **Balanced**: Choose $\alpha = \beta = 1.0$ (our default)
+3. **Balanced**: Choose $\alpha \approx \beta$ (e.g., $\alpha = \beta = 1.0$)
 
 **In Chapter 10 (Robustness & Guardrails)**, we'll add **hard constraints** (CM2 floor, exposure guarantees) and use **Lagrangian relaxation** to solve constrained MDPs.
 

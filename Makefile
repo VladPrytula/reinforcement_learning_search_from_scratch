@@ -68,6 +68,11 @@ help:
 	@echo "  make pdf            Build PDFs for all book markdowns"
 	@echo "  make pdf-drafts     Build PDFs for drafts only"
 	@echo "  make clean-pdf      Remove generated PDFs in book directories"
+	@echo ""
+	@echo "  make tex            Generate LaTeX for all chapters"
+	@echo "  make tex-ch01       Generate LaTeX for Chapter 1 only"
+	@echo "  make clean-tex      Remove generated LaTeX files"
+	@echo ""
 	@echo "Variables: PANDOC=$(PANDOC) PDF_ENGINE=$(PDF_ENGINE)"
 
 check-tools:
@@ -102,3 +107,59 @@ endif
 validate-kg:
 	@echo "[kg] Validating docs/knowledge_graph/graph.yaml"
 	@$(PY) scripts/validate_knowledge_graph.py --graph docs/knowledge_graph/graph.yaml --schema docs/knowledge_graph/schema.yaml
+
+# -----------------------------------------------------------------------------
+# LaTeX Generation (Markdown → .tex)
+# -----------------------------------------------------------------------------
+# Non-breaking: These targets are independent of the existing PDF workflow.
+#
+# Usage:
+#   make tex-ch01         Generate LaTeX for Chapter 1
+#   make tex              Generate LaTeX for all chapters
+#   make clean-tex        Remove generated LaTeX files
+#
+# Output: docs/book/latex/ch01.tex, ch02.tex, etc.
+
+TEX_OUTPUT_DIR ?= docs/book/latex
+LATEX_TEMPLATE := docs/book/latex_template.tex
+CROSSREF_FILTER := docs/book/crossrefs.lua
+ADMONITION_FILTER := docs/book/admonitions.lua
+PREPROCESS_SCRIPT := scripts/md2tex_preprocess.py
+
+# Chapter source files (main content files only)
+CH01_SRC := docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+
+# Pandoc flags for LaTeX generation
+PANDOC_TEX_FLAGS := \
+  --from=markdown-yaml_metadata_block+tex_math_dollars+tex_math_single_backslash+raw_html+fenced_divs \
+  --to=latex \
+  --standalone \
+  --number-sections \
+  --toc --toc-depth=2 \
+  $(if $(wildcard $(LATEX_TEMPLATE)),--template=$(LATEX_TEMPLATE),) \
+  $(if $(wildcard $(CALLOUT_FILTER)),--lua-filter=$(CALLOUT_FILTER),) \
+  $(if $(wildcard $(CROSSREF_FILTER)),--lua-filter=$(CROSSREF_FILTER),) \
+  $(if $(wildcard $(ADMONITION_FILTER)),--lua-filter=$(ADMONITION_FILTER),)
+
+.PHONY: tex tex-ch01 clean-tex
+
+tex: tex-ch01
+	@echo "[tex] All chapters generated in $(TEX_OUTPUT_DIR)/"
+
+tex-ch01: $(TEX_OUTPUT_DIR)/ch01.tex
+
+$(TEX_OUTPUT_DIR)/ch01.tex: $(CH01_SRC) $(LATEX_TEMPLATE) $(CALLOUT_FILTER) $(CROSSREF_FILTER) $(PREPROCESS_SCRIPT)
+	@mkdir -p $(TEX_OUTPUT_DIR)
+	@echo "[preprocess] $(CH01_SRC)"
+	@$(PY) $(PREPROCESS_SCRIPT) "$(CH01_SRC)" -o /tmp/ch01_preprocessed.md
+	@echo "[pandoc] /tmp/ch01_preprocessed.md → $@"
+	@$(PANDOC) $(PANDOC_TEX_FLAGS) \
+	    --metadata title="Chapter 1: Search Ranking as Optimization" \
+	    --metadata author="Vlad Prytula" \
+	    -o "$@" /tmp/ch01_preprocessed.md
+	@rm -f /tmp/ch01_preprocessed.md
+	@echo "[done] $@"
+
+clean-tex:
+	@echo "Removing generated LaTeX files in: $(TEX_OUTPUT_DIR)"
+	@rm -rf $(TEX_OUTPUT_DIR)

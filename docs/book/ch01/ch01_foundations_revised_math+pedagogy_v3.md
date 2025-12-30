@@ -10,7 +10,7 @@
 
 - **Revenue (GMV)**: Show products users will buy, at good prices
 - **Profitability (CM2)**: Prioritize items with healthy margins
-- **Strategic goals (STRAT)**: Expose new products, house brands, or inventory to clear
+- **Strategic goals (STRAT)**: Promote strategic products (new launches, house brands, clearance)—tracked as **purchases** in the reward and **exposure** in guardrails
 - **User experience**: Maintain relevance, diversity, and satisfaction
 
 Traditional search systems rely on **manually tuned boost parameters**: category multipliers, price/discount bonuses, profit margins, strategic product flags. Before writing the scoring function, we fix our spaces.
@@ -113,7 +113,7 @@ High GMV alone is insufficient. A retailer must enforce **guardrails**:
 {#EQ-1.3a}
 
 \begin{equation}
-\mathbb{E}[\text{Exposure}_{\text{strategic}} \mid \mathbf{w}] \geq \tau_{\text{strat}}
+\mathbb{E}[\text{Exposure}_{\text{strategic}} \mid \mathbf{w}] \geq \tau_{\text{STRAT}}
 \tag{1.3b}
 \end{equation}
 {#EQ-1.3b}
@@ -217,7 +217,7 @@ Business weights in `RewardConfig` (`MOD-zoosim.config`) implement #EQ-1.2 param
 
 - $\alpha$ (GMV): Primary objective, normalized to 1.0 by convention
 - $\beta/\alpha$ (CM2 weight): Profit sensitivity, typically $\in [0.3, 0.8]$ (higher $\Rightarrow$ prioritize margin over revenue)
-- $\gamma/\alpha$ (STRAT weight): Strategic priority, typically $\in [0.1, 0.3]$ (house brands, new products, clearance)
+- $\gamma/\alpha$ (STRAT weight): Strategic priority (reward units per strategic purchase; see `RewardConfig.gamma_strat`, default $\gamma = 2.0$ in this repo)
 - **$\delta/\alpha$ (CLICKS weight): Bounded $\in [0.01, 0.10]$ to prevent clickbait strategies**
 
 Validation (enforced in code): see `zoosim/dynamics/reward.py:56` for an assertion on $\delta/\alpha$ in the production reward path. The numerical range $[0.01, 0.10]$ is an engineering guardrail motivated by clickbait failure modes; Appendix C provides the duality background for constrained optimization, not a derivation of this specific bound.
@@ -1060,7 +1060,7 @@ Real-world RL requires **constrained optimization**. Maximizing #EQ-1.2 alone ca
 - **Ignoring strategic products**: Optimizing short-term revenue at the expense of long-term goals
 - **Rank instability**: Reordering the top-10 drastically between queries, confusing users
 
-We enforce constraints via **Lagrangian methods** (Chapter 10, with theory in Appendix C) and **rank stability penalties**.
+We enforce constraints via **Lagrangian methods** (formalism in Chapter 3 §3.6; convex duality background in Appendix C; implementation in Chapter 10) and **rank stability penalties**.
 
 ### Lagrangian Formulation
 

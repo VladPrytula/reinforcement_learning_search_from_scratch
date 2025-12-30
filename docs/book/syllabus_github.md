@@ -65,7 +65,7 @@ For internal authoring notes and more granular acceptance criteria, see `docs/bo
 ### Chapter 6 — Discrete Template Bandits (LinUCB / Thompson Sampling)
 
 - **Goal:** Build safe, interpretable bandit baselines that operate over discrete ranking templates, and understand when they succeed or fail.
-- **Code:** `policies/{templates,lin_ucb,thompson_sampling}.py`, demo script `scripts/ch06/template_bandits_demo.py`.
+- **Code:** `zoosim/policies/{templates,lin_ucb,thompson_sampling}.py`, demo script `scripts/ch06/template_bandits_demo.py`.
 - **What you’ll do:** Compare simple vs rich context features, run per-segment diagnostics, and analyze template selection behavior.
 - **By the end:** You can quantify how much lift you get from contextual bandits over strong static baselines and where the theory–practice gaps show up.
 
@@ -201,4 +201,3 @@ You can use the repo’s tests and scripts to sanity‑check your environment as
   ```
 
 For visualization-heavy chapters (especially Chapter 5), reuse the plotting code in the text (e.g., with seed 42) to reproduce the scatter and histogram figures referenced in the book.
-

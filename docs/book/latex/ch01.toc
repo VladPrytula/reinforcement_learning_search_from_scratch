@@ -1,0 +1,41 @@
+\contentsline {section}{\numberline {1}Chapter 1 --- Search Ranking as Optimization: From Business Goals to RL}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}1.1 The Problem: Balancing Multiple Objectives in Search}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}1.2 From Clicks to Outcomes: The Reward Function}{3}{subsection.1.2}%
+\contentsline {subsubsection}{\numberline {1.2.1}Constraints: Not All Rewards Are Acceptable}{4}{subsubsection.1.2.1}%
+\contentsline {subsubsection}{\numberline {1.2.2}1.2.1 The Role of Engagement in Reward Design }{6}{subsubsection.1.2.2}%
+\contentsline {subsubsection}{\numberline {1.2.3}Verifying the Reward Function}{8}{subsubsection.1.2.3}%
+\contentsline {subsection}{\numberline {1.3}1.3 The Context Problem: Why Static Boosts Fail}{9}{subsection.1.3}%
+\contentsline {subsubsection}{\numberline {1.3.1}Experiment: User Segment Heterogeneity}{9}{subsubsection.1.3.1}%
+\contentsline {subsubsection}{\numberline {1.3.2}The Context Space}{10}{subsubsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.4}1.4 Contextual Bandits: The RL Formulation}{11}{subsection.1.4}%
+\contentsline {subsubsection}{\numberline {1.4.1}Building Intuition: Why ``Bandit'' Not ``MDP''?}{11}{subsubsection.1.4.1}%
+\contentsline {subsubsection}{\numberline {1.4.2}Problem Setup }{11}{subsubsection.1.4.2}%
+\contentsline {subsubsection}{\numberline {1.4.3}The Value Function}{12}{subsubsection.1.4.3}%
+\contentsline {subsubsection}{\numberline {1.4.4}Action Space Structure: Bounded Continuous}{12}{subsubsection.1.4.4}%
+\contentsline {subsubsection}{\numberline {1.4.5}Implementation: Bounded Action Space}{13}{subsubsection.1.4.5}%
+\contentsline {subsubsection}{\numberline {1.4.6}Minimal End-to-End Check: One Step in the Simulator}{13}{subsubsection.1.4.6}%
+\contentsline {paragraph}{Using the Gym Wrapper}{14}{section*.16}%
+\contentsline {subsection}{\numberline {1.5}1.5 From Optimization to Learning: Why RL?}{14}{subsection.1.5}%
+\contentsline {subsubsection}{\numberline {1.5.1}The Sample Complexity Bottleneck}{15}{subsubsection.1.5.1}%
+\contentsline {subsubsection}{\numberline {1.5.2}RL as Sample-Efficient, Safe Exploration}{15}{subsubsection.1.5.2}%
+\contentsline {subsection}{\numberline {1.6}1.6 Roadmap: From Bandits to Deep RL}{15}{subsection.1.6}%
+\contentsline {subsubsection}{\numberline {1.6.1}Part I: Foundations (Chapters 1-3)}{16}{subsubsection.1.6.1}%
+\contentsline {subsubsection}{\numberline {1.6.2}Part II: Simulator (Chapters 4-5)}{16}{subsubsection.1.6.2}%
+\contentsline {subsubsection}{\numberline {1.6.3}Part III: Policies (Chapters 6-8)}{16}{subsubsection.1.6.3}%
+\contentsline {subsubsection}{\numberline {1.6.4}Part IV: Evaluation, Robustness \& Multi-Episode MDPs (Chapters 9-11)}{16}{subsubsection.1.6.4}%
+\contentsline {subsubsection}{\numberline {1.6.5}The Journey Ahead}{16}{subsubsection.1.6.5}%
+\contentsline {subsubsection}{\numberline {1.6.6}1.7.1 Expected Utility and Well-Defined Rewards}{20}{subsubsection.1.6.6}%
+\contentsline {subsubsection}{\numberline {1.6.7}1.7.2 The Offline Evaluation Problem (Toy Cat-Food Example)}{21}{subsubsection.1.6.7}%
+\contentsline {paragraph}{Toy example: two cat-food templates}{22}{section*.19}%
+\contentsline {subsubsection}{\numberline {1.6.8}1.7.3 Importance Sampling at a High Level}{23}{subsubsection.1.6.8}%
+\contentsline {subsubsection}{\numberline {1.6.9}1.7.4 Coverage / Overlap and Logging Design}{24}{subsubsection.1.6.9}%
+\contentsline {subsubsection}{\numberline {1.6.10}1.7.5 Preview: Existence of an Optimal Policy}{24}{subsubsection.1.6.10}%
+\contentsline {subsubsection}{\numberline {1.6.11}1.7.6 Preview: Regret and Fundamental Limits}{25}{subsubsection.1.6.11}%
+\contentsline {subsubsection}{\numberline {1.6.12}1.7.7 Where the Real Math Lives}{25}{subsubsection.1.6.12}%
+\contentsline {subsection}{\numberline {1.7}1.8 (Advanced) Preview: Neural Q-Functions and Bellman Operators}{26}{subsection.1.7}%
+\contentsline {subsubsection}{\numberline {1.7.1}Preview: The Bellman Operator (Chapter 3)}{26}{subsubsection.1.7.1}%
+\contentsline {subsection}{\numberline {1.8}1.9 Constraints and Safety: Beyond Reward Maximization}{27}{subsection.1.8}%
+\contentsline {subsubsection}{\numberline {1.8.1}Lagrangian Formulation}{27}{subsubsection.1.8.1}%
+\contentsline {subsection}{\numberline {1.9}1.10 Summary and Looking Ahead}{28}{subsection.1.9}%
+\contentsline {subsubsection}{\numberline {1.9.1}Why Chapter 2 Comes Next}{29}{subsubsection.1.9.1}%
+\contentsline {subsection}{\numberline {1.10}Exercises}{29}{subsection.1.10}%

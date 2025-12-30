@@ -433,7 +433,7 @@ def create_standard_templates(
         BoostTemplate(
             id=1,
             name="High Margin",
-            description="Promote products with margin > 40%",
+            description="Promote products with CM2 > 0.4",
             boost_fn=lambda p: a_max if p.cm2 > 0.4 else 0.0,
         ),
         # t2: CM2 Boost (Own Brand)

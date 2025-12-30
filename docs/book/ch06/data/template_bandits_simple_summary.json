@@ -20,7 +20,7 @@
     {
       "id": 1,
       "name": "High Margin",
-      "description": "Promote products with margin > 40%"
+      "description": "Promote products with CM2 > 0.4"
     },
     {
       "id": 2,

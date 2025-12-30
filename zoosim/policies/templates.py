@@ -109,7 +109,7 @@ def create_standard_templates(
 
     Template Library:
     - t0: Neutral (no boost)
-    - t1: High Margin (boost margin > 40%)
+    - t1: High Margin (boost CM2 > 0.4)
     - t2: CM2 Boost (boost own-brand products)
     - t3: Popular (boost by log-popularity)
     - t4: Premium (boost expensive items, price > 75th percentile)
@@ -150,7 +150,7 @@ def create_standard_templates(
         BoostTemplate(
             id=1,
             name="High Margin",
-            description="Promote products with margin > 40%",
+            description="Promote products with CM2 > 0.4",
             boost_fn=lambda p: a_max if p.cm2 > 0.4 else 0.0,
         ),
         # t2: CM2 Boost (Own Brand)

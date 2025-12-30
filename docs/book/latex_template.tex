@@ -1,0 +1,473 @@
+% =============================================================================
+% LaTeX Template for Pandoc Markdown Conversion
+% =============================================================================
+% This template is used by: pandoc --template=latex_template.tex
+%
+% Features:
+%   - Article document class (suitable for individual chapters)
+%   - Full Unicode support via XeLaTeX/fontspec
+%   - Mathematical typesetting (amsmath, amssymb, amsthm)
+%   - Colored callout boxes (tcolorbox)
+%   - Code listings with syntax highlighting
+%   - Cross-references with hyperref
+%   - BibLaTeX bibliography support
+%
+% Usage:
+%   pandoc input.md --template=docs/book/latex_template.tex \
+%       --pdf-engine=xelatex -o output.tex
+% =============================================================================
+
+\documentclass[11pt,a4paper]{article}
+
+% =============================================================================
+% CORE PACKAGES
+% =============================================================================
+
+% Mathematics
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}  % Enhanced math features
+
+% Page layout
+\usepackage{geometry}
+\geometry{
+    margin=1in,
+    headheight=14pt
+}
+
+% Graphics and colors
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+% Tables
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+
+% Fix for pandoc-generated tables without captions
+% Pandoc uses \def\LTcaptype{none} which requires a 'none' counter
+\newcounter{none}
+
+% Lists
+\usepackage{enumitem}
+
+% =============================================================================
+% FONTS AND UNICODE (XeLaTeX)
+% =============================================================================
+
+\usepackage{fontspec}
+\usepackage{unicode-math}
+
+% Use default Latin Modern fonts (widely available)
+% Uncomment to specify custom fonts:
+% \setmainfont{TeX Gyre Pagella}
+% \setsansfont{TeX Gyre Heros}
+% \setmonofont{DejaVu Sans Mono}
+
+% Unicode character mappings for characters that may not be in fonts
+\usepackage{newunicodechar}
+
+% Arrows
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{←}{\ensuremath{\leftarrow}}
+\newunicodechar{↑}{\ensuremath{\uparrow}}
+\newunicodechar{↓}{\ensuremath{\downarrow}}
+\newunicodechar{⇒}{\ensuremath{\Rightarrow}}
+\newunicodechar{⇐}{\ensuremath{\Leftarrow}}
+\newunicodechar{⇔}{\ensuremath{\Leftrightarrow}}
+
+% Greek letters (in case font doesn't have them)
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{δ}{\ensuremath{\delta}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{θ}{\ensuremath{\theta}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{ω}{\ensuremath{\omega}}
+\newunicodechar{Σ}{\ensuremath{\Sigma}}
+\newunicodechar{Π}{\ensuremath{\Pi}}
+\newunicodechar{Ω}{\ensuremath{\Omega}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+
+% Mathematical symbols
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{∉}{\ensuremath{\notin}}
+\newunicodechar{⊂}{\ensuremath{\subset}}
+\newunicodechar{⊃}{\ensuremath{\supset}}
+\newunicodechar{⊆}{\ensuremath{\subseteq}}
+\newunicodechar{⊇}{\ensuremath{\supseteq}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{∪}{\ensuremath{\cup}}
+\newunicodechar{∞}{\ensuremath{\infty}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{∇}{\ensuremath{\nabla}}
+\newunicodechar{∑}{\ensuremath{\sum}}
+\newunicodechar{∏}{\ensuremath{\prod}}
+\newunicodechar{√}{\ensuremath{\sqrt{}}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{÷}{\ensuremath{\div}}
+\newunicodechar{±}{\ensuremath{\pm}}
+\newunicodechar{∓}{\ensuremath{\mp}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+
+% Typography - most handled by preprocessor (md2tex_preprocess.py)
+% Only fallback definitions for any characters that slip through
+\newunicodechar{—}{\textemdash}      % U+2014 em-dash (preprocessor converts to ---)
+\newunicodechar{–}{\textendash}      % U+2013 en-dash (preprocessor converts to --)
+\newunicodechar{‑}{-}                % U+2011 non-breaking hyphen
+
+% Space symbols (suppress in code)
+\newunicodechar{␣}{ }
+\newunicodechar{␠}{ }
+\newunicodechar{⎵}{ }
+
+% =============================================================================
+% CODE LISTINGS
+% =============================================================================
+
+\usepackage{listings}
+\usepackage{lstfiracode}  % Optional: FiraCode ligatures
+
+% Define colors for syntax highlighting
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{codeblue}{rgb}{0.13,0.29,0.53}
+\definecolor{codebg}{rgb}{0.97,0.97,0.97}
+
+% Default listing style
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{codebg},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codeblue}\bfseries,
+    stringstyle=\color{codepurple},
+    numberstyle=\tiny\color{codegray},
+    breaklines=true,
+    breakatwhitespace=false,
+    keepspaces=true,
+    numbers=left,
+    numbersep=8pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    frame=single,
+    framerule=0.5pt,
+    rulecolor=\color{codegray},
+    xleftmargin=2em,
+    framexleftmargin=1.5em,
+    aboveskip=1em,
+    belowskip=1em,
+    % Unicode in listings (use \ensuremath to avoid pandoc template conflicts)
+    literate={π}{{\ensuremath{\pi}}}1
+             {≈}{{\ensuremath{\approx}}}1
+             {→}{{\ensuremath{\to}}}1
+             {←}{{\ensuremath{\leftarrow}}}1
+             {↔}{{\ensuremath{\leftrightarrow}}}1
+             {≤}{{\ensuremath{\le}}}1
+             {≥}{{\ensuremath{\ge}}}1
+             {≠}{{\ensuremath{\neq}}}1
+             {∈}{{\ensuremath{\in}}}1
+             {—}{{---}}1
+             {–}{{--}}1,
+}
+
+% Python language definition
+\lstdefinelanguage{Python}{
+    keywords={False,None,True,and,as,assert,async,await,break,class,continue,def,del,elif,else,except,finally,for,from,global,if,import,in,is,lambda,nonlocal,not,or,pass,raise,return,try,while,with,yield},
+    morekeywords={self,cls},
+    sensitive=true,
+    morecomment=[l]{\#},
+    morecomment=[s]{'''}{'''},
+    morecomment=[s]{"""}{"""},
+    morestring=[b]',
+    morestring=[b]",
+}
+
+% YAML language definition
+\lstdefinelanguage{YAML}{
+    keywords={true,false,null,y,n},
+    sensitive=false,
+    comment=[l]{\#},
+    morestring=[b]',
+    morestring=[b]",
+}
+
+% =============================================================================
+% CALLOUT BOXES (tcolorbox)
+% =============================================================================
+
+\usepackage[most]{tcolorbox}
+
+% Note box (blue) - matches callouts.lua
+\newtcolorbox{CalloutNote}[1]{
+    colback=blue!4!white,
+    colframe=blue!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Also define NoteBox as alias
+\newtcolorbox{NoteBox}[1]{
+    colback=blue!4!white,
+    colframe=blue!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Tip box (green)
+\newtcolorbox{TipBox}[1]{
+    colback=green!4!white,
+    colframe=green!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Warning box (orange)
+\newtcolorbox{WarningBox}[1]{
+    colback=orange!4!white,
+    colframe=orange!60!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Danger box (red)
+\newtcolorbox{DangerBox}[1]{
+    colback=red!4!white,
+    colframe=red!50!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Info box (cyan)
+\newtcolorbox{InfoBox}[1]{
+    colback=cyan!4!white,
+    colframe=cyan!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Example box (purple)
+\newtcolorbox{ExampleBox}[1]{
+    colback=violet!4!white,
+    colframe=violet!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Important box (magenta)
+\newtcolorbox{ImportantBox}[1]{
+    colback=magenta!4!white,
+    colframe=magenta!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Caution box (yellow)
+\newtcolorbox{CautionBox}[1]{
+    colback=yellow!10!white,
+    colframe=yellow!60!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Abstract box (gray)
+\newtcolorbox{AbstractBox}[1]{
+    colback=gray!4!white,
+    colframe=gray!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Question box (teal)
+\newtcolorbox{QuestionBox}[1]{
+    colback=teal!4!white,
+    colframe=teal!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Quote box (light gray)
+\newtcolorbox{QuoteBox}[1]{
+    colback=gray!2!white,
+    colframe=gray!30!black,
+    boxrule=0.5pt,
+    arc=0pt,
+    leftrule=3pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily\itshape
+}
+
+% =============================================================================
+% THEOREM ENVIRONMENTS
+% =============================================================================
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{assumption}{Assumption}[section]
+
+% =============================================================================
+% HYPERLINKS AND CROSS-REFERENCES
+% =============================================================================
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    citecolor=green!60!black,
+    urlcolor=blue!70!black,
+    pdftitle={$if(title)$$title$$endif$},
+    pdfauthor={$if(author)$$author$$endif$},
+}
+
+% Clever references (optional, requires cleveref package)
+% \usepackage{cleveref}
+
+% =============================================================================
+% BIBLIOGRAPHY (BibLaTeX)
+% =============================================================================
+
+\usepackage[
+    backend=biber,
+    style=numeric,
+    sorting=none,
+    maxbibnames=99
+]{biblatex}
+
+% Add bibliography file if it exists
+% \addbibresource{references.bib}
+
+% =============================================================================
+% CUSTOM COMMANDS
+% =============================================================================
+
+% Expectation and Probability operators
+\DeclareMathOperator{\E}{\mathbb{E}}
+\DeclareMathOperator{\Prob}{\mathbb{P}}
+\DeclareMathOperator{\Var}{\mathrm{Var}}
+\DeclareMathOperator{\Cov}{\mathrm{Cov}}
+
+% Argmax/argmin
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% Common sets
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+
+% Bold vectors
+\renewcommand{\vec}[1]{\mathbf{#1}}
+
+% =============================================================================
+% PANDOC COMPATIBILITY
+% =============================================================================
+
+% Tight lists (Pandoc generates these)
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Scaling for images
+$if(graphics)$
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+$endif$
+
+% Code highlighting (Pandoc style)
+$if(highlighting-macros)$
+$highlighting-macros$
+$endif$
+
+% =============================================================================
+% DOCUMENT METADATA
+% =============================================================================
+
+$if(title)$
+\title{$title$}
+$endif$
+
+$if(author)$
+\author{$for(author)$$author$$sep$ \and $endfor$}
+$endif$
+
+$if(date)$
+\date{$date$}
+$else$
+\date{\today}
+$endif$
+
+% =============================================================================
+% DOCUMENT BODY
+% =============================================================================
+
+\begin{document}
+
+$if(title)$
+\maketitle
+$endif$
+
+$if(abstract)$
+\begin{abstract}
+$abstract$
+\end{abstract}
+$endif$
+
+$if(toc)$
+\tableofcontents
+\newpage
+$endif$
+
+$body$
+
+$if(bibliography)$
+\printbibliography
+$endif$
+
+\end{document}

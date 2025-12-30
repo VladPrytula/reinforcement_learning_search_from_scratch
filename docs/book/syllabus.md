@@ -48,7 +48,7 @@ This syllabus lays out a chapter-by-chapter path from foundations and a working 
 
 6) Chapter 6 — Discrete Template Bandits (LinUCB/TS)
 - Objectives: Safe, interpretable baseline; honest failure modes; feature-driven improvement.
-- Implementation: `policies/{templates,lin_ucb,thompson_sampling}.py`; `scripts/ch06/template_bandits_demo.py`.
+- Implementation: `zoosim/policies/{templates,lin_ucb,thompson_sampling}.py`; `scripts/ch06/template_bandits_demo.py`.
 - Labs: Simple vs rich context features; per-segment diagnostics; template selection analysis.
 - Acceptance: Simple-features bandits underperform a strong static template; rich features measurably reduce the GMV gap vs static on average; per-segment heterogeneity and theory–practice gap clearly documented.
 
