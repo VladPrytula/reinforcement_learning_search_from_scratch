@@ -10,7 +10,7 @@ These exercises provide hands-on practice with the generative world model from C
 
 **Objective:** Generate a synthetic catalog and verify distributional properties.
 
-In a real retailer, the first thing analysts do with a new dataset is not train a model; it is to look at basic distributions. Are dog‑food prices where merchandising expects them to be? Is litter really being run as a loss‑leader, or did something drift? This exercise puts you in that role for our simulator: you sanity‑check that the synthetic catalog behaves like a plausible e‑commerce assortment before trusting any downstream RL experiments.
+In a real retailer, the first thing analysts do with a new dataset is not train a model; it is to look at basic distributions. Are dog‑food prices where merchandising expects them to be? Is litter really being run as a loss‑leader, or did something drift? This exercise places us in that role for our simulator: we sanity‑check that the synthetic catalog behaves like a plausible e‑commerce assortment before trusting downstream RL experiments.
 
 **Setup:**
 ```python
@@ -37,13 +37,13 @@ catalog = generate_catalog(cfg.catalog, rng)
 
    **Expected output:**
    ```
-   Category      | P25    | Median | P75    | Theory (e^μ)
-   ------------------------------------------------------------
-   dog_food      | $9.34  | $13.46 | $19.27 | $13.46
-   cat_food      | $8.82  | $12.18 | $17.51 | $12.18
-   litter        | $6.87  | $9.03  | $11.92 | $9.03
-   toys          | $3.71  | $6.05  | $9.87  | $6.05
-   ```
+	   Category      | P25    | Median | P75    | Theory (e^μ)
+	   ------------------------------------------------------------
+	   dog_food      | $10.27 | $13.41 | $17.35 | $13.46
+	   cat_food      | $9.36  | $12.17 | $16.06 | $12.18
+	   litter        | $7.07  | $8.81  | $11.18 | $9.03
+	   toys          | $4.00  | $5.97  | $9.00  | $6.05
+	   ```
 
 2. **Margin verification** (10 min)
    - Compute mean CM2 for each category
@@ -69,7 +69,7 @@ catalog = generate_catalog(cfg.catalog, rng)
    # Hint: Use cfg.catalog.margin_slope[category] for slope β
    ```
 
-   **Expected visualization:** See Figure 4.1 in chapter text
+	   **Expected visualization:** Four panels with clear linear trends; slopes match `cfg.catalog.margin_slope` up to noise.
 
 ---
 
@@ -77,7 +77,7 @@ catalog = generate_catalog(cfg.catalog, rng)
 
 **Objective:** Sample users and analyze segment-specific preferences.
 
-Personalization only makes sense if different users truly want different things. In production, teams maintain audience definitions (“value shoppers”, “premium”, “private‑label loyalists”) and routinely inspect how those segments behave. Here you will do the same with our simulated users: verify that the segment mix matches the configuration and that each segment occupies a distinct region in preference space, just as a marketing or CRM team would expect.
+Personalization only makes sense if different users truly want different things. In production, teams maintain audience definitions (“value shoppers”, “premium”, “private‑label loyalists”) and routinely inspect how those segments behave. Here we do the same with our simulated users: we verify that the segment mix matches the configuration and that each segment occupies a distinct region in preference space.
 
 **Setup:**
 ```python
@@ -103,13 +103,13 @@ users = [sample_user(config=cfg, rng=rng) for _ in range(10_000)]
 
    **Expected output:**
    ```
-   Segment        | Count | Empirical | Expected
-   -----------------------------------------------
-   price_hunter   | 4,013 | 0.401     | 0.400
-   pl_lover       | 2,001 | 0.200     | 0.200
-   premium        | 1,974 | 0.197     | 0.200
-   litter_heavy   | 2,012 | 0.201     | 0.200
-   ```
+	   Segment        | Count | Empirical | Expected
+	   -----------------------------------------------
+	   price_hunter   | 3,445 | 0.345     | 0.350
+	   pl_lover       | 2,596 | 0.260     | 0.250
+	   premium        | 1,488 | 0.149     | 0.150
+	   litter_heavy   | 2,471 | 0.247     | 0.250
+	   ```
 
 2. **Preference scatter plots** (15 min)
    - Create 2x2 subplot grid (one subplot per segment)
@@ -122,16 +122,16 @@ users = [sample_user(config=cfg, rng=rng) for _ in range(10_000)]
    # Your code here
    ```
 
-   **Expected pattern:**
-   - Price hunters: Strong negative θ_price, neutral θ_pl
-   - Premium: Weak negative θ_price, **negative** θ_pl (avoid PL)
-   - PL lovers: Moderate negative θ_price, **strong positive** θ_pl
-   - Litter heavy: Moderate negative θ_price, slight positive θ_pl
+	   **Expected pattern:**
+	   - Price hunters: Strong negative θ_price, negative θ_pl (avoid PL)
+	   - Premium: Positive θ_price, negative θ_pl (avoid PL)
+	   - PL lovers: Moderate negative θ_price, strong positive θ_pl
+	   - Litter heavy: Moderate negative θ_price, positive θ_pl
 
 3. **Category affinity validation** (10 min)
-   - For litter-heavy segment, compute mean category affinity vector
-   - Print probabilities for each category
-   - Verify litter affinity ≈ 0.40 (40%)
+	   - For litter-heavy segment, compute mean category affinity vector
+	   - Print probabilities for each category
+	   - Verify litter affinity ≈ 0.85 (85%)
 
    ```python
    litter_heavy_users = [u for u in users if u.segment == "litter_heavy"]
@@ -140,12 +140,12 @@ users = [sample_user(config=cfg, rng=rng) for _ in range(10_000)]
 
    **Expected output:**
    ```
-   Litter-heavy segment category affinities:
-     dog_food: 0.199
-     cat_food: 0.300
-     litter:   0.401  ← Should be ~40%
-     toys:     0.100
-   ```
+	   Litter-heavy segment category affinities:
+	     dog_food: 0.053
+	     cat_food: 0.047
+	     litter:   0.851  ← Should be ~85%
+	     toys:     0.049
+	   ```
 
 ---
 
@@ -183,12 +183,12 @@ for _ in range(5_000):
 
    **Expected output:**
    ```
-   Query Type | Count | Empirical | Expected
-   ------------------------------------------
-   category   | 2,998 | 0.600     | 0.600
-   brand      | 1,012 | 0.202     | 0.200
-   generic    | 990   | 0.198     | 0.200
-   ```
+	   Query Type | Count | Empirical | Expected
+	   ------------------------------------------
+	   category   | 3,003 | 0.601     | 0.600
+	   brand      | 1,002 | 0.200     | 0.200
+	   generic    | 995   | 0.199     | 0.200
+	   ```
 
 2. **Intent rate by segment** (15 min)
    - For each segment, compute percentage of queries that have intent_category = "litter"
@@ -201,13 +201,13 @@ for _ in range(5_000):
 
    **Expected output:**
    ```
-   Segment        | Litter Query Rate | Expected Affinity
-   -------------------------------------------------------
-   price_hunter   | 0.273             | ~0.273
-   pl_lover       | 0.229             | ~0.227
-   premium        | 0.089             | ~0.091
-   litter_heavy   | 0.402             | ~0.400
-   ```
+	   Segment        | Litter Query Rate | Expected Affinity
+	   -------------------------------------------------------
+	   price_hunter   | 0.213             | ~0.200
+	   pl_lover       | 0.212             | ~0.200
+	   premium        | 0.045             | ~0.050
+	   litter_heavy   | 0.860             | ~0.850
+	   ```
 
 3. **Embedding similarity** (5 min)
    - For first 100 (user, query) pairs, compute cosine similarity between user.theta_emb and query.phi_emb
@@ -229,7 +229,7 @@ for _ in range(5_000):
 
 **Objective:** Verify same seed produces identical worlds.
 
-In a production A/B test, you do not get to re‑run yesterday’s traffic; you only see it once. Reproducible simulators are the opposite: you want to be able to rewind and replay exactly the same synthetic experiment to debug a policy change or a subtle regression. This exercise formalizes that discipline: with the same seed you must recover the same catalog and users, bit‑for‑bit, so that any change in results can be traced back to code or configuration—not to random noise.
+In a production A/B test, traffic cannot be replayed; we only see it once. Reproducible simulators are the opposite: they should allow us to rewind and replay exactly the same synthetic experiment to debug a policy change or a subtle regression. This exercise formalizes that discipline: with the same seed we must recover the same catalog and users, bit‑for‑bit, so that any change in results can be traced back to code or configuration—not to random noise.
 
 **Tasks:**
 
@@ -276,7 +276,7 @@ In a production A/B test, you do not get to re‑run yesterday’s traffic; you 
 
 **Background:** Policies robust to simulator variability often transfer better to production (sim-to-real transfer). We randomize parameters to create diverse training environments.
 
-Think of launching the same ranking policy in ten different countries or seasons: prices, margins, and customer mixes all shift, sometimes dramatically. If you tuned your agent to a single “average” configuration, it will often break in at least one of those markets. Domain randomization is the simulator analogue of that reality check: by sampling slightly different but plausible worlds, you force the policy to learn behaviors that survive small changes in catalog economics and audience composition.
+Think of launching the same ranking policy in ten different countries or seasons: prices, margins, and customer mixes all shift, sometimes dramatically. If we tune an agent to a single “average” configuration, it will often break in at least one of those markets. Domain randomization is the simulator analogue of that reality check: by sampling slightly different but plausible worlds, we force the policy to learn behaviors that survive small changes in catalog economics and audience composition.
 
 **Tasks:**
 
@@ -336,7 +336,7 @@ Think of launching the same ranking policy in ten different countries or seasons
 
 **Conceptual question:**
 - Why does training on randomized configurations improve robustness?
-- What's the trade-off between realism and randomization?
+- What is the trade-off between realism and randomization?
 
 **Answer (brief):** Randomization forces policy to learn features robust to distribution shift, avoiding overfitting to specific parameter values. Trade-off: Too much randomization creates unrealistic scenarios the policy will never see, wasting training data.
 
@@ -346,7 +346,7 @@ Think of launching the same ranking policy in ten different countries or seasons
 
 **Objective:** Apply formal statistical tests to generated data.
 
-Data scientists in large e‑commerce companies do not stop at eyeballing histograms; they routinely run goodness‑of‑fit tests to catch subtle drifts and modeling mistakes. If your simulated dog‑food prices stop looking lognormal, or your segment mix no longer matches the business definition, any conclusions drawn by RL agents become suspect. This exercise gives you a light‑weight version of that toolkit: formal tests that say “this looks consistent with our assumptions” rather than relying on visual judgment alone.
+Data scientists in large e‑commerce companies do not stop at eyeballing histograms; they routinely run goodness‑of‑fit tests to catch subtle drifts and modeling mistakes. If simulated dog‑food prices stop looking lognormal, or the segment mix no longer matches the business definition, any conclusions drawn by RL agents become suspect. This exercise gives us a light‑weight version of that toolkit: formal tests that say “this looks consistent with our assumptions” rather than relying on visual judgment alone.
 
 **Tasks:**
 
@@ -393,7 +393,7 @@ Data scientists in large e‑commerce companies do not stop at eyeballing histog
 
 **Objective:** Verify law of large numbers for lognormal price means.
 
-In Chapter 1 we treated expectations as mathematical objects. Here you get to see one of those expectations—**the mean of a lognormal price distribution**—emerge empirically as you increase catalog size. This is exactly the kind of sanity check production teams run before trusting summary dashboards or offline simulations.
+In Chapter 1 we treated expectations as mathematical objects. Here we get to see one of those expectations—**the mean of a lognormal price distribution**—emerge empirically as we increase catalog size. This is exactly the kind of sanity check production teams run before trusting summary dashboards or offline simulations.
 
 **Tasks:**
 
@@ -441,24 +441,24 @@ In Chapter 1 we treated expectations as mathematical objects. Here you get to se
        print(f"  N={N:6d}: mean=${m:6.2f}")
    ```
 
-   **Output (representative):**
-   ```
-   Mean dog-food prices by N:
-     N=   100: mean=$14.83
-     N=   500: mean=$14.41
-     N=  1000: mean=$14.35
-     N=  5000: mean=$14.31
-     N= 10000: mean=$14.30
-     N= 50000: mean=$14.29
+	   **Output (representative):**
+	   ```
+	   Mean dog-food prices by N:
+	     N=   100: mean=$13.83
+	     N=   500: mean=$14.02
+	     N=  1000: mean=$14.54
+	     N=  5000: mean=$14.62
+	     N= 10000: mean=$14.54
+	     N= 50000: mean=$14.55
 
-   Theoretical mean (e^{2.6 + 0.4^2/2}) ≈ $14.29
-   ```
+	   Theoretical mean (e^{2.6 + 0.4^2/2}) ≈ $14.59
+	   ```
 
    As $N$ grows, the empirical mean converges to the theoretical value, illustrating the law of large numbers in the concrete setting of catalog statistics.
 
 2. **Conceptual reflection** (5 min)
    - Why does the simulator default to $N = 10{,}000$ products?
-   - What breaks if you only use $N = 100$ products for RL training?
+   - What breaks if we only use $N = 100$ products for RL training?
 
    **Hint:** Think about variance of estimates, coverage of rare but important products, and the stability of downstream policy gradients.
 
@@ -468,7 +468,7 @@ In Chapter 1 we treated expectations as mathematical objects. Here you get to se
 
 **Objective:** Integrate catalog, users, and queries into a complete world generation workflow.
 
-In production settings, teams often maintain nightly “world snapshots”: rolled‑up statistics and JSON dumps that downstream dashboards, notebooks, and training jobs consume. The goal is not to store every click, but to have a coherent view of “what the world looked like” on a given day. This lab has the same flavor. You will wire together catalog, user, and query generation and materialize a small, self‑contained snapshot that other chapters—and future you—can reuse without regenerating everything from scratch.
+In production settings, teams often maintain nightly “world snapshots”: rolled‑up statistics and JSON dumps that downstream dashboards, notebooks, and training jobs consume. The goal is not to store every click, but to have a coherent view of “what the world looked like” on a given day. This lab has the same flavor. We wire together catalog, user, and query generation and materialize a small, self‑contained snapshot that other chapters—and future experiments—can reuse without regenerating everything from scratch.
 
 **Task:**
 
@@ -547,7 +547,7 @@ if __name__ == "__main__":
 
 **Objective:** Visualize product embeddings in 2D using dimensionality reduction.
 
-Modern search teams routinely project high‑dimensional embeddings down to two or three dimensions to debug models and explain behavior to stakeholders. If “dog food” and “litter” products are hopelessly entangled in embedding space, no amount of clever ranking logic will fully fix relevance. This bonus challenge gives you the simulator version of that diagnostic: you look at the learned‑by‑construction clusters and convince yourself that categories are separated the way a human merchandiser would expect.
+Modern search teams routinely project high‑dimensional embeddings down to two or three dimensions to debug models and explain behavior to stakeholders. If “dog food” and “litter” products are hopelessly entangled in embedding space, no amount of clever ranking logic will fully fix relevance. This bonus challenge gives us the simulator version of that diagnostic: we look at the learned‑by‑construction clusters and convince ourselves that categories are separated the way a human merchandiser would expect.
 
 **Tasks:**
 
@@ -620,7 +620,7 @@ plt.show()
 
 ---
 
-## Testing Your Solutions
+## Testing Solutions
 
 Run all exercises in a Jupyter notebook or as Python scripts. Expected total runtime: ~20 minutes (excluding optional exercises).
 
@@ -640,11 +640,11 @@ Run all exercises in a Jupyter notebook or as Python scripts. Expected total run
 
 1. **Realism vs. Simplicity**: Our simulator uses lognormal prices and linear margins. What real-world phenomena do we miss? (seasonality, promotions, competitor pricing)
 
-2. **Segment heterogeneity**: We have 4 segments. Production might have 100+. How would you:
+2. **Segment heterogeneity**: We have 4 segments. Production might have 100+. How should we:
    - Learn segments from data (clustering, mixture models)?
    - Handle continuous preference distributions instead of discrete segments?
 
-3. **Sim-to-real gap**: If our production transfer fails (sim-trained policy performs poorly), what debugging steps would you take?
+3. **Sim-to-real gap**: If production transfer fails (sim-trained policy performs poorly), what debugging steps should we take?
    - Compare distributions (price, CTR, query types)
    - Check feature coverage (are production features in simulator?)
    - Evaluate on randomized configurations (domain randomization)
@@ -664,7 +664,7 @@ Run all exercises in a Jupyter notebook or as Python scripts. Expected total run
 
 **End of Chapter 4 Exercises & Labs**
 
-These exercises reinforce the generative world model concepts from Chapter 4. By completing them, you'll have hands-on experience with:
+These exercises reinforce the generative world model concepts from Chapter 4. By completing them, we will have hands-on experience with:
 - Catalog generation and statistical validation
 - User segment modeling and preference distributions
 - Query intent coupling and embedding similarity

@@ -50,7 +50,7 @@ PANDOC_COMMON_FLAGS += --lua-filter=$(CALLOUT_FILTER)
 endif
 
 # Book directories to process (can be extended to other doc trees if desired).
-BOOK_DIRS := docs/book/drafts docs/book/reviews docs/book/revisions docs/book/final
+BOOK_DIRS := $(wildcard docs/book/drafts docs/book/reviews docs/book/revisions docs/book/final)
 
 # Discover Markdown sources; exclude backups.
 MD_FILES := $(shell find $(BOOK_DIRS) -type f -name '*.md' \( -not -name '*.bak.md' \) \( -not -name '*.bak.*' \))
@@ -68,6 +68,8 @@ help:
 	@echo "  make pdf            Build PDFs for all book markdowns"
 	@echo "  make pdf-drafts     Build PDFs for drafts only"
 	@echo "  make clean-pdf      Remove generated PDFs in book directories"
+	@echo ""
+	@echo "  make audit-ch00-ch03  Audit Part I alignment (voice/refs/artifacts/citations)"
 	@echo ""
 	@echo "  make tex            Generate LaTeX for all chapters"
 	@echo "  make tex-ch01       Generate LaTeX for Chapter 1 only"
@@ -107,6 +109,16 @@ endif
 validate-kg:
 	@echo "[kg] Validating docs/knowledge_graph/graph.yaml"
 	@$(PY) scripts/validate_knowledge_graph.py --graph docs/knowledge_graph/graph.yaml --schema docs/knowledge_graph/schema.yaml
+
+# -----------------------------------------------------------------------------
+# Ch00–Ch03 alignment audit (Part I)
+# -----------------------------------------------------------------------------
+
+.PHONY: audit-ch00-ch03
+
+audit-ch00-ch03:
+	@echo "[audit] Ch00–Ch03 alignment"
+	@$(PY) scripts/audit_ch00_ch03_alignment.py
 
 # -----------------------------------------------------------------------------
 # LaTeX Generation (Markdown → .tex)

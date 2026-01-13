@@ -7,7 +7,7 @@ This script demonstrates the key concepts from Chapter 4:
 - Query generation coupled to user affinities
 - Deterministic reproducibility
 
-Run with: python scripts/ch04_demo.py
+Run with: uv run python scripts/ch04/ch04_demo.py
 """
 
 import numpy as np

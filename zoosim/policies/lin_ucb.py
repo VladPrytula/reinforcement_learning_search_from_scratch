@@ -1,9 +1,9 @@
-"""LinUCB (Linear Upper Confidence Bound) for contextual bandits.
+r"""LinUCB (Linear Upper Confidence Bound) for contextual bandits.
 
 Mathematical basis:
 - [ALG-6.2] LinUCB algorithm
 - [EQ-6.15] UCB action selection rule
-- [THM-6.2] Regret bound O(√(dT log T))
+- [THM-6.2] Regret bound $O(d \sqrt{M T \log T})$
 
 Implements frequentist upper confidence bound exploration with deterministic
 action selection. Maintains ridge regression estimates and selects the action
@@ -89,7 +89,7 @@ class LinUCB:
         """Initialize LinUCB policy.
 
         Args:
-            templates: List of M boost templates ([DEF-6.1])
+            templates: List of M boost templates ([DEF-6.1.1])
             feature_dim: Feature dimension d
             config: Optional configuration (uses defaults if None)
         """

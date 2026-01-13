@@ -4,51 +4,39 @@
 
 ## 3.1 Motivation: From Single Queries to Sequential Sessions
 
-**The limitation of bandits.** Chapter 1 formalized search ranking as a contextual bandit: observe context $x$ (user segment, query type), select action $a$ (boost weights), receive immediate reward $R(x, a, \omega)$. This is a **single-step** framework: each search query is independent, and we optimize immediate GMV + CM2 + clicks.
+Chapter 1 formalized search ranking as a contextual bandit: observe context $x$ (user segment, query type), select action $a$ (boost weights), and observe an immediate reward $R(x, a, \omega)$. This abstraction is appropriate when each query can be treated as an independent decision, and when myopic objectives (GMV, CM2, clicks) are sufficient proxies for long-run value.
 
-**Real search is sequential.** But real e-commerce sessions are not isolated queries:
+In deployed systems, user behavior is sequential. Actions taken on one query influence the distribution of future queries, clicks, and purchases within a session, and they can shape return probability across sessions. A user may refine a query after inspecting a ranking; a cart may accumulate over several steps; satisfaction may drift and eventually trigger abandonment. These are precisely the phenomena that a single-step model cannot represent.
 
-- A user searches "cat food," clicks on a premium product (high price), doesn't purchase, then searches "cat food discount" ten minutes later
-- A bulk buyer adds three items to cart over multiple queries, then abandons at checkout when shipping costs appear
-- A premium customer returns weekly, each session building satisfaction and loyalty (or eroding them if relevance decays)
+Mathematically, the missing ingredient is **state**: a variable $S_t$ that summarizes the relevant history at time $t$ (cart, browsing context, latent satisfaction, recency). Once we represent the interaction as a controlled stochastic process $(S_0, A_0, R_0, S_1, A_1, R_1, \ldots)$, the central objects of reinforcement learning become well-defined:
 
-**What single-step rewards miss:**
+- **Value functions** $V^\pi(s)$ and $Q^\pi(s,a)$, which measure expected cumulative reward under a policy $\pi$
+- **Bellman operators** $\mathcal{T}^\pi$ and $\mathcal{T}$, which encode the dynamic programming principle as fixed-point equations
 
-1. **Retention dynamics**: A policy that maximizes immediate GMV by showing aggressive discounts may erode brand perception, reducing next-week's return probability
-2. **Satisfaction evolution**: User satisfaction $S_t$ evolves stochastically based on clicks, purchases, and relevance---today's poor ranking affects tomorrow's abandonment risk
-3. **Inter-query dependencies**: Cart state, browsing history, and implicit preferences persist across queries within a session
+The guiding question of this chapter is structural: under what assumptions does repeated Bellman backup converge, and why does it converge to the optimal value function? The answer is an operator-theoretic one: the discounted Bellman operator is a contraction in the sup-norm, so it has a unique fixed point and value iteration converges to it.
 
-**Why we need multi-step formalism.** To model these phenomena rigorously, we need:
+We develop these foundations in the following order:
 
-- **Stochastic processes**: Sequences of random variables $(S_0, A_0, R_0, S_1, A_1, R_1, \ldots)$ representing states, actions, rewards over time
-- **Markov Decision Processes (MDPs)**: The mathematical framework for sequential decision-making under uncertainty
-- **Value functions**: Expected cumulative rewards $V^\pi(s) = \mathbb{E}[\sum_{t=0}^\infty \gamma^t R_t \mid S_0 = s, \pi]$, accounting for future consequences
-- **Bellman operators**: Fixed-point equations $V^* = \mathcal{T} V^*$ that characterize optimal policies
+1. Section 3.2--3.3: Stochastic processes, filtrations, stopping times (measure-theoretic rigor for sequential randomness)
+2. Section 3.4: Markov Decision Processes (formal definition, standard Borel assumptions)
+3. Section 3.5: Bellman operators and value functions (from intuition to operators on function spaces)
+4. Section 3.6: Contraction mappings and Banach fixed-point theorem (complete proof, step-by-step)
+5. Section 3.7: Value iteration convergence (why dynamic programming works)
+6. Section 3.8: Connection to bandits (the $\gamma = 0$ special case from Chapter 1)
+7. Section 3.9: Computational verification (NumPy experiments)
+8. Section 3.10: RL bridges (preview of Chapter 11's multi-episode formulation)
 
-**This chapter's goal.** We build the **operator-theoretic foundations** for reinforcement learning:
-
-1. **Section 3.2--3.3**: Stochastic processes, filtrations, stopping times (measure-theoretic rigor for sequential randomness)
-2. **Section 3.4**: Markov Decision Processes (formal definition, standard Borel assumptions)
-3. **Section 3.5**: Bellman operators and value functions (from intuition to operators on function spaces)
-4. **Section 3.6**: Contraction mappings and Banach fixed-point theorem (**complete proof**, step-by-step)
-5. **Section 3.7**: Value iteration convergence (why dynamic programming works)
-6. **Section 3.8**: Connection to bandits (the $\gamma = 0$ special case from Chapter 1)
-7. **Section 3.9**: Computational verification (NumPy experiments)
-8. **Section 3.10**: RL bridges (preview of Chapter 11's multi-episode formulation)
-
-By the end, you will understand:
+By the end of this chapter, we understand:
 
 - Why value iteration converges exponentially fast (contraction mapping theorem)
 - How to prove convergence of RL algorithms rigorously (fixed-point theory)
 - When the bandit formulation is sufficient and when MDPs are necessary
 - The mathematical foundations that justify TD-learning, Q-learning, and policy gradients
 
-**Prerequisites.** This chapter assumes:
+Prerequisites. This chapter assumes:
 
 - Measure-theoretic probability from Chapter 2 (probability spaces, random variables, conditional expectation)
-- Familiarity with supremum norm and function spaces (we'll introduce contraction mappings from first principles)
-
-Let's begin.
+- Familiarity with supremum norm and function spaces (we will introduce contraction mappings from first principles)
 
 ---
 
@@ -71,6 +59,8 @@ Let $(\Omega, \mathcal{F}, \mathbb{P})$ be a probability space, $T \subseteq \ma
 
 Each component is a random variable, and their joint distribution is induced by the policy $\pi$ and environment dynamics $P$.
 
+**Standing convention (Discrete time).** Throughout this chapter we work in discrete time with index set $T=\mathbb{N}$. Continuous-time analogues require additional measurability notions (e.g., predictable processes and optional $\sigma$-algebras), which we do not pursue here.
+
 ---
 
 ### 3.2.1 Filtrations and Adapted Processes
@@ -90,13 +80,19 @@ $$
 $$
 the smallest $\sigma$-algebra making all $X_s$ with $s \leq t$ measurable. This represents "all information revealed by observing $(X_0, X_1, \ldots, X_t)$."
 
+We write
+$$
+\mathcal{F}_\infty := \sigma\left(\bigcup_{t \in T} \mathcal{F}_t\right)
+$$
+for the terminal $\sigma$-algebra generated by the filtration.
+
 **Definition 3.2.3** (Adapted Process) {#DEF-3.2.3}
 
 A stochastic process $(X_t)$ is **adapted** to the filtration $(\mathcal{F}_t)$ if $X_t$ is $\mathcal{F}_t$-measurable for all $t \in T$.
 
 **Intuition**: Adaptedness means "the value of $X_t$ is determined by information available at time $t$." This is the mathematical formalization of **causality**: $X_t$ cannot depend on future information $\mathcal{F}_s$ with $s > t$.
 
-**Remark 3.2.1** (Adapted vs. predictable). In continuous-time stochastic calculus, there's a stronger notion called **predictable** (measurable with respect to $\mathcal{F}_{t-}$, the left limit). For discrete-time RL, adapted suffices.
+**Remark 3.2.1** (Adapted vs. predictable). In continuous-time stochastic calculus, there is a stronger notion called **predictable** (measurable with respect to $\mathcal{F}_{t-}$, the left limit). For discrete-time RL, adapted suffices.
 
 **Remark 3.2.2** (RL policies must be adapted). In reinforcement learning, a policy $\pi(a | h_t)$ at time $t$ must depend only on the **history** $h_t = (s_0, a_0, r_0, \ldots, s_t)$ available at $t$, not on future states $s_{t+1}, s_{t+2}, \ldots$. This is precisely the adaptedness condition: $\pi_t$ is $\mathcal{F}_t$-measurable where $\mathcal{F}_t = \sigma(h_t)$.
 
@@ -111,33 +107,37 @@ $$
 \{\tau \leq t\} \in \mathcal{F}_t \quad \text{for all } t \in T.
 $$
 
-**Intuition**: A stopping time is a **random time** whose occurrence is determined by information available *up to that time*. The event "$\tau$ has occurred by time $t$" must be $\mathcal{F}_t$-measurable---you can decide whether to stop using only observations $(X_0, \ldots, X_t)$, without peeking into the future.
+**Intuition**: A stopping time is a **random time** whose occurrence is determined by information available *up to that time*. The event "$\tau$ has occurred by time $t$" must be $\mathcal{F}_t$-measurable---we can decide whether to stop using only observations $(X_0, \ldots, X_t)$, without peeking into the future.
 
 **Example 3.2.4** (Session abandonment). Define:
 $$
 \tau := \inf\{t \geq 0 : S_t < \theta\},
 $$
-the first time user satisfaction $S_t$ drops below threshold $\theta$. This is a stopping time: to check "$\tau \leq t$" (user has abandoned by time $t$), we only need to observe $(S_0, \ldots, S_t)$. We don't need to know future satisfaction $S_{t+1}, S_{t+2}, \ldots$.
+the first time user satisfaction $S_t$ drops below threshold $\theta$. This is a stopping time: to check "$\tau \leq t$" (user has abandoned by time $t$), we only need to observe $(S_0, \ldots, S_t)$. We do not need to know future satisfaction $S_{t+1}, S_{t+2}, \ldots$.
 
 **Example 3.2.5** (Purchase event). Define $\tau$ as the first time the user makes a purchase. This is a stopping time: the event "$\tau = t$" means "user purchased at time $t$, having not purchased before"---determined by history up to $t$.
 
-**Non-Example 3.2.6** (Last time satisfaction peaks). Define $\tau := \sup\{t : S_t = \max_{s \leq T} S_s\}$ (the last time satisfaction reaches its maximum over $[0, T]$). This is **NOT** a stopping time: to determine "$\tau = t$," you need to know future values $S_{t+1}, \ldots, S_T$ to verify satisfaction never exceeds $S_t$ afterward.
+**Non-Example 3.2.6** (Last time satisfaction peaks). Define $\tau := \sup\{t : S_t = \max_{s \leq T} S_s\}$ (the last time satisfaction reaches its maximum over $[0, T]$). This is **NOT** a stopping time: to determine "$\tau = t$," we need to know future values $S_{t+1}, \ldots, S_T$ to verify satisfaction never exceeds $S_t$ afterward.
 
 **Proposition 3.2.1** (Measurability of stopped processes) {#PROP-3.2.1}
 
-If $(X_t)$ is adapted to $(\mathcal{F}_t)$ and $\tau$ is a stopping time, then $X_\tau \mathbf{1}_{\{\tau < \infty\}}$ is $\mathcal{F}_\infty$-measurable.
+Assume $T=\mathbb{N}$. If $(X_t)$ is adapted to $(\mathcal{F}_t)$ and $\tau$ is a stopping time, then $X_\tau \mathbf{1}_{\{\tau < \infty\}}$ is $\mathcal{F}_\infty$-measurable.
 
 *Proof.*
-**Step 1** (Discretization). For discrete time $T = \mathbb{N}$, write:
+**Step 1** (Indicator decomposition). Write:
 $$
-X_\tau = \sum_{t=0}^\infty X_t \mathbf{1}_{\{\tau = t\}}.
+X_\tau \mathbf{1}_{\{\tau < \infty\}} = \sum_{t=0}^\infty X_t \mathbf{1}_{\{\tau = t\}}.
 $$
 
-**Step 2** (Measurability of indicators). Since $\tau$ is a stopping time, $\{\tau = t\} = \{\tau \leq t\} \cap \{\tau \leq t-1\}^c \in \mathcal{F}_t \subseteq \mathcal{F}_\infty$.
+**Step 2** (Measurability of indicators). For each $t \in \mathbb{N}$, the event $\{\tau = t\}$ belongs to $\mathcal{F}_t$. Indeed, $\{\tau = 0\} = \{\tau \leq 0\} \in \mathcal{F}_0$, and for $t \geq 1$,
+$$
+\{\tau = t\} = \{\tau \leq t\} \cap \{\tau \leq t-1\}^c \in \mathcal{F}_t,
+$$
+since $\{\tau \leq t\} \in \mathcal{F}_t$ and $\{\tau \leq t-1\} \in \mathcal{F}_{t-1} \subseteq \mathcal{F}_t$.
 
 **Step 3** (Measurability of $X_t \mathbf{1}_{\{\tau = t\}}$). Since $X_t$ is $\mathcal{F}_t$-measurable and $\{\tau = t\} \in \mathcal{F}_t$, the product $X_t \mathbf{1}_{\{\tau = t\}}$ is $\mathcal{F}_t$-measurable, hence $\mathcal{F}_\infty$-measurable.
 
-**Step 4** (Countable sum). A countable sum of measurable functions is measurable, so $X_\tau = \sum_{t=0}^\infty X_t \mathbf{1}_{\{\tau = t\}}$ is $\mathcal{F}_\infty$-measurable. $\square$
+**Step 4** (Countable sum). A countable sum of measurable functions is measurable, so the right-hand side of Step 1 is $\mathcal{F}_\infty$-measurable; hence $X_\tau \mathbf{1}_{\{\tau < \infty\}}$ is $\mathcal{F}_\infty$-measurable. $\square$
 
 **Remark 3.2.3** (The indicator technique). The proof uses the **indicator decomposition**: write a stopped process as a sum over stopping events. This technique will reappear when proving optional stopping theorems for martingales (used in stochastic approximation convergence proofs, deferred to later chapters).
 
@@ -151,7 +151,7 @@ Before defining MDPs, we introduce **Markov chains**---stochastic processes with
 
 **Definition 3.3.1** (Markov Chain) {#DEF-3.3.1}
 
-A discrete-time stochastic process $(X_t)_{t \in \mathbb{N}}$ taking values in a countable or general measurable space $(E, \mathcal{E})$ is a **Markov chain** if:
+A discrete-time stochastic process $(X_t)_{t \in \mathbb{N}}$ taking values in a countable or general measurable space $(E, \mathcal{E})$ is a **Markov chain** (with respect to its natural filtration $\mathcal{F}_t := \sigma(X_0, \ldots, X_t)$) if:
 $$
 \mathbb{P}(X_{t+1} \in A \mid \mathcal{F}_t) = \mathbb{P}(X_{t+1} \in A \mid X_t) \quad \text{for all } A \in \mathcal{E}, \, t \geq 0.
 \tag{3.1}
@@ -203,26 +203,32 @@ A **Markov Decision Process (MDP)** is a tuple $(\mathcal{S}, \mathcal{A}, P, R,
 
 1. $\mathcal{S}$ is the **state space** (a standard Borel space)
 2. $\mathcal{A}$ is the **action space** (a standard Borel space)
-3. $P: \mathcal{S} \times \mathcal{A} \times \mathcal{B}(\mathcal{S}) \to [0, 1]$ is the **transition kernel**: $P(B \mid s, a)$ is the probability of transitioning to state set $B \subseteq \mathcal{S}$ when taking action $a$ in state $s$
+3. $P(\cdot \mid s,a)$ is a **Markov kernel** from $(\mathcal{S}\times\mathcal{A}, \mathcal{B}(\mathcal{S})\otimes\mathcal{B}(\mathcal{A}))$ to $(\mathcal{S}, \mathcal{B}(\mathcal{S}))$: $P(B \mid s,a)$ is the probability of transitioning to a Borel set $B \subseteq \mathcal{S}$ when taking action $a$ in state $s$
 4. $R: \mathcal{S} \times \mathcal{A} \times \mathcal{S} \to \mathbb{R}$ is the **reward function**: $R(s, a, s')$ is the reward obtained from transition $(s, a, s')$
 5. $\gamma \in [0, 1)$ is the **discount factor**
 
 **Structural assumptions**:
 - For each $(s, a)$, $B \mapsto P(B \mid s, a)$ is a probability measure on $(\mathcal{S}, \mathcal{B}(\mathcal{S}))$
 - For each $B \in \mathcal{B}(\mathcal{S})$, $(s, a) \mapsto P(B \mid s, a)$ is measurable
-- $R$ is bounded: $|R(s, a, s')| \leq R_{\max} < \infty$ for all $(s, a, s')$
+- $R$ is bounded and measurable: $|R(s, a, s')| \leq R_{\max} < \infty$ for all $(s, a, s')$
 
 **Notation**:
-- We often write $r(s, a) := \mathbb{E}_{s' \sim P(\cdot|s,a)}[R(s, a, s')]$ for the expected immediate reward
+- We write the bounded measurable one-step expected reward as
+  $$
+  r(s,a) := \int_{\mathcal{S}} R(s,a,s')\,P(ds'\mid s,a).
+  $$
+  When $\mathcal{S}$ is finite, integrals against $P(\cdot\mid s,a)$ reduce to sums: $\int_{\mathcal{S}} f(s')\,P(ds'\mid s,a)=\sum_{s'\in\mathcal{S}}P(s'\mid s,a)f(s')$.
 - When $\mathcal{S}$ and $\mathcal{A}$ are finite, we represent $P$ as a tensor $P \in [0,1]^{|\mathcal{S}| \times |\mathcal{A}| \times |\mathcal{S}|}$ with $P_{s,a,s'} = P(s' \mid s, a)$
 
 **Definition 3.4.2** (Policy) {#DEF-3.4.2}
 
-A **(stationary Markov) policy** is a measurable mapping $\pi: \mathcal{S} \times \mathcal{A} \to [0, 1]$ such that:
-- For each $s \in \mathcal{S}$, $a \mapsto \pi(a \mid s)$ is a probability distribution on $\mathcal{A}$
-- For each $A \in \mathcal{B}(\mathcal{A})$, $s \mapsto \pi(A \mid s)$ is $\mathcal{B}(\mathcal{S})$-measurable
+A **(stationary Markov) policy** is a **stochastic kernel** $\pi(\cdot \mid s)$ from $(\mathcal{S}, \mathcal{B}(\mathcal{S}))$ to $(\mathcal{A}, \mathcal{B}(\mathcal{A}))$ such that:
+- For each $s \in \mathcal{S}$, $B \mapsto \pi(B \mid s)$ is a probability measure on $(\mathcal{A}, \mathcal{B}(\mathcal{A}))$
+- For each $B \in \mathcal{B}(\mathcal{A})$, $s \mapsto \pi(B \mid s)$ is $\mathcal{B}(\mathcal{S})$-measurable
 
-**Deterministic policies**: A policy is deterministic if $\pi(\cdot | s)$ is a point mass for all $s$. We identify deterministic policies with measurable functions $\pi: \mathcal{S} \to \mathcal{A}$.
+We write integrals against the policy as $\pi(da \mid s)$. When $\mathcal{A}$ is finite, $\pi(a \mid s)$ is a mass function and $\int_{\mathcal{A}} f(a)\,\pi(da\mid s) = \sum_{a\in\mathcal{A}} f(a)\,\pi(a\mid s)$.
+
+**Deterministic policies**: A policy is deterministic if $\pi(\cdot \mid s)$ is a point mass for all $s$. We identify deterministic policies with measurable functions $\pi: \mathcal{S} \to \mathcal{A}$, with the induced kernel $\pi(da\mid s) = \delta_{\pi(s)}(da)$.
 
 **Assumption 3.4.1** (Markov assumption). {#ASM-3.4.1}
 
@@ -230,7 +236,7 @@ The MDP satisfies:
 1. **Transition Markov property**: $\mathbb{P}(S_{t+1} \in B \mid s_0, a_0, \ldots, s_t, a_t) = P(B \mid s_t, a_t)$
 2. **Reward Markov property**: $\mathbb{E}[R_t \mid s_0, a_0, \ldots, s_t, a_t, s_{t+1}] = R(s_t, a_t, s_{t+1})$
 
-These properties ensure that **state $s_t$ summarizes all past information relevant for predicting the future**. This is crucial: if the state doesn't satisfy the Markov property, the MDP framework breaks down.
+These properties ensure that **state $s_t$ summarizes all past information relevant for predicting the future**. This is crucial: if the state does not satisfy the Markov property, the MDP framework breaks down.
 
 **Remark 3.4.1** (State design in practice). Real systems rarely have perfectly Markovian observations. Practitioners construct **augmented states** to restore the Markov property:
 
@@ -238,7 +244,7 @@ These properties ensure that **state $s_t$ summarizes all past information relev
 - **LSTM hidden states**: recurrent network state becomes part of MDP state
 - **User history embeddings**: include session features (past clicks, queries) in context vector
 
-This is engineering, not mathematics---but it's essential for applying MDP theory to reality.
+This is a modeling choice rather than a theorem, but it is essential for applying MDP theory in practice.
 
 ---
 
@@ -260,6 +266,7 @@ where the expectation is over trajectories $(S_0, A_0, R_0, S_1, A_1, R_1, \ldot
 - $R_t = R(S_t, A_t, S_{t+1})$ (rewards realized from transitions)
 
 **Notation**: The superscript $\mathbb{E}^\pi$ emphasizes that the expectation is under the probability measure $\mathbb{P}^\pi$ induced by policy $\pi$ and dynamics $P$.
+Existence and uniqueness of this trajectory measure (built from the initial state, the policy kernel, and the transition kernel) can be formalized via the Ionescu--Tulcea extension theorem; Chapter 2 gives the measurable construction of MDP trajectories.
 
 **Well-definedness**: Since $\gamma < 1$ and $|R_t| \leq R_{\max}$, the series converges absolutely:
 $$
@@ -281,12 +288,12 @@ This is the expected return starting from state $s$, taking action $a$, then fol
 
 **Relationship**:
 $$
-V^\pi(s) = \mathbb{E}_{a \sim \pi(\cdot|s)}[Q^\pi(s, a)] = \sum_{a \in \mathcal{A}} \pi(a|s) Q^\pi(s, a),
+V^\pi(s) = \int_{\mathcal{A}} Q^\pi(s, a)\,\pi(da \mid s),
 \tag{3.4}
 $$
 {#EQ-3.4}
 
-where the sum is over finite action spaces (replace with integral for continuous $\mathcal{A}$).
+When $\mathcal{A}$ is finite, the integral reduces to the familiar sum $\sum_{a\in\mathcal{A}} \pi(a\mid s) Q^\pi(s,a)$.
 
 **Definition 3.4.5** (Optimal Value Functions) {#DEF-3.4.5}
 
@@ -304,12 +311,9 @@ Q^*(s, a) := \sup_\pi Q^\pi(s, a).
 $$
 {#EQ-3.6}
 
-**Remark 3.4.2** (Existence of optimal policies). Under our standing assumptions (standard Borel spaces, bounded rewards), there exists a **deterministic stationary policy** $\pi^*$ such that:
-$$
-V^{\pi^*}(s) = V^*(s) \quad \text{for all } s \in \mathcal{S}.
-$$
+**Remark 3.4.2** (Existence of optimal policies and measurable selection). In finite action spaces, optimal actions exist statewise and the Bellman optimality operator can be written with $\max$. In general Borel state-action spaces, the optimality operator is stated with $\sup$, and existence of a **deterministic stationary** optimal policy can require additional topological conditions (e.g., compact $\mathcal{A}$ and upper semicontinuity) or a measurable selection theorem.
 
-This is a deep result from [@puterman:mdps:2014, Theorem 6.2.10]. The proof uses measurable selection theorems and is beyond our scope. The challenge is that $\arg\max_a [r(s,a) + \gamma \sum_{s'} P(s'|s,a) V^*(s')]$ defines a **set-valued mapping** $s \mapsto \mathcal{A}^*(s)$---there may be multiple optimal actions at each state. Selecting a single action *measurably* from this set requires tools from descriptive set theory, specifically the Kuratowski--Ryll-Nardzewski measurable selection theorem. For finite action spaces this is trivial (just pick the smallest index among optimal actions); for continuous $\mathcal{A}$ with uncountable optimal sets, it requires care. The key takeaway: **we can restrict attention to deterministic policies** when seeking optimal policies in discounted MDPs.
+Chapter 2 discusses this fine print and gives a measurable formulation of the Bellman operators; see also [@puterman:mdps:2014, Theorem 6.2.10] for a comprehensive treatment. In this chapter, we focus on statements and proofs that do not require selecting maximizers: operator well-definedness on bounded measurable functions and contraction in $\|\cdot\|_\infty$.
 
 ---
 
@@ -321,12 +325,13 @@ The Bellman equations provide **recursive characterizations** of value functions
 
 For any policy $\pi$, the value function $V^\pi$ satisfies:
 $$
-V^\pi(s) = \sum_{a} \pi(a|s) \left[ r(s,a) + \gamma \sum_{s'} P(s'|s,a) V^\pi(s') \right],
+V^\pi(s)
+= \int_{\mathcal{A}}\left[r(s,a) + \gamma \int_{\mathcal{S}} V^\pi(s')\,P(ds' \mid s,a)\right]\pi(da\mid s),
 \tag{3.7}
 $$
 {#EQ-3.7}
 
-where $r(s,a) = \mathbb{E}_{s' \sim P(\cdot|s,a)}[R(s,a,s')]$.
+where $r(s,a) = \int_{\mathcal{S}} R(s,a,s')\,P(ds'\mid s,a)$ as in [DEF-3.4.1].
 
 Equivalently, in operator notation:
 $$
@@ -337,7 +342,8 @@ $$
 
 where $\mathcal{T}^\pi$ is the **Bellman expectation operator** for policy $\pi$:
 $$
-(\mathcal{T}^\pi V)(s) := \sum_{a} \pi(a|s) \left[ r(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s') \right].
+(\mathcal{T}^\pi V)(s)
+:= \int_{\mathcal{A}}\left[r(s,a) + \gamma \int_{\mathcal{S}} V(s')\,P(ds' \mid s,a)\right]\pi(da\mid s).
 \tag{3.9}
 $$
 {#EQ-3.9}
@@ -351,7 +357,6 @@ $$
 Separate the first reward from the tail:
 $$
 V^\pi(s) = \mathbb{E}^\pi\left[R_0 + \gamma \sum_{t=1}^\infty \gamma^{t-1} R_t \,\bigg|\, S_0 = s\right].
-\tag{*}
 $$
 
 **Step 2** (Tower property). Apply the law of total expectation (tower property) conditioning on $(A_0, S_1)$:
@@ -364,14 +369,14 @@ $$
 \mathbb{E}^\pi\left[R_0 + \gamma \sum_{t=1}^\infty \gamma^{t-1} R_t \,\bigg|\, S_0=s, A_0=a, S_1=s'\right] = R(s,a,s') + \gamma V^\pi(s').
 $$
 
-**Step 4** (Integrate over actions and next states). Taking expectations over $A_0 \sim \pi(\cdot|s)$ and $S_1 \sim P(\cdot|s,a)$:
+**Step 4** (Integrate over actions and next states). Taking expectations over $A_0 \sim \pi(\cdot\mid s)$ and $S_1 \sim P(\cdot\mid s,a)$:
 $$
-V^\pi(s) = \sum_a \pi(a|s) \sum_{s'} P(s'|s,a) \left[R(s,a,s') + \gamma V^\pi(s')\right].
+V^\pi(s) = \int_{\mathcal{A}}\int_{\mathcal{S}} \left[R(s,a,s') + \gamma V^\pi(s')\right]\,P(ds'\mid s,a)\,\pi(da\mid s).
 $$
 
 Rearranging:
 $$
-V^\pi(s) = \sum_a \pi(a|s) \left[\underbrace{\sum_{s'} P(s'|s,a) R(s,a,s')}_{=: r(s,a)} + \gamma \sum_{s'} P(s'|s,a) V^\pi(s')\right],
+V^\pi(s) = \int_{\mathcal{A}}\left[\underbrace{\int_{\mathcal{S}} R(s,a,s')\,P(ds'\mid s,a)}_{=: r(s,a)} + \gamma \int_{\mathcal{S}} V^\pi(s')\,P(ds'\mid s,a)\right]\pi(da\mid s),
 $$
 which is [EQ-3.7]. $\square$
 
@@ -381,7 +386,7 @@ which is [EQ-3.7]. $\square$
 
 The optimal value function $V^*$ satisfies:
 $$
-V^*(s) = \max_{a \in \mathcal{A}} \left[ r(s,a) + \gamma \sum_{s'} P(s'|s,a) V^*(s') \right],
+V^*(s) = \sup_{a \in \mathcal{A}}\left[r(s,a) + \gamma \int_{\mathcal{S}} V^*(s')\,P(ds'\mid s,a)\right],
 \tag{3.10}
 $$
 {#EQ-3.10}
@@ -395,37 +400,41 @@ $$
 
 where $\mathcal{T}$ is the **Bellman optimality operator**:
 $$
-(\mathcal{T} V)(s) := \max_{a \in \mathcal{A}} \left[ r(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s') \right].
+(\mathcal{T} V)(s) := \sup_{a \in \mathcal{A}}\left[r(s,a) + \gamma \int_{\mathcal{S}} V(s')\,P(ds'\mid s,a)\right].
 \tag{3.12}
 $$
 {#EQ-3.12}
 
 *Proof.*
-**Step 1** (Upper bound). For any policy $\pi$,
+**Step 1** (Control dominates evaluation). For any bounded measurable function $V$ and any policy $\pi$, we have, for each $s\in\mathcal{S}$,
 $$
-V^*(s) \geq V^\pi(s) = \sum_a \pi(a|s) [r(s,a) + \gamma \sum_{s'} P(s'|s,a) V^\pi(s')].
+(\mathcal{T}^\pi V)(s)
+= \int_{\mathcal{A}}\left[r(s,a) + \gamma \int_{\mathcal{S}} V(s')\,P(ds'\mid s,a)\right]\pi(da\mid s)
+\le \sup_{a\in\mathcal{A}}\left[r(s,a) + \gamma \int_{\mathcal{S}} V(s')\,P(ds'\mid s,a)\right]
+= (\mathcal{T}V)(s).
 $$
 
-Taking $\pi$ greedy with respect to $V^*$:
-$$
-\pi^*(a|s) = \begin{cases} 1 & \text{if } a = \arg\max_a [r(s,a) + \gamma \sum_{s'} P(s'|s,a) V^*(s')] \\ 0 & \text{otherwise} \end{cases}
-$$
-gives $V^{\pi^*}(s) = \max_a [\cdots] = (\mathcal{T} V^*)(s)$.
+**Step 2** (Fixed point characterization of the optimal value). Section 3.7 shows that $\mathcal{T}$ is a $\gamma$-contraction on $(B_b(\mathcal{S}),\|\cdot\|_\infty)$, hence has a unique fixed point $\bar V$ by [THM-3.6.2-Banach]. Similarly, for each policy $\pi$, the evaluation operator $\mathcal{T}^\pi$ is a $\gamma$-contraction (the proof is the same as for [THM-3.7.1], without the supremum), hence has a unique fixed point $V^\pi$.
 
-**Step 2** (Lower bound and fixed point). For any $V$, the policy operator satisfies $\mathcal{T}^\pi V \leq \mathcal{T} V$ pointwise (since $\mathcal{T} V(s) = \max_a [r(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s')] \geq \sum_a \pi(a|s)[r(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s')] = \mathcal{T}^\pi V(s)$ for any distribution $\pi(\cdot|s)$ over actions---the max dominates the weighted average). Iterating yields $(\mathcal{T}^\pi)^k V \leq \mathcal{T}^k V$ for all $k$. By [THM-3.7.1], $\mathcal{T}$ is a $\gamma$-contraction on the Banach space $\mathcal{B}(\mathcal{S})$, so by [THM-3.6.2-Banach] it has a unique fixed point $V^*$ and $\mathcal{T}^k V \to V^*$. Since $(\mathcal{T}^\pi)^k V \to V^\pi$, we conclude $V^\pi \leq V^*$ for all $\pi$.
+By Step 1, $(\mathcal{T}^\pi)^k V \le \mathcal{T}^k V$ for all $k$ and all $V\in B_b(\mathcal{S})$. Taking $k\to\infty$ yields $V^\pi \le \bar V$, hence $\sup_\pi V^\pi \le \bar V$ pointwise.
 
-If $V^*(s) > (\mathcal{T} V^*)(s)$ held for some $s$, define a greedy policy $\pi^*$ achieving the maximum in [EQ-3.12]. Then $V^{\pi^*} = \mathcal{T}^{\pi^*} V^{\pi^*} \leq \mathcal{T} V^{\pi^*}$ and contraction implies $V^{\pi^*} \leq V^*$. Evaluating at $s$ gives $(\mathcal{T} V^*)(s) \geq V^{\pi^*}(s)$, contradicting $V^*(s) > (\mathcal{T} V^*)(s)$. Hence $V^* = \mathcal{T} V^*$ ([EQ-3.11]), and the pointwise form [EQ-3.10] follows from the definition of $\mathcal{T}$. $\square$
+Discounted dynamic-programming theory shows that the fixed point $\bar V$ coincides with the optimal value function $V^*$ defined in [EQ-3.5], and therefore satisfies $V^*=\mathcal{T}V^*$; see [@puterman:mdps:2014, Theorem 6.2.10] for the measurable-selection details behind this identification. This gives [EQ-3.11] and the pointwise form [EQ-3.10]. $\square$
 
 **Note on proof structure.** This proof invokes [THM-3.7.1] (Bellman contraction) and [THM-3.6.2-Banach] (Banach fixed-point), which we establish in Section 3.6--3.7. We state the optimality equation here because it is conceptually fundamental---*this is the equation RL algorithms solve*. The existence and uniqueness of $V^*$ follow once we prove $\mathcal{T}$ is a contraction in Section 3.7.
 
-**Remark 3.5.2** (Greedy policy extraction). Equation [EQ-3.10] not only characterizes $V^*$ but also defines the **optimal policy**:
-$$
-\pi^*(s) \in \arg\max_{a \in \mathcal{A}} \left[ r(s,a) + \gamma \sum_{s'} P(s'|s,a) V^*(s') \right].
-$$
+**Remark 3.5.2** (Suprema, maximizers, and greedy policies). Equation [EQ-3.10] is stated with $\sup$ because the supremum need not be attained without additional assumptions. In finite action spaces, or under compactness/upper-semicontinuity conditions, the supremum is attained and we may write $\max$.
 
-**Remark 3.5.3** (CMDP preview). Many practical ranking problems impose constraints (e.g., CM2 floors, exposure parity). **Constrained MDPs** (CMDPs) handle these by introducing Lagrange multipliers that convert the constrained problem into an unconstrained MDP with modified rewards $r_\lambda = r - \lambda c$---the Bellman theory of this section then applies directly to the relaxed problem. Appendix C develops the full CMDP framework with rigorous Lagrangian duality and primal--dual algorithms for satisfying constraints in expectation. Chapter 10 treats constraints operationally as production guardrails (monitoring, fallback, and hard feasibility filters such as Exercise 10.3), while Chapter 14 implements soft constraint optimization via primal--dual methods.
+When a measurable maximizer exists, we can extract a deterministic greedy policy via:
+$$
+\pi^*(s) \in \arg\max_{a \in \mathcal{A}}\left[r(s,a) + \gamma \int_{\mathcal{S}} V^*(s')\,P(ds'\mid s,a)\right].
+$$
+Without measurable maximizers, we work with $\varepsilon$-optimal selectors and interpret [EQ-3.10] as a value characterization; Chapter 2 discusses the measurable-selection fine print in more detail.
 
-Once we compute $V^*$ (via value iteration, which we'll prove converges next), extracting the optimal policy is straightforward.
+**Remark 3.5.3** (CMDPs and regret: where the details live). Many practical ranking problems impose constraints (e.g., CM2 floors, exposure parity). **Constrained MDPs** (CMDPs) handle these by introducing Lagrange multipliers that convert the constrained problem into an unconstrained MDP with modified rewards $r_\lambda = r - \lambda c$---the Bellman theory of this section then applies directly to the relaxed problem. Appendix C develops the full CMDP framework with rigorous duality and algorithms; see [THM-C.2.1], [COR-C.3.1], and [ALG-C.5.1]. Chapter 10 treats constraints operationally as production guardrails, while Chapter 14 implements soft constraint optimization via primal--dual methods.
+
+Regret guarantees are developed in Chapter 6 (e.g., [THM-6.1], [THM-6.2]) with information-theoretic lower bounds in Appendix D ([THM-D.3.1]).
+
+Once we compute $V^*$ (via value iteration, which we will prove converges next), extracting the optimal policy is straightforward.
 
 ---
 
@@ -448,27 +457,32 @@ A **normed vector space** is a pair $(V, \|\cdot\|)$ where $V$ is a vector space
 
 **Definition 3.6.2** (Supremum Norm) {#DEF-3.6.2}
 
-For bounded functions $f: \mathcal{S} \to \mathbb{R}$, the **supremum norm** (or **$\infty$-norm**) is:
+For bounded measurable functions $f: \mathcal{S} \to \mathbb{R}$, the **supremum norm** (or **$\infty$-norm**) is:
 $$
 \|f\|_\infty := \sup_{s \in \mathcal{S}} |f(s)|.
 \tag{3.13}
 $$
 {#EQ-3.13}
 
-The space of bounded functions $\mathcal{B}(\mathcal{S}) := \{f: \mathcal{S} \to \mathbb{R} : \|f\|_\infty < \infty\}$ is a normed vector space under $\|\cdot\|_\infty$.
+We write $B_b(\mathcal{S})$ for the space of bounded measurable functions:
+$$
+B_b(\mathcal{S}) := \{f: \mathcal{S} \to \mathbb{R} \text{ measurable} : \|f\|_\infty < \infty\}.
+$$
 
-**Proposition 3.6.1** (Completeness of $(\mathcal{B}(\mathcal{S}), \|\cdot\|_\infty)$) {#PROP-3.6.1}
+Then $(B_b(\mathcal{S}), \|\cdot\|_\infty)$ is a normed vector space.
 
-The space $(\mathcal{B}(\mathcal{S}), \|\cdot\|_\infty)$ is **complete**: every Cauchy sequence converges.
+**Proposition 3.6.1** (Completeness of $(B_b(\mathcal{S}), \|\cdot\|_\infty)$) {#PROP-3.6.1}
+
+The space $(B_b(\mathcal{S}), \|\cdot\|_\infty)$ is **complete**: every Cauchy sequence converges.
 
 *Proof.*
-**Step 1** (Cauchy implies pointwise Cauchy). Let $(f_n)$ be a Cauchy sequence in $\mathcal{B}(\mathcal{S})$. For each $s \in \mathcal{S}$,
+**Step 1** (Cauchy implies pointwise Cauchy). Let $(f_n)$ be a Cauchy sequence in $B_b(\mathcal{S})$. For each $s \in \mathcal{S}$,
 $$
 |f_n(s) - f_m(s)| \leq \|f_n - f_m\|_\infty \to 0 \quad \text{as } n, m \to \infty.
 $$
 Thus $(f_n(s))$ is a Cauchy sequence in $\mathbb{R}$. Since $\mathbb{R}$ is complete, $f_n(s) \to f(s)$ for some $f(s) \in \mathbb{R}$.
 
-**Step 2** (Uniform boundedness). Since $(f_n)$ is Cauchy, it is bounded: $\sup_n \|f_n\|_\infty \leq M < \infty$. Thus $|f(s)| = \lim_n |f_n(s)| \leq M$ for all $s$, so $\|f\|_\infty \leq M < \infty$.
+**Step 2** (Uniform boundedness and measurability). Since $(f_n)$ is Cauchy, it is bounded: $\sup_n \|f_n\|_\infty \leq M < \infty$. Thus $|f(s)| = \lim_n |f_n(s)| \leq M$ for all $s$, so $\|f\|_\infty \leq M < \infty$. Since each $f_n$ is measurable and $f_n \to f$ pointwise, the limit $f$ is measurable.
 
 **Step 3** (Uniform convergence). Given $\epsilon > 0$, choose $N$ such that $\|f_n - f_m\|_\infty < \epsilon$ for all $n, m \geq N$. Fixing $n \geq N$ and taking $m \to \infty$:
 $$
@@ -476,7 +490,7 @@ $$
 $$
 Thus $\|f_n - f\|_\infty \leq \epsilon$ for all $n \geq N$, proving $f_n \to f$ in $\|\cdot\|_\infty$. $\square$
 
-**Remark 3.6.1** (Banach spaces and uniform convergence). A complete normed space is called a **Banach space**. Proposition 3.6.1 shows $\mathcal{B}(\mathcal{S})$ is a Banach space---this is essential for applying the Banach fixed-point theorem.
+**Remark 3.6.1** (Banach spaces and uniform convergence). A complete normed space is called a **Banach space**. Proposition 3.6.1 shows $B_b(\mathcal{S})$ is a Banach space---this is essential for applying the Banach fixed-point theorem.
 
 A crucial subtlety: Step 3 establishes **uniform convergence**, where $\sup_s |f_n(s) - f(s)| \to 0$. This is strictly stronger than **pointwise convergence** (where each $f_n(s) \to f(s)$ individually, which Step 1 provides). The space of bounded functions is complete under uniform convergence but *not* under pointwise convergence---a sequence of bounded continuous functions can converge pointwise to an unbounded or discontinuous function. This distinction matters: the Banach fixed-point theorem requires completeness in the norm topology, and value iteration convergence guarantees [COR-3.7.3] are statements about uniform convergence over all states.
 
@@ -585,7 +599,7 @@ This proof deploys several fundamental techniques:
 
 These techniques will reappear in convergence proofs for TD-learning (Chapters 8, 12) and stochastic approximation (later chapters).
 
-**Example 3.6.3** (Failure without completeness). Define $T: \mathbb{Q} \to \mathbb{Q}$ by $T(x) = (x + 2/x)/2$---Newton-Raphson iteration for finding $\sqrt{2}$. Near $x = 1.5$, this map is a contraction: $|T(x) - T(y)| < 0.5 |x - y|$ for $x, y \in [1, 2] \cap \mathbb{Q}$. Starting from $x_0 = 3/2 \in \mathbb{Q}$, the sequence $x_{k+1} = T(x_k)$ remains in $\mathbb{Q}$ and converges... but to $\sqrt{2} \notin \mathbb{Q}$. The fixed point exists in $\mathbb{R}$ but not in the incomplete space $\mathbb{Q}$. This is why completeness is essential for [THM-3.6.2-Banach]---and why we need $\mathcal{B}(\mathcal{S})$ to be a Banach space for value iteration to converge to a *valid* value function.
+**Example 3.6.3** (Failure without completeness). Define $T: \mathbb{Q} \to \mathbb{Q}$ by $T(x) = (x + 2/x)/2$---Newton-Raphson iteration for finding $\sqrt{2}$. Near $x = 1.5$, this map is a contraction: $|T(x) - T(y)| < 0.5 |x - y|$ for $x, y \in [1, 2] \cap \mathbb{Q}$. Starting from $x_0 = 3/2 \in \mathbb{Q}$, the sequence $x_{k+1} = T(x_k)$ remains in $\mathbb{Q}$ and converges... but to $\sqrt{2} \notin \mathbb{Q}$. The fixed point exists in $\mathbb{R}$ but not in the incomplete space $\mathbb{Q}$. This is why completeness is essential for [THM-3.6.2-Banach]---and why we need $B_b(\mathcal{S})$ to be a Banach space for value iteration to converge to a *valid* value function.
 
 **Remark 3.6.3** (The $1/(1-\gamma)$ factor). The bound [EQ-3.15] shows the convergence rate depends on $1/(1-\gamma)$. When $\gamma \to 1$ (nearly undiscounted), convergence slows dramatically---this explains why high-$\gamma$ RL (e.g., $\gamma = 0.99$) requires many iterations. The factor $\gamma^k$ gives **exponential convergence**: doubling $k$ squares the error.
 
@@ -593,97 +607,79 @@ These techniques will reappear in convergence proofs for TD-learning (Chapters 8
 
 ## 3.7 Bellman Operator is a Contraction
 
-We now prove the central result: the Bellman optimality operator $\mathcal{T}$ is a $\gamma$-contraction on $(\mathcal{B}(\mathcal{S}), \|\cdot\|_\infty)$.
+We now prove the central result: the Bellman optimality operator $\mathcal{T}$ is a $\gamma$-contraction on $(B_b(\mathcal{S}), \|\cdot\|_\infty)$.
 
-**Remark 3.7.0** (Self-mapping property). Before proving contraction, we verify that $\mathcal{T}$ maps bounded functions to bounded functions. Under our standing assumptions---bounded rewards $|r(s,a)| \leq R_{\max}$ and discount $\gamma < 1$ ([DEF-3.4.1])---if $\|V\|_\infty < \infty$, then:
+**Remark 3.7.0** (Self-mapping property). Before proving contraction, we verify that $\mathcal{T}$ maps bounded measurable functions to bounded measurable functions. Under our standing assumptions---bounded rewards $|r(s,a)| \leq R_{\max}$ and discount $\gamma < 1$ ([DEF-3.4.1])---if $\|V\|_\infty < \infty$, then:
 $$
-\|\mathcal{T}V\|_\infty = \sup_s \left|\max_a \left[r(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s')\right]\right| \leq R_{\max} + \gamma \|V\|_\infty < \infty.
+\|\mathcal{T}V\|_\infty
+= \sup_{s\in\mathcal{S}}\left|\sup_{a\in\mathcal{A}}\left[r(s,a) + \gamma \int_{\mathcal{S}} V(s')\,P(ds'\mid s,a)\right]\right|
+\leq R_{\max} + \gamma \|V\|_\infty < \infty.
 $$
-Thus $\mathcal{T}: \mathcal{B}(\mathcal{S}) \to \mathcal{B}(\mathcal{S})$ is well-defined as a self-map.
+This establishes boundedness. Measurability of $s \mapsto (\mathcal{T}V)(s)$ is immediate in the finite-action case (where the supremum is a maximum over finitely many measurable functions) and holds under standard topological hypotheses; see [PROP-2.8.2] and Chapter 2, §2.8.2 (in particular [THM-2.8.3]).
 
 **Theorem 3.7.1** (Bellman Operator Contraction) {#THM-3.7.1}
 
-The Bellman optimality operator $\mathcal{T}: \mathcal{B}(\mathcal{S}) \to \mathcal{B}(\mathcal{S})$ defined by:
+The Bellman optimality operator $\mathcal{T}: B_b(\mathcal{S}) \to B_b(\mathcal{S})$ defined by:
 $$
-(\mathcal{T} V)(s) = \max_{a \in \mathcal{A}} \left[ r(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s') \right]
+(\mathcal{T} V)(s) = \sup_{a \in \mathcal{A}}\left[r(s,a) + \gamma \int_{\mathcal{S}} V(s')\,P(ds'\mid s,a)\right]
 $$
 is a $\gamma$-contraction with respect to $\|\cdot\|_\infty$:
 $$
-\|\mathcal{T} V - \mathcal{T} W\|_\infty \leq \gamma \|V - W\|_\infty \quad \text{for all } V, W \in \mathcal{B}(\mathcal{S}).
+\|\mathcal{T} V - \mathcal{T} W\|_\infty \leq \gamma \|V - W\|_\infty \quad \text{for all } V, W \in B_b(\mathcal{S}).
 \tag{3.16}
 $$
 {#EQ-3.16}
 
 *Proof.*
-**Step 1** (Pointwise difference). Fix $s \in \mathcal{S}$. Let:
+**Step 1** (Non-expansiveness of $\sup$). For any real-valued functions $f,g$ on $\mathcal{A}$,
 $$
-\begin{align}
-a^V &\in \arg\max_a \left[ r(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s') \right], \\
-a^W &\in \arg\max_a \left[ r(s,a) + \gamma \sum_{s'} P(s'|s,a) W(s') \right].
-\end{align}
+\left|\sup_{a\in\mathcal{A}} f(a) - \sup_{a\in\mathcal{A}} g(a)\right|
+\le \sup_{a\in\mathcal{A}} |f(a)-g(a)|.
 $$
+Indeed, $f(a)\le g(a)+|f(a)-g(a)|\le \sup_{a'}g(a')+\sup_{a'}|f(a')-g(a')|$ for all $a$, so taking $\sup_a$ yields $\sup_a f(a)\le \sup_a g(a)+\sup_a|f(a)-g(a)|$. Swapping $f,g$ gives the reverse inequality, and combining yields the claim.
 
-Then:
+**Step 2** (Pointwise contraction). Fix $s\in\mathcal{S}$ and define, for each $a\in\mathcal{A}$,
 $$
-(\mathcal{T} V)(s) = r(s, a^V) + \gamma \sum_{s'} P(s'|s,a^V) V(s').
+F_V(a) := r(s,a) + \gamma \int_{\mathcal{S}} V(s')\,P(ds'\mid s,a),\qquad
+F_W(a) := r(s,a) + \gamma \int_{\mathcal{S}} W(s')\,P(ds'\mid s,a).
 $$
+Then $(\mathcal{T}V)(s)=\sup_{a}F_V(a)$ and $(\mathcal{T}W)(s)=\sup_{a}F_W(a)$. By Step 1,
+$$
+\left|(\mathcal{T}V)(s) - (\mathcal{T}W)(s)\right|
+\le \sup_{a\in\mathcal{A}} |F_V(a)-F_W(a)|
+= \gamma \sup_{a\in\mathcal{A}}\left|\int_{\mathcal{S}} (V-W)(s')\,P(ds'\mid s,a)\right|.
+$$
+Since $P(\cdot\mid s,a)$ is a probability measure and $V-W$ is bounded,
+$$
+\left|\int_{\mathcal{S}} (V-W)(s')\,P(ds'\mid s,a)\right|
+\le \int_{\mathcal{S}} |V(s')-W(s')|\,P(ds'\mid s,a)
+\le \|V-W\|_\infty.
+$$
+Therefore $|(\mathcal{T}V)(s)-(\mathcal{T}W)(s)|\le \gamma\|V-W\|_\infty$ for all $s$.
 
-**Step 2** (Upper bound using $a^W$). Since $a^W$ is optimal for $W$, evaluating $\mathcal{T}V$ at $a^W$ gives:
-$$
-\begin{align}
-(\mathcal{T} V)(s) &\geq r(s, a^W) + \gamma \sum_{s'} P(s'|s,a^W) V(s') \\
-&= \underbrace{r(s, a^W) + \gamma \sum_{s'} P(s'|s,a^W) W(s')}_{= (\mathcal{T} W)(s)} + \gamma \sum_{s'} P(s'|s,a^W) [V(s') - W(s')].
-\end{align}
-$$
+**Step 3** (Supremum over states). Taking $\sup_{s\in\mathcal{S}}$ yields $\|\mathcal{T}V-\mathcal{T}W\|_\infty\le \gamma\|V-W\|_\infty$, which is [EQ-3.16]. $\square$
 
-Rearranging:
+**Remark 3.7.1** (The sup-stability mechanism). The proof exploits the **non-expansiveness of $\sup$**: taking a supremum is a 1-Lipschitz operation. Formally, for any functions $f, g$,
 $$
-(\mathcal{T} V)(s) - (\mathcal{T} W)(s) \geq \gamma \sum_{s'} P(s'|s,a^W) [V(s') - W(s')].
-$$
-
-**Step 3** (Bound the difference). Since $P(\cdot|s,a^W)$ is a probability distribution:
-$$
-\sum_{s'} P(s'|s,a^W) [V(s') - W(s')] \geq -\sum_{s'} P(s'|s,a^W) |V(s') - W(s')| \geq -\|V - W\|_\infty.
-$$
-
-Thus:
-$$
-(\mathcal{T} V)(s) - (\mathcal{T} W)(s) \geq -\gamma \|V - W\|_\infty.
-$$
-
-**Step 4** (Symmetry). By symmetry (swapping roles of $V$ and $W$):
-$$
-(\mathcal{T} W)(s) - (\mathcal{T} V)(s) \geq -\gamma \|V - W\|_\infty.
-$$
-
-Combining Steps 3--4:
-$$
-|(\mathcal{T} V)(s) - (\mathcal{T} W)(s)| \leq \gamma \|V - W\|_\infty.
-$$
-
-**Step 5** (Supremum over states). Since this holds for all $s \in \mathcal{S}$:
-$$
-\|\mathcal{T} V - \mathcal{T} W\|_\infty = \sup_{s \in \mathcal{S}} |(\mathcal{T} V)(s) - (\mathcal{T} W)(s)| \leq \gamma \|V - W\|_\infty.
-$$
-$\square$
-
-**Remark 3.7.1** (The max-stability mechanism). The proof exploits **max-stability**: evaluating the max at two different actions (optimal for $V$ vs. optimal for $W$) and bounding the difference. Formally, this uses the fact that the max operator is **1-Lipschitz** (non-expansive): for any functions $f, g$,
-$$
-|\max_a f(a) - \max_a g(a)| \leq \max_a |f(a) - g(a)|.
+|\sup_a f(a) - \sup_a g(a)| \leq \sup_a |f(a) - g(a)|.
 $$
 This is a fundamental technique in dynamic programming theory, appearing in proofs of policy improvement theorems and error propagation bounds.
 
-**Remark 3.7.2** (Norm specificity). The contraction [EQ-3.16] holds specifically in the **sup-norm** $\|\cdot\|_\infty$. The Bellman operator is generally **not** a contraction in $L^1$ or $L^2$ norms---the proof crucially uses $\sum_{s'} P(s'|s,a) |V(s') - W(s')| \leq \|V - W\|_\infty$, which fails for other $L^p$ norms. This norm choice has practical implications: error bounds in RL propagate through the $\|\cdot\|_\infty$ norm, meaning worst-case state errors matter most.
+**Remark 3.7.2** (Norm specificity). The contraction [EQ-3.16] holds specifically in the **sup-norm** $\|\cdot\|_\infty$. The Bellman operator is generally **not** a contraction in $L^1$ or $L^2$ norms---the proof crucially uses
+$$
+\int_{\mathcal{S}} |V(s') - W(s')|\,P(ds'\mid s,a) \leq \|V - W\|_\infty,
+$$
+which fails for other $L^p$ norms. This norm choice has practical implications: error bounds in RL propagate through the $\|\cdot\|_\infty$ norm, meaning worst-case state errors matter most.
 
 **Corollary 3.7.2** (Existence and Uniqueness of $V^*$) {#COR-3.7.2}
 
-There exists a unique $V^* \in \mathcal{B}(\mathcal{S})$ satisfying the Bellman optimality equation $V^* = \mathcal{T} V^*$.
+There exists a unique $V^* \in B_b(\mathcal{S})$ satisfying the Bellman optimality equation $V^* = \mathcal{T} V^*$.
 
-*Proof.* Immediate from Theorems 3.6.2 and 3.7.1: $\mathcal{T}$ is a $\gamma$-contraction on the Banach space $(\mathcal{B}(\mathcal{S}), \|\cdot\|_\infty)$, so it has a unique fixed point. $\square$
+*Proof.* Immediate from Theorems 3.6.2 and 3.7.1: $\mathcal{T}$ is a $\gamma$-contraction on the Banach space $(B_b(\mathcal{S}), \|\cdot\|_\infty)$, so it has a unique fixed point. $\square$
 
 **Corollary 3.7.3** (Value Iteration Convergence) {#COR-3.7.3}
 
-For any initial value function $V_0 \in \mathcal{B}(\mathcal{S})$, the sequence:
+For any initial value function $V_0 \in B_b(\mathcal{S})$, the sequence:
 $$
 V_{k+1} = \mathcal{T} V_k
 \tag{3.17}
@@ -699,9 +695,35 @@ $$
 
 *Proof.* Immediate from Theorems 3.6.2 and 3.7.1. $\square$
 
-**Remark 3.7.3** (Practical implications). Corollary 3.7.3 guarantees that **value iteration always converges**, regardless of initialization $V_0$. The rate [EQ-3.18] shows that after $k$ iterations, the error shrinks by $\gamma^k$. For $\gamma = 0.9$, we have $\gamma^{10} \approx 0.35$; for $\gamma = 0.99$, we need $k \approx 460$ iterations to reduce error by a factor of 100. This explains why high-discount RL is computationally expensive.
+**Proposition 3.7.4** (Reward perturbation sensitivity) {#PROP-3.7.4}
 
-**Remark 3.7.4** (OPE preview --- Direct Method). Off-policy evaluation (Chapter 9) can be performed via a **model-based Direct Method**: estimate $(\hat P, \hat r)$ and apply the policy Bellman operator repeatedly under the model to obtain
+Fix $(\mathcal{S},\mathcal{A},P,\gamma)$ and let $r$ and $\tilde r = r + \Delta r$ be bounded measurable one-step reward functions. Let $V^*_r$ and $V^*_{\tilde r}$ denote the unique fixed points of the corresponding Bellman optimality operators on $B_b(\mathcal{S})$. Then:
+$$
+\|V^*_{\tilde r} - V^*_r\|_\infty \le \frac{\|\Delta r\|_\infty}{1-\gamma}.
+$$
+
+*Proof.*
+Let $\mathcal{T}_r$ and $\mathcal{T}_{\tilde r}$ denote the two Bellman optimality operators. For any $V\in B_b(\mathcal{S})$ and any $s\in\mathcal{S}$,
+$$
+|(\mathcal{T}_{\tilde r}V)(s) - (\mathcal{T}_r V)(s)|
+= \left|\sup_{a\in\mathcal{A}} \left[\tilde r(s,a) + \gamma \int_{\mathcal{S}} V(s')\,P(ds'\mid s,a)\right] - \sup_{a\in\mathcal{A}} \left[r(s,a) + \gamma \int_{\mathcal{S}} V(s')\,P(ds'\mid s,a)\right]\right|
+\le \sup_{a\in\mathcal{A}} |\tilde r(s,a) - r(s,a)|
+\le \|\Delta r\|_\infty,
+$$
+so $\|\mathcal{T}_{\tilde r}V - \mathcal{T}_r V\|_\infty \le \|\Delta r\|_\infty$.
+
+Using the fixed point identities $V^*_r=\mathcal{T}_r V^*_r$ and $V^*_{\tilde r}=\mathcal{T}_{\tilde r} V^*_{\tilde r}$ and the contraction of $\mathcal{T}_{\tilde r}$,
+$$
+\|V^*_{\tilde r} - V^*_r\|_\infty
+= \|\mathcal{T}_{\tilde r}V^*_{\tilde r} - \mathcal{T}_r V^*_r\|_\infty
+\le \|\mathcal{T}_{\tilde r}V^*_{\tilde r} - \mathcal{T}_{\tilde r} V^*_r\|_\infty + \|\mathcal{T}_{\tilde r}V^*_r - \mathcal{T}_r V^*_r\|_\infty
+\le \gamma \|V^*_{\tilde r} - V^*_r\|_\infty + \|\Delta r\|_\infty.
+$$
+Rearranging yields $\|V^*_{\tilde r} - V^*_r\|_\infty \le \|\Delta r\|_\infty/(1-\gamma)$. $\square$
+
+**Remark 3.7.5** (Practical implications). Corollary 3.7.3 guarantees that **value iteration always converges**, regardless of initialization $V_0$. The rate [EQ-3.18] shows that after $k$ iterations, the error shrinks by $\gamma^k$. For $\gamma = 0.9$, we have $\gamma^{10} \approx 0.35$; for $\gamma = 0.99$, we need $k \approx 460$ iterations to reduce error by a factor of 100. This explains why high-discount RL is computationally expensive.
+
+**Remark 3.7.6** (OPE preview --- Direct Method). Off-policy evaluation (Chapter 9) can be performed via a **model-based Direct Method**: estimate $(\hat P, \hat r)$ and apply the policy Bellman operator repeatedly under the model to obtain
 $$
 \widehat{V}^{\pi} := \lim_{k\to\infty} (\mathcal{T}^{\pi}_{\hat P, \hat r})^k V_0,
 \tag{3.22}
@@ -709,13 +731,13 @@ $$
 {#EQ-3.22}
 for any bounded $V_0$. The contraction property (with $\gamma<1$ and bounded $\hat r$) guarantees existence and uniqueness of $\widehat{V}^{\pi}$. Chapter 9 develops full off-policy evaluation (IPS, DR, FQE), comparing the Direct Method previewed here to importance-weighted estimators.
 
-**Remark 3.7.5** (The deadly triad --- when contraction fails). The contraction property [THM-3.7.1] guarantees convergence for **exact, tabular** value iteration. However, three ingredients common in deep RL can break this guarantee:
+**Remark 3.7.7** (The deadly triad --- when contraction fails). The contraction property [THM-3.7.1] guarantees convergence for **exact, tabular** value iteration. However, three ingredients common in deep RL can break this guarantee:
 
 1. **Function approximation**: Representing $V$ or $Q$ via neural networks restricts us to a function class $\mathcal{F}$. The composed operator $\Pi_{\mathcal{F}} \circ \mathcal{T}$ (project-then-Bellman) is generally **not** a contraction.
 2. **Bootstrapping**: TD methods update toward $r + \gamma V(s')$, using the current estimate $V$. Combined with function approximation, this can cause divergence.
 3. **Off-policy learning**: Learning about one policy while following another introduces distribution mismatch.
 
-The combination---function approximation + bootstrapping + off-policy---is Sutton's **deadly triad** ([@sutton:barto:2018, Section 11.3]). Baird's counterexample demonstrates divergence even with linear function approximation. Chapter 7 introduces target networks and experience replay as partial mitigations. The fundamental tension, however, remains unresolved in theory---deep RL succeeds empirically despite lacking the contraction guarantees we have established here. Understanding this gap between theory and practice is a central theme of Part III.
+The combination---function approximation + bootstrapping + off-policy---is Sutton's **deadly triad** ([@sutton:barto:2018, Section 11.3]). Classical counterexamples (e.g., Baird's) demonstrate that the resulting learning dynamics can diverge even with linear function approximation. Chapter 7 introduces target networks and experience replay as partial mitigations. The fundamental tension, however, remains unresolved in theory---deep RL succeeds empirically despite lacking the contraction guarantees we have established here. Understanding this gap between theory and practice is a central theme of Part III.
 
 ---
 
@@ -725,23 +747,24 @@ The **contextual bandit** from Chapter 1 is the special case $\gamma = 0$ (no st
 
 **Definition 3.8.1** (Bandit Bellman Operator) {#DEF-3.8.1}
 
-For a contextual bandit with Q-function $Q: \mathcal{X} \times \mathcal{A} \to \mathbb{R}$, the **bandit Bellman operator** is:
+For a contextual bandit with Q-function $Q: \mathcal{X} \times \mathcal{A} \to \mathbb{R}$ (the expected immediate reward from Chapter 1), the **bandit Bellman operator** is:
 $$
-(\mathcal{T}_{\text{bandit}} V)(x) := \max_{a \in \mathcal{A}} Q(x, a).
+(\mathcal{T}_{\text{bandit}} V)(x) := \sup_{a \in \mathcal{A}} Q(x, a).
 \tag{3.19}
 $$
 {#EQ-3.19}
 
-This is precisely the MDP Bellman operator [EQ-3.12] with $\gamma = 0$:
+This is precisely the MDP Bellman operator [EQ-3.12] specialized to $\gamma = 0$, since in the bandit setting the one-step reward is $r(x,a)=Q(x,a)$ (and when $\mathcal{A}$ is finite the supremum is a maximum):
 $$
-(\mathcal{T} V)(x) = \max_a [r(x, a) + \gamma \cdot 0] = \max_a Q(x, a) = (\mathcal{T}_{\text{bandit}} V)(x).
+(\mathcal{T} V)(x) = \sup_a [r(x, a) + \gamma \cdot 0] = \sup_a Q(x, a) = (\mathcal{T}_{\text{bandit}} V)(x).
 $$
+In particular, the right-hand side does not depend on $V$: bandits have no bootstrapping term, because there is no next-state value to propagate.
 
 **Proposition 3.8.1** (Bandit operator fixed point in one iteration) {#PROP-3.8.1}
 
 For bandits ($\gamma = 0$), the optimal value function is:
 $$
-V^*(x) = \max_{a \in \mathcal{A}} Q(x, a),
+V^*(x) = \sup_{a \in \mathcal{A}} Q(x, a),
 \tag{3.20}
 $$
 {#EQ-3.20}
@@ -750,11 +773,11 @@ and value iteration converges in **one step**: $V_1 = \mathcal{T}_{\text{bandit}
 
 *Proof.* Since $\gamma = 0$, applying the Bellman operator:
 $$
-(\mathcal{T}_{\text{bandit}} V)(x) = \max_a Q(x, a) = V^*(x),
+(\mathcal{T}_{\text{bandit}} V)(x) = \sup_a Q(x, a) = V^*(x),
 $$
 independent of $V$. Thus $V_1 = V^*$ for any $V_0$. $\square$
 
-**Remark 3.8.1** (Contrast with MDPs). For $\gamma > 0$, value iteration requires multiple steps because we must propagate value information backward through state transitions. For bandits, there are no state transitions---rewards are immediate---so the optimal value is directly the maximum Q-value. This is why Chapter 1 could focus on **learning $Q(x, a)$** without explicitly constructing value functions.
+**Remark 3.8.1** (Contrast with MDPs). For $\gamma > 0$, value iteration requires multiple steps because we must propagate value information backward through state transitions. For bandits, there are no state transitions---rewards are immediate---so the optimal value is the statewise supremum of the immediate $Q$-values. This is why Chapter 1 could focus on **learning $Q(x, a)$** without explicitly constructing value functions.
 
 **Remark 3.8.2** (Chapter 1 formulation). Recall from Chapter 1 the bandit optimality condition: the optimal value [EQ-1.9] is attained by the greedy policy [EQ-1.10], yielding
 $$
@@ -774,440 +797,237 @@ We now implement value iteration and verify the convergence theory numerically.
 **Setup**: A $5 \times 5$ grid. Agent starts at $(0, 0)$, goal is $(4, 4)$. Actions: $\{\text{up}, \text{down}, \text{left}, \text{right}\}$. Rewards: $+10$ at goal, $-1$ per step (encourages shortest paths). Transitions: deterministic (move in chosen direction unless blocked by boundary).
 
 ```python
-import numpy as np
+from __future__ import annotations
+
+from dataclasses import dataclass
 from typing import Tuple
 
+import numpy as np
+
+
+@dataclass
+class GridWorldConfig:
+    size: int = 5
+    gamma: float = 0.9
+    goal_reward: float = 10.0
+
+
 class GridWorldMDP:
-    """5x5 GridWorld MDP for verifying value iteration convergence [COR-3.7.3].
+    """Deterministic GridWorld used in Section 3.9.1."""
 
-    State space: S = {(i, j) : 0 <= i, j < 5} (25 states)
-    Action space: A = {0: up, 1: down, 2: left, 3: right}
-    Reward: r((4, 4), a) = +10, r(s, a) = -1 otherwise
-    Discount: gamma = 0.9
-    """
+    def __init__(self, cfg: GridWorldConfig | None = None) -> None:
+        self.cfg = cfg or GridWorldConfig()
+        self.size = self.cfg.size
+        self.gamma = self.cfg.gamma
+        self.goal_reward = self.cfg.goal_reward
 
-    def __init__(self, size: int = 5, gamma: float = 0.9, goal_reward: float = 10.0):
-        self.size = size
-        self.n_states = size * size
+        self.goal = (self.size - 1, self.size - 1)
+        self.n_states = self.size * self.size
         self.n_actions = 4  # up, down, left, right
-        self.gamma = gamma
-        self.goal = (size - 1, size - 1)  # Bottom-right corner
-        self.goal_reward = goal_reward
 
-        # Build transition matrix P[s, a, s'] and reward r[s, a]
         self.P = np.zeros((self.n_states, self.n_actions, self.n_states))
         self.r = np.zeros((self.n_states, self.n_actions))
 
-        for i in range(size):
-            for j in range(size):
+        for i in range(self.size):
+            for j in range(self.size):
                 s = self._state_index(i, j)
-
-                # Check if goal state
                 if (i, j) == self.goal:
-                    # Goal state: absorbing (transition to itself, reward +10)
                     for a in range(self.n_actions):
                         self.P[s, a, s] = 1.0
                         self.r[s, a] = self.goal_reward
-                else:
-                    # Non-goal state: deterministic transitions, reward -1
-                    for a in range(self.n_actions):
-                        i_next, j_next = self._next_state(i, j, a)
-                        s_next = self._state_index(i_next, j_next)
-                        self.P[s, a, s_next] = 1.0
-                        self.r[s, a] = -1.0
+                    continue
+                for a in range(self.n_actions):
+                    i_next, j_next = self._next_state(i, j, a)
+                    s_next = self._state_index(i_next, j_next)
+                    self.P[s, a, s_next] = 1.0
+                    self.r[s, a] = -1.0
 
     def _state_index(self, i: int, j: int) -> int:
-        """Convert (i, j) grid coordinates to state index."""
         return i * self.size + j
 
     def _next_state(self, i: int, j: int, action: int) -> Tuple[int, int]:
-        """Compute next state given current (i, j) and action."""
         if action == 0:  # up
-            i_next = max(i - 1, 0)
-            j_next = j
-        elif action == 1:  # down
-            i_next = min(i + 1, self.size - 1)
-            j_next = j
-        elif action == 2:  # left
-            i_next = i
-            j_next = max(j - 1, 0)
-        else:  # action == 3: right
-            i_next = i
-            j_next = min(j + 1, self.size - 1)
+            return max(i - 1, 0), j
+        if action == 1:  # down
+            return min(i + 1, self.size - 1), j
+        if action == 2:  # left
+            return i, max(j - 1, 0)
+        return i, min(j + 1, self.size - 1)  # right
 
-        return i_next, j_next
+    def bellman_operator(self, values: np.ndarray) -> np.ndarray:
+        q_values = self.r + self.gamma * np.einsum("ijk,k->ij", self.P, values)
+        return np.max(q_values, axis=1)
 
-    def bellman_operator(self, V: np.ndarray) -> np.ndarray:
-        """Apply Bellman optimality operator T V from [EQ-3.12].
-
-        Args:
-            V: (n_states,) value function
-
-        Returns:
-            T V: (n_states,) updated value function
-        """
-        # Compute Q(s, a) = r(s, a) + gamma * sum_{s'} P(s'|s,a) V(s')
-        Q = self.r + self.gamma * np.einsum('ijk,k->ij', self.P, V)
-        # T V(s) = max_a Q(s, a)
-        return np.max(Q, axis=1)
-
-    def value_iteration(self, V_init: np.ndarray = None, max_iter: int = 100,
-                       tol: float = 1e-6, verbose: bool = True) -> Tuple[np.ndarray, list]:
-        """Run value iteration V_{k+1} = T V_k from [EQ-3.17].
-
-        Args:
-            V_init: Initial value function (defaults to zeros)
-            max_iter: Maximum iterations
-            tol: Convergence tolerance ||V_{k+1} - V_k||_infty < tol
-            verbose: Print progress
-
-        Returns:
-            V: Converged value function
-            errors: List of ||V_k - V_{k-1}||_infty per iteration
-        """
-        if V_init is None:
-            V = np.zeros(self.n_states)
-        else:
-            V = V_init.copy()
-
-        errors = []
-
-        if verbose:
-            print(f"Value Iteration (gamma = {self.gamma}):")
-            print(f"{'Iter':>5} | {'||V_k - V_{k-1}||_infty':>20} | {'Converged?':>12}")
-            print("-" * 50)
-
-        for k in range(max_iter):
-            V_new = self.bellman_operator(V)
-            error = np.max(np.abs(V_new - V))
+    def value_iteration(
+        self,
+        V_init: np.ndarray | None = None,
+        *,
+        max_iter: int = 256,
+        tol: float = 1e-10,
+    ) -> Tuple[np.ndarray, list[float]]:
+        values = np.zeros(self.n_states) if V_init is None else V_init.copy()
+        errors: list[float] = []
+        for _ in range(max_iter):
+            updated = self.bellman_operator(values)
+            error = float(np.max(np.abs(updated - values)))
             errors.append(error)
-
-            if verbose:
-                converged = "✓" if error < tol else ""
-                print(f"{k:5d} | {error:20.10f} | {converged:>12}")
-
+            values = updated
             if error < tol:
-                if verbose:
-                    print(f"\nConverged in {k+1} iterations.")
-                return V_new, errors
-
-            V = V_new
-
-        if verbose:
-            print(f"\nDid not converge in {max_iter} iterations (final error: {error:.6e})")
-
-        return V, errors
-
-    def extract_policy(self, V: np.ndarray) -> np.ndarray:
-        """Extract greedy policy pi(s) = argmax_a [r(s,a) + gamma sum P(s'|s,a) V(s')].
-
-        Args:
-            V: (n_states,) value function
-
-        Returns:
-            pi: (n_states,) deterministic policy (action index per state)
-        """
-        Q = self.r + self.gamma * np.einsum('ijk,k->ij', self.P, V)
-        return np.argmax(Q, axis=1)
-
-    def visualize_value_function(self, V: np.ndarray) -> None:
-        """Print value function as a grid."""
-        print("\nValue Function (grid):")
-        for i in range(self.size):
-            row_values = []
-            for j in range(self.size):
-                s = self._state_index(i, j)
-                row_values.append(f"{V[s]:7.2f}")
-            print("  ".join(row_values))
-
-    def visualize_policy(self, pi: np.ndarray) -> None:
-        """Print policy as a grid with arrows."""
-        action_symbols = {0: "↑", 1: "↓", 2: "←", 3: "→"}
-        print("\nOptimal Policy (grid):")
-        for i in range(self.size):
-            row = []
-            for j in range(self.size):
-                s = self._state_index(i, j)
-                if (i, j) == self.goal:
-                    row.append("★")  # Goal state
-                else:
-                    row.append(action_symbols[pi[s]])
-            print("  ".join(row))
+                break
+        return values, errors
 
 
-# Experiment: Verify convergence rate from [THM-3.7.1]
-def verify_convergence_theory():
-    """Verify theoretical convergence rate [EQ-3.18]."""
+def run_gridworld_convergence_check() -> None:
+    mdp = GridWorldMDP()
+    V_star, errors = mdp.value_iteration()
 
-    mdp = GridWorldMDP(size=5, gamma=0.9)
+    start_state = mdp._state_index(0, 0)
+    goal_state = mdp._state_index(*mdp.goal)
+    expected_goal = mdp.goal_reward / (1.0 - mdp.gamma)
 
-    print("="*60)
-    print("Experiment: Verify Banach Fixed-Point Theorem [THM-3.6.2-Banach]")
-    print("="*60)
-    print()
+    print("iters", len(errors), "final_err", f"{errors[-1]:.3e}")
+    print("V_start", f"{V_star[start_state]:.6f}")
+    print("V_goal", f"{V_star[goal_state]:.6f}", "expected_goal", f"{expected_goal:.6f}")
 
-    # Run value iteration
     V_init = np.zeros(mdp.n_states)
-    V_star, errors = mdp.value_iteration(V_init, max_iter=50, tol=1e-8, verbose=True)
+    initial_gap = float(np.max(np.abs(mdp.bellman_operator(V_init) - V_init)))
+    print("initial_gap", f"{initial_gap:.6f}")
 
-    print()
-    print("="*60)
-    print("Theoretical Convergence Rate Verification")
-    print("="*60)
-    print()
-    print("From [EQ-3.18], we expect:")
-    print("  ||V_k - V*||_infty <= (gamma^k / (1 - gamma)) * ||T V_0 - V_0||_infty")
-    print()
+    print("k  ||V_{k+1}-V_k||_inf  bound_from_EQ_3_18  bound_ok")
+    for k, err in enumerate(errors[:10]):
+        bound = (mdp.gamma**k / (1.0 - mdp.gamma)) * initial_gap
+        bound_ok = err <= bound + 1e-9
+        print(f"{k:2d}  {err:18.10f}  {bound:16.10f}  {bound_ok}")
 
-    # Compute ||T V_0 - V_0||_infty
-    TV_0 = mdp.bellman_operator(V_init)
-    initial_gap = np.max(np.abs(TV_0 - V_init))
+    ratios = [
+        errors[k] / errors[k - 1]
+        for k in range(1, min(len(errors), 25))
+        if errors[k - 1] > 1e-12
+    ]
+    tail = ratios[-8:]
+    print("tail_ratios", " ".join(f"{r:.4f}" for r in tail))
 
-    print(f"Initial gap: ||T V_0 - V_0||_infty = {initial_gap:.6f}")
-    print(f"Discount factor: gamma = {mdp.gamma}")
-    print(f"Theoretical constant: 1 / (1 - gamma) = {1/(1 - mdp.gamma):.6f}")
-    print()
-    print(f"{'k':>5} | {'||V_k - V*||':>15} | {'Theoretical Bound':>18} | {'Bound Valid?':>12}")
-    print("-" * 70)
-
-    for k, error in enumerate(errors[:20]):  # First 20 iterations
-        theoretical_bound = (mdp.gamma**k / (1 - mdp.gamma)) * initial_gap
-        valid = "✓" if error <= theoretical_bound + 1e-10 else "✗"
-        print(f"{k:5d} | {error:15.10f} | {theoretical_bound:18.10f} | {valid:>12}")
-
-    print()
-    print("Observation: Errors are always <= theoretical bound (all ✓), confirming [EQ-3.18].")
-    print()
-
-    # Visualize results
-    mdp.visualize_value_function(V_star)
-    pi_star = mdp.extract_policy(V_star)
-    mdp.visualize_policy(pi_star)
-
-    # Verify exponential decay
-    print()
-    print("="*60)
-    print("Exponential Decay Verification")
-    print("="*60)
-    print()
-    print("Errors should decay as gamma^k. Check ratio of consecutive errors:")
-    print()
-    print(f"{'k':>5} | {'error[k]':>15} | {'error[k] / error[k-1]':>22} | {'~gamma?':>8}")
-    print("-" * 60)
-
-    for k in range(1, min(15, len(errors))):
-        ratio = errors[k] / errors[k-1] if errors[k-1] > 1e-15 else 0.0
-        close_to_gamma = "✓" if abs(ratio - mdp.gamma) < 0.05 else ""
-        print(f"{k:5d} | {errors[k]:15.10f} | {ratio:22.10f} | {close_to_gamma:>8}")
-
-    print()
-    print(f"Ratios converge to gamma = {mdp.gamma}, confirming exponential decay rate.")
-    print()
+    grid = V_star.reshape((mdp.size, mdp.size))
+    print("grid")
+    for i in range(mdp.size):
+        print(" ".join(f"{grid[i, j]:7.2f}" for j in range(mdp.size)))
 
 
-if __name__ == "__main__":
-    verify_convergence_theory()
+run_gridworld_convergence_check()
 ```
 
-**Expected output** (representative):
+Output:
 ```
-============================================================
-Experiment: Verify Banach Fixed-Point Theorem [THM-3.6.2-Banach]
-============================================================
-
-Value Iteration (gamma = 0.9):
- Iter | ||V_k - V_{k-1}||_infty |   Converged?
---------------------------------------------------
-    0 |        11.0000000000 |
-    1 |         9.9000000000 |
-    2 |         8.9100000000 |
-    3 |         8.0190000000 |
-    4 |         7.2171000000 |
-    5 |         6.4953900000 |
-    6 |         5.8458510000 |
-    7 |         5.2612659000 |
-    8 |         4.7351393100 |
-    9 |         4.2616253790 |
-   10 |         3.8354628411 |
-   11 |         3.4519165570 |
-   12 |         3.1067249013 |
-   13 |         2.7960524112 |
-   14 |         2.5164471701 |
-   15 |         2.2648024531 |
-   16 |         2.0383222078 |
-   17 |         1.8344899870 |
-   18 |         1.6510409883 |
-   19 |         1.4859368895 |
-   20 |         1.3373432005 |
-
-Converged in 96 iterations.
-
-============================================================
-Theoretical Convergence Rate Verification
-============================================================
-
-Initial gap: ||T V_0 - V_0||_infty = 11.000000
-Discount factor: gamma = 0.9
-Theoretical constant: 1 / (1 - gamma) = 10.000000
-
-    k | ||V_k - V*|| | Theoretical Bound | Bound Valid?
-----------------------------------------------------------------------
-    0 |   42.6536485994 |      110.0000000000 |            ✓
-    1 |   31.7583637394 |       99.0000000000 |            ✓
-    2 |   22.8625273655 |       89.1000000000 |            ✓
-    3 |   15.9762746290 |       80.1900000000 |            ✓
-    4 |   10.9786471661 |       72.1710000000 |            ✓
-    5 |    7.3807824495 |       64.9539000000 |            ✓
-    6 |    4.8427042045 |       58.4585100000 |            ✓
-    7 |    3.1184337830 |       52.6126590000 |            ✓
-    8 |    1.9665903447 |       47.3513931000 |            ✓
-    9 |    1.2199313101 |       42.6162537900 |            ✓
-   10 |    0.7479481961 |       38.3546284110 |            ✓
-   11 |    0.4531589177 |       34.5191655699 |            ✓
-   12 |    0.2718953506 |       31.0672490129 |            ✓
-   13 |    0.1631372104 |       27.9605241116 |            ✓
-   14 |    0.0978823262 |       25.1644717004 |            ✓
-   15 |    0.0587293957 |       22.6480245304 |            ✓
-   16 |    0.0352376374 |       20.3832220774 |            ✓
-   17 |    0.0211425825 |       18.3448998696 |            ✓
-   18 |    0.0126855495 |       16.5104098827 |            ✓
-   19 |    0.0076113297 |       14.8593688944 |            ✓
-
-Observation: Errors are always <= theoretical bound (all ✓), confirming [EQ-3.18].
-
-Value Function (grid):
-  31.65    33.50    35.56    37.84    40.38
-  33.50    35.56    37.84    40.38    43.20
-  35.56    37.84    40.38    43.20    46.44
-  37.84    40.38    43.20    46.44    50.16
-  40.38    43.20    46.44    50.16    64.16
-
-Optimal Policy (grid):
-  →  →  →  →  ↓
-  ↑  ↑  ↑  ↑  ↓
-  ↑  ↑  ↑  ↑  ↓
-  ↑  ↑  ↑  ↑  ↓
-  ↑  ↑  ↑  ↑  ★
-
-============================================================
-Exponential Decay Verification
-============================================================
-
-Errors should decay as gamma^k. Check ratio of consecutive errors:
-
-    k |      error[k] | error[k] / error[k-1] | ~gamma?
-------------------------------------------------------------
-    1 |   31.7583637394 |         0.7446808511 |
-    2 |   22.8625273655 |         0.7198582735 |
-    3 |   15.9762746290 |         0.6986206530 |
-    4 |   10.9786471661 |         0.6872307758 |
-    5 |    7.3807824495 |         0.6723028564 |
-    6 |    4.8427042045 |         0.6561149006 |
-    7 |    3.1184337830 |         0.6440048763 |
-    8 |    1.9665903447 |         0.6306327661 |
-    9 |    1.2199313101 |         0.6203085084 |
-   10 |    0.7479481961 |         0.6131220165 |
-   11 |    0.4531589177 |         0.6058945203 |
-   12 |    0.2718953506 |         0.5999557037 |
-   13 |    0.1631372104 |         0.6000000000 |
-   14 |    0.0978823262 |         0.6000000000 |
-   15 |    0.0587293957 |         0.6000000000 |
-
-Ratios converge to gamma = 0.9, confirming exponential decay rate.
+iters 242 final_err 9.386e-11
+V_start 37.351393
+V_goal 100.000000 expected_goal 100.000000
+initial_gap 10.000000
+k  ||V_{k+1}-V_k||_inf  bound_from_EQ_3_18  bound_ok
+ 0       10.0000000000    100.0000000000  True
+ 1        9.0000000000     90.0000000000  True
+ 2        8.1000000000     81.0000000000  True
+ 3        7.2900000000     72.9000000000  True
+ 4        6.5610000000     65.6100000000  True
+ 5        5.9049000000     59.0490000000  True
+ 6        5.3144100000     53.1441000000  True
+ 7        4.7829690000     47.8296900000  True
+ 8        4.3046721000     43.0467210000  True
+ 9        3.8742048900     38.7420489000  True
+tail_ratios 0.9000 0.9000 0.9000 0.9000 0.9000 0.9000 0.9000 0.9000
+grid
+  37.35   42.61   48.46   54.95   62.17
+  42.61   48.46   54.95   62.17   70.19
+  48.46   54.95   62.17   70.19   79.10
+  54.95   62.17   70.19   79.10   89.00
+  62.17   70.19   79.10   89.00  100.00
 ```
 
 !!! note "Code ↔ Lab (Contraction Verification)"
-    We verify [COR-3.7.3] and the rate bound [EQ-3.18] using the value-iteration listing above (GridWorld + contraction monitor). Save it as a standalone script or run it inline (e.g., `uv run python - <<'PY' ... PY`) and confirm the printed bounds and ratios.
-    - Regression: `tests/ch03/test_value_iteration.py` (numerical contraction + γ ratio checks)
+    We verify [COR-3.7.3] and the rate bound [EQ-3.18] using the value-iteration listing above. The repository also includes a regression test that mirrors this computation: `tests/ch03/test_value_iteration.py`.
+    - Run: `.venv/bin/pytest -q tests/ch03/test_value_iteration.py`
 
 ### 3.9.2 Analysis
 
 The numerical experiment confirms:
 
-1. **Convergence**: Value iteration converges in 96 iterations (error $< 10^{-8}$)
-2. **Theoretical bound**: $\|V_k - V^*\|_\infty \leq \frac{\gamma^k}{1-\gamma} \|\mathcal{T} V_0 - V_0\|_\infty$ holds for all $k$ (all ✓)
-3. **Exponential decay**: Consecutive error ratios converge to $\gamma = 0.9$, confirming $\gamma^k$ decay rate
-4. **Policy correctness**: Optimal policy shows shortest paths to goal (all arrows point toward bottom-right)
+1. **Convergence**: value iteration converges within the configured iteration budget, with final update size below the tolerance.
+2. **Rate bound check**: the printed quantity $\|V_{k+1}-V_k\|_\infty$ remains below the right-hand side of [EQ-3.18] in the displayed iterations, providing a numerical sanity check on the contraction-based rate.
+3. **Exponential decay**: consecutive error ratios are essentially constant at $\gamma = 0.9$, matching the contraction mechanism.
+4. **Goal-state semantics**: since the goal is absorbing with per-step reward `goal_reward`, we obtain $V^*(\text{goal})=\text{goal\_reward}/(1-\gamma)$.
 
 **Key observations**:
 
 - The theoretical bound is **tight**: observed errors track $\gamma^k$ behavior closely
-- Higher $\gamma$ (closer to 1) → slower convergence: if we set $\gamma = 0.99$, convergence requires $\sim 900$ iterations
-- Value iteration is **robust**: works for any initialization $V_0$ (we used zeros)
+- Higher $\gamma$ (closer to 1) implies slower convergence: for $\gamma = 0.99$, convergence requires on the order of hundreds of iterations in this GridWorld.
+- Value iteration is **robust**: it converges for any initialization $V_0$ (here $V_0 \equiv 0$)
 
 ---
 
 ## 3.10 RL Bridges: Previewing Multi-Episode Dynamics
 
-**Chapter 11 preview: Inter-session MDPs.** Chapter 1's bandit formulation (single-step rewards) and this chapter's MDP formulation (sequential within-session rewards) both model **isolated sessions**. But real user behavior has **long-term dynamics**:
+In Chapter 11 we extend the within-session MDP of this chapter to an inter-session (multi-episode) MDP. Chapter 1's contextual bandit formalism and the discounted MDP formalism of this chapter both treat a single session in isolation. In practice, many objectives are inter-session: actions taken today influence the probability of future sessions and the distribution of future states.
 
-- User satisfaction evolves across sessions: today's poor ranking reduces next week's return probability
-- Retention/churn depends on cumulative experience: users who consistently find relevant products become loyal
-- Strategic objectives (brand building, exploration) have payoffs spanning months
+The multi-episode formulation introduces three concrete changes:
 
-**The multi-episode formulation** (Chapter 11) extends the MDP to include:
+1. Inter-session state transitions: the state includes variables such as satisfaction, recency, and loyalty tier, and these evolve across sessions as functions of engagement signals (clicks, purchases) and exogenous factors (seasonality).
+2. Retention (hazard) modeling: a probabilistic mechanism decides whether another session occurs, based on the current inter-session state.
+3. Long-term value across sessions: the return sums rewards over sessions, not only within a single session.
 
-1. **Inter-session state transitions**: $S_{t+1} = f(S_t, \text{clicks}_t, \text{purchases}_t, \text{seasonality})$
-2. **Hazard/survival modeling**: User abandonment probability $h(S_t)$ as a function of satisfaction state
-3. **Long-term value**: $V(s_0) = \mathbb{E}[\sum_{\text{sessions}} \gamma^t R_t]$, discounting across sessions, not just within
+The operator-theoretic content does not change: once inter-session dynamics are part of the transition kernel, Bellman operators remain contractions under discounting, and value iteration remains a fixed-point method. Conceptually, this clarifies reward design. Chapter 1's reward [EQ-1.2] includes $\delta \cdot \text{CLICKS}$ as a proxy for long-run value; in Chapter 11 we encode engagement into the state dynamics through retention, so long-run effects are represented without relying on a separate proxy term.
 
-**Connection to this chapter**: The Bellman machinery developed here (operators, contractions, value iteration) extends directly to the multi-episode setting. The key difference: **state** $s$ now includes inter-session variables (satisfaction, recency, loyalty tier), and **transitions** $P(s'|s,a)$ model how today's actions affect tomorrow's user state.
-
-**Why we need this**: Chapter 1's reward function [EQ-1.2] included $\delta \cdot \text{CLICKS}$ as a **proxy** for long-term value. In Chapter 11, we'll show that engagement enters **implicitly** through retention dynamics---no need for a separate $\delta$ term if we model the full MDP correctly. This is the promise of **multi-episode RL**: optimize true long-term value, not hand-tuned proxies.
-
-!!! note "Code ↔ Reward (MOD-zoosim.reward)"
+!!! note "Code ↔ Reward (MOD-zoosim.dynamics.reward)"
     Chapter 1's single-step reward [EQ-1.2] maps to configuration and aggregation code:
-    - Weights and defaults: `zoosim/core/config.py:193` (`RewardConfig`)
-    - Engagement weight guardrail (δ/α bound): `zoosim/dynamics/reward.py:56`
+    - Weights and defaults: `zoosim/core/config.py:195` (`RewardConfig`)
+    - Engagement weight guardrail ($\\delta/\\alpha$ bound): `zoosim/dynamics/reward.py:56`
     These safeguards keep $\delta$ small and bounded in the MVP regime while we develop multi-episode value in Chapter 11.
 
-!!! note "Code ↔ Simulator (MOD-zoosim.session_env, MOD-zoosim.retention)"
+!!! note "Code ↔ Simulator (MOD-zoosim.multi_episode.session_env, MOD-zoosim.multi_episode.retention)"
     Multi-episode transitions and retention are implemented in the simulator:
-    - Inter-session MDP wrapper: `zoosim/multi_episode/session_env.py:77` (`MultiSessionEnv.step`)
+    - Inter-session MDP wrapper: `zoosim/multi_episode/session_env.py:79` (`MultiSessionEnv.step`)
     - Retention probability (logistic hazard): `zoosim/multi_episode/retention.py:22` (`return_probability`)
-    - Retention config (baseline + weights): `zoosim/core/config.py:205`, `zoosim/core/config.py:214`
-    In this regime, engagement enters via state transitions, aligning with the long-run objective previewed by `#EQ-1.2-prime` and `CH-11`.
+    - Retention config: `zoosim/core/config.py:208` (`RetentionConfig`), `zoosim/core/config.py:216` (`base_rate`), `zoosim/core/config.py:217` (`click_weight`), `zoosim/core/config.py:218` (`satisfaction_weight`)
+    In this regime, engagement enters via state transitions, aligning with the long-run objective previewed by [EQ-1.2-prime] and Chapter 11.
 
 ---
 
-## 3.11 Summary: What We've Built
+## 3.11 Summary: What We Have Built
 
-This chapter established the **operator-theoretic foundations** of reinforcement learning:
+This chapter established the operator-theoretic foundations of reinforcement learning:
 
-**Stochastic processes** (Section 3.2--3.3):
+Stochastic processes (Section 3.2--3.3):
 - Filtrations $(\mathcal{F}_t)$ model information accumulation over time
 - Stopping times $\tau$ capture random termination (session abandonment, purchase events)
 - Adapted processes ensure causality (policies depend on history, not future)
 
-**Markov Decision Processes** (Section 3.4):
+Markov Decision Processes (Section 3.4):
 - Formal tuple $(\mathcal{S}, \mathcal{A}, P, R, \gamma)$ with standard Borel assumptions
 - Value functions $V^\pi(s)$, $Q^\pi(s, a)$ as expected cumulative rewards
-- Bellman equations [EQ-3.7, EQ-3.10] as recursive characterizations
+- Bellman equations [EQ-3.7] and [EQ-3.10] as recursive characterizations
 
-**Contraction theory** (Section 3.6--3.7):
+Contraction theory (Section 3.6--3.7):
 - Banach fixed-point theorem [THM-3.6.2-Banach] guarantees existence, uniqueness, and exponential convergence
 - Bellman operator $\mathcal{T}$ is a $\gamma$-contraction in sup-norm [THM-3.7.1]
 - Value iteration $V_{k+1} = \mathcal{T} V_k$ converges at rate $\gamma^k$ [COR-3.7.3]
-- **Caveat**: Contraction fails with function approximation (deadly triad, Remark 3.7.5)
+- Caveat: Contraction fails with function approximation (deadly triad, Remark 3.7.7)
 
-**Connection to bandits** (Section 3.8):
+Connection to bandits (Section 3.8):
 - Contextual bandits are the $\gamma = 0$ special case (no state transitions)
-- Chapter 1's formulation [EQ-1.8--1.10] is recovered exactly
+- Chapter 1's formulation ([EQ-1.8], [EQ-1.9], and [EQ-1.10]) is recovered exactly
 
-**Numerical verification** (Section 3.9):
+Numerical verification (Section 3.9):
 - GridWorld experiment confirms theoretical convergence rate [EQ-3.18]
 - Exponential decay $\gamma^k$ observed empirically
 
-**What's next**:
+What comes next:
 
 - **Chapter 4--5**: Build the simulator (`zoosim`) with catalog, users, queries, click models
 - **Chapter 6**: Implement LinUCB and Thompson Sampling for discrete template bandits
 - **Chapter 7**: Continuous action optimization via $Q(x, a)$ regression
-- **Chapter 10**: Production guardrails (CM2 floors, ΔRank@k stability) applying CMDP theory from Section 3.5
 - **Chapter 9**: Off-policy evaluation (OPE) using importance sampling
+- **Chapter 10**: Production guardrails (CM2 floors, $\\Delta\\text{Rank}@k$ stability) applying CMDP theory from Section 3.5
 - **Chapter 11**: Multi-episode MDPs with retention dynamics
 
-All later algorithms---TD-learning, Q-learning, policy gradients---rest on the Bellman foundations we've built here. The contraction property ensures these algorithms converge; the fixed-point theorem tells us **what they converge to**.
+All later algorithms---TD-learning, Q-learning, policy gradients---use Bellman operators as their organizing object, but their convergence guarantees require additional assumptions and are established case-by-case in later chapters. In Chapter 3, the contraction property yields a complete convergence story for exact dynamic programming, and the fixed-point theorem tells us what value iteration converges to.
 
 ---
 
@@ -1221,7 +1041,7 @@ Let $(S_t)$ be a user satisfaction process with $S_t \in [0, 1]$. Which of the f
 (b) $\tau_2 = \sup\{t \leq T : S_t \geq 0.8\}$ (last time satisfaction exceeds 0.8 before horizon $T$)
 (c) $\tau_3 = \min\{t : S_{t+1} < S_t\}$ (first time satisfaction decreases)
 
-Justify your answers using [DEF-3.2.4].
+Justify the answers using [DEF-3.2.4].
 
 **Exercise 3.2** (Bellman equation verification) [15 min]
 
@@ -1251,7 +1071,7 @@ Implement value iteration for the GridWorld MDP from Section 3.9.1, but with **s
 
 ### Labs
 
-- [Lab 3.1 --- Contraction Ratio Tracker](./exercises_labs.md#lab-31--contraction-ratio-tracker): execute the GridWorld contraction experiment and compare empirical ratios against the $\gamma$ bound in #EQ-3.18.
+- [Lab 3.1 --- Contraction Ratio Tracker](./exercises_labs.md#lab-31--contraction-ratio-tracker): execute the GridWorld contraction experiment and compare empirical ratios against the $\gamma$ bound in [EQ-3.16].
 - [Lab 3.2 --- Value Iteration Wall-Clock Profiling](./exercises_labs.md#lab-32--value-iteration-wall-clock-profiling): sweep multiple discounts, log iteration counts, and tie the scaling back to [COR-3.7.3] (value iteration convergence rate).
 
 **Exercise 3.5** (Bandit special case) [10 min]
@@ -1282,13 +1102,29 @@ Key references for this chapter:
 - [@bertsekas:dp:2012] --- Dynamic programming and optimal control (Bertsekas)
 - [@folland:real_analysis:1999] --- Measure theory and functional analysis foundations
 - [@brezis:functional_analysis:2011] --- Banach space theory and operator methods
+- [@sutton:barto:2018] --- Modern RL textbook and the deadly triad discussion
 
 ---
 
-**Production Checklist (Chapter 3)**
+## 3.13 Production Checklist
 
-- **Seeds**: Ensure RNGs for stochastic MDPs use fixed seeds from `SimulatorConfig.seed` for reproducibility
-- **Discount factor**: Document $\gamma$ choice in config files; highlight $\gamma \to 1$ convergence slowdown
-- **Numerical stability**: Use double precision (`float64`) for value iteration to avoid accumulation errors
-- **Cross-references**: Update Knowledge Graph (`docs/knowledge_graph/graph.yaml`) with all theorem/definition IDs
-- **Tests**: Add regression tests for value iteration convergence (verify [EQ-3.18] bounds programmatically)
+!!! tip "Production Checklist (Chapter 3)"
+    - **Seeds**: Ensure RNGs for stochastic MDPs use fixed seeds from `SimulatorConfig.seed` for reproducibility
+    - **Discount factor**: Document $\gamma$ choice in config files; highlight $\gamma \to 1$ convergence slowdown
+    - **Numerical stability**: Use double precision (`float64`) for value iteration to avoid accumulation errors
+    - **Cross-references**: Update Knowledge Graph (`docs/knowledge_graph/graph.yaml`) with all theorem/definition IDs
+    - **Tests**: Add regression tests for value iteration convergence (verify [EQ-3.18] bounds programmatically)
+
+---
+
+## Exercises & Labs
+
+Companion material for Chapter 3 lives in:
+
+- Exercises and runnable lab prompts: `docs/book/ch03/exercises_labs.md`
+- Worked solutions with printed outputs: `docs/book/ch03/ch03_lab_solutions.md`
+
+Reproducibility checks:
+
+- Chapter 3 regression test: `.venv/bin/pytest -q tests/ch03/test_value_iteration.py`
+- Run all Chapter 3 labs: `.venv/bin/python scripts/ch03/lab_solutions.py --all`

@@ -15,7 +15,7 @@ The mathematical machinery you need before touching a single line of RL code.
 | 0 | [A Tiny Search Engine That Learns](ch00/ch00_motivation_first_experiment_revised.md) | Motivation and first experiment | `scripts/ch00/toy_problem_solution.py` |
 | 1 | [Search Ranking as Optimization](ch01/ch01_foundations_revised_math+pedagogy_v3.md) | Reward design, contextual bandits, constraints | `zoosim/dynamics/reward.py` |
 | 2 | [Probability, Measure, and Click Models](ch02/ch02_probability_measure_click_models.md) | PBM/DBN, position bias, stopping times | `zoosim/dynamics/behavior.py` |
-| 3 | [Bellman Equations and Regret](ch03/ch03_bellman_and_regret.md) | Contractions, value functions, regret bounds | — |
+| 3 | [Stochastic Processes and Bellman Foundations](ch03/ch03_stochastic_processes_bellman_foundations.md) | Stochastic processes, MDPs, Bellman operators, contractions | — |
 
 ---
 

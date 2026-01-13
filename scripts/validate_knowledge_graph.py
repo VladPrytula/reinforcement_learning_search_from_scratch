@@ -15,11 +15,17 @@ Exit code is non-zero on validation errors.
 from __future__ import annotations
 
 import argparse
+import json
 import os
+import shutil
+import subprocess
 import sys
 from typing import Any, Dict, List, Set, Tuple
 
-import yaml  # PyYAML
+try:
+    import yaml  # PyYAML
+except ModuleNotFoundError:  # pragma: no cover
+    yaml = None
 
 
 Node = Dict[str, Any]
@@ -27,8 +33,28 @@ Edge = Dict[str, Any]
 
 
 def load_yaml(path: str) -> Dict[str, Any]:
-    with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    if yaml is not None:
+        with open(path, "r", encoding="utf-8") as f:
+            return yaml.safe_load(f)
+
+    ruby = shutil.which("ruby")
+    if not ruby:
+        raise ModuleNotFoundError(
+            "PyYAML is not installed and no 'ruby' executable was found for a YAML fallback. "
+            "Install PyYAML (e.g. `pip install pyyaml`) or run in the project virtualenv."
+        )
+
+    try:
+        proc = subprocess.run(
+            [ruby, "-ryaml", "-rjson", "-e", "puts JSON.generate(YAML.load_file(ARGV[0]))", path],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Failed to parse YAML via Ruby fallback: {e.stderr.strip()}") from e
+    return json.loads(proc.stdout)
 
 
 def _schema_enums(schema: Dict[str, Any]) -> Tuple[Set[str], Set[str], Set[str]]:
@@ -196,4 +222,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

@@ -25,7 +25,7 @@ N_STATIC=2000
 N_BANDIT=20000
 WORLD_SEED=20250322
 BANDIT_SEED=20250349
-OUTPUT_DIR="docs/book/drafts/ch06/data/verification_$(date +%Y%m%dT%H%M%S)"
+OUTPUT_DIR="docs/book/ch06/data/verification_$(date +%Y%m%dT%H%M%S)"
 
 # Colors for output
 RED='\033[0;31m'
@@ -48,9 +48,6 @@ echo ""
 echo "Start time: $(date)"
 echo ""
 
-# Activate virtual environment
-source .venv/bin/activate
-
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
 
@@ -64,7 +61,7 @@ echo ""
 echo "Expected: Bandits underperform or match static baseline with simple features"
 echo ""
 
-python scripts/ch06/template_bandits_demo.py \
+uv run python scripts/ch06/template_bandits_demo.py \
     --features simple \
     --n-static $N_STATIC \
     --n-bandit $N_BANDIT \
@@ -82,21 +79,19 @@ echo -e "${YELLOW}==============================================================
 echo "TEST 2: Rich Features + Oracle Latents (§6.7.4) - LINUCB WINS"
 echo "==============================================================================${NC}"
 echo ""
-echo "Expected: LinUCB ~+31% vs static, TS ~+5% (LinUCB wins with clean features)"
+echo "Expected: LinUCB and TS both improve over static with oracle features"
 echo ""
 
-python scripts/ch06/template_bandits_demo.py \
+uv run python scripts/ch06/template_bandits_demo.py \
     --features rich \
-    --rich-regularization blend \
     --n-static $N_STATIC \
     --n-bandit $N_BANDIT \
     --world-seed $WORLD_SEED \
     --bandit-base-seed $BANDIT_SEED \
-    --hparam-mode rich_est \
     --prior-weight 50 \
     --lin-alpha 0.2 \
     --ts-sigma 0.5 \
-    2>&1 | tee "$OUTPUT_DIR/test2_rich_blend.log"
+    2>&1 | tee "$OUTPUT_DIR/test2_rich_oracle.log"
 
 echo -e "${GREEN}✓ Test 2 completed${NC}"
 echo ""
@@ -111,7 +106,7 @@ echo ""
 echo "Expected: LinUCB achieves ~5-8% GMV lift, TS achieves ~3-5% lift"
 echo ""
 
-python scripts/ch06/template_bandits_demo.py \
+uv run python scripts/ch06/template_bandits_demo.py \
     --features rich \
     --rich-regularization quantized \
     --n-static $N_STATIC \
@@ -137,7 +132,7 @@ echo ""
 echo "Expected: TS ~+31% vs static, LinUCB ~+6% (TS wins with noisy features)"
 echo ""
 
-python scripts/ch06/template_bandits_demo.py \
+uv run python scripts/ch06/template_bandits_demo.py \
     --features rich_est \
     --n-static $N_STATIC \
     --n-bandit $N_BANDIT \
@@ -165,10 +160,11 @@ echo "  Stage 2: Rich + Oracle latents (LinUCB wins)"
 echo "  Stage 3: Rich + Estimated latents (TS wins)"
 echo ""
 
-python scripts/ch06/ch06_compute_arc.py \
+uv run python scripts/ch06/ch06_compute_arc.py \
     --n-static $N_STATIC \
     --n-bandit $N_BANDIT \
     --base-seed $WORLD_SEED \
+    --bandit-seed $BANDIT_SEED \
     --out-dir "$OUTPUT_DIR" \
     --prior-weight 50 \
     --lin-alpha 0.2 \
@@ -189,7 +185,7 @@ echo "Running 5 scenarios: simple_baseline, rich_oracle_raw, rich_oracle_blend,"
 echo "                     rich_oracle_quantized, rich_estimated"
 echo ""
 
-python scripts/ch06/run_bandit_matrix.py \
+uv run python scripts/ch06/run_bandit_matrix.py \
     --n-static $N_STATIC \
     --n-bandit $N_BANDIT \
     --world-seed-base $WORLD_SEED \
@@ -211,7 +207,7 @@ echo "TEST 7: Lab Solutions Module - All Exercises"
 echo "==============================================================================${NC}"
 echo ""
 
-python -m scripts.ch06.lab_solutions --all \
+uv run python -m scripts.ch06.lab_solutions --all \
     2>&1 | tee "$OUTPUT_DIR/test7_lab_solutions.log"
 
 echo -e "${GREEN}✓ Test 7 completed${NC}"
@@ -244,7 +240,7 @@ grep -A 10 "Summary (per-episode" "$OUTPUT_DIR/test1_simple_features.log" | head
 echo ""
 
 echo "Test 2 (Oracle Latents) - LINUCB WINS:"
-grep -A 10 "Summary (per-episode" "$OUTPUT_DIR/test2_rich_blend.log" | head -12 || echo "  (parsing failed)"
+grep -A 10 "Summary (per-episode" "$OUTPUT_DIR/test2_rich_oracle.log" | head -12 || echo "  (parsing failed)"
 echo ""
 
 echo "Test 4 (Estimated Latents) - TS WINS:"

@@ -1,0 +1,1576 @@
+% =============================================================================
+% LaTeX Template for Pandoc Markdown Conversion
+% =============================================================================
+% This template is used by: pandoc --template=latex_template.tex
+%
+% Features:
+%   - Article document class (suitable for individual chapters)
+%   - Full Unicode support via XeLaTeX/fontspec
+%   - Mathematical typesetting (amsmath, amssymb, amsthm)
+%   - Colored callout boxes (tcolorbox)
+%   - Code listings with syntax highlighting
+%   - Cross-references with hyperref
+%   - BibLaTeX bibliography support
+%
+% Usage:
+%   pandoc input.md --template=docs/book/latex_template.tex \
+%       --pdf-engine=xelatex -o output.tex
+% =============================================================================
+
+\documentclass[11pt,a4paper]{article}
+
+% =============================================================================
+% CORE PACKAGES
+% =============================================================================
+
+% Mathematics
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}  % Enhanced math features
+
+% Page layout
+\usepackage{geometry}
+\geometry{
+    margin=1in,
+    headheight=14pt
+}
+
+% Graphics and colors
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+% Tables
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+
+% Fix for pandoc-generated tables without captions
+% Pandoc uses \def\LTcaptype{none} which requires a 'none' counter
+\newcounter{none}
+
+% Lists
+\usepackage{enumitem}
+
+% =============================================================================
+% FONTS AND UNICODE (XeLaTeX)
+% =============================================================================
+
+\usepackage{fontspec}
+\usepackage{unicode-math}
+
+% Use default Latin Modern fonts (widely available)
+% Uncomment to specify custom fonts:
+% \setmainfont{TeX Gyre Pagella}
+% \setsansfont{TeX Gyre Heros}
+% \setmonofont{DejaVu Sans Mono}
+
+% Unicode character mappings for characters that may not be in fonts
+\usepackage{newunicodechar}
+
+% Arrows
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{←}{\ensuremath{\leftarrow}}
+\newunicodechar{↑}{\ensuremath{\uparrow}}
+\newunicodechar{↓}{\ensuremath{\downarrow}}
+\newunicodechar{⇒}{\ensuremath{\Rightarrow}}
+\newunicodechar{⇐}{\ensuremath{\Leftarrow}}
+\newunicodechar{⇔}{\ensuremath{\Leftrightarrow}}
+
+% Greek letters (in case font doesn't have them)
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{δ}{\ensuremath{\delta}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{θ}{\ensuremath{\theta}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{ω}{\ensuremath{\omega}}
+\newunicodechar{Σ}{\ensuremath{\Sigma}}
+\newunicodechar{Π}{\ensuremath{\Pi}}
+\newunicodechar{Ω}{\ensuremath{\Omega}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+
+% Mathematical symbols
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{∉}{\ensuremath{\notin}}
+\newunicodechar{⊂}{\ensuremath{\subset}}
+\newunicodechar{⊃}{\ensuremath{\supset}}
+\newunicodechar{⊆}{\ensuremath{\subseteq}}
+\newunicodechar{⊇}{\ensuremath{\supseteq}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{∪}{\ensuremath{\cup}}
+\newunicodechar{∞}{\ensuremath{\infty}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{∇}{\ensuremath{\nabla}}
+\newunicodechar{∑}{\ensuremath{\sum}}
+\newunicodechar{∏}{\ensuremath{\prod}}
+\newunicodechar{√}{\ensuremath{\sqrt{}}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{÷}{\ensuremath{\div}}
+\newunicodechar{±}{\ensuremath{\pm}}
+\newunicodechar{∓}{\ensuremath{\mp}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+
+% Typography - most handled by preprocessor (md2tex_preprocess.py)
+% Only fallback definitions for any characters that slip through
+\newunicodechar{—}{\textemdash}      % U+2014 em-dash (preprocessor converts to ---)
+\newunicodechar{–}{\textendash}      % U+2013 en-dash (preprocessor converts to --)
+\newunicodechar{‑}{-}                % U+2011 non-breaking hyphen
+
+% Space symbols (suppress in code)
+\newunicodechar{␣}{ }
+\newunicodechar{␠}{ }
+\newunicodechar{⎵}{ }
+
+% =============================================================================
+% CODE LISTINGS
+% =============================================================================
+
+\usepackage{listings}
+\usepackage{lstfiracode}  % Optional: FiraCode ligatures
+
+% Define colors for syntax highlighting
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{codeblue}{rgb}{0.13,0.29,0.53}
+\definecolor{codebg}{rgb}{0.97,0.97,0.97}
+
+% Default listing style
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{codebg},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codeblue}\bfseries,
+    stringstyle=\color{codepurple},
+    numberstyle=\tiny\color{codegray},
+    breaklines=true,
+    breakatwhitespace=false,
+    keepspaces=true,
+    numbers=left,
+    numbersep=8pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    frame=single,
+    framerule=0.5pt,
+    rulecolor=\color{codegray},
+    xleftmargin=2em,
+    framexleftmargin=1.5em,
+    aboveskip=1em,
+    belowskip=1em,
+    % Unicode in listings (use \ensuremath to avoid pandoc template conflicts)
+    literate={π}{{\ensuremath{\pi}}}1
+             {≈}{{\ensuremath{\approx}}}1
+             {→}{{\ensuremath{\to}}}1
+             {←}{{\ensuremath{\leftarrow}}}1
+             {↔}{{\ensuremath{\leftrightarrow}}}1
+             {≤}{{\ensuremath{\le}}}1
+             {≥}{{\ensuremath{\ge}}}1
+             {≠}{{\ensuremath{\neq}}}1
+             {∈}{{\ensuremath{\in}}}1
+             {—}{{---}}1
+             {–}{{--}}1,
+}
+
+% Python language definition
+\lstdefinelanguage{Python}{
+    keywords={False,None,True,and,as,assert,async,await,break,class,continue,def,del,elif,else,except,finally,for,from,global,if,import,in,is,lambda,nonlocal,not,or,pass,raise,return,try,while,with,yield},
+    morekeywords={self,cls},
+    sensitive=true,
+    morecomment=[l]{\#},
+    morecomment=[s]{'''}{'''},
+    morecomment=[s]{"""}{"""},
+    morestring=[b]',
+    morestring=[b]",
+}
+
+% YAML language definition
+\lstdefinelanguage{YAML}{
+    keywords={true,false,null,y,n},
+    sensitive=false,
+    comment=[l]{\#},
+    morestring=[b]',
+    morestring=[b]",
+}
+
+% =============================================================================
+% CALLOUT BOXES (tcolorbox)
+% =============================================================================
+
+\usepackage[most]{tcolorbox}
+
+% Note box (blue) - matches callouts.lua
+\newtcolorbox{CalloutNote}[1]{
+    colback=blue!4!white,
+    colframe=blue!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Also define NoteBox as alias
+\newtcolorbox{NoteBox}[1]{
+    colback=blue!4!white,
+    colframe=blue!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Tip box (green)
+\newtcolorbox{TipBox}[1]{
+    colback=green!4!white,
+    colframe=green!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Warning box (orange)
+\newtcolorbox{WarningBox}[1]{
+    colback=orange!4!white,
+    colframe=orange!60!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Danger box (red)
+\newtcolorbox{DangerBox}[1]{
+    colback=red!4!white,
+    colframe=red!50!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Info box (cyan)
+\newtcolorbox{InfoBox}[1]{
+    colback=cyan!4!white,
+    colframe=cyan!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Example box (purple)
+\newtcolorbox{ExampleBox}[1]{
+    colback=violet!4!white,
+    colframe=violet!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Important box (magenta)
+\newtcolorbox{ImportantBox}[1]{
+    colback=magenta!4!white,
+    colframe=magenta!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Caution box (yellow)
+\newtcolorbox{CautionBox}[1]{
+    colback=yellow!10!white,
+    colframe=yellow!60!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Abstract box (gray)
+\newtcolorbox{AbstractBox}[1]{
+    colback=gray!4!white,
+    colframe=gray!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Question box (teal)
+\newtcolorbox{QuestionBox}[1]{
+    colback=teal!4!white,
+    colframe=teal!40!black,
+    boxrule=0.5pt,
+    arc=2pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily
+}
+
+% Quote box (light gray)
+\newtcolorbox{QuoteBox}[1]{
+    colback=gray!2!white,
+    colframe=gray!30!black,
+    boxrule=0.5pt,
+    arc=0pt,
+    leftrule=3pt,
+    title=#1,
+    fonttitle=\bfseries\sffamily\itshape
+}
+
+% =============================================================================
+% THEOREM ENVIRONMENTS
+% =============================================================================
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{assumption}{Assumption}[section]
+
+% =============================================================================
+% HYPERLINKS AND CROSS-REFERENCES
+% =============================================================================
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    citecolor=green!60!black,
+    urlcolor=blue!70!black,
+    pdftitle={},
+    pdfauthor={},
+}
+
+% Clever references (optional, requires cleveref package)
+% \usepackage{cleveref}
+
+% =============================================================================
+% BIBLIOGRAPHY (BibLaTeX)
+% =============================================================================
+
+\usepackage[
+    backend=biber,
+    style=numeric,
+    sorting=none,
+    maxbibnames=99
+]{biblatex}
+
+% Add bibliography file if it exists
+% \addbibresource{references.bib}
+
+% =============================================================================
+% CUSTOM COMMANDS
+% =============================================================================
+
+% Expectation and Probability operators
+\DeclareMathOperator{\E}{\mathbb{E}}
+\DeclareMathOperator{\Prob}{\mathbb{P}}
+\DeclareMathOperator{\Var}{\mathrm{Var}}
+\DeclareMathOperator{\Cov}{\mathrm{Cov}}
+
+% Argmax/argmin
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% Common sets
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+
+% Bold vectors
+\renewcommand{\vec}[1]{\mathbf{#1}}
+
+% =============================================================================
+% PANDOC COMPATIBILITY
+% =============================================================================
+
+% Tight lists (Pandoc generates these)
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Scaling for images
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+
+% Code highlighting (Pandoc style)
+
+% =============================================================================
+% DOCUMENT METADATA
+% =============================================================================
+
+
+
+\date{\today}
+
+% =============================================================================
+% DOCUMENT BODY
+% =============================================================================
+
+\begin{document}
+
+
+
+\tableofcontents
+\newpage
+
+\section{Chapter 0 --- Motivation: Your First RL
+Experiment}\label{chapter-0-motivation-your-first-rl-experiment}
+
+\emph{Vlad Prytula}
+
+\subsection{0.0 Who Should Read This?}\label{who-should-read-this}
+
+This is an \textbf{optional but highly recommended warm-up}. It's
+deliberately light on mathematics and heavy on code. You'll build a tiny
+search world, train a small agent to learn context-adaptive boost
+weights, and see the core RL loop in action. The rest of the book
+(Chapters 1--3) provides the rigorous foundations that explain
+\emph{why} this works and \emph{when} it fails.
+
+\textbf{If you're a practitioner:} Start here. Get your hands dirty with
+a working system in 30 minutes. Return to the theory when you need
+deeper understanding.
+
+\textbf{If you're mathematically inclined:} Skim this chapter to see
+where we're headed, then dive into Chapter 1's rigorous treatment. Come
+back here when you want a concrete thread to follow.
+
+\textbf{Ethos:} Every theorem in this book compiles. Mathematics and
+code are in constant dialogue.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{0.1 The Friday Deadline}\label{the-friday-deadline}
+
+You've just joined the search team at \textbf{zooplus}, Europe's leading
+pet supplies retailer. Your first task seems straightforward: improve
+the ranking for ``cat food'' searches.
+
+The current system uses Elasticsearch's BM25 relevance plus some manual
+boost multipliers---a \passthrough{\lstinline!category\_match!} bonus, a
+\passthrough{\lstinline!discount\_boost!} for promotions, a
+\passthrough{\lstinline!margin\_boost!} for profitable products. Your
+manager hands you last week's A/B test results and says:
+
+\begin{quote}
+``Revenue is flat, but profit dropped 8\%. Can you fix the boosts by
+Friday?''
+\end{quote}
+
+You dig into the data. The test increased
+\passthrough{\lstinline!discount\_boost!} from 1.5 to 2.5, hoping to
+drive sales. It worked---clicks went up 12\%. But the wrong people
+clicked. Price-sensitive shoppers loved the discounted bulk bags.
+Premium customers, who usually buy veterinary-grade specialty foods, saw
+cheap products ranked first and bounced. Click-through rate (CTR) rose,
+but conversion rate (CVR) plummeted for high-value segments.
+
+\textbf{The problem is clear:} One set of boost weights cannot serve all
+users. Price hunters need discount\_boost = 2.5. Premium shoppers need
+discount\_boost = 0.3. Bulk buyers fall somewhere in between.
+
+You need \textbf{context-adaptive weights} that adjust to user type. But
+testing all combinations manually would take months of A/B experiments.
+
+\textbf{This is where reinforcement learning enters the story.}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{0.2 The Core Insight: Boosts as
+Actions}\label{the-core-insight-boosts-as-actions}
+
+Let's reframe the problem in RL language. Don't worry if these terms are
+unfamiliar---they'll make sense through the code.
+
+\textbf{Context} (what we observe): User segment, query type, session
+history \textbf{Action} (what we choose): Boost weight template
+\(\mathbf{w} = [w_{\text{discount}}, w_{\text{quality}}, w_{\text{margin}}, \ldots]\)
+\textbf{Outcome} (what happens): User clicks, purchases, abandons
+\textbf{Reward} (what we optimize): GMV + profitability + engagement
+(we'll make this precise in a moment)
+
+Traditional search tuning treats boosts as \textbf{fixed parameters} to
+optimize offline. RL treats them as \textbf{actions to learn online},
+adapting to each context.
+
+The Friday deadline problem becomes: \emph{Can an algorithm learn which
+boost template to use for each user type, using only observed outcomes
+(clicks, purchases, revenue)?}
+
+The answer is yes. Let's build it.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{0.3 A Tiny World: Toy Simulator and
+Reward}\label{a-tiny-world-toy-simulator-and-reward}
+
+We start with a high-signal toy environment. Three user types, ten
+products, a small action space. The goal is \textbf{intuition} and a
+\textbf{quick end-to-end run}. Chapter 4 will build the realistic
+simulator (\passthrough{\lstinline!zoosim!}).
+
+\subsubsection{0.3.1 User Types}\label{user-types}
+
+Real search systems have complex user segmentation (behavioral
+embeddings from clickstreams, transformer-based intent models, predicted
+LTV, real-time session signals). Our toy has three archetypes:
+
+\begin{lstlisting}[language=Python]
+from typing import NamedTuple
+
+class UserType(NamedTuple):
+    """User preferences over product attributes.
+
+    Fields:
+        discount: Sensitivity to discounts (0 = indifferent, 1 = only buys discounts)
+        quality: Sensitivity to brand quality (0 = indifferent, 1 = only buys premium)
+    """
+    discount: float
+    quality: float
+
+USER_TYPES = {
+    "price_hunter": UserType(discount=0.9, quality=0.1),  # Budget-conscious
+    "premium":      UserType(discount=0.1, quality=0.9),  # Quality-focused
+    "bulk_buyer":   UserType(discount=0.5, quality=0.5),  # Balanced
+}
+\end{lstlisting}
+
+These map to real patterns: - \textbf{Price hunters}: ALDI shoppers,
+coupon clippers, bulk buyers - \textbf{Premium}: Brand-loyal, willing to
+pay for specialty/veterinary products - \textbf{Bulk buyers}: Multi-pet
+households, mix of price and quality
+
+\subsubsection{0.3.2 Products (Sketch)}\label{products-sketch}
+
+Ten products with simple features:
+
+\begin{lstlisting}[language=Python]
+from dataclasses import dataclass
+
+@dataclass
+class Product:
+    id: int
+    base_relevance: float  # BM25-like score for query "cat food"
+    margin: float          # Profit margin (0.1 = 10%)
+    quality: float         # Brand quality score (0-1)
+    discount: float        # Discount flag (0 or 1)
+    price: float           # EUR per item
+\end{lstlisting}
+
+Example: Product 3 is a premium veterinary diet (high quality, high
+margin, no discount, high price). Product 7 is a bulk discount bag (low
+quality, low margin, discounted, low price per kg).
+
+We'll use deterministic generation with a fixed seed so results are
+reproducible.
+
+\subsubsection{0.3.3 Actions: Boost Weight
+Templates}\label{actions-boost-weight-templates}
+
+The full action space is continuous:
+\(\mathbf{a} = [w_{\text{discount}}, w_{\text{quality}}, w_{\text{margin}}] \in [-2, 2]^3\).
+
+For this chapter, we \textbf{discretize} to a \(5 \times 5\) grid (25
+templates) to keep learning tabular and fast:
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+
+# Discretize [-1, 1] x [-1, 1] into a 5x5 grid
+discount_values = np.linspace(-1, 1, 5)  # [-1.0, -0.5, 0.0, 0.5, 1.0]
+quality_values = np.linspace(-1, 1, 5)
+
+ACTIONS = [
+    (w_disc, w_qual)
+    for w_disc in discount_values
+    for w_qual in quality_values
+]  # 25 total actions
+\end{lstlisting}
+
+Each action is a \textbf{template}: a pair
+\passthrough{\lstinline!(w\_discount, w\_quality)!} that modifies the
+base relevance scores.
+
+\textbf{Why discretize?} Tabular Q-learning needs a finite action space.
+Chapter 7 handles continuous actions via regression and optimization.
+For now, we want the simplest algorithm that works.
+
+\subsubsection{0.3.4 Toy Reward Function}\label{toy-reward-function}
+
+Real search systems balance multiple objectives (see Chapter 1,
+\eqref{EQ-1.2} for the full formulation). Our toy uses a simplified
+scalar:
+
+\[
+R_{\text{toy}} = 0.6 \cdot \text{GMV} + 0.3 \cdot \text{CM2} + 0.1 \cdot \text{CLICKS}
+\]
+
+\textbf{Components:}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{GMV} (Gross Merchandise Value): Total EUR purchased (simulated
+  based on user preferences + product attributes + boost-induced
+  ranking)
+\item
+  \textbf{CM2} (Contribution Margin 2): Profitability after variable
+  costs
+\item
+  \textbf{CLICKS}: Engagement signal (prevents pure GMV exploitation;
+  see Chapter 1, Section 1.2.1 for why this matters)
+\end{itemize}
+
+\textbf{Notes:}
+
+\begin{itemize}
+\tightlist
+\item
+  No explicit STRAT (strategic exposure) term in the toy
+\item
+  In Chapter 1 you'll meet the general, numbered formulation this
+  instantiates
+\item
+  The weights (0.6, 0.3, 0.1) are business parameters, not learned
+\end{itemize}
+
+\textbf{Key property:} \(R_{\text{toy}}\) is \textbf{stochastic}. Same
+user type, same boost weights \(\rightarrow\) different outcomes due to
+user behavior noise (clicks are probabilistic, cart abandonment is
+random). This forces the agent to learn robust policies.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{0.4 Your First RL Agent: Tabular
+Q-Learning}\label{your-first-rl-agent-tabular-q-learning}
+
+Now we get to the core idea: \textbf{learn which boost template to use
+for each user type} via \(\varepsilon\)-greedy Q-learning.
+
+\subsubsection{0.4.1 Problem Recap}\label{problem-recap}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Contexts} \(\mathcal{X}\): Three user types
+  \passthrough{\lstinline!\{price\_hunter, premium, bulk\_buyer\}!}
+\item
+  \textbf{Actions} \(\mathcal{A}\): 25 boost templates (\(5 \times 5\)
+  grid)
+\item
+  \textbf{Reward} \(R\): Stochastic \(R_{\text{toy}}\) from Section
+  0.3.4
+\item
+  \textbf{Goal}: Find a policy \(\pi: \mathcal{X} \to \mathcal{A}\) that
+  maximizes expected reward
+\end{itemize}
+
+This is a \textbf{contextual bandit} (Chapter 1 makes this formal). Each
+episode:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Sample user type \(x \sim \rho\) (uniform over 3 types)
+\item
+  Choose action \(a = \pi(x)\) (boost template)
+\item
+  Simulate user behavior under ranking induced by \(a\)
+\item
+  Observe reward \(r \sim R(x, a)\)
+\item
+  Update policy \(\pi\)
+\end{enumerate}
+
+No sequential state transitions (yet). Single-step decision. Pure
+exploration-exploitation.
+
+\subsubsection{\texorpdfstring{0.4.2 Algorithm: \(\varepsilon\)-Greedy
+Q-Learning}{0.4.2 Algorithm: \textbackslash varepsilon-Greedy Q-Learning}}\label{algorithm-varepsilon-greedy-q-learning}
+
+We'll maintain a \textbf{Q-table}:
+\(Q(x, a) \approx \mathbb{E}[R \mid x, a]\) (expected reward for using
+boost template \(a\) in context \(x\)).
+
+\textbf{Policy:} - With probability \(\varepsilon\): explore (random
+action) - With probability \(1 - \varepsilon\): exploit
+(\(a^* = \arg\max_a Q(x, a)\))
+
+\textbf{Update rule (after observing \(r\)):} \[
+Q(x, a) \leftarrow (1 - \alpha) Q(x, a) + \alpha \cdot r
+\]
+
+This is \textbf{incremental mean estimation} (stochastic approximation),
+not Q-learning in the MDP sense. With constant learning rate \(\alpha\),
+this converges to a weighted average of recent rewards. With decaying
+\(\alpha_t \propto 1/t\), it converges to \(\mathbb{E}[R \mid x, a]\) by
+the Robbins-Monro theorem {[}@robbins:stochastic\_approx:1951{]}.
+
+\textbf{Note:} We call this ``Q-learning'' informally because we're
+learning a Q-table, but the standard Q-learning algorithm for MDPs
+includes a \(\gamma \max_{a'} Q(s', a')\) term for bootstrapping future
+values. In bandits (\(\gamma = 0\)), this term vanishes, reducing to the
+update above. Chapter 3's Bellman contraction analysis applies to the
+general MDP case; for bandits, standard stochastic approximation
+suffices.
+
+\subsubsection{0.4.3 Minimal
+Implementation}\label{minimal-implementation}
+
+Here's the complete agent in \textasciitilde50 lines:
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+from typing import List, Tuple
+
+# Setup
+rng = np.random.default_rng(42)  # Reproducibility
+X = ["price_hunter", "premium", "bulk_buyer"]  # Contexts
+A = [(i, j) for i in range(5) for j in range(5)]  # 25 boost templates
+
+# Initialize Q-table: Q[context][action] = 0.0
+Q = {x: {a: 0.0 for a in A} for x in X}
+
+
+def choose_action(x: str, eps: float = 0.1) -> Tuple[int, int]:
+    """Epsilon-greedy action selection.
+
+    Args:
+        x: User context (type)
+        eps: Exploration probability
+
+    Returns:
+        Boost template (w_discount_idx, w_quality_idx)
+    """
+    if rng.random() < eps:
+        return A[rng.integers(len(A))]  # Explore
+    return max(A, key=lambda a: Q[x][a])  # Exploit
+
+
+def reward(x: str, a: Tuple[int, int]) -> float:
+    """Simulate reward for context x and action a.
+
+    Toy model: preference alignment + noise.
+    In reality, this would run the full simulator (rank products,
+    simulate clicks/purchases, compute GMV+CM2+CLICKS).
+
+    Args:
+        x: User type
+        a: Boost template indices (i, j) in [0, 4] x [0, 4]
+
+    Returns:
+        Scalar reward ~ R_toy from Section 0.3.4
+    """
+    i, j = a  # i = discount index, j = quality index
+
+    # Map indices to [-1, 1] weights
+    # i=0 -> w_discount=-1.0, i=4 -> w_discount=1.0
+    w_discount = -1.0 + 0.5 * i
+    w_quality = -1.0 + 0.5 * j
+
+    # Simulate reward based on user preferences
+    if x == "price_hunter":
+        # Prefer high discount boost (i=4), low quality boost (j=0)
+        base = 2.0 * w_discount - 0.5 * w_quality
+    elif x == "premium":
+        # Prefer high quality boost (j=4), low discount boost (i=0)
+        base = 2.0 * w_quality - 0.5 * w_discount
+    else:  # bulk_buyer
+        # Balanced preferences: penalize extreme boosts, prefer moderate values
+        base = 1.0 - abs(w_discount) - abs(w_quality)
+
+    # Add stochastic noise (user behavior variability)
+    noise = rng.normal(0.0, 0.5)
+
+    return float(base + noise)
+
+
+def train(T: int = 3000, eps: float = 0.1, lr: float = 0.1) -> List[float]:
+    """Train Q-learning agent for T episodes.
+
+    Args:
+        T: Number of training episodes
+        eps: Exploration probability (epsilon-greedy)
+        lr: Learning rate ($\alpha$ in update rule)
+
+    Returns:
+        List of rewards per episode (for plotting learning curves)
+    """
+    history = []
+
+    for t in range(T):
+        # Sample context (user type) uniformly
+        x = X[rng.integers(len(X))]
+
+        # Choose action (boost template) via epsilon-greedy
+        a = choose_action(x, eps)
+
+        # Simulate outcome and observe reward
+        r = reward(x, a)
+
+        # Q-learning update: Q(x,a) <- (1-alpha)Q(x,a) + alpha*r
+        Q[x][a] = (1 - lr) * Q[x][a] + lr * r
+
+        history.append(r)
+
+    return history
+
+
+# Train agent
+hist = train(T=3000, eps=0.1, lr=0.1)
+
+# Evaluate learned policy
+print(f"Final average reward (last 100 episodes): {np.mean(hist[-100:]):.3f}")
+print("\nLearned policy:")
+for x in X:
+    a_star = max(A, key=lambda a: Q[x][a])
+    print(f"  {x:15s} -> action {a_star} (Q = {Q[x][a_star]:.3f})")
+\end{lstlisting}
+
+\textbf{Run it.} Copy this code, execute it. You should see output like:
+
+\begin{lstlisting}
+Final average reward (last 100 episodes): 1.640
+Learned policy:
+  price_hunter    -> action (4, 1) (Q = 1.948)
+  premium         -> action (1, 4) (Q = 2.289)
+  bulk_buyer      -> action (2, 2) (Q = 0.942)
+\end{lstlisting}
+
+\textbf{What just happened?}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  The agent explored 25 boost templates \(\times\) 3 user types = 75
+  state-action pairs
+\item
+  After 3000 episodes, it learned:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{Price hunters}: Use \passthrough{\lstinline!(4, 1)!} = high
+    discount boost (+1.0), low quality boost (-0.5)
+  \item
+    \textbf{Premium shoppers}: Use \passthrough{\lstinline!(1, 4)!} =
+    low discount boost (-0.5), high quality boost (+1.0)
+  \item
+    \textbf{Bulk buyers}: Use \passthrough{\lstinline!(2, 2)!} =
+    balanced boosts (0.0, 0.0) --- \textbf{exactly optimal!}
+  \end{itemize}
+\item
+  This matches our intuition from Section 0.3.1!
+\end{enumerate}
+
+\textbf{Stochastic convergence.} Run the script multiple times with
+different seeds. The learned actions might vary slightly (e.g.,
+\passthrough{\lstinline!(4, 0)!} vs \passthrough{\lstinline!(4, 1)!} for
+price hunters), but the pattern holds: discount-heavy for price hunters,
+quality-heavy for premium shoppers, balanced for bulk buyers.
+
+\subsubsection{0.4.4 Learning Curves and
+Baselines}\label{learning-curves-and-baselines}
+
+Let's visualize learning progress and compare to baselines.
+
+\begin{lstlisting}[language=Python]
+import matplotlib.pyplot as plt
+
+def plot_learning_curves(history: List[float], window: int = 50):
+    """Plot smoothed learning curve with baselines."""
+    # Compute rolling average
+    smoothed = np.convolve(history, np.ones(window)/window, mode='valid')
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Learning curve
+    ax.plot(smoothed, label='Q-learning (smoothed)', linewidth=2)
+
+    # Baselines
+    random_baseline = np.mean([reward(x, A[rng.integers(len(A))])
+                               for _ in range(1000)
+                               for x in X])
+    ax.axhline(random_baseline, color='red', linestyle='--',
+               label=f'Random policy ({random_baseline:.2f})')
+
+    # Static best (tuned for average user)
+    static_best = np.mean([reward(x, (2, 2)) for _ in range(300) for x in X])
+    ax.axhline(static_best, color='orange', linestyle='--',
+               label=f'Static best ({static_best:.2f})')
+
+    # Oracle (knows user type, chooses optimally)
+    # Optimal actions: price_hunter->(4,0), premium->(0,4), bulk_buyer->(2,2)
+    oracle_rewards = {
+        "price_hunter": np.mean([reward("price_hunter", (4, 0)) for _ in range(50)]),
+        "premium": np.mean([reward("premium", (0, 4)) for _ in range(50)]),
+        "bulk_buyer": np.mean([reward("bulk_buyer", (2, 2)) for _ in range(50)]),
+    }
+    oracle = np.mean(list(oracle_rewards.values()))
+    ax.axhline(oracle, color='green', linestyle='--',
+               label=f'Oracle ({oracle:.2f})')
+
+    ax.set_xlabel('Episode')
+    ax.set_ylabel('Reward (smoothed)')
+    ax.set_title('Learning Curve: Contextual Bandit for Boost Optimization')
+    ax.legend()
+    ax.grid(alpha=0.3)
+
+    plt.tight_layout()
+    return fig
+
+# Generate and save plot
+fig = plot_learning_curves(hist)
+fig.savefig('toy_problem_learning_curves.png', dpi=150)
+print("Saved learning curve to toy_problem_learning_curves.png")
+\end{lstlisting}
+
+\textbf{Expected output:}
+
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Learning Curves}]{docs/book/ch00/learning_curves.png}}
+\caption{Learning Curves}
+\end{figure}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Random policy} (red dashed): \textasciitilde0.0 average reward
+  (baseline---random actions average out)
+\item
+  \textbf{Static best} (orange dashed): \textasciitilde0.3
+  (one-size-fits-all \passthrough{\lstinline!(2,2)!} helps bulk buyers
+  but hurts price hunters and premium)
+\item
+  \textbf{Q-learning} (blue solid): Starts near 0, converges to
+  \textasciitilde1.6 by episode 1500
+\item
+  \textbf{Oracle} (green dashed): \textasciitilde2.0 (theoretical
+  maximum with perfect knowledge of optimal actions per user)
+\end{itemize}
+
+\textbf{Key insight:} Q-learning reaches \textbf{82\% of oracle
+performance} by learning from experience alone. No manual tuning. No A/B
+tests. Just 3000 interactions and adaptive learning. The bulk\_buyer
+even finds the \textbf{exact optimal} action
+\passthrough{\lstinline!(2,2)!}!
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{0.5 Reading the Experiment: What We
+Learned}\label{reading-the-experiment-what-we-learned}
+
+\subsubsection{Convergence Pattern}\label{convergence-pattern}
+
+The learning curve has three phases:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Pure exploration} (episodes 0--500): High variance,
+  \(\varepsilon\)-greedy tries random actions, Q-values are noisy
+\item
+  \textbf{Exploitation begins} (episodes 500--1500): Agent identifies
+  good actions per context, reward climbs steadily
+\item
+  \textbf{Convergence} (episodes 1500--3000): Q-values stabilize, reward
+  plateaus at \textasciitilde82\% of oracle
+\end{enumerate}
+
+This is \textbf{regret minimization} in action. Chapter 1 formalizes
+this; Chapter 6 analyzes convergence rates.
+
+\subsubsection{Per-Segment Performance}\label{per-segment-performance}
+
+If we track rewards separately by user type:
+
+\begin{lstlisting}[language=Python]
+# Track per-segment performance
+segment_rewards = {x: [] for x in X}
+
+for _ in range(100):  # 100 test episodes
+    for x in X:
+        a = max(A, key=lambda a: Q[x][a])  # Greedy policy (no exploration)
+        r = reward(x, a)
+        segment_rewards[x].append(r)
+
+for x in X:
+    print(f"{x:15s}: mean reward = {np.mean(segment_rewards[x]):.3f}")
+\end{lstlisting}
+
+\textbf{Output:}
+
+\begin{lstlisting}
+price_hunter   : mean reward = 2.309
+premium        : mean reward = 2.163
+bulk_buyer     : mean reward = 0.917
+\end{lstlisting}
+
+\textbf{Analysis:}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Price hunters} get the highest rewards
+  (\textasciitilde2.3)---the agent found a near-optimal action
+  \passthrough{\lstinline!(4, 1)!} with high discount boost
+\item
+  \textbf{Premium shoppers} get high rewards (\textasciitilde2.2)---high
+  quality boost \passthrough{\lstinline!(1, 4)!} closely matches their
+  preferences
+\item
+  \textbf{Bulk buyers} get lower rewards (\textasciitilde0.9) because
+  their \textbf{balanced preferences} have inherently lower optimal
+  reward (base=1.0 at \passthrough{\lstinline!(2,2)!}) compared to
+  polarized users (base=2.5). But the agent finds the \textbf{exact
+  optimal}!
+\item
+  All three segments dramatically beat the static baseline
+  (\textasciitilde0.3 average) through personalization
+\end{itemize}
+
+This is \textbf{personalization} at work: different users get different
+rankings, each optimized for their revealed preferences.
+
+\subsubsection{What We (Hand-Wavily)
+Assumed}\label{what-we-hand-wavily-assumed}
+
+This toy experiment ``just worked,'' but we made implicit assumptions:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Rewards are well-defined expectations} over stochastic
+  outcomes (Chapter 2 makes this measure-theoretically rigorous)
+\item
+  \textbf{Exploration is safe} (in production, bad rankings lose users;
+  Chapter 9 introduces off-policy evaluation for safer testing)
+\item
+  \textbf{The logging policy and new policy have sufficient overlap} to
+  compare fairly (importance weights finite; Chapter 9)
+\item
+  \textbf{\(\varepsilon\)-greedy tabular Q converges} (for bandits, this
+  follows from stochastic approximation theory; Chapter 3's Bellman
+  contraction analysis applies to the full MDP case with \(\gamma > 0\))
+\item
+  \textbf{Actions are discrete and state space is tiny} (Chapter 7
+  handles continuous actions; Chapter 4 builds realistic state)
+\end{enumerate}
+
+None of these are free. The rest of the book makes them precise and
+shows when they hold (or how to proceed when they don't).
+
+\subsubsection{\texorpdfstring{Theory-Practice Gap:
+\(\varepsilon\)-Greedy
+Exploration}{Theory-Practice Gap: \textbackslash varepsilon-Greedy Exploration}}\label{theory-practice-gap-varepsilon-greedy-exploration}
+
+Our toy used \(\varepsilon\)-greedy exploration with constant
+\(\varepsilon = 0.1\). This deserves scrutiny.
+
+\textbf{What theory says:} With decaying \(\varepsilon_t = O(1/t)\),
+\(\varepsilon\)-greedy achieves \(O(\sqrt{T \log T})\) regret for
+finite-armed bandits---worse than UCB's \(O(\sqrt{KT \log T})\) by a
+factor due to uniform exploration wasting samples on clearly suboptimal
+arms.
+
+\textbf{What practice shows:} \(\varepsilon\)-greedy with constant
+\(\varepsilon \in [0.05, 0.2]\) is often competitive because:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Trivial to implement}: No confidence bounds, no posterior
+  sampling, just a random number generator
+\item
+  \textbf{Handles non-stationarity gracefully}: Continues exploring even
+  after ``convergence'' (useful when user preferences drift)
+\item
+  \textbf{The regret difference matters only at scale}: For our
+  1000-episode toy, the gap between \(\varepsilon\)-greedy and UCB is
+  negligible
+\end{enumerate}
+
+\textbf{When \(\varepsilon\)-greedy fails:} High-dimensional action
+spaces where uniform exploration wastes samples. For our 25-action toy
+problem, it's fine. For Chapter 7's continuous actions (\(10^{100}\)
+effective arms), we need structured exploration (UCB, Thompson
+Sampling).
+
+\textbf{Modern context:} Google's 2010 display ads paper
+{[}@li:contextual\_bandit\_approach:2010{]} used \(\varepsilon\)-greedy
+successfully at scale. But recent work (2020-2024) favors Thompson
+Sampling for better empirical performance and natural uncertainty
+quantification.
+
+\textbf{Why UCB and Thompson Sampling?} (Preview for Chapter 6)
+
+\(\varepsilon\)-greedy explores \textbf{uniformly}---it wastes samples
+on arms it already knows are bad. UCB explores
+\textbf{optimistically}---it tries arms whose rewards \emph{might} be
+high given uncertainty:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{UCB:} Choose \(a_t = \arg\max_a [Q(x,a) + \beta \sigma(x,a)]\)
+  where \(\sigma\) is a confidence width. Explores arms with high
+  uncertainty, not randomly.
+\item
+  \textbf{Thompson Sampling:} Maintain posterior
+  \(P(Q^* \mid \text{data})\), sample \(\tilde{Q} \sim P\), act greedily
+  on sample. Naturally balances exploration (high posterior variance
+  \(\rightarrow\) diverse samples) with exploitation.
+\end{itemize}
+
+Both achieve \(\tilde{O}(d\sqrt{T})\) regret for \(d\)-dimensional
+linear bandits---matching the lower bound up to logs.
+\(\varepsilon\)-greedy achieves \(O(T^{2/3})\) for the same problem
+(provably worse). The gap widens in high dimensions.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{0.6 Limitations: Why We Need the Rest of the
+Book}\label{limitations-why-we-need-the-rest-of-the-book}
+
+Our toy is \textbf{pedagogical}, not production-ready. Here's what
+breaks at scale:
+
+\subsubsection{1. Discrete Action Space}\label{discrete-action-space}
+
+We used 25 templates. Real search has continuous boosts:
+\(\mathbf{w} \in [-5, 5]^{10}\) (ten features, unbounded). Discretizing
+to a grid would require \(100^{10} = 10^{20}\) actions---intractable.
+
+\textbf{Solution:} Chapter 7 introduces \textbf{continuous action
+bandits} via \(Q(x, a)\) regression and cross-entropy method (CEM)
+optimization.
+
+\subsubsection{2. Tabular State
+Representation}\label{tabular-state-representation}
+
+We had 3 user types. Real search has thousands of user segments (RFM
+bins, geographic regions, device types, time-of-day). Plus query
+features (length, specificity, category). A realistic context space is
+\textbf{high-dimensional and continuous}.
+
+\textbf{Solution:} Chapter 6 (neural linear bandits), Chapter 7 (deep
+Q-networks with continuous state/action).
+
+\subsubsection{3. No Constraints}\label{no-constraints}
+
+Our agent optimized \(R_{\text{toy}}\) without guardrails. Real systems
+must enforce: - Profitability floors (CM2 \(\geq\) threshold) - Exposure
+targets (strategic products get visibility) - Rank stability (limit
+reordering volatility)
+
+\textbf{Solution:} Chapter 10 introduces production \textbf{guardrails}
+(CM2 floors, \(\Delta\)Rank@k stability), with Chapter 3 (Section 3.5)
+providing the formal CMDP theory and Lagrangian methods.
+
+\subsubsection{4. Simplified Position
+Bias}\label{simplified-position-bias}
+
+We didn't model how clicks depend on rank. Real users exhibit
+\textbf{position bias} (top-3 slots get 80\% of clicks) and
+\textbf{abandonment} (quit after 5 results if nothing relevant).
+
+\textbf{Solution:} Chapter 2 develops PBM/DBN click models; Chapter 5
+implements them in \passthrough{\lstinline!zoosim!}.
+
+\subsubsection{5. Online Exploration
+Risk}\label{online-exploration-risk}
+
+We trained by interacting with users directly (episodes = real
+searches). In production, bad rankings \textbf{cost real money} and
+\textbf{lose real users}. We need safer evaluation.
+
+\textbf{Solution:} Chapter 9 introduces \textbf{off-policy evaluation
+(OPE)}: estimate new policy performance using logged data from old
+policy, without deploying.
+
+\subsubsection{6. Single-Episode Horizon}\label{single-episode-horizon}
+
+We treated each search as independent. Real users return across
+sessions. Today's ranking affects tomorrow's retention.
+
+\textbf{Solution:} Chapter 11 extends to \textbf{multi-episode MDPs}
+with inter-session dynamics (retention, satisfaction state).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{0.7 Map to the Book}\label{map-to-the-book}
+
+Here's how our toy connects to the rigorous treatment ahead:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3023}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5465}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1512}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Toy Concept}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Formal Treatment}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Chapter}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+User types & Context space \(\mathcal{X}\), distribution \(\rho\) & 1 \\
+Boost templates & Action space \(\mathcal{A}\), policy \(\pi\) & 1, 6,
+7 \\
+\(R_{\text{toy}}\) & Reward function
+\(R: \mathcal{X} \times \mathcal{A} \times \Omega \to \mathbb{R}\),
+constraints & 1 \\
+\(\varepsilon\)-greedy Q-learning & Bellman operator, contraction
+mappings & 3 \\
+Stochastic outcomes & Probability spaces, click models (PBM/DBN) & 2 \\
+Learning curves & Regret bounds, sample complexity & 6 \\
+Static best vs oracle & Importance sampling, off-policy evaluation &
+9 \\
+Guardrails (missing) & CMDP (Section 3.5), production guardrails & 3,
+10 \\
+Engagement proxy & Multi-episode MDP, retention modeling & 11 \\
+\end{longtable}
+}
+
+\textbf{Chapters 1--3} provide foundations: contextual bandits, measure
+theory, Bellman operators. \textbf{Chapters 4--8} build the simulator
+and core algorithms. \textbf{Chapters 9--11} handle evaluation,
+robustness, and production deployment. \textbf{Chapters 12--15} cover
+frontier methods (slate ranking, offline RL, multi-objective
+optimization).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{0.8 How to Use This Book}\label{how-to-use-this-book}
+
+\subsubsection{For Practitioners}\label{for-practitioners}
+
+\textbf{Do Chapter 0 thoroughly.} Run the code. Modify the reward
+function (Exercise 0.1). Try different exploration strategies (Exercise
+0.2).
+
+\textbf{Then skim Chapters 1--3} on first read. Focus on: - The reward
+formulation (\#EQ-1.2 in Chapter 1) - Why engagement matters (Section
+1.2.1) - The Bellman contraction intuition (Chapter 3, skip proof
+details initially)
+
+\textbf{Dive deep into Chapters 4--11} (simulator + algorithms +
+evaluation). This is your implementation roadmap.
+
+\textbf{Return to theory as needed.} When something doesn't work (e.g.,
+``why is my Q-network diverging?''), revisit Chapter 3's convergence
+analysis.
+
+\subsubsection{For Researchers / Mathematically
+Inclined}\label{for-researchers-mathematically-inclined}
+
+\textbf{Skim Chapter 0} to see the concrete thread.
+
+\textbf{Start at Chapter 1.} Work through definitions, theorems, proofs.
+Verify the code validates the mathematics.
+
+\textbf{Do the exercises.} Mix of proofs (30\%), implementations (40\%),
+experiments (20\%), conceptual questions (10\%).
+
+\textbf{Use Chapter 0 as a touchstone.} When abstractions feel
+overwhelming, return to the toy: ``How does this theorem explain why
+Q-learning converged in Section 0.4?''
+
+\subsubsection{For Everyone}\label{for-everyone}
+
+\textbf{Ethos:} Mathematics and code are \textbf{inseparable}. Every
+theorem compiles. Every algorithm is proven rigorous, then implemented
+in production-quality code. Theory and practice in constant dialogue.
+
+If you see a proof without code or code without theory, something is
+missing. Let me know.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Exercises (Chapter 0)}\label{exercises-chapter-0}
+
+\textbf{Exercise 0.1} (Reward Sensitivity) {[}15 minutes{]}
+
+Modify \passthrough{\lstinline!reward()!} to use different weights in
+\(R_{\text{toy}}\): - (a) Pure GMV: \((1.0, 0.0, 0.0)\) (no
+profitability or engagement terms) - (b) Profit-focused:
+\((0.4, 0.5, 0.1)\) (prioritize CM2 over GMV) - (c) Engagement-heavy:
+\((0.5, 0.2, 0.3)\) (high click weight)
+
+For each, train Q-learning and report: - Final average reward - Learned
+actions per user type - Does the policy change? Why?
+
+\textbf{Hint:} Case (c) risks ``clickbait'' strategies (see Chapter 1,
+Section 1.2.1). Monitor conversion quality.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\textbf{Exercise 0.2} (Action Geometry) {[}30 minutes{]}
+
+Compare two exploration strategies:
+
+\textbf{Strategy A (current):} \(\varepsilon\)-greedy with uniform
+random action sampling
+
+\textbf{Strategy B (neighborhood):} \(\varepsilon\)-greedy with
+\textbf{local perturbation}: when exploring, sample action near current
+best \(a^* = \arg\max_a Q(x, a)\):
+
+\begin{lstlisting}[language=Python]
+def explore_local(x, sigma=1.0):
+    a_star = max(A, key=lambda a: Q[x][a])
+    i_star, j_star = a_star
+    i_new = np.clip(i_star + rng.integers(-1, 2), 0, 4)
+    j_new = np.clip(j_star + rng.integers(-1, 2), 0, 4)
+    return (i_new, j_new)
+\end{lstlisting}
+
+Implement both, train for 1000 episodes, and plot learning curves. Which
+converges faster? Why?
+
+\textbf{Reflection:} This is \textbf{structured exploration}. Chapter 6
+introduces UCB and Thompson Sampling, which balance exploration and
+exploitation more principled than \(\varepsilon\)-greedy.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\textbf{Exercise 0.3} (Regret Shape) {[}45 minutes, extended{]}
+
+Define \textbf{cumulative regret} as the gap between oracle and agent:
+
+\[
+\text{Regret}(T) = \sum_{t=1}^{T} (R^*_t - R_t)
+\]
+
+where \(R^*_t\) is the oracle reward (best action for context \(x_t\))
+and \(R_t\) is the agent's reward.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\tightlist
+\item
+  Implement regret tracking:
+\end{enumerate}
+
+\begin{lstlisting}[language=Python]
+def compute_regret(history, contexts, oracle_Q):
+    regret = []
+    cumulative = 0.0
+    for t, (x, r) in enumerate(zip(contexts, history)):
+        r_star = oracle_Q[x]
+        cumulative += (r_star - r)
+        regret.append(cumulative)
+    return regret
+\end{lstlisting}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{1}
+\item
+  Plot cumulative regret vs episode count. Is it sublinear (i.e., does
+  \(\text{Regret}(T) / T \to 0\))?
+\item
+  Fit a curve: \(\text{Regret}(T) \approx C \sqrt{T}\). Does this match
+  theory? (Chapter 6 derives \(O(\sqrt{T})\) regret for UCB.)
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\textbf{Exercise 0.4} (Advanced: Constraints) {[}60 minutes, extended{]}
+
+Add a simple CM2 floor constraint: reject actions that violate
+profitability.
+
+\textbf{Setup:} Modify \passthrough{\lstinline!reward()!} to return
+\passthrough{\lstinline!(r, cm2)!}. Define a floor \(\tau = 0.3\) (30\%
+margin minimum).
+
+\textbf{Constrained Q-learning:}
+
+\begin{lstlisting}[language=Python]
+def choose_action_constrained(x, eps, tau_cm2):
+    # Filter feasible actions
+    feasible = [a for a in A if expected_cm2(x, a) >= tau_cm2]
+    if not feasible:
+        return A[rng.integers(len(A))]  # Fallback to unconstrained
+
+    if rng.random() < eps:
+        return feasible[rng.integers(len(feasible))]
+    return max(feasible, key=lambda a: Q[x][a])
+\end{lstlisting}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  Implement \passthrough{\lstinline!expected\_cm2(x, a)!} (running
+  average like Q).
+\item
+  Train with \(\tau = 0.3\). How does performance change vs
+  unconstrained?
+\item
+  Plot the Pareto frontier: GMV vs CM2 as you sweep
+  \(\tau \in [0.0, 0.5]\).
+\end{enumerate}
+
+\textbf{Connection:} This is a \textbf{Constrained MDP (CMDP)}. Chapter
+3 (Section 3.5) develops the Lagrangian theory, and Chapter 10
+implements production guardrails for multi-constraint optimization.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\textbf{Exercise 0.5} (Bandit-Bellman Bridge) {[}20 minutes,
+conceptual{]}
+
+Our toy is a \textbf{contextual bandit}: single-step decisions, no
+sequential states.
+
+The \textbf{Bellman equation} (Chapter 3) for an MDP is:
+
+\[
+V^*(s) = \max_a \left\{ R(s, a) + \gamma \sum_{s'} P(s' \mid s, a) V^*(s') \right\}
+\]
+
+where \(\gamma \in [0, 1)\) is a discount factor.
+
+\textbf{Question:} Show that our Q-learning update is the \(\gamma = 0\)
+special case of Bellman.
+
+\textbf{Hint:} - Set \(\gamma = 0\) in Bellman equation - Note that with
+no future states, \(V^*(s) = \max_a R(s, a)\) - Our Q-table is
+\(Q(x, a) \approx \mathbb{E}[R \mid x, a]\), so
+\(V^*(x) = \max_a Q(x, a)\) - This is \textbf{one-step value iteration}
+
+\textbf{Reflection:} Contextual bandits are MDPs with horizon 1.
+Multi-episode search (Chapter 11) requires the full Bellman machinery.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{0.9 Code Artifacts}\label{code-artifacts}
+
+All code from this chapter is available in the repository:
+
+\begin{CalloutNote}{Code \$\textbackslash{}leftrightarrow\$ Artifact}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Run script:}
+  \passthrough{\lstinline!scripts/ch00/toy\_problem\_solution.py:1!}
+  (complete implementation with baselines)
+\item
+  \textbf{Sanity tests:}
+  \passthrough{\lstinline!tests/ch00/test\_toy\_example.py:1!} (pytest
+  suite validating Q-learning convergence)
+\item
+  \textbf{Learning curve plot:}
+  \passthrough{\lstinline!toy\_problem\_learning\_curves.png:1!}
+  (generated output)
+\end{itemize}
+
+To reproduce:
+
+\begin{lstlisting}[language=bash]
+python scripts/ch00/toy_problem_solution.py
+pytest -q tests/ch00/test_toy_example.py -k toy
+\end{lstlisting}
+
+Expected output:
+
+\begin{lstlisting}
+Final average reward (last 100): 1.640
+Learned policy:
+  price_hunter    -> (4, 1)
+  premium         -> (1, 4)
+  bulk_buyer      -> (2, 2)
+Saved curves to toy_problem_learning_curves.png
+\end{lstlisting}
+
+\end{CalloutNote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{0.10 What's Next?}\label{whats-next}
+
+\textbf{You just trained your first RL agent for search ranking.} It
+learned context-adaptive boost weights from scratch, achieving
+near-oracle performance without manual tuning.
+
+\textbf{But we cheated.} We used a tiny discrete action space, three
+user types, and online exploration without safety guarantees. Real
+systems need:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Rigorous foundations} (Chapters 1--3): Formalize contextual
+  bandits, measure-theoretic probability, Bellman operators
+\item
+  \textbf{Realistic simulation} (Chapters 4--5): Scalable catalog
+  generation, position bias models, rich user dynamics
+\item
+  \textbf{Continuous actions} (Chapter 7): Regression-based Q-learning,
+  CEM optimization, trust regions
+\item
+  \textbf{Constraints and guardrails} (Chapter 10): CM2 floors,
+  \(\Delta\)Rank@k stability, safe fallback policies
+\item
+  \textbf{Safe evaluation} (Chapter 9): Off-policy evaluation (IPS, DR,
+  FQE) for production deployment
+\item
+  \textbf{Multi-episode dynamics} (Chapter 11): Retention modeling,
+  long-term value, engagement as state
+\end{enumerate}
+
+\textbf{The journey from toy to production is the journey of this book.}
+
+\textbf{In Chapter 1}, we formalize everything we hand-waved here: What
+exactly is a contextual bandit? Why is the reward function
+\eqref{EQ-1.2} mathematically sound? How do constraints become a CMDP?
+Why does engagement matter, and when should it be implicit vs explicit?
+
+\textbf{Let's make it rigorous.}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\emph{End of Chapter 0}
+
+
+\end{document}

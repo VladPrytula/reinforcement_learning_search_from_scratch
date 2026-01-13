@@ -15,11 +15,10 @@ Solutions included:
 - Extended: Banach Fixed-Point Theorem Verification
 
 Mathematical foundations:
-- [DEF-3.3.1] Contraction Mapping Definition
-- [THM-3.3.2] Banach Fixed-Point Theorem
-- [THM-3.3.3] Bellman Operator is a γ-Contraction
-- [EQ-3.3] Contraction Inequality: ||TV₁ - TV₂||∞ ≤ γ||V₁ - V₂||∞
-- [EQ-3.4] MDP Bellman Operator: (TV)(x) = max_a {R(x,a) + γ Σ P(x'|x,a)V(x')}
+- [DEF-3.6.3] Contraction mapping definition
+- [THM-3.6.2-Banach] Banach fixed-point theorem
+- [THM-3.7.1] Bellman operator contraction
+- [EQ-3.16] Contraction inequality: ||T V1 - T V2||_inf <= gamma ||V1 - V2||_inf
 
 Usage:
     python scripts/ch03/lab_solutions.py [--lab N] [--all]
@@ -126,11 +125,12 @@ def create_example_mdp() -> tuple[np.ndarray, np.ndarray, float]:
 class BellmanOperator:
     """Bellman optimality operator for finite MDPs.
 
-    Implements [EQ-3.4]:
-        (TV)(s) = max_a {R(s,a) + γ Σ_{s'} P(s'|s,a) V(s')}
+    Finite-state specialization of [EQ-3.12]:
+        (TV)(s) = max_a {R(s,a) + gamma * sum_{s'} P(s'|s,a) V(s')}
 
-    The Bellman operator is a γ-contraction in the ∞-norm ([THM-3.3.3]):
-        ||TV₁ - TV₂||∞ ≤ γ||V₁ - V₂||∞
+    The Bellman operator is a gamma-contraction in the infinity norm
+    ([THM-3.7.1], [EQ-3.16]):
+        ||T V1 - T V2||_inf <= gamma ||V1 - V2||_inf
 
     Attributes:
         P: (n_states, n_actions, n_states) transition tensor
@@ -146,15 +146,15 @@ class BellmanOperator:
         Args:
             P: (n_states, n_actions, n_states) transition tensor P(s'|s,a)
             R: (n_states, n_actions) reward matrix R(s,a)
-            gamma: Discount factor (0 ≤ γ < 1)
+            gamma: Discount factor (0 <= gamma < 1)
 
         Raises:
             ValueError: If gamma >= 1 (not a contraction)
         """
         if gamma >= 1.0:
             raise ValueError(
-                f"Discount factor γ={gamma} must be < 1 for Bellman operator "
-                "to be a contraction. See [THM-3.3.3]."
+                f"Discount factor gamma={gamma} must be < 1 for Bellman operator "
+                "to be a contraction. See [THM-3.7.1]."
             )
 
         self.P = P
@@ -165,8 +165,8 @@ class BellmanOperator:
     def apply(self, V: np.ndarray) -> np.ndarray:
         """Apply Bellman operator: TV.
 
-        Computes [EQ-3.4]:
-            (TV)(s) = max_a {R(s,a) + γ Σ_{s'} P(s'|s,a) V(s')}
+        Computes the finite-state backup:
+            (TV)(s) = max_a {R(s,a) + gamma * sum_{s'} P(s'|s,a) V(s')}
 
         Args:
             V: (n_states,) value function
@@ -174,7 +174,7 @@ class BellmanOperator:
         Returns:
             TV: (n_states,) Bellman backup
         """
-        # Q(s, a) = R(s, a) + γ * Σ_{s'} P(s'|s,a) V(s')
+        # Q(s, a) = R(s, a) + gamma * sum_{s'} P(s'|s,a) V(s')
         # Using einsum: P[s,a,s'] @ V[s'] -> [s,a]
         Q = self.R + self.gamma * np.einsum("ijk,k->ij", self.P, V)
 
@@ -207,9 +207,9 @@ class BellmanOperator:
     def contraction_ratio(self, V1: np.ndarray, V2: np.ndarray) -> float:
         """Compute empirical contraction ratio.
 
-        Measures: ||TV₁ - TV₂||∞ / ||V₁ - V₂||∞
+        Measures: ||T V1 - T V2||_inf / ||V1 - V2||_inf
 
-        By [THM-3.3.3], this should be ≤ γ.
+        By [THM-3.7.1], this should be <= gamma.
 
         Args:
             V1, V2: Two value functions
@@ -233,7 +233,7 @@ def value_iteration(
     bellman: BellmanOperator,
     V_init: Optional[np.ndarray] = None,
     tol: float = 1e-6,
-    max_iters: int = 500,
+    max_iters: int = 10_000,
     track_history: bool = False,
 ) -> dict:
     """Run value iteration to find optimal value function.
@@ -241,12 +241,12 @@ def value_iteration(
     Implements iterative application of Bellman operator:
         V_{k+1} = T V_k
 
-    By [THM-3.3.2] (Banach Fixed-Point), converges to unique V*.
+    By [THM-3.6.2-Banach] (Banach fixed-point), converges to unique V*.
 
     Args:
         bellman: BellmanOperator instance
         V_init: Initial value function (default: zeros)
-        tol: Convergence tolerance (||V_{k+1} - V_k||∞ < tol)
+        tol: Convergence tolerance (||V_{k+1} - V_k||_inf < tol)
         max_iters: Maximum iterations
         track_history: Whether to record iteration history
 
@@ -255,7 +255,7 @@ def value_iteration(
             V: Converged value function
             iters: Number of iterations
             converged: Whether converged within max_iters
-            errors: List of ||V_{k+1} - V_k||∞ if track_history
+            errors: List of ||V_{k+1} - V_k||_inf if track_history
             V_history: List of V_k if track_history
     """
     if V_init is None:
@@ -307,11 +307,11 @@ def lab_3_1_contraction_ratio_tracker(
     """
     Lab 3.1 Solution: Contraction Ratio Tracker
 
-    Objective: Log ||TV₁ - TV₂||∞ / ||V₁ - V₂||∞ and compare to γ.
+    Objective: Log ||T V1 - T V2||_inf / ||V1 - V2||_inf and compare to gamma.
 
-    This lab empirically verifies [THM-3.3.3]: the Bellman operator is a
-    γ-contraction. We sample random value function pairs and measure
-    the contraction ratio, confirming it never exceeds γ.
+    This lab empirically verifies [THM-3.7.1]: the Bellman operator is a
+    gamma-contraction. We sample random value function pairs and measure
+    the contraction ratio, confirming it never exceeds gamma.
 
     Tasks:
     1. Explain the slack between bound and observation
@@ -337,8 +337,10 @@ def lab_3_1_contraction_ratio_tracker(
     if verbose:
         print(f"\nMDP Configuration:")
         print(f"  States: {bellman.n_states}, Actions: {bellman.n_actions}")
-        print(f"  Discount factor γ = {gamma}")
-        print(f"\nTheoretical bound [THM-3.3.3]: ||TV₁ - TV₂||∞ ≤ {gamma}·||V₁ - V₂||∞")
+        print(f"  Discount factor gamma = {gamma}")
+        print(
+            f"\nTheoretical bound [THM-3.7.1]: ||T V1 - T V2||_inf <= {gamma} * ||V1 - V2||_inf"
+        )
 
     # Generate seeds
     if seeds is None:
@@ -371,10 +373,10 @@ def lab_3_1_contraction_ratio_tracker(
     bound_satisfied = np.all(ratios <= gamma + 1e-10)
 
     if verbose:
-        print(f"{'Seed':<10} {'Ratio':<12} {'≤ γ?':<8}")
+        print(f"{'Seed':<10} {'Ratio':<12} {'<= gamma?':<10}")
         print("-" * 30)
         for i, (seed, ratio) in enumerate(zip(seeds[:10], ratios[:10])):
-            satisfied = "✓" if ratio <= gamma + 1e-10 else "✗"
+            satisfied = "OK" if ratio <= gamma + 1e-10 else "NO"
             print(f"{seed:<10} {ratio:<12.4f} {satisfied:<8}")
         if len(seeds) > 10:
             print(f"... ({len(seeds) - 10} more seeds)")
@@ -382,36 +384,36 @@ def lab_3_1_contraction_ratio_tracker(
         print(f"\n{'=' * 50}")
         print("CONTRACTION RATIO STATISTICS")
         print(f"{'=' * 50}")
-        print(f"  Theoretical bound (γ): {gamma:.3f}")
+        print(f"  Theoretical bound (gamma): {gamma:.3f}")
         print(f"  Empirical mean:        {ratio_mean:.3f}")
         print(f"  Empirical std:         {ratio_std:.3f}")
         print(f"  Empirical min:         {ratio_min:.3f}")
         print(f"  Empirical max:         {ratio_max:.3f}")
-        print(f"  Slack (γ - max):       {gamma - ratio_max:.3f}")
-        print(f"  All ratios ≤ γ?        {'✓ YES' if bound_satisfied else '✗ NO'}")
+        print(f"  Slack (gamma - max):   {gamma - ratio_max:.3f}")
+        print(f"  All ratios <= gamma?   {'YES' if bound_satisfied else 'NO'}")
 
         # Task 1: Explain the slack
         print(f"\n{'=' * 50}")
-        print("TASK 1: Why is there slack between γ and observed ratios?")
+        print("TASK 1: Why is there slack between gamma and observed ratios?")
         print(f"{'=' * 50}")
         print("""
-The observed contraction ratio is often STRICTLY LESS than γ because:
+The observed contraction ratio is often strictly less than gamma because:
 
-1. **The max operator is 1-Lipschitz**: The proof of [THM-3.3.3] uses
-   |max_a f(a) - max_a g(a)| ≤ max_a |f(a) - g(a)|
+1. **The max operator is 1-Lipschitz**: The proof of [THM-3.7.1] uses
+   |max_a f(a) - max_a g(a)| <= max_a |f(a) - g(a)|
    This is an inequality, not equality. When the argmax differs between
-   V₁ and V₂, the actual difference is smaller.
+   V1 and V2, the actual difference is smaller.
 
-2. **Transition probability averaging**: The sum Σ P(s'|s,a)[V₁(s') - V₂(s')]
-   averages the value differences. Unless V₁ - V₂ has constant sign, this
-   is strictly less than ||V₁ - V₂||∞.
+2. **Transition probability averaging**: The sum sum_{s'} P(s'|s,a)[V1(s') - V2(s')]
+   averages the value differences. Unless V1 - V2 has constant sign, this
+   is strictly less than ||V1 - V2||_inf.
 
-3. **Structure in P and R**: Real MDPs have structure. Not all (V₁, V₂)
-   pairs achieve the worst-case. The bound γ is tight only for adversarial
+3. **Structure in P and R**: Real MDPs have structure. Not all (V1, V2)
+   pairs achieve the worst-case. The bound gamma is tight only for adversarial
    constructions.
 
-Implication: In practice, value iteration often converges FASTER than the
-worst-case γᵏ rate predicted by Banach fixed-point theory.
+Implication: In practice, value iteration often converges faster than the
+worst-case gamma^k rate predicted by Banach fixed-point theory.
 """)
 
     return {
@@ -440,15 +442,15 @@ def lab_3_2_value_iteration_profiling(
     """
     Lab 3.2 Solution: Value Iteration Wall-Clock Profiling
 
-    Objective: Verify the O(1/(1-γ)) convergence rate numerically.
+    Objective: Verify the O(1/(1-gamma)) convergence rate numerically.
 
-    From [THM-3.3.2] (Banach Fixed-Point):
-        ||V_k - V*||∞ ≤ γᵏ ||V_0 - V*||∞
+    From [THM-3.6.2-Banach] (Banach fixed-point):
+        ||V_k - V*||_inf <= gamma^k ||V_0 - V*||_inf
 
-    To achieve error ε, we need k ≈ log(ε) / log(γ) ≈ 1/(1-γ) · log(1/ε).
+    To achieve error eps, we need k ~ log(eps) / log(gamma) ~ 1/(1-gamma) * log(1/eps).
 
     Tasks:
-    1. Plot iteration counts against 1/(1-γ)
+    1. Plot iteration counts against 1/(1-gamma)
     2. Re-run with perturbed R to visualize perturbation bounds
 
     Args:
@@ -478,8 +480,8 @@ def lab_3_2_value_iteration_profiling(
         print(f"\nMDP Configuration:")
         print(f"  States: {P.shape[0]}, Actions: {P.shape[1]}")
         print(f"  Convergence tolerance: {tol}")
-        print(f"\nRunning value iteration for γ ∈ {gamma_values}...\n")
-        print(f"{'γ':<8} {'Iters':<8} {'1/(1-γ)':<10} {'Ratio':<10}")
+        print(f"\nRunning value iteration for gamma in {gamma_values}...\n")
+        print(f"{'gamma':<8} {'Iters':<8} {'1/(1-gamma)':<12} {'Ratio':<10}")
         print("-" * 40)
 
     for gamma in gamma_values:
@@ -515,43 +517,43 @@ def lab_3_2_value_iteration_profiling(
     iter_counts = np.array(iter_counts)
     theoretical_rates = np.array(theoretical_rates)
 
-    # Linear regression: iters ≈ slope * (1/(1-γ)) + intercept
+    # Linear regression: iters ~ slope * (1/(1-gamma)) + intercept
     A = np.vstack([theoretical_rates, np.ones(len(theoretical_rates))]).T
     slope, intercept = np.linalg.lstsq(A, iter_counts, rcond=None)[0]
 
     if verbose:
         print(f"\n{'=' * 50}")
-        print("ANALYSIS: Iteration Count vs 1/(1-γ)")
+        print("ANALYSIS: Iteration Count vs 1/(1-gamma)")
         print(f"{'=' * 50}")
-        print(f"\nLinear fit: Iters ≈ {slope:.2f} × 1/(1-γ) + {intercept:.1f}")
-        print(f"\nTheory predicts: Iters ~ C · 1/(1-γ) · log(1/ε)")
-        print(f"  With ε = {tol}, log(1/ε) ≈ {np.log(1/tol):.1f}")
-        print(f"  Expected slope ≈ log(1/ε) ≈ {np.log(1/tol):.1f}")
+        print(f"\nLinear fit: Iters ~ {slope:.2f} * 1/(1-gamma) + {intercept:.1f}")
+        print(f"\nTheory predicts: Iters ~ C * 1/(1-gamma) * log(1/eps)")
+        print(f"  With eps = {tol}, log(1/eps) ~ {np.log(1/tol):.1f}")
+        print(f"  Expected slope ~ log(1/eps) ~ {np.log(1/tol):.1f}")
         print(f"  Observed slope: {slope:.2f}")
 
         print(f"\n{'=' * 50}")
-        print("TASK 1: The O(1/(1-γ)) Relationship")
+        print("TASK 1: The O(1/(1-gamma)) Relationship")
         print(f"{'=' * 50}")
         print("""
-The iteration count scales approximately as 1/(1-γ) because:
+The iteration count scales approximately as 1/(1-gamma) because:
 
-From [THM-3.3.2] (Banach Fixed-Point), after k iterations:
-    ||V_k - V*||∞ ≤ γᵏ ||V_0 - V*||∞
+From [THM-3.6.2-Banach] (Banach fixed-point), after k iterations:
+    ||V_k - V*||_inf <= gamma^k ||V_0 - V*||_inf
 
-To achieve tolerance ε, we need γᵏ ||V_0 - V*||∞ < ε:
-    k > log(||V_0 - V*||∞ / ε) / log(1/γ)
-    k ≈ log(1/ε) / (1-γ)    [since log(1/γ) ≈ 1-γ for γ close to 1]
+To achieve tolerance eps, we need gamma^k ||V_0 - V*||_inf < eps:
+    k > log(||V_0 - V*||_inf / eps) / log(1/gamma)
+    k ~ log(1/eps) / (1-gamma)    [since log(1/gamma) ~ 1-gamma for gamma close to 1]
 
-Key insight: The complexity DIVERGES as γ → 1 (infinite horizon).
+Key insight: The complexity diverges as gamma -> 1 (infinite horizon).
 This explains why long-horizon RL is fundamentally harder:
-- γ = 0.9: ~14 iterations
-- γ = 0.99: ~140 iterations  (10× harder)
-- γ = 0.999: ~1400 iterations (100× harder)
+For a fixed tolerance, moving from gamma = 0.9 to gamma = 0.99 typically costs
+about 10x more Bellman backups. This scaling, not the exact constant, is the
+main lesson: the effective horizon 1/(1-gamma) controls computational effort.
 
 In practice, this motivates:
-1. Using moderate γ when possible
-2. Function approximation to avoid per-state iteration
-3. Monte Carlo methods for very long horizons
+1. Using moderate gamma when it captures the planning horizon
+2. Using function approximation to avoid per-state iteration in large MDPs
+3. Using Monte Carlo methods when exact dynamic programming is infeasible
 """)
 
     return {
@@ -577,16 +579,16 @@ def extended_perturbation_sensitivity(
     """
     Extended Lab: Perturbation Sensitivity Analysis
 
-    Objective: Verify Corollary 3.7.3 (if exists) bounds the effect of
-    modeling errors on optimal value function.
+    Objective: Empirically verify the reward-perturbation sensitivity bound
+    from [PROP-3.7.4].
 
-    For MDPs with reward perturbation R → R + ΔR:
-        ||V*_perturbed - V*_original||∞ ≤ ||ΔR||∞ / (1-γ)
+    For MDPs with reward perturbation R -> R + DeltaR:
+        ||V*_perturbed - V*_original||_inf <= ||DeltaR||_inf / (1-gamma)
 
     This lab validates this sensitivity bound empirically.
 
     Args:
-        noise_scales: List of perturbation magnitudes ||ΔR||∞
+        noise_scales: List of perturbation magnitudes ||DeltaR||_inf
         n_trials: Number of random perturbations per scale
         gamma: Discount factor
         verbose: Whether to print detailed output
@@ -610,16 +612,21 @@ def extended_perturbation_sensitivity(
     V_star_original = result_original["V"]
 
     if verbose:
-        print(f"\nOriginal MDP (γ = {gamma}):")
+        print(f"\nOriginal MDP (gamma = {gamma}):")
         print(f"  V* = {V_star_original}")
-        print(f"\nTheoretical bound: ||V*_perturbed - V*||∞ ≤ ||ΔR||∞ / (1-γ)")
-        print(f"  With γ = {gamma}, bound = ||ΔR||∞ / {1-gamma:.2f} = {1/(1-gamma):.1f} × ||ΔR||∞\n")
+        print(f"\nTheoretical bound [PROP-3.7.4]: ||V*_perturbed - V*||_inf <= ||DeltaR||_inf / (1-gamma)")
+        print(
+            f"  With gamma = {gamma}, bound = ||DeltaR||_inf / {1-gamma:.2f} = {1/(1-gamma):.1f} * ||DeltaR||_inf\n"
+        )
 
     results = {}
     rng = np.random.default_rng(42)
 
     if verbose:
-        print(f"{'||ΔR||∞':<10} {'Bound':<12} {'Mean ||ΔV*||':<15} {'Max ||ΔV*||':<15} {'Bound OK?':<10}")
+        print(
+            f"{'||DeltaR||_inf':<14} {'Bound':<12} {'Mean ||DeltaV*||':<18} "
+            f"{'Max ||DeltaV*||':<18} {'Bound OK?':<10}"
+        )
         print("-" * 65)
 
     for delta_scale in noise_scales:
@@ -627,7 +634,7 @@ def extended_perturbation_sensitivity(
         theoretical_bound = delta_scale / (1 - gamma)
 
         for _ in range(n_trials):
-            # Random perturbation with ||ΔR||∞ = delta_scale
+            # Random perturbation with ||DeltaR||_inf = delta_scale
             delta_R = rng.uniform(-delta_scale, delta_scale, size=R.shape)
 
             R_perturbed = R + delta_R
@@ -653,29 +660,29 @@ def extended_perturbation_sensitivity(
         }
 
         if verbose:
-            satisfied = "✓" if bound_satisfied else "✗"
+            satisfied = "OK" if bound_satisfied else "NO"
             print(f"{delta_scale:<10.2f} {theoretical_bound:<12.3f} {mean_diff:<15.4f} {max_diff:<15.4f} {satisfied:<10}")
 
     if verbose:
         all_bounds_ok = all(r["bound_satisfied"] for r in results.values())
         print(f"\n{'=' * 50}")
-        print(f"All perturbation bounds satisfied: {'✓ YES' if all_bounds_ok else '✗ NO'}")
+        print(f"All perturbation bounds satisfied: {'YES' if all_bounds_ok else 'NO'}")
         print(f"{'=' * 50}")
         print("""
 TASK 2: Perturbation Sensitivity Interpretation
 
-The bound ||V*_perturbed - V*||∞ ≤ ||ΔR||∞ / (1-γ) tells us:
+The bound ||V*_perturbed - V*||_inf <= ||DeltaR||_inf / (1-gamma) tells us:
 
 1. **Reward uncertainty propagates**: Small errors in reward estimation
-   can cause larger errors in the value function, amplified by 1/(1-γ).
+   can cause larger errors in the value function, amplified by 1/(1-gamma).
 
-2. **γ controls sensitivity**: Higher γ means more sensitivity to errors.
-   - γ = 0.9: 10× amplification
-   - γ = 0.99: 100× amplification
+2. **gamma controls sensitivity**: Higher gamma means more sensitivity to errors.
+   - gamma = 0.9: 10x amplification
+   - gamma = 0.99: 100x amplification
 
 3. **Practical implications**:
    - Reward modeling errors matter MORE for long-horizon problems
-   - Conservative γ provides robustness to model misspecification
+   - Conservative gamma provides robustness to model misspecification
    - Reward shaping should be done carefully
 """)
 
@@ -700,11 +707,11 @@ def extended_discount_factor_analysis(
     """
     Extended Lab: Discount Factor Analysis
 
-    Objective: Deep dive into how γ affects convergence properties.
+    Objective: Deep dive into how gamma affects convergence properties.
 
     Analyzes:
     1. Convergence rate (iterations to tolerance)
-    2. Effective horizon (1/(1-γ))
+    2. Effective horizon (1/(1-gamma))
     3. Value function magnitude
     4. Contraction tightness
 
@@ -714,7 +721,7 @@ def extended_discount_factor_analysis(
         verbose: Whether to print detailed output
 
     Returns:
-        dict with comprehensive γ analysis
+        dict with comprehensive gamma analysis
     """
     if verbose:
         print("=" * 70)
@@ -731,7 +738,7 @@ def extended_discount_factor_analysis(
     if verbose:
         print(f"\nMDP: {P.shape[0]} states, {P.shape[1]} actions")
         print(f"Convergence tolerance: {tol}\n")
-        print(f"{'γ':<6} {'Horizon':<10} {'Iters':<8} {'||V*||∞':<10} {'Avg Ratio':<12}")
+        print(f"{'gamma':<6} {'Horizon':<10} {'Iters':<8} {'||V*||_inf':<12} {'Avg Ratio':<12}")
         print("-" * 50)
 
     for gamma in gamma_values:
@@ -750,23 +757,17 @@ def extended_discount_factor_analysis(
         # Value magnitude
         V_norm = np.linalg.norm(V_star, ord=np.inf)
 
-        # Average contraction ratio (over last iterations)
+        # Average contraction ratio in the tail: ||V_{k+1}-V_k|| / ||V_k-V_{k-1}|| -> gamma.
         avg_ratio = 0.0
-        if len(result["V_history"]) > 2:
-            ratios = []
-            for i in range(1, min(10, len(result["V_history"]) - 1)):
-                V_prev = result["V_history"][-i - 1]
-                V_curr = result["V_history"][-i]
-                V_next = result["V_history"][-i + 1] if i > 1 else result["V"]
-
-                if np.linalg.norm(V_curr - V_prev, ord=np.inf) > 1e-12:
-                    ratio = np.linalg.norm(V_next - V_curr, ord=np.inf) / np.linalg.norm(
-                        V_curr - V_prev, ord=np.inf
-                    )
-                    ratios.append(ratio)
-
-            if ratios:
-                avg_ratio = np.mean(ratios)
+        errors = result.get("errors", [])
+        ratios = [
+            errors[k] / errors[k - 1]
+            for k in range(1, len(errors))
+            if errors[k - 1] > 1e-12
+        ]
+        if ratios:
+            tail = ratios[-8:] if len(ratios) >= 8 else ratios
+            avg_ratio = float(np.mean(tail))
 
         results[gamma] = {
             "effective_horizon": horizon,
@@ -778,7 +779,7 @@ def extended_discount_factor_analysis(
         }
 
         if verbose:
-            horizon_str = f"{horizon:.1f}" if horizon < 1000 else "∞"
+            horizon_str = f"{horizon:.1f}" if horizon < 1000 else "inf"
             print(
                 f"{gamma:<6.2f} {horizon_str:<10} {result['iters']:<8} {V_norm:<10.3f} {avg_ratio:<12.3f}"
             )
@@ -788,11 +789,11 @@ def extended_discount_factor_analysis(
         print("KEY INSIGHTS: Discount Factor Analysis")
         print(f"{'=' * 50}")
         print("""
-1. **Horizon interpretation**: 1/(1-γ) is the "effective planning horizon"
-   - γ = 0.9: Look ~10 steps ahead
-   - γ = 0.99: Look ~100 steps ahead
+1. **Horizon interpretation**: 1/(1-gamma) is the "effective planning horizon"
+   - gamma = 0.9: Look ~10 steps ahead
+   - gamma = 0.99: Look ~100 steps ahead
 
-2. **γ = 0 (bandit case)**: Converges in 1 iteration because
+2. **gamma = 0 (bandit case)**: Converges in 1 iteration because
    V(s) = max_a R(s,a) requires no bootstrapping.
 
 3. **Convergence vs. horizon tradeoff**: Longer horizons mean
@@ -800,13 +801,13 @@ def extended_discount_factor_analysis(
    - Higher V* magnitudes (more total reward accumulated)
    - Greater sensitivity to errors
 
-4. **Contraction ratio ≈ γ**: Empirically, the convergence rate
+4. **Contraction ratio ~ gamma**: Empirically, the convergence rate
    closely tracks the theoretical bound.
 
 5. **Practical guidance**:
-   - Start with smaller γ for faster iteration
-   - Increase γ only if needed for the task
-   - Consider γ as a hyperparameter, not a fundamental constant
+   - Start with smaller gamma for faster iteration
+   - Increase gamma only if needed for the task
+   - Consider gamma as a hyperparameter, not a fundamental constant
 """)
 
     return {
@@ -828,10 +829,10 @@ def extended_banach_convergence_verification(
     """
     Extended Lab: Banach Fixed-Point Theorem Verification
 
-    Objective: Empirically verify [THM-3.3.2]:
+    Objective: Empirically verify [THM-3.6.2-Banach]:
     1. Existence: A unique fixed point V* exists
-    2. Convergence: From ANY V₀, value iteration converges to V*
-    3. Rate: ||V_k - V*||∞ ≤ γᵏ ||V_0 - V*||∞
+    2. Convergence: From any V0, value iteration converges to V*
+    3. Rate: ||V_k - V*||_inf <= gamma^k ||V_0 - V*||_inf
 
     Args:
         n_initializations: Number of random initializations to test
@@ -856,7 +857,7 @@ def extended_banach_convergence_verification(
     V_star = result_ref["V"]
 
     if verbose:
-        print(f"\nReference V* (from V₀ = 0):")
+        print(f"\nReference V* (from V0 = 0):")
         print(f"  V* = {V_star}")
         print(f"  Converged in {result_ref['iters']} iterations\n")
 
@@ -866,7 +867,7 @@ def extended_banach_convergence_verification(
 
     if verbose:
         print(f"Testing convergence from {n_initializations} random initializations...\n")
-        print(f"{'Init #':<8} {'||V₀||∞':<12} {'Iters':<8} {'||V_final - V*||∞':<20}")
+        print(f"{'Init #':<8} {'||V0||_inf':<12} {'Iters':<8} {'||V_final - V*||_inf':<22}")
         print("-" * 50)
 
     for i in range(n_initializations):
@@ -880,14 +881,15 @@ def extended_banach_convergence_verification(
         diff_from_ref = np.linalg.norm(V_final - V_star, ord=np.inf)
         all_converge_to_same = all_converge_to_same and (diff_from_ref < 1e-6)
 
-        # Verify convergence rate
+        # Verify the Banach contraction rate on successive differences:
+        # ||V_{k+1} - V_k||_inf <= gamma^k ||V_1 - V_0||_inf.
         rate_violations = 0
-        if result["V_history"]:
-            V0_diff = np.linalg.norm(result["V_history"][0] - V_star, ord=np.inf)
-            for k, V_k in enumerate(result["V_history"][1:], 1):
-                actual_diff = np.linalg.norm(V_k - V_star, ord=np.inf)
-                theoretical_bound = (gamma**k) * V0_diff
-                if actual_diff > theoretical_bound + 1e-10:
+        errors = result.get("errors", [])
+        if errors:
+            initial_error = float(errors[0])
+            for k, err in enumerate(errors):
+                theoretical_bound = (gamma**k) * initial_error
+                if float(err) > theoretical_bound + 1e-12:
                     rate_violations += 1
 
         convergence_results.append(
@@ -905,15 +907,24 @@ def extended_banach_convergence_verification(
             )
 
     if verbose:
+        total_rate_violations = sum(
+            int(item.get("rate_violations", 0)) for item in convergence_results
+        )
         print(f"\n{'=' * 50}")
         print("BANACH FIXED-POINT THEOREM VERIFICATION")
         print(f"{'=' * 50}")
-        print(f"\n[THM-3.3.2] Verification Results:")
-        print(f"  (1) Existence:   V* exists ✓")
-        print(f"  (2) Uniqueness:  All {n_initializations} initializations → same V*: "
-              f"{'✓' if all_converge_to_same else '✗'}")
-        print(f"  (3) Convergence: All trials converged ✓")
-        print(f"  (4) Rate bound:  γᵏ bound violated 0 times across all trials ✓")
+        print(f"\n[THM-3.6.2-Banach] Verification Results:")
+        print(f"  (1) Existence:   V* exists OK")
+        print(
+            f"  (2) Uniqueness:  All {n_initializations} initializations -> same V*: "
+            f"{'OK' if all_converge_to_same else 'NO'}"
+        )
+        print(f"  (3) Convergence: All trials converged OK")
+        print(
+            "  (4) Rate bound:  gamma^k bound violated "
+            f"{total_rate_violations} times across all trials "
+            f"{'OK' if total_rate_violations == 0 else 'CHECK'}"
+        )
 
         print(f"\n{'=' * 50}")
         print("INTERPRETATION")
@@ -921,19 +932,19 @@ def extended_banach_convergence_verification(
         print("""
 The Banach Fixed-Point Theorem guarantees:
 
-1. **Global convergence**: No matter where you start, you WILL converge
-   to V*. This is why value iteration is so robust.
+1. **Global convergence**: For any initialization V0, the iterates converge
+   to the same fixed point V*.
 
 2. **Unique optimum**: There's exactly one optimal value function. No
-   local optima, no sensitivity to initialization (for policy quality).
+   local optima, no sensitivity to initialization (for the value function).
 
-3. **Exponential convergence**: Error shrinks by factor γ each iteration.
-   This is FAST—much faster than the O(1/k) rate of gradient descent.
+3. **Exponential convergence**: Error shrinks by factor gamma each iteration.
+   This is substantially faster than the O(1/k) rates typical of first-order methods.
 
-Why is this remarkable? In general optimization:
-- Multiple local optima are common
-- Initialization matters enormously
-- Convergence rates vary wildly
+Contrast with general non-convex optimization:
+- Multiple local optima can exist
+- Initialization can matter
+- Convergence rates can be slow
 
 The Bellman operator's contraction property eliminates all these issues.
 This is why dynamic programming works so reliably when it's applicable.

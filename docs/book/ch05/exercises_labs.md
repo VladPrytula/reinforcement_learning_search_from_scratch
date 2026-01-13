@@ -48,7 +48,7 @@ whenever $\sigma^{(j)} > 0$.
 
 b) Show that standardization preserves the relative ordering of feature values: if $\phi_i^{(j)} > \phi_k^{(j)}$, then $\tilde{\phi}_i^{(j)} > \tilde{\phi}_k^{(j)}$. Explain why the proof uses only the fact that standardization is an affine map with positive slope.
 
-c) Consider an affine transformation $\phi_i^{(j)} \mapsto a \phi_i^{(j)} + b$ with $a \neq 0$. Derive the new mean and standard deviation and argue that, after standardization, the ordering of the original values is still preserved.
+c) Consider an affine transformation $\phi_i^{(j)} \mapsto a \phi_i^{(j)} + b$ with $a > 0$. Derive the new mean and standard deviation and show that, after standardization, the standardized values are unchanged (and hence the ordering is preserved). What changes if $a < 0$?
 
 d) Discuss the constant-feature case: if all products have the same value for feature $j$, how does the definition in [DEF-5.6] ensure that the standardized values are well defined? Why is setting $\sigma^{(j)} = 1$ a natural convention here?
 
@@ -321,7 +321,7 @@ from zoosim.ranking.features import compute_features
 
 config = SimulatorConfig(seed=42)
 rng = np.random.default_rng(config.seed)
-catalog = generate_catalog(config=config, rng=rng)
+catalog = generate_catalog(cfg=config.catalog, rng=rng)
 ```
 
 **Tasks:**
@@ -418,7 +418,7 @@ import numpy as np
 
 config = SimulatorConfig(seed=42)
 rng = np.random.default_rng(config.seed)
-catalog = generate_catalog(config=config, rng=rng)
+catalog = generate_catalog(cfg=config.catalog, rng=rng)
 ```
 
 **Tasks:**
@@ -536,7 +536,7 @@ $$
 **Next steps:**
 - Complete exercises for full understanding of relevance, features, and reward
 - Prepare for Chapter 6: RL agents (LinUCB, Thompson Sampling) will use these features
-- In Chapter 10, we'll implement production guardrails (CM2 floors, ΔRank@k) applying CMDP theory from §3.6
+- In Chapter 10, we'll implement production guardrails (CM2 floors, ΔRank@k) applying CMDP theory from §3.5
 
 ---
 

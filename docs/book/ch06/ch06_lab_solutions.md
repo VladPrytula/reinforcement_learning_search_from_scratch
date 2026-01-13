@@ -1,10 +1,8 @@
 # Chapter 6 --- Lab Solutions
 
-*Vlad Prytula*
+These solutions integrate contextual bandit theory with runnable implementations. Each solution weaves the main results from Chapter 6 ([ALG-6.1], [ALG-6.2], [THM-6.1], [THM-6.2]) with executable code.
 
-These solutions demonstrate the seamless integration of contextual bandit theory and production-quality code. Every solution weaves theory ([ALG-6.1], [ALG-6.2], [THM-6.4]) with runnable implementations, following the Application Mode principle: **theory illuminates practice, code verifies theory**.
-
-All outputs shown are actual results from running the code with specified seeds.
+For the production-simulator experiments, we provide fixed seeds and reference committed artifacts under `docs/book/ch06/data/`. Other small outputs are representative and may vary slightly with environment and RNG.
 
 ---
 
@@ -95,7 +93,7 @@ Part (c): Non-additivity counterexample
 
 #### Analysis
 
-The bounded range $[-1, 1]$ ensures that cosine-based features don't dominate other features in the context vector. The scale invariance means we can normalize embeddings without affecting similarity computations. Non-additivity implies that aggregating embeddings (e.g., averaging product embeddings) doesn't preserve similarity relationships---a key consideration when designing template features.
+The bounded range $[-1, 1]$ ensures that cosine-based features do not dominate other features in the context vector. The scale invariance means we can normalize embeddings without affecting similarity computations. Non-additivity implies that aggregating embeddings (e.g., averaging product embeddings) does not preserve similarity relationships---a key consideration when designing template features.
 
 ---
 
@@ -239,7 +237,7 @@ Key insight:
 
 #### Analysis
 
-This equivalence is important practically: you can switch between LinUCB and TS without re-training. The choice depends on deployment context:
+This equivalence is important practically: we can switch between LinUCB and TS without re-training. The choice depends on deployment context:
 
 - **LinUCB:** Deterministic, easier to debug, reproducible A/B tests
 - **Thompson Sampling:** Often better empirical performance, especially with many actions (avoids over-optimism of UCB)
@@ -457,7 +455,7 @@ This demonstrates an important lesson: **not all templates are useful in all con
 - Users who explicitly value variety (not modeled here)
 - Category-imbalanced rankings where diversity provides novelty value
 
-The bandit correctly learns to suppress low-value templates. This is feature, not a bug---the algorithm is doing exactly what it should: maximizing expected reward by avoiding templates that don't help.
+The bandit correctly learns to suppress low-value templates. This behavior is not a bug---the algorithm is maximizing expected reward by avoiding templates that do not help.
 
 ---
 
@@ -474,7 +472,7 @@ Exercise 6.6 showed diversity failing. But when **does** diversity help? The key
 This happens when:
 1. The base ranker has **popularity bias** (category A dominates top-K)
 2. Users have **diverse latent preferences** (60% want non-A categories)
-3. Users who don't see their preferred category **rarely convert**
+3. Users who do not see their preferred category **rarely convert**
 
 This models the "long tail" effect in e-commerce: most revenue comes from niche preferences, not just popular items.
 
@@ -561,9 +559,9 @@ This is a dramatic result: **+94.4% reward improvement** from diversity. The mec
 | User Type | % of Traffic | Biased Ranker | Diverse Ranker |
 |-----------|--------------|---------------|----------------|
 | Prefers A | 40% | Sees A, converts [OK] | Sees A, converts [OK] |
-| Prefers B | 20% | Sees NO B, doesn't convert [X] | Sees B, converts [OK] |
-| Prefers C | 20% | Sees NO C, doesn't convert [X] | Sees C, converts [OK] |
-| Prefers D | 20% | Sees NO D, doesn't convert [X] | Sees D, converts [OK] |
+| Prefers B | 20% | Sees NO B, does not convert [X] | Sees B, converts [OK] |
+| Prefers C | 20% | Sees NO C, does not convert [X] | Sees C, converts [OK] |
+| Prefers D | 20% | Sees NO D, does not convert [X] | Sees D, converts [OK] |
 
 The biased ranker **completely ignores** 60% of user preferences. Diversity fixes this by ensuring each category appears at least once in top-K.
 
@@ -571,116 +569,110 @@ The biased ranker **completely ignores** 60% of user preferences. Diversity fixe
 
 1. **Exercise 6.6 vs 6.6b:** Diversity value depends on the mismatch between ranker bias and user preferences
 2. **Bandit learns correctly:** 99.2% diversity selection rate shows the algorithm discovered diversity's value
-3. **When to use diversity:** When your ranker has systematic bias that doesn't match user preference distribution
+3. **When to use diversity:** When the ranker has systematic bias that does not match the user preference distribution
 
-**Diagnostic question:** "Is my base ranker's category distribution aligned with user preferences?" If not, diversity templates may provide significant value.
+**Diagnostic question:** "Is the base ranker's category distribution aligned with user preferences?" If not, diversity templates may provide significant value.
 
 ---
 
 ## Experimental Labs
 
-### Lab 6.1: Simple-Feature Baseline (20 min)
+### Lab 6.1: Simple-Feature Failure (20 min)
 
-**Objective:** Reproduce the Section 6.5 experiment showing contextual bandits with simple features compared to static baselines.
+**Objective:** Reproduce the Section 6.5 experiment showing that contextual bandits with simple features underperform a strong static baseline.
 
 #### Theoretical Foundation
 
-Simple features (7-dim: segment one-hot + query type one-hot) provide limited information about which template benefits which user-query context. This lab demonstrates how feature choice affects bandit performance.
+Simple features (segment one-hot + query type one-hot) omit the key latent preferences that determine which templates are actually valuable. This lab makes that failure mode concrete.
 
 #### Running the Lab
 
 !!! note "Production Simulator Required"
-    Lab 6.1 uses the full `zoosim` simulator from `scripts/ch06/template_bandits_demo.py`. Run:
+    Lab 6.1 uses the full `zoosim` simulator via `scripts/ch06/template_bandits_demo.py`. Run:
     ```bash
-    python scripts/ch06/template_bandits_demo.py \
+    uv run python scripts/ch06/template_bandits_demo.py \
         --n-static 2000 \
         --n-bandit 20000 \
-        --features simple
+        --features simple \
+        --world-seed 20250322 \
+        --bandit-base-seed 20250349
     ```
 
-```python
-from scripts.ch06.lab_solutions import lab_6_1_simple_feature_baseline
+#### Expected Results (canonical artifact)
 
-results = lab_6_1_simple_feature_baseline(
-    n_static=2000,
-    n_bandit=20000,
-    seed=20250319,
-    verbose=True
-)
-```
+The committed summary `docs/book/ch06/data/template_bandits_simple_summary.json` reports:
 
-#### Expected Results (from production simulator runs)
-
-Based on experiments with the full zoosim simulator (`parity_cpu_20251119T051440Z.json`):
-
-| Policy | GMV | CM2 | DeltaGMV vs Static |
+| Policy | GMV | CM2 | DeltaGMV vs static |
 |--------|-----|-----|----------------|
-| Best Static | 6.68 | 2.89 | 0.0% |
-| LinUCB (simple) | 6.94 | 2.85 | **+3.9%** |
-| Thompson Sampling | 6.20 | 2.45 | **-7.2%** |
+| Static (Premium) | 7.11 | 0.74 | +0.00% |
+| LinUCB | 5.12 | 0.46 | -27.95% |
+| Thompson Sampling | 6.18 | 0.63 | -13.07% |
 
-**Key insight:** With simple features, the results are nuanced:
-- LinUCB achieves modest improvement (+3.9%)
-- Thompson Sampling underperforms (-7.2%)
-- Neither catastrophic failure nor dramatic improvement
-
-This is more realistic than the "-30% failure" narrative---the actual story is that simple features provide *limited* contextual information, leading to inconsistent results depending on algorithm and hyperparameters.
+This is the feature-poverty failure mode: regret guarantees are conditional on the feature map, and $\phi_{\text{simple}}$ is too impoverished to support the desired policy.
 
 ---
 
-### Lab 6.2: Rich-Feature Improvement (20 min)
+### Lab 6.2a: Rich Features with Oracle Latents (15 min)
 
-**Objective:** Re-run with rich features and quantify the improvement.
-
-#### Theoretical Foundation
-
-Rich features (17-dim) include:
-- Segment one-hot (4 dims)
-- Query type one-hot (3 dims)
-- User latent proxies (2 dims): quality preference, price sensitivity
-- Base top-K aggregates (8 dims): mean margin, discount rate, category entropy, etc.
-
-These features capture context-specific information that distinguishes which template benefits which situation.
+**Objective:** Re-run the experiment with rich features containing oracle user latents (Section 6.7.4) and observe both algorithms recovering and nearly tying.
 
 #### Running the Lab
 
 !!! note "Production Simulator Required"
-    Lab 6.2 uses the full `zoosim` simulator. Run:
     ```bash
-    python scripts/ch06/template_bandits_demo.py \
+    uv run python scripts/ch06/template_bandits_demo.py \
         --n-static 2000 \
         --n-bandit 20000 \
         --features rich \
-        --rich-regularization blend
+        --world-seed 20250322 \
+        --bandit-base-seed 20250349 \
+        --hparam-mode rich_est \
+        --prior-weight 50 \
+        --lin-alpha 0.2 \
+        --ts-sigma 0.5
     ```
 
-#### Expected Results (from production simulator runs)
+#### Expected Results (canonical artifact)
 
-Based on experiments with the full zoosim simulator:
+From `docs/book/ch06/data/template_bandits_rich_oracle_summary.json`:
 
-**Rich features with blend regularization:**
-
-| Policy | GMV | CM2 | DeltaGMV vs Static |
+| Policy | GMV | CM2 | DeltaGMV vs static |
 |--------|-----|-----|----------------|
-| Best Static | 6.88 | 2.78 | 0.0% |
-| LinUCB (rich+blend) | 6.71 | 2.72 | **-2.4%** |
-| Thompson Sampling | 9.02 | 3.56 | **+31.1%** |
+| Static (Premium) | 7.11 | 0.74 | +0.00% |
+| LinUCB | 9.42 | 0.94 | +32.47% |
+| Thompson Sampling | 9.39 | 0.94 | +32.08% |
 
-**Rich features with quantized regularization:**
+---
 
-| Policy | GMV | CM2 | DeltaGMV vs Static |
+### Lab 6.2b: Rich Features with Estimated Latents (15 min)
+
+**Objective:** Re-run the experiment with rich features containing estimated (noisy) user latents (Section 6.7.5) and observe Thompson Sampling's robustness.
+
+#### Running the Lab
+
+!!! note "Production Simulator Required"
+    ```bash
+    uv run python scripts/ch06/template_bandits_demo.py \
+        --n-static 2000 \
+        --n-bandit 20000 \
+        --features rich_est \
+        --world-seed 20250322 \
+        --bandit-base-seed 20250349 \
+        --hparam-mode rich_est \
+        --prior-weight 50 \
+        --lin-alpha 0.2 \
+        --ts-sigma 0.5
+    ```
+
+#### Expected Results (canonical artifact)
+
+From `docs/book/ch06/data/template_bandits_rich_estimated_summary.json`:
+
+| Policy | GMV | CM2 | DeltaGMV vs static |
 |--------|-----|-----|----------------|
-| Best Static | 6.88 | 2.78 | 0.0% |
-| LinUCB (rich+quant) | 9.08 | 3.58 | **+31.9%** |
-| Thompson Sampling | 6.81 | 2.75 | **-1.0%** |
-
-**Key insight:** The real story is more nuanced than a simple "-30% -> +27%" narrative:
-
-1. **Regularization matters:** The regularization mode (`blend` vs `quantized`) dramatically affects which algorithm wins
-2. **Algorithm-specific strengths:** LinUCB excels with quantized features; TS excels with blended features
-3. **Both can achieve ~30% gains** with appropriate regularization
-
-The lesson is that **both** feature engineering AND regularization choices are critical for contextual bandit success.
+| Static (Premium) | 7.11 | 0.74 | +0.00% |
+| LinUCB | 7.52 | 0.72 | +5.79% |
+| Thompson Sampling | 9.31 | 0.93 | +30.95% |
 
 ---
 
@@ -1023,15 +1015,15 @@ These lab solutions demonstrate the core lessons of Chapter 6:
 
 3. **Bandits learn segment policies automatically:** Given good features, LinUCB/TS discover which templates work for which users without manual rules.
 
-4. **Exploration has a cost:** Early regret is the price of learning. The 12.4x uncertainty reduction shows how this cost diminishes over time.
+4. **Exploration has a cost:** Early regret is the price of learning; uncertainty should diminish as information accumulates.
 
 5. **Hyperparameters have sensible defaults:** $\lambda=1.0$, $\alpha=1.0$ work across a wide range of conditions.
 
-6. **Variance is real:** The 18.7% CV across seeds reminds us that bandit results should be reported with confidence intervals.
+6. **Variance is real:** Multi-seed evaluation can exhibit meaningful dispersion; results should be reported with confidence intervals.
 
-7. **Production requires engineering:** Cholesky optimization (52.8x speedup), robust seed handling, and interpretable hierarchies matter as much as theoretical elegance.
+7. **Production requires engineering:** Numerical stability, robust seed handling, and interpretable diagnostics matter as much as theoretical elegance.
 
-8. **Diversity depends on context:** Exercise 6.6 showed diversity failing (0% improvement), while Exercise 6.6b showed it succeeding (+94.4% improvement). The difference? Whether the base ranker's bias misses user preferences.
+8. **Diversity depends on context:** The value of diversity templates depends on whether the base ranker's category mix is misaligned with user preferences.
 
 ---
 
@@ -1041,27 +1033,43 @@ All solutions are in `scripts/ch06/lab_solutions/`:
 
 ```bash
 # Run all exercises and labs
-python -m scripts.ch06.lab_solutions --all
+uv run python -m scripts.ch06.lab_solutions --all
 
 # Run specific exercise
-python -m scripts.ch06.lab_solutions --exercise 6.1
-python -m scripts.ch06.lab_solutions --exercise 6.5
-python -m scripts.ch06.lab_solutions --exercise 6.6b  # When diversity helps
-python -m scripts.ch06.lab_solutions --exercise lab6.3
+uv run python -m scripts.ch06.lab_solutions --exercise 6.1
+uv run python -m scripts.ch06.lab_solutions --exercise 6.5
+uv run python -m scripts.ch06.lab_solutions --exercise 6.6b  # When diversity helps
+uv run python -m scripts.ch06.lab_solutions --exercise lab6.3
 
 # Run production simulator experiments (requires zoosim)
-python scripts/ch06/template_bandits_demo.py \
+uv run python scripts/ch06/template_bandits_demo.py \
     --n-static 2000 \
     --n-bandit 20000 \
-    --features simple
+    --features simple \
+    --world-seed 20250322 \
+    --bandit-base-seed 20250349
 
-python scripts/ch06/template_bandits_demo.py \
+uv run python scripts/ch06/template_bandits_demo.py \
     --n-static 2000 \
     --n-bandit 20000 \
     --features rich \
-    --rich-regularization blend
+    --world-seed 20250322 \
+    --bandit-base-seed 20250349 \
+    --hparam-mode rich_est \
+    --prior-weight 50 \
+    --lin-alpha 0.2 \
+    --ts-sigma 0.5
+
+uv run python scripts/ch06/template_bandits_demo.py \
+    --n-static 2000 \
+    --n-bandit 20000 \
+    --features rich_est \
+    --world-seed 20250322 \
+    --bandit-base-seed 20250349 \
+    --hparam-mode rich_est \
+    --prior-weight 50 \
+    --lin-alpha 0.2 \
+    --ts-sigma 0.5
 ```
 
 ---
-
-*Chapter 6 Lab Solutions --- 2025*

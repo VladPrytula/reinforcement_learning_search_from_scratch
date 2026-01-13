@@ -69,7 +69,7 @@ Manual computation of R = alpha*GMV + beta*CM2 + gamma*STRAT + delta*CLICKS:
 
 Simulator-reported reward: 134.09
 
-Verification: |computed - reported| = 0.00 < 0.01 ✓
+Verification: |computed - reported| = 0.00 < 0.01 [OK]
 
 The simulator correctly implements [EQ-1.2].
 ```
@@ -124,12 +124,12 @@ Lab 1.1 Task 2: Delta/Alpha Bound Violation
 Testing progressively higher delta values...
 Bound from [REM-1.2.1]: delta/alpha in [0.01, 0.10]
 
-delta/alpha = 0.08: ✓ VALID
-delta/alpha = 0.10: ✓ VALID
-delta/alpha = 0.11: ✗ VIOLATION
-delta/alpha = 0.12: ✗ VIOLATION
-delta/alpha = 0.15: ✗ VIOLATION
-delta/alpha = 0.20: ✗ VIOLATION
+delta/alpha = 0.08: [OK] VALID
+delta/alpha = 0.10: [OK] VALID
+delta/alpha = 0.11: [X] VIOLATION
+delta/alpha = 0.12: [X] VIOLATION
+delta/alpha = 0.15: [X] VIOLATION
+delta/alpha = 0.20: [X] VIOLATION
 
 Smallest violation: delta/alpha = 0.11 (1.10x the bound)
 ```
@@ -299,7 +299,7 @@ Key Insight:
 
 **Why are the underlying metrics identical?** Because we're computing rewards for the **same sessions** with different weights. The weights don't change user behavior—they change **how we value** that behavior.
 
-This is the core insight of [EQ-1.2]: the reward function is a **value judgment** encoded as mathematics. An RL agent will faithfully optimize whatever objective you give it. Choose wisely.
+This is the core insight of [EQ-1.2]: the reward function is a **value judgment** encoded as mathematics. An RL agent will faithfully optimize whatever objective we specify. We must choose wisely.
 
 **Practical implications:**
 1. **Weight changes are policy changes**: Increasing $\beta$ (CM2 weight) will cause the agent to favor high-margin products
@@ -379,7 +379,7 @@ These labs validated the mathematical foundations of Chapter 1:
 
 **Key Lessons:**
 
-1. **The reward function is a value judgment**: [EQ-1.2] encodes business priorities as mathematics. The agent optimizes whatever you specify—choose wisely.
+1. **The reward function is a value judgment**: [EQ-1.2] encodes business priorities as mathematics. The agent optimizes whatever we specify—choose wisely.
 
 2. **Bounds prevent pathologies**: The $\delta/\alpha \leq 0.10$ constraint from [REM-1.2.1] isn't arbitrary—it's motivated by the engagement-vs-conversion tradeoff and clickbait failure modes.
 

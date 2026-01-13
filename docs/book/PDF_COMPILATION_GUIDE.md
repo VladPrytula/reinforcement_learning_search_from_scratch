@@ -42,9 +42,11 @@ Complete instructions for generating PDFs from markdown chapters.
 
 These must exist before compilation:
 
-1. **`docs/book/callouts.lua`** - Pandoc Lua filter for callout boxes
-2. **`docs/book/preamble.tex`** - LaTeX preamble with package imports
-3. **Source markdown files** - Chapter content
+1. **`docs/book/admonitions.lua`** - Pandoc Lua filter for MkDocs `!!!` / `???` admonitions
+2. **`docs/book/callouts.lua`** - Pandoc Lua filter for fenced div callouts (`:::`)
+3. **`docs/book/crossrefs.lua`** - Pandoc Lua filter for `{#...}` anchors and `#EQ-*` / `[EQ-*]` references
+4. **`docs/book/preamble.tex`** - LaTeX preamble with package imports
+5. **Source markdown files** - Chapter content
 
 ---
 
@@ -104,6 +106,26 @@ pandoc docs/book/final/ch01/ch01_foundations_revised_math+pedagogy_v3.md \
 
 **Expected output file**: `ch01.pdf` (197K) in project root
 
+### Chapter 2 - Full Command (MkDocs admonitions + crossrefs)
+
+**From project root directory**:
+
+```bash
+pandoc docs/book/ch02/ch02_probability_measure_click_models.md \
+  --lua-filter=docs/book/admonitions.lua \
+  --lua-filter=docs/book/callouts.lua \
+  --lua-filter=docs/book/crossrefs.lua \
+  --include-in-header=docs/book/preamble.tex \
+  --pdf-engine=xelatex \
+  -V geometry:margin=1in \
+  -V fontsize=11pt \
+  --toc \
+  -N \
+  -o ch02.pdf
+```
+
+**Filter order matters:** run `admonitions.lua` (MkDocs `!!!` / `???`) before `crossrefs.lua` so references inside converted blocks are resolved.
+
 ---
 
 ## Command Breakdown
@@ -112,7 +134,9 @@ pandoc docs/book/final/ch01/ch01_foundations_revised_math+pedagogy_v3.md \
 
 | Flag | Purpose | Notes |
 |------|---------|-------|
-| `--lua-filter=docs/book/callouts.lua` | Apply Lua filter to convert callout divs | Transforms `::: {.note title="..."}` to LaTeX tcolorbox |
+| `--lua-filter=docs/book/admonitions.lua` | Convert MkDocs admonitions | Transforms `!!! tip "..."` / `??? note "..."` to LaTeX tcolorbox |
+| `--lua-filter=docs/book/callouts.lua` | Convert fenced div callouts | Transforms `::: {.note title="..."}` to LaTeX tcolorbox |
+| `--lua-filter=docs/book/crossrefs.lua` | Resolve anchors and crossrefs | Converts `{#EQ-2.1}` → `\\label{EQ-2.1}` and `#EQ-2.1` → `\\eqref{EQ-2.1}` |
 | `--include-in-header=docs/book/preamble.tex` | Include LaTeX preamble | Loads packages, defines environments |
 | `--pdf-engine=xelatex` | Use XeLaTeX for PDF generation | Better Unicode support than pdflatex |
 | `-V geometry:margin=1in` | Set page margins to 1 inch | Pandoc variable for page layout |

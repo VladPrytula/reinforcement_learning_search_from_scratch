@@ -54,15 +54,15 @@ Reward: R(x,a,ω) = Σ αᵢ·component_i(outcome)
 Update policy π to maximize 𝔼[R]
 ```
 
-Let's build each component rigorously, starting with relevance.
+Let us build each component rigorously, starting with relevance.
 
 ---
 
 ## 5.1 Base Relevance: Why We Need It
 
-**The cold-start problem:**
+The cold-start problem:
 
-Imagine deploying an RL agent with no prior knowledge. The agent sees a query `"premium dog food"` and a catalog of 10,000 products. With no relevance model, the agent's initial ranking is **random**. Even with optimal RL convergence, this is catastrophic:
+Imagine deploying an RL agent with no prior knowledge. The agent sees a query `"premium dog food"` and a catalog of 10,000 products. With no relevance model, the agent's initial ranking is random. Even with optimal RL convergence, this is catastrophic:
 
 - **Sample complexity**: Need millions of episodes to learn basic relevance from scratch
 - **Catastrophic exploration**: Random rankings destroy user experience during learning
@@ -91,7 +91,7 @@ s_{\text{base}}: \mathcal{Q} \times \mathcal{C} \to \mathbb{R}
 $$
 that assigns, to each query–product pair $(q, p) \in \mathcal{Q} \times \mathcal{C}$, a real-valued relevance score $s_{\text{base}}(q, p) \in \mathbb{R}$.
 
-Throughout this chapter we work with a **fixed catalog** $\mathcal{C}$ generated once from the configuration; extending the definition to time-varying catalogs $\mathcal{C}_t$ is straightforward and left to Chapter&nbsp;11.
+Throughout this chapter we work with a **fixed catalog** $\mathcal{C}$ generated once from the configuration; extending the definition to time-varying catalogs $\mathcal{C}_t$ is straightforward and deferred to Chapter&nbsp;10 (non-stationarity and drift).
 
 **Properties:**
 1. **Higher score = better match**: For any fixed query $q \in \mathcal{Q}$ and products $p_1, p_2 \in \mathcal{C}$, the inequality $s_{\text{base}}(q, p_1) > s_{\text{base}}(q, p_2)$ suggests that $p_1$ is more relevant to $q$ than $p_2$.
@@ -175,8 +175,8 @@ Equality in Cauchy–Schwarz holds if and only if $\mathbf{q}$ and $\mathbf{e}$ 
 Proposition 5.1 assumes $\|\mathbf{q}\|_2, \|\mathbf{e}\|_2 > 0$, so $s_{\text{sem}}$ is undefined if an embedding has zero norm. In the simulator, query and product embeddings are sampled from Gaussian distributions (Chapter&nbsp;4), so the event $\|\mathbf{e}\|_2 = 0$ has probability zero in exact arithmetic. Numerically, however, very small norms or aggressive quantization can occur in production systems (e.g., after pruning or compression). A robust implementation should therefore handle the degenerate case explicitly—for example, by returning a semantic score of $0$ whenever either embedding has norm below a small threshold. This can be interpreted as “no reliable semantic signal”, leaving lexical or other signals to carry the ranking.
 
 **Embedding construction** (from Chapter 4):
-- Products: $\mathbf{e}_p \sim \mathcal{N}(\boldsymbol{\mu}_{\text{cat}}, \sigma_{\text{cat}}^2 I)$ clustered by category
-- Queries: $\mathbf{q} \sim \mathcal{N}(\boldsymbol{\mu}_{\text{category\_of\_interest}}, \sigma_q^2 I)$ aligned with user preferences
+- Products: for each category $c$ we sample a centroid $\boldsymbol{\mu}_c$, then $\mathbf{e}_p = \boldsymbol{\mu}_{c(p)} + \boldsymbol{\epsilon}_p$ with $\boldsymbol{\epsilon}_p \sim \mathcal{N}(0, \sigma_{c(p)}^2 I_d)$ (category-level clustering).
+- Queries: $\mathbf{q} = \boldsymbol{\theta}_{\text{emb}}(u) + \boldsymbol{\epsilon}_q$ with $\boldsymbol{\epsilon}_q \sim \mathcal{N}(0, 0.05^2 I_d)$ (user-centered queries).
 
 **Implementation:**
 
@@ -314,10 +314,14 @@ From `RelevanceConfig` (production settings):
 **Full implementation:**
 
 ```python
+import math
+
+import numpy as np
+import torch
+
 from zoosim.core.config import SimulatorConfig
 from zoosim.world.catalog import Product
 from zoosim.world.queries import Query
-import numpy as np
 
 def base_score(
     *,
@@ -600,7 +604,7 @@ def compute_features(
 
     References:
         - [DEF-5.5] Feature Vector definition
-        - Implementation: `zoosim/ranking/features.py:16-32`
+        - Implementation: `zoosim/ranking/features.py:28-60`
         - Feature standardization: [EQ-5.6] below
     """
     # Personalization: user-product affinity via embedding dot product
@@ -631,7 +635,7 @@ def compute_features(
 
 !!! note "Code ↔ Config (Feature Dimension)"
     The feature dimension $d$ is set in `SimulatorConfig.action.feature_dim` (default: 10).
-    - **File**: `zoosim/core/config.py:226`
+    - **File**: `zoosim/core/config.py:228`
     - **Usage**: RL agents use this to size input layers (e.g., neural network: $\mathbb{R}^{10} \to \mathbb{R}$)
     - **Invariant**: `len(compute_features(...))` must equal `config.action.feature_dim`
 
@@ -643,7 +647,7 @@ Feature values have very different ranges:
 - CM2: $[-5, +30]$ (litter negative, dog food high)
 - Discount: $[0, 0.3]$ (small range)
 - Price: $[5, 50]$ (currency units)
-- Personalization: $[-2, +2]$ (dot product of normalized vectors)
+- Personalization: typically on the order of $\sqrt{d}$ (dot product of Gaussian embeddings; scale grows with embedding dimension)
 
 Without standardization, gradient-based RL methods (policy gradients, Q-learning with neural nets) struggle:
 - Large-scale features (price) dominate gradients
@@ -696,7 +700,7 @@ $$
 \phi_i^{(j)} > \phi_k^{(j)} \quad \Longleftrightarrow \quad \tilde{\phi}_i^{(j)} > \tilde{\phi}_k^{(j)}.
 $$
 
-(d) (**Affine invariance of ordering**) If we replace $\phi_i^{(j)}$ by $a \phi_i^{(j)} + b$ with $a \neq 0$, the standardized values change but the ordering in (c) remains the same.
+(d) (**Affine invariance (positive scaling)**) If we replace $\phi_i^{(j)}$ by $a \phi_i^{(j)} + b$ with $a > 0$, the standardized values (and hence the ordering in (c)) are unchanged. If $a < 0$, the standardized values are multiplied by $-1$, so the ordering in (c) is reversed.
 
 *Proof.* By construction,
 $$
@@ -709,7 +713,13 @@ $$
  = \frac{1}{\bigl(\sigma^{(j)}\bigr)^2} \cdot \frac{1}{N} \sum_{i=1}^N \bigl(\phi_i^{(j)} - \mu^{(j)}\bigr)^2
  = 1
 $$
-by the definition of $\sigma^{(j)}$. The formula for $\tilde{\phi}_i^{(j)}$ is an affine transformation of $\phi_i^{(j)}$ with strictly positive slope $1 / \sigma^{(j)}$, so it is strictly increasing; this yields (c). If we first apply an affine transformation with slope $a \neq 0$ and then standardize, the overall mapping from the original values to the standardized ones is again affine with positive slope (since $\sigma^{(j)}$ rescales accordingly), so the ordering is unchanged, proving (d). ∎
+by the definition of $\sigma^{(j)}$. The formula for $\tilde{\phi}_i^{(j)}$ is an affine transformation of $\phi_i^{(j)}$ with strictly positive slope $1 / \sigma^{(j)}$, so it is strictly increasing; this yields (c). For (d), let $\psi_i = a \phi_i^{(j)} + b$. Then $\mu_\psi = a \mu^{(j)} + b$ and $\sigma_\psi = |a| \sigma^{(j)}$, so
+$$
+\frac{\psi_i - \mu_\psi}{\sigma_\psi}
+ = \frac{a}{|a|} \cdot \frac{\phi_i^{(j)} - \mu^{(j)}}{\sigma^{(j)}}
+ = \operatorname{sign}(a)\, \tilde{\phi}_i^{(j)}.
+$$
+If $a>0$ the standardized values are unchanged; if $a<0$ they are negated, reversing the ordering. ∎
 
 **When to standardize:**
 
@@ -752,7 +762,7 @@ def standardize_features(
 
     References:
         - [DEF-5.6] Feature Standardization definition
-        - Implementation: `zoosim/ranking/features.py:35-41`
+        - Implementation: `zoosim/ranking/features.py:63-78`
 
     Note:
         In production, store μ and σ from training data and apply to test data.
@@ -768,7 +778,7 @@ def standardize_features(
 
 !!! note "Code ↔ Config (Standardization Flag)"
     Feature standardization is controlled by:
-    - **File**: `zoosim/core/config.py:229` (`ActionConfig.standardize_features`)
+    - **File**: `zoosim/core/config.py:231` (`ActionConfig.standardize_features`)
     - **Default**: `True` (recommended for neural network policies)
     - **When to disable**: Linear regression with interpretable coefficients (raw feature units)
 
@@ -792,7 +802,7 @@ For now, our simulator re-standardizes each episode (acceptable for training; in
 
 ## 5.4 Feature Visualization and Validation
 
-Let's verify our features capture the intended signals.
+Let us verify that our features capture the intended signals.
 
 **Experiment: Feature distributions by user segment**
 
@@ -830,9 +840,14 @@ for segment in config.users.segments:
             'segment': segment,
             'cm2': features[0],
             'discount': features[1],
+            'pl_flag': features[2],
             'personalization': features[3],
+            'bestseller': features[4],
             'price': features[5],
+            'cm2_x_litter': features[6],
             'discount_x_price_sens': features[7],
+            'pl_x_pl_affinity': features[8],
+            'specificity_x_bestseller': features[9],
         })
 
 # Convert to DataFrame for plotting
@@ -869,11 +884,24 @@ print("Saved feature_distributions_by_segment.png")
 
 ```python
 # Check feature ranges (no NaNs, reasonable bounds)
-for i, feat in enumerate(['cm2', 'discount', 'pl', 'pers', 'bestseller',
-                          'price', 'cm2_litter', 'disc_price', 'pl_aff', 'spec_bs']):
-    values = [features[i] for features in feature_data]
-    print(f"Feature {i} ({feat}): min={min(values):.2f}, max={max(values):.2f}, "
-          f"mean={np.mean(values):.2f}, std={np.std(values):.2f}")
+feature_cols = [
+    "cm2",
+    "discount",
+    "pl_flag",
+    "personalization",
+    "bestseller",
+    "price",
+    "cm2_x_litter",
+    "discount_x_price_sens",
+    "pl_x_pl_affinity",
+    "specificity_x_bestseller",
+]
+for i, col in enumerate(feature_cols):
+    values = df[col].to_numpy()
+    print(
+        f"Feature {i} ({col}): min={values.min():.2f}, max={values.max():.2f}, "
+        f"mean={values.mean():.2f}, std={values.std():.2f}"
+    )
 ```
 
 **Expected:**
@@ -905,8 +933,8 @@ There is no single "correct" objective. Different business contexts require diff
 
 **Solution: Scalarized multi-objective reward**
 
-To connect with the single-step MDP formalism of Chapter&nbsp;1, we distinguish:
-- the **state space** $\mathcal{X}$ and **action space** $\mathcal{A}$ (formalized in Chapter&nbsp;6),
+To connect with the single-step reward formalism of Chapter&nbsp;1 and the MDP formalism of Chapter&nbsp;3, we distinguish:
+- the **state space** $\mathcal{X}$ and **action space** $\mathcal{A}$ (discrete templates in Chapter&nbsp;6; continuous boosts in Chapter&nbsp;7),
 - the **outcome space** $\Omega$ of user interactions (clicks and purchases).
 
 An outcome $\omega \in \Omega$ specifies, for a given ranking of length $k$:
@@ -1071,13 +1099,13 @@ def compute_reward(
 
 !!! note "Code ↔ Config (Reward Weights)"
     The weights $(α, β, γ, δ)$ are configured in:
-    - **File**: `zoosim/core/config.py:194-200` (`RewardConfig`)
+    - **File**: `zoosim/core/config.py:195-199` (`RewardConfig`)
     - **Defaults**: `alpha_gmv=1.0`, `beta_cm2=0.4`, `gamma_strat=2.0`, `delta_clicks=0.1`
     - **Safety**: Assertion in `zoosim/dynamics/reward.py:56-59` enforces the guideline [CONSTRAINT-5.8]
     - **Tuning**: Adjust weights to match business priorities (see Section 5.6 for Pareto analysis)
 
 !!! note "Code ↔ Reward"
-    The scalar reward #EQ-5.7 is implemented in `MOD-zoosim.reward` (`zoosim/dynamics/reward.py:42-66`), which aggregates GMV, CM2, strategic purchases, and clicks and enforces the engagement safety bound from [REM-1.2.1] and [CONSTRAINT-5.8]. The Chapter‑5 unit tests `TEST-tests.ch05.test_ch05_core` and the env smoke test `TEST-tests.test_env_basic` pin `compute_reward()` against #EQ-5.7 on simple synthetic patterns and in the integrated simulator.
+    The scalar reward [EQ-5.7] is implemented in `MOD-zoosim.reward` (`zoosim/dynamics/reward.py:42-66`), which aggregates GMV, CM2, strategic purchases, and clicks and enforces the engagement safety bound from [REM-1.2.1] and [CONSTRAINT-5.8]. The Chapter‑5 unit tests `TEST-tests.ch05.test_ch05_core` (`tests/ch05/test_ch05_core.py`) and the env smoke test `TEST-tests.test_env_basic` (`tests/test_env_basic.py`) pin `compute_reward()` against [EQ-5.7] on simple synthetic patterns and in the integrated simulator.
 
 **Example scenario:**
 
@@ -1116,14 +1144,14 @@ Reward breakdown:
   CM2: $6.00   (8 + (-2))
   Strategic purchases: 1.0
   Clicks: 3
-Total reward: 38.80
-  = 1.0 * 32 (GMV) + 1.0 * 6 (CM2) + 0.5 * 1 (Strategic) + 0.1 * 3 (Clicks)
-  = 32 + 6 + 0.5 + 0.3 = 38.8
+Total reward: 36.70
+  = 1.0 * 32 (GMV) + 0.4 * 6 (CM2) + 2.0 * 1 (Strategic) + 0.1 * 3 (Clicks)
+  = 32 + 2.4 + 2.0 + 0.3 = 36.70
 ```
 
 **Interpretation:**
-- GMV and CM2 dominate (32 + 6 = 38)
-- Strategic product bonus: +0.5
+- GMV dominates (+32.0) and CM2 is secondary (+2.4)
+- Strategic product bonus: +2.0
 - Click engagement: +0.3 (small contribution as intended)
 
 ---
@@ -1377,7 +1405,7 @@ For web search, pure neural models (BERT) dominate. For e-commerce, hybrid is **
    - **Legal constraints**: GDPR, fairness regulations (no discrimination by protected attributes)
    - **Operational constraints**: Inventory limits (can't boost out-of-stock products)
    - **Strategic constraints**: Partner agreements (must show brand X in top 5)
-   - **Solution**: Constrained MDP (§3.6) with **Lagrangian relaxation**, implemented as guardrails in Chapter 10
+   - **Solution**: Constrained MDP (§3.5) with **Lagrangian relaxation**, implemented as guardrails in Chapter 10
 
 4. **Reward hacking**: Agent finds **unintended optima**:
    - Example: Boost only negative-margin litter to maximize $\gamma \cdot \text{Strategic}$, lose money on CM2
@@ -1446,7 +1474,7 @@ For our simulator, we stick with **hybrid model** (Stage 1 equivalent) for speed
 
 ### 5.8.2 Learned Embeddings for Products and Queries
 
-**Our approach (Chapter 4)**: Fixed Gaussian embeddings clustered by category.
+**Our approach (Chapter 4)**: Fixed Gaussian embeddings with category-dependent product clusters and user-centered query embeddings.
 
 **Modern approach**: Learn embeddings from behavioral data.
 
@@ -1500,7 +1528,7 @@ These are **frontier research directions**. Our simulator provides a **testbed**
 
 ## 5.9 Integrated Example: Full Episode
 
-Let's trace a complete episode through all three components: relevance → features → reward.
+Let us trace a complete episode through all three components: relevance → features → reward.
 
 **Scenario:**
 - User: Price-sensitive shopper (segment: `price_hunter`)
@@ -1688,9 +1716,9 @@ Reward breakdown:
   CM2: $11.17  (5.12 + 6.05)
   Strategic purchases: 0.0
   Clicks: 3
-Total reward: 36.56
-  = 1.0 * 25.09 + 1.0 * 11.17 + 0.5 * 0 + 0.1 * 3
-  = 25.09 + 11.17 + 0 + 0.3 = 36.56
+Total reward: 29.86
+  = 1.0 * 25.09 + 0.4 * 11.17 + 2.0 * 0 + 0.1 * 3
+  = 25.09 + 4.47 + 0 + 0.3 = 29.86
 ```
 
 **Summary of episode:**
@@ -1698,7 +1726,7 @@ Total reward: 36.56
 2. Features captured business metrics and personalization signals
 3. Agent applied boosts (random baseline here; learned policy in Chapter 6)
 4. User clicked 3 products, purchased 2
-5. Reward = $36.56 (mainly from GMV + CM2)
+5. Reward = $29.86 (mainly from GMV)
 
 **RL loop:** Agent observes $(x, a, r, x')$ and updates policy to maximize expected reward over many episodes.
 
@@ -1735,7 +1763,7 @@ Total reward: 36.56
     - [ ] **End-to-end test**: Run full episode (Section 5.9) and validate reward matches expected components
 
 !!! note "Code ↔ Simulator"
-    The ranking pipeline described in Sections 5.1–5.3 (hybrid base relevance #EQ-5.3, feature vector #EQ-5.5, standardization #EQ-5.6) is wired into the single-step environment `MOD-zoosim.env` (`zoosim/envs/search_env.py:15-80`): `MOD-zoosim.relevance` provides `batch_base_scores()` and `MOD-zoosim.features` provides `compute_features()` / `standardize_features()`. The tests `TEST-tests.test_env_basic` and `TEST-tests.ch05.test_ch05_core` together with the validation script `DOC-ch05-validate-script` exercise this RL loop end-to-end and on small synthetic examples.
+    The ranking pipeline described in Sections 5.1–5.3 (hybrid base relevance [EQ-5.3], feature vector [EQ-5.5], standardization [EQ-5.6]) is wired into the single-step environment `MOD-zoosim.env` (`zoosim/envs/search_env.py:15-80`): `MOD-zoosim.relevance` provides `batch_base_scores()` and `MOD-zoosim.features` provides `compute_features()` / `standardize_features()`. The tests `TEST-tests.test_env_basic` (`tests/test_env_basic.py`) and `TEST-tests.ch05.test_ch05_core` (`tests/ch05/test_ch05_core.py`) together with the validation script `DOC-ch05-validate-script` (`scripts/validate_ch05.py`) exercise this RL loop end-to-end and on small synthetic examples.
 
 ---
 

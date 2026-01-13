@@ -4,8 +4,9 @@ Chapter 3 Scripts — Bellman Operators and Convergence Theory
 This module implements lab exercises for Chapter 3, covering:
 - Bellman operator contraction properties
 - Value iteration convergence analysis
-- Regret theory fundamentals
-- Lagrangian methods for constrained optimization
+- Reward perturbation sensitivity
+- Discount factor / effective horizon analysis
+- Numerical verification of Banach fixed-point convergence
 """
 
 from scripts.ch03.lab_solutions import (

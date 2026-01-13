@@ -6,7 +6,7 @@ nodes:
     kind: chapter
     title: "Chapter 0 — Motivation: Your First RL Experiment"
     status: in_progress
-    file: docs/book/ch00/ch00_motivation_first_experiment_revised.md
+    file: docs/book/ch00/ch00_motivation_first_experiment.md
     summary: Informal, code-first toy bandit that learns context-adaptive boosts; bridges to formal Chapter 1.
     depends_on: [CH-1]
     defines: [SEC-CH0-EX-0.1, SEC-CH0-EX-0.2, SEC-CH0-EX-0.3, SEC-CH0-EX-0.4, SEC-CH0-EX-0.5]
@@ -85,41 +85,41 @@ nodes:
     kind: section
     title: Exercise 0.1 — Reward Sensitivity (Toy)
     status: in_progress
-    file: docs/book/ch00/ch00_motivation_first_experiment_revised.md
+    file: docs/book/ch00/exercises_labs.md
     summary: Vary toy reward weights and observe impact on outcomes.
 
   - id: SEC-CH0-EX-0.2
     kind: section
     title: Exercise 0.2 — Action Geometry (Toy)
     status: in_progress
-    file: docs/book/ch00/ch00_motivation_first_experiment_revised.md
+    file: docs/book/ch00/exercises_labs.md
     summary: Compare uniform sampling over the action grid vs local perturbations.
 
   - id: SEC-CH0-EX-0.3
     kind: section
     title: Exercise 0.3 — Regret Shape (Toy)
     status: in_progress
-    file: docs/book/ch00/ch00_motivation_first_experiment_revised.md
+    file: docs/book/ch00/exercises_labs.md
     summary: Plot cumulative regret vs oracle and verify √T-like scaling.
 
   - id: SEC-CH0-EX-0.4
     kind: section
     title: Exercise 0.4 — Constraints (Toy, Advanced)
     status: in_progress
-    file: docs/book/ch00/ch00_motivation_first_experiment_revised.md
+    file: docs/book/ch00/exercises_labs.md
     summary: Add a CM2 floor and compare performance with and without the constraint.
 
   - id: SEC-CH0-EX-0.5
     kind: section
     title: Exercise 0.5 — Bandit Bellman Bridge (Toy)
     status: in_progress
-    file: docs/book/ch00/ch00_motivation_first_experiment_revised.md
+    file: docs/book/ch00/exercises_labs.md
     summary: Argue that value is max over actions of expected reward; connect to γ=0.
   - id: CH-1
     kind: chapter
     title: Chapter 1 — Foundations
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     summary: Multi-objective reward; boosts-as-actions; #EQ-1.2 and preview #EQ-1.2-prime.
     defines: [EQ-1.1, EQ-1.2, EQ-1.3, EQ-1.4, EQ-1.5, EQ-1.6, EQ-1.7, EQ-1.8, EQ-1.9, EQ-1.10, EQ-1.11, EQ-1.12, EQ-1.13, EQ-1.14, EQ-1.15, EQ-1.16, EQ-1.17, EQ-1.18, EQ-1.19, EQ-1.20, EQ-1.21, REM-1.2.1, EQ-1.2-prime, DEF-1.4.1]
     proves: [THM-1.9.1]
@@ -129,7 +129,7 @@ nodes:
     kind: equation
     title: Scoring function s(u,q,x) = r_ES(q,x) + Σ w_k φ_k(u,q,x)
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.1}"
     summary: Base scoring function combining relevance and engineered features with manual weights.
 
@@ -137,7 +137,7 @@ nodes:
     kind: equation
     title: Scalar reward R = α·GMV + β·CM2 + γ·STRAT + δ·CLICKS
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.2}"
     summary: Single-step reward combining business outcomes and engagement.
     implements: []
@@ -147,7 +147,7 @@ nodes:
     kind: remark
     title: Engagement bounds and clickbait risk
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#REM-1.2.1}"
     summary: Bound δ/α and monitor CVR to avoid clickbait policies.
 
@@ -155,7 +155,7 @@ nodes:
     kind: equation
     title: Long-run value V^π(s0) = E[ Σ γ^t GMV_t ]
     status: in_progress
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.2-prime}"
     summary: Multi-episode value where engagement influences retention transitions.
     forward_refs: [CH-11]
@@ -985,13 +985,13 @@ nodes:
     status: complete
     file: docs/book/ch06/discrete_template_bandits.md
     anchor: "{#EQ-6.16}"
-    summary: Regret(T) ≤ α√(2dT log(1 + T/(dλ))) + √λ S for LinUCB under bounded parameters and features.
+    summary: Regret(T) <= 2 alpha sqrt(2 d M T log(1 + T/(d lambda))) with probability >= 1 - delta for LinUCB (see [THM-6.2]).
 
   - id: EQ-6.17
     kind: equation
     title: Neural Linear bandit architecture
     status: complete
-    file: docs/book/ch06/discrete_template_bandits.md
+    file: docs/book/ch06/appendices.md
     anchor: "{#EQ-6.17}"
     summary: μ(x,a) = θ_a^T f_ψ(x) with learned representation f_ψ and linear heads θ_a.
     depends_on: [CH-6, CH-7]
@@ -1002,7 +1002,7 @@ nodes:
     status: complete
     file: zoosim/policies/templates.py
     summary: Implements discrete boost templates (BoostTemplate dataclass, create_standard_templates, compute_catalog_stats).
-    implements: [DEF-6.1.1, EQ-6.17]
+    implements: [DEF-6.1.1]
     tested_by: [TEST-tests.ch06.test_templates]
 
   - id: MOD-zoosim.policies.thompson_sampling
@@ -1029,7 +1029,7 @@ nodes:
     status: complete
     file: tests/ch06/test_templates.py
     summary: Tests template application bounds, semantic correctness (high margin boosts high-margin products), catalog statistics computation.
-    uses: [MOD-zoosim.policies.templates, DEF-6.1.1, EQ-6.17]
+    uses: [MOD-zoosim.policies.templates, DEF-6.1.1]
 
   - id: TEST-tests.ch06.test_thompson_sampling
     kind: test
@@ -1162,7 +1162,7 @@ nodes:
     kind: equation
     title: Constraints C = {cm2_floor, exposure_floors, rank_stability}
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.3}"
     summary: Hard constraints on CM2 floor, exposure, and rank stability.
 
@@ -1170,7 +1170,7 @@ nodes:
     kind: equation
     title: Contextual bandit MDP tuple (𝒮, 𝒜, P, R, γ=1)
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.7}"
     summary: Single-episode MDP formulation with context distribution.
 
@@ -1178,7 +1178,7 @@ nodes:
     kind: equation
     title: Action space 𝒜 = [-a_max, +a_max]^K
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.11}"
     summary: Bounded boost weights; K engineered features.
 
@@ -1186,7 +1186,7 @@ nodes:
     kind: equation
     title: Action-value function Q(x,a) = 𝔼[R(x,a,ω)]
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.12}"
     summary: Expected reward for context x and action a, marginalizing over stochastic outcomes ω.
 
@@ -1194,7 +1194,7 @@ nodes:
     kind: equation
     title: Context space x = (u, q, h, t) ∈ 𝒳
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.4}"
     summary: Defines context as user features, query features, session history, and time features.
 
@@ -1202,7 +1202,7 @@ nodes:
     kind: equation
     title: Static optimization max_w E[R(w, x)]
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.5}"
     summary: Traditional static boost optimization (one global w for all contexts).
 
@@ -1210,7 +1210,7 @@ nodes:
     kind: equation
     title: Contextual optimization max_π E[R(π(x), x)]
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.6}"
     summary: Context-adaptive policy learning (w depends on x via policy π).
 
@@ -1218,7 +1218,7 @@ nodes:
     kind: equation
     title: Policy value function V(π) = E[Q(x,π(x))]
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.8}"
     summary: Expected reward under policy π, averaging over context distribution ρ.
 
@@ -1226,7 +1226,7 @@ nodes:
     kind: equation
     title: Optimal value V* = max_π V(π) = E[max_a Q(x,a)]
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.9}"
     summary: Best achievable value by optimizing action choice for each context.
 
@@ -1234,7 +1234,7 @@ nodes:
     kind: equation
     title: Optimal policy π*(x) = argmax_a Q(x,a)
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.10}"
     summary: Greedy policy selecting action with highest Q-value for each context.
 
@@ -1242,7 +1242,7 @@ nodes:
     kind: equation
     title: Instantaneous regret = Q(x_t, π*(x_t)) - Q(x_t, π(x_t))
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.13}"
     summary: Value gap between optimal policy and current policy at round t.
 
@@ -1250,7 +1250,7 @@ nodes:
     kind: equation
     title: Cumulative regret Regret_T = Σ_t regret_t
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.14}"
     summary: Total value lost over T rounds due to suboptimal actions.
 
@@ -1258,7 +1258,7 @@ nodes:
     kind: equation
     title: Sublinear regret condition lim_{T→∞} Regret_T/T = 0
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.15}"
     summary: Average per-round regret vanishes as algorithm converges to optimality.
 
@@ -1266,7 +1266,7 @@ nodes:
     kind: equation
     title: Parametric Q-function Q_θ(x,a)
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.16}"
     summary: Neural network approximation of action-value function with weights θ.
 
@@ -1274,7 +1274,7 @@ nodes:
     kind: equation
     title: Q-function regression loss min_θ E[(Q_θ(x,a) - r)²]
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.17}"
     summary: Supervised learning objective for estimating Q from (x,a,r) data.
 
@@ -1282,7 +1282,7 @@ nodes:
     kind: equation
     title: Constrained optimization max_π E[R] s.t. constraints
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.18}"
     summary: MDP formulation with CM2 floor and strategic exposure constraints.
 
@@ -1290,7 +1290,7 @@ nodes:
     kind: equation
     title: Lagrangian formulation max_π min_λ L(π,λ)
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.19}"
     summary: Saddle-point problem transforming constrained optimization to unconstrained.
 
@@ -1298,7 +1298,7 @@ nodes:
     kind: equation
     title: Hamilton-Jacobi-Bellman equation -∂V/∂t = max_u {R + ∂V/∂x·f}
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.20}"
     summary: Continuous-time optimal control PDE connecting to discrete RL.
 
@@ -1306,7 +1306,7 @@ nodes:
     kind: equation
     title: Bandit Bellman equation V(x) = max_a Q(x,a)
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#EQ-1.21}"
     summary: HJB reduction for single-step problem (no dynamics term).
 
@@ -1314,7 +1314,7 @@ nodes:
     kind: definition
     title: Contextual Bandit for Search Ranking
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#DEF-1.4.1}"
     summary: Formal definition of (X, A, R, ρ) tuple for search ranking problem.
     depends_on: [EQ-1.2, EQ-1.4]
@@ -1332,7 +1332,7 @@ nodes:
     kind: theorem
     title: Slater's condition for bandits
     status: complete
-    file: docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+    file: docs/book/ch01/ch01_foundations.md
     anchor: "{#THM-1.9.1}"
     summary: Strict feasibility ensures Lagrangian methods converge.
 
@@ -1749,7 +1749,7 @@ nodes:
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     summary: Measure-theoretic foundations for click models and OPE; PBM/DBN, conditional expectation, filtrations, IPS.
-    defines: [DEF-2.2.1, DEF-2.2.2, DEF-2.2.3, DEF-2.2.4, DEF-2.2.5, THM-2.2.1, THM-2.2.2, THM-2.2.3, DEF-2.3.1, DEF-2.3.2, THM-2.3.1, THM-2.3.2, THM-2.3.3, DEF-2.4.1, DEF-2.4.2, DEF-2.4.3, THM-2.4.1, DEF-2.5.1, DEF-2.5.2, THM-2.5.1, DEF-2.5.3, PROP-2.5.4, PROP-2.5.5, EQ-2.1, EQ-2.2, EQ-2.3, EQ-2.10, EQ-2.11, EQ-2.12, EQ-2.13, EQ-2.14, ASSUMP-2.6.1, DEF-2.6.1, DEF-2.6.2, THM-2.6.1, EQ-2.5, EQ-2.6, EQ-2.7, THM-2.6.2, EQ-2.8, THM-2.8.1, REM-2.8.2, THM-2.8.3, EQ-2.9]
+    defines: [DEF-2.2.1, DEF-2.2.2, DEF-2.2.3, DEF-2.2.4, DEF-2.2.5, DEF-2.2.6, PROP-2.2.1, THM-2.2.2, THM-2.2.3, DEF-2.3.1, THM-2.3.1, DEF-2.3.2, THM-2.3.2, THM-2.3.3, THM-2.3.4-RN, REM-2.3.5, DEF-2.4.1, DEF-2.4.2, DEF-2.4.3, THM-2.4.1, DEF-2.5.1, EQ-2.1, DEF-2.5.2, EQ-2.2, EQ-2.3, PROP-2.5.1, DEF-2.5.3, PROP-2.5.4, PROP-2.5.5, EQ-2.4, EQ-2.5, EQ-2.6, EQ-2.7, EQ-2.8, ASSUMP-2.6.1, DEF-2.6.1, DEF-2.6.2, EQ-2.9, THM-2.6.1, DEF-2.6.3, EQ-2.10, DEF-2.6.4, EQ-2.11, EQ-2.12, EQ-2.13, PROP-2.8.1, PROP-2.8.2, EQ-2.14, REM-2.8.2, THM-2.8.3]
 
   - id: DEF-2.2.1
     kind: definition
@@ -1790,6 +1790,14 @@ nodes:
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     anchor: "{#DEF-2.2.5}"
     summary: "f: (E,𝔈)→(F,𝔽) is measurable iff preimages of 𝔽-sets lie in 𝔈."
+
+  - id: DEF-2.2.6
+    kind: definition
+    title: Segment distribution
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.2.6}"
+    summary: Probability measure on a finite segment set S_seg; equivalently a probability vector p_seg ∈ Δ_K.
 
   - id: THM-2.2.2
     kind: theorem
@@ -1846,6 +1854,23 @@ nodes:
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     anchor: "{#THM-2.3.3}"
     summary: Existence via Radon–Nikodym; unique a.s.
+
+  - id: THM-2.3.4-RN
+    kind: theorem
+    title: Radon–Nikodym
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.3.4-RN}"
+    summary: For σ-finite ν≪μ, there exists a density dν/dμ such that ν(A)=∫_A (dν/dμ) dμ.
+
+  - id: REM-2.3.5
+    kind: remark
+    title: Importance sampling as change of measure
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#REM-2.3.5}"
+    summary: Identity ∫ f dν = ∫ f (dν/dμ) dμ; in OPE, ρ(a|x)=dπ₁(·|x)/dπ₀(·|x).
+    depends_on: [THM-2.3.4-RN]
 
   - id: DEF-2.4.1
     kind: definition
@@ -1925,7 +1950,7 @@ nodes:
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     anchor: "{#DEF-2.6.1}"
-    summary: "ρ(x,a) := π_0(a|x) for stochastic logging policy."
+    summary: The propensity score is the logging probability π₀(a|x) of action a in context x.
 
   - id: DEF-2.6.2
     kind: definition
@@ -1935,6 +1960,15 @@ nodes:
     anchor: "{#DEF-2.6.2}"
     summary: \hat V_IPS(π_1) = (1/N)∑ [π_1(a_i|x_i)/π_0(a_i|x_i)] r_i.
 
+  - id: EQ-2.9
+    kind: equation
+    title: IPS estimator
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#EQ-2.9}"
+    summary: \hat V_IPS(π_1) = (1/N)∑ [π_1(a_i|x_i)/π_0(a_i|x_i)] r_i.
+    depends_on: [DEF-2.6.2]
+
   - id: THM-2.6.1
     kind: theorem
     title: Unbiasedness of IPS
@@ -1943,61 +1977,82 @@ nodes:
     anchor: "{#THM-2.6.1}"
     summary: Under positivity and correct logging, 𝔼[\hat V_IPS(π_1)] = V(π_1).
 
-  - id: EQ-2.5
+  - id: DEF-2.6.3
+    kind: definition
+    title: Clipped IPS
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.6.3}"
+    summary: IPS with capped importance weights to trade bias for variance.
+    depends_on: [DEF-2.6.2]
+
+  - id: DEF-2.6.4
+    kind: definition
+    title: Self-normalized IPS (SNIPS)
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.6.4}"
+    summary: Normalized importance-weighted estimator; reduces variance but loses unbiasedness.
+    depends_on: [DEF-2.6.2]
+
+  - id: EQ-2.12
     kind: equation
     title: Plackett–Luce step probability
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#EQ-2.5}"
+    anchor: "{#EQ-2.12}"
     summary: π(p_k | x, p_1..p_{k-1}) = s_π(p_k|x)/∑_{p∈R_k} s_π(p|x).
 
-  - id: EQ-2.6
+  - id: EQ-2.13
     kind: equation
     title: Plackett–Luce full ranking propensity
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#EQ-2.6}"
+    anchor: "{#EQ-2.13}"
     summary: π(a|x) = ∏_{k=1}^M s_π(p_k|x)/∑_{p∈R_k} s_π(p|x).
 
-  - id: EQ-2.7
+  - id: EQ-2.10
     kind: equation
     title: Clipped IPS estimator
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#EQ-2.7}"
+    anchor: "{#EQ-2.10}"
     summary: IPS with weights capped at c to reduce variance.
+    depends_on: [DEF-2.6.3]
 
-  - id: THM-2.6.2
-    kind: theorem
-    title: Negative bias of clipped IPS for nonnegative rewards
-    status: in_progress
-    file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#THM-2.6.2}"
-    summary: min{c,w}·R underestimates w·R unless clipping never occurs.
-
-  - id: EQ-2.8
+  - id: EQ-2.11
     kind: equation
     title: Self‑normalized IPS (SNIPS)
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#EQ-2.8}"
+    anchor: "{#EQ-2.11}"
     summary: Weighted average normalized by sum of weights.
+    depends_on: [DEF-2.6.4]
 
-  - id: THM-2.8.1
-    kind: theorem
-    title: Bellman measurability and γ‑contraction
+  - id: PROP-2.8.1
+    kind: proposition
+    title: Score integrability
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#THM-2.8.1}"
-    summary: T^π maps B_b(S) → B_b(S) and is a γ‑contraction; control operator measurable under mild conditions.
+    anchor: "{#PROP-2.8.1}"
+    summary: The simulator's base relevance score is measurable and square-integrable under the induced distribution.
 
-  - id: EQ-2.9
+  - id: PROP-2.8.2
+    kind: proposition
+    title: Bellman measurability and contraction
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#PROP-2.8.2}"
+    summary: T^π maps B_b(S) → B_b(S) and is a γ‑contraction; control operator is a γ‑contraction with measurability caveats.
+
+  - id: EQ-2.14
     kind: equation
     title: Policy evaluation Bellman operator
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#EQ-2.9}"
+    anchor: "{#EQ-2.14}"
     summary: T^π V(s) = ∫ r(s,a) dπ + γ ∫ V(s') dP dπ.
+    depends_on: [PROP-2.8.2]
 
   - id: SEC-CH2-2.7.4
     kind: section
@@ -2030,20 +2085,20 @@ nodes:
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     summary: NumPy verification that E[E[Z|H]|G] equals E[Z|G] by grouping.
 
-  - id: THM-2.2.1
-    kind: theorem
+  - id: PROP-2.2.1
+    kind: proposition
     title: Measurability of compositions
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#THM-2.2.1}"
+    anchor: "{#PROP-2.2.1}"
     summary: If X and f are measurable, then f∘X is measurable.
 
-  - id: THM-2.5.1
-    kind: theorem
+  - id: PROP-2.5.1
+    kind: proposition
     title: DBN marginal examination probability
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#THM-2.5.1}"
+    anchor: "{#PROP-2.5.1}"
     summary: 𝔓(E_k=1)=∏_{j<k}(1−rel(p_j)·s(p_j)) under cascade.
 
   - id: DEF-2.5.3
@@ -2054,60 +2109,60 @@ nodes:
     anchor: "{#DEF-2.5.3}"
     summary: Production click model extending DBN with position decay, utility-driven click probabilities, satisfaction dynamics, and stopping conditions.
     depends_on: [DEF-2.5.1, DEF-2.5.2]
-    see_also: [EQ-2.10, EQ-2.11, EQ-2.12, EQ-2.13, EQ-2.14, MOD-zoosim.behavior]
+    see_also: [EQ-2.4, EQ-2.5, EQ-2.6, EQ-2.7, EQ-2.8, MOD-zoosim.behavior]
 
-  - id: EQ-2.10
+  - id: EQ-2.4
     kind: equation
-    title: Utility function
+    title: Latent utility at position k
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#EQ-2.10}"
-    summary: U(p,q) = alpha_rel*rel(p,q) - alpha_price*price(p) + alpha_pl*is_pl(p) + alpha_cat*cat_match(p,q) + epsilon.
+    anchor: "{#EQ-2.4}"
+    summary: Utility U_k combines query-product match, price sensitivity, private-label and category terms, plus noise ε_k.
     depends_on: [DEF-2.5.3]
 
-  - id: EQ-2.11
+  - id: EQ-2.5
     kind: equation
     title: Click probability given examination
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#EQ-2.11}"
+    anchor: "{#EQ-2.5}"
     summary: P(C_k=1 | E_k=1, U_k) = sigmoid(U_k); click probability given examination is logistic transform of utility.
-    depends_on: [DEF-2.5.3, EQ-2.10]
+    depends_on: [DEF-2.5.3, EQ-2.4]
 
-  - id: EQ-2.12
+  - id: EQ-2.6
     kind: equation
     title: Examination probability
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#EQ-2.12}"
+    anchor: "{#EQ-2.6}"
     summary: P(E_k=1 | F_{k-1}) = sigmoid(pos_bias_k + beta_exam * S_{k-1}); examination depends on position bias and running satisfaction.
     depends_on: [DEF-2.5.3, DEF-2.5.1]
 
-  - id: EQ-2.13
+  - id: EQ-2.7
     kind: equation
     title: Satisfaction dynamics
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#EQ-2.13}"
+    anchor: "{#EQ-2.7}"
     summary: S_k = S_{k-1} + gain*U_k*C_k - decay*(1-C_k) - fatigue*B_k; satisfaction evolves with clicks and purchases.
-    depends_on: [DEF-2.5.3, EQ-2.10]
+    depends_on: [DEF-2.5.3, EQ-2.4]
 
-  - id: EQ-2.14
+  - id: EQ-2.8
     kind: equation
     title: Stopping time
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
-    anchor: "{#EQ-2.14}"
+    anchor: "{#EQ-2.8}"
     summary: "tau = min{k : E_k=0 or S_k < theta_abandon or sum B_j >= n_max}; session ends via examination failure, satisfaction threshold, or purchase limit."
-    depends_on: [DEF-2.5.3, EQ-2.12, EQ-2.13]
+    depends_on: [DEF-2.5.3, EQ-2.6, EQ-2.7]
 
   - id: PROP-2.5.4
     kind: proposition
-    title: Nesting Property (Utility-Based to PBM)
+    title: Nesting relations
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     anchor: "{#PROP-2.5.4}"
-    summary: When utility weights alpha_price, alpha_pl, alpha_cat are zeroed and satisfaction dynamics disabled, the Utility-Based Cascade reduces to PBM with position-independent click probabilities (given examination).
+    summary: Utility-Based Cascade matches PBM at the level of per-position marginals under a parameter specialization; in general it induces cascade dependence through its internal state.
     depends_on: [DEF-2.5.3, DEF-2.5.1]
 
   - id: PROP-2.5.5
@@ -2116,8 +2171,8 @@ nodes:
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     anchor: "{#PROP-2.5.5}"
-    summary: The session stopping time tau from [EQ-2.14] is a valid stopping time with respect to the natural filtration; measurable at each position.
-    depends_on: [DEF-2.5.3, EQ-2.14, DEF-2.4.1]
+    summary: The session stopping time tau from [EQ-2.8] is a valid stopping time with respect to the natural filtration; measurable at each position.
+    depends_on: [DEF-2.5.3, EQ-2.8, DEF-2.4.1]
 
   - id: CH-3
     kind: chapter
@@ -2125,7 +2180,7 @@ nodes:
     status: in_progress
     file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
     summary: Stochastic processes, MDPs, Bellman operators, contractions; bridges to CMDP and OPE.
-    defines: [DEF-3.2.1, DEF-3.2.2, DEF-3.2.3, DEF-3.2.4, DEF-3.3.1, DEF-3.3.2, DEF-3.4.1, DEF-3.4.2, DEF-3.4.3, DEF-3.4.4, DEF-3.4.5, DEF-3.6.1, DEF-3.6.2, DEF-3.6.3, DEF-3.8.1, PROP-3.2.1, PROP-3.6.1, PROP-3.8.1, ASM-3.4.1, THM-3.5.1-Bellman, THM-3.5.2-Bellman, THM-3.6.2-Banach, THM-3.7.1, COR-3.7.2, COR-3.7.3, EQ-3.1, EQ-3.2, EQ-3.3, EQ-3.4, EQ-3.5, EQ-3.6, EQ-3.7, EQ-3.8, EQ-3.9, EQ-3.10, EQ-3.11, EQ-3.12, EQ-3.13, EQ-3.14, EQ-3.15, EQ-3.16, EQ-3.17, EQ-3.18, EQ-3.19, EQ-3.20, EQ-3.22]
+    defines: [DEF-3.2.1, DEF-3.2.2, DEF-3.2.3, DEF-3.2.4, DEF-3.3.1, DEF-3.3.2, DEF-3.4.1, DEF-3.4.2, DEF-3.4.3, DEF-3.4.4, DEF-3.4.5, DEF-3.6.1, DEF-3.6.2, DEF-3.6.3, DEF-3.8.1, PROP-3.2.1, PROP-3.6.1, PROP-3.7.4, PROP-3.8.1, ASM-3.4.1, THM-3.5.1-Bellman, THM-3.5.2-Bellman, THM-3.6.2-Banach, THM-3.7.1, COR-3.7.2, COR-3.7.3, EQ-3.1, EQ-3.2, EQ-3.3, EQ-3.4, EQ-3.5, EQ-3.6, EQ-3.7, EQ-3.8, EQ-3.9, EQ-3.10, EQ-3.11, EQ-3.12, EQ-3.13, EQ-3.14, EQ-3.15, EQ-3.16, EQ-3.17, EQ-3.18, EQ-3.19, EQ-3.20, EQ-3.22]
     forward_refs: [CH-9, CH-11]
     uses: [MOD-zoosim.reward, MOD-zoosim.session_env, MOD-zoosim.retention, MOD-zoosim.config]
 
@@ -2288,12 +2343,21 @@ nodes:
 
   - id: PROP-3.6.1
     kind: proposition
-    title: Completeness of (B(S), ||·||_∞)
+    title: Completeness of (B_b(S), ||·||_∞)
     status: complete
     file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
     anchor: "{#PROP-3.6.1}"
-    summary: "Space of bounded functions on S with supremum norm is a Banach space; enables Banach fixed-point theorem application."
+    summary: "Space of bounded measurable functions on S with supremum norm is a Banach space; enables Banach fixed-point theorem application."
     see_also: [DEF-3.6.2, THM-3.6.2-Banach]
+
+  - id: PROP-3.7.4
+    kind: proposition
+    title: Reward Perturbation Sensitivity
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#PROP-3.7.4}"
+    summary: "If rewards change by Delta r, then optimal values change by at most ||Delta r||_inf/(1-gamma) in supremum norm."
+    see_also: [THM-3.7.1, COR-3.7.2]
 
   - id: PROP-3.8.1
     kind: proposition
@@ -2312,7 +2376,7 @@ nodes:
     status: complete
     file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
     anchor: "{#THM-3.5.1-Bellman}"
-    summary: "V^π(s) = Σ_a π(a|s)[r(s,a) + γ Σ_{s'} P(s'|s,a)V^π(s')]; recursive characterization of policy value. Equivalently V^π = T^π V^π."
+    summary: "V^π(s) = ∫_A [ r(s,a) + γ ∫_S V^π(s') P(ds'|s,a) ] π(da|s); recursive characterization of policy value. Equivalently V^π = T^π V^π."
     see_also: [EQ-3.7, EQ-3.8, EQ-3.9, DEF-3.4.3, ASM-3.4.1]
     used_by: [EQ-9.21, EQ-9.24]
 
@@ -2322,7 +2386,7 @@ nodes:
     status: complete
     file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
     anchor: "{#THM-3.5.2-Bellman}"
-    summary: "V*(s) = max_a[r(s,a) + γ Σ_{s'} P(s'|s,a)V*(s')]; optimal value is fixed point of Bellman optimality operator T."
+    summary: "V*(s) = sup_a [ r(s,a) + γ ∫_S V*(s') P(ds'|s,a) ]; optimal value is fixed point of Bellman optimality operator T."
     see_also: [EQ-3.10, EQ-3.11, EQ-3.12, DEF-3.4.5, THM-3.7.1]
 
   - id: THM-3.6.2-Banach
@@ -2350,7 +2414,7 @@ nodes:
     status: complete
     file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
     anchor: "{#COR-3.7.2}"
-    summary: "There exists a unique V* ∈ B(S) satisfying the Bellman optimality equation V* = T V*."
+    summary: "There exists a unique V* ∈ B_b(S) satisfying the Bellman optimality equation V* = T V*."
     see_also: [THM-3.6.2-Banach, THM-3.7.1]
 
   - id: COR-3.7.3
@@ -2359,7 +2423,7 @@ nodes:
     status: complete
     file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
     anchor: "{#COR-3.7.3}"
-    summary: "For any V_0, V_{k+1} = T V_k converges to V* with rate ||V_k - V*||_∞ ≤ γ^k ||V_0 - V*||_∞."
+    summary: "For any V_0, V_{k+1} = T V_k converges to V* with rate ||V_k - V*||_∞ ≤ (γ^k/(1-γ)) ||T V_0 - V_0||_∞."
     see_also: [THM-3.6.2-Banach, THM-3.7.1, EQ-3.17, EQ-3.18]
     tested_by: [TEST-tests.ch03.test_value_iteration]
 
@@ -2395,7 +2459,7 @@ nodes:
     status: complete
     file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
     anchor: "{#EQ-3.4}"
-    summary: "V^π(s) = Σ_a π(a|s) Q^π(s,a); state value is expected action value under policy."
+    summary: "V^π(s) = ∫_A Q^π(s,a) π(da|s); state value is expected action value under policy."
 
   - id: EQ-3.5
     kind: equation
@@ -3851,8 +3915,10 @@ edges:
   - {src: THM-2.6.1, dst: ASSUMP-2.6.1, rel: depends_on, status: complete}
   - {src: CH-2, dst: EQ-2.5, rel: defines, status: in_progress}
   - {src: CH-2, dst: EQ-2.6, rel: defines, status: in_progress}
-  - {src: SEC-CH2-2.7.4, dst: THM-2.6.2, rel: uses, status: in_progress}
-  - {src: SEC-CH2-2.7.4, dst: EQ-2.8, rel: uses, status: in_progress}
+  - {src: SEC-CH2-2.7.4, dst: DEF-2.6.3, rel: uses, status: in_progress}
+  - {src: SEC-CH2-2.7.4, dst: DEF-2.6.4, rel: uses, status: in_progress}
+  - {src: SEC-CH2-2.7.4, dst: EQ-2.10, rel: uses, status: in_progress}
+  - {src: SEC-CH2-2.7.4, dst: EQ-2.11, rel: uses, status: in_progress}
   # EQ-3.21 removed from Ch03: CMDP Lagrangian concept covered by EQ-C.2 in Appendix C
   - {src: CH-3, dst: EQ-3.22, rel: defines, status: complete}
   - {src: CH-3, dst: CH-11, rel: refers_to_future, status: in_progress}
@@ -3928,7 +3994,6 @@ edges:
   - {src: CH-6, dst: EQ-6.17, rel: defines, status: complete}
   - {src: CH-6, dst: CH-5, rel: depends_on, status: complete}
   - {src: MOD-zoosim.policies.templates, dst: DEF-6.1.1, rel: implements, status: complete}
-  - {src: MOD-zoosim.policies.templates, dst: EQ-6.17, rel: implements, status: complete}
   - {src: MOD-zoosim.policies.thompson_sampling, dst: ALG-6.1, rel: implements, status: complete}
   - {src: MOD-zoosim.policies.thompson_sampling, dst: EQ-6.6, rel: implements, status: complete}
   - {src: MOD-zoosim.policies.thompson_sampling, dst: EQ-6.7, rel: implements, status: complete}

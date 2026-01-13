@@ -31,7 +31,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--out-dir",
         type=Path,
-        default=Path("docs/book/drafts/ch06/data"),
+        default=Path("docs/book/ch06/data"),
     )
     parser.add_argument("--prior-weight", type=int, default=None)
     parser.add_argument("--lin-alpha", type=float, default=None)

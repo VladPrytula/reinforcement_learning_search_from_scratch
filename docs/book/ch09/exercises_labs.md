@@ -1,4 +1,4 @@
-# Chapter 9 — Exercises & Labs
+# Chapter 9 --- Exercises & Labs
 
 **Vlad Prytula**
 
@@ -6,16 +6,16 @@ These labs implement the off-policy evaluation estimators from Chapter 9 using t
 
 ---
 
-## Lab 9.1 — IPS Estimate with Variance Analysis {#lab-91-ips-estimate-with-variance-analysis}
+## Lab 9.1 --- IPS Estimate with Variance Analysis {#lab-91-ips-estimate-with-variance-analysis}
 
-**Objective:** Implement Importance Sampling (IPS) and Self-Normalized IPS (SNIPS) estimators, analyze variance as a function of ε (exploration rate) and distribution shift, compute bootstrap confidence intervals.
+**Objective:** Implement Importance Sampling (IPS) and Self-Normalized IPS (SNIPS) estimators, analyze variance as a function of $\\epsilon$ (exploration rate) and distribution shift, compute bootstrap confidence intervals.
 
-**Theory:** Implements [EQ-9.10] (IPS) and [EQ-9.13] (SNIPS) from §9.2.
+**Theory:** Implements [EQ-9.10] (IPS) and [EQ-9.13] (SNIPS) from Section 9.2.
 
 **Setup:**
-- Behavior policy: ε-greedy mixture over two templates (Chapter 6 style)
+- Behavior policy: epsilon-greedy mixture over two templates (Chapter 6 style)
 - Evaluation policies: (a) One of the templates (low distribution shift), (b) New policy with different boosts (high distribution shift)
-- Vary ε ∈ {0.01, 0.05, 0.10, 0.20} to study overlap effect
+- Vary $\\epsilon \\in \\{0.01, 0.05, 0.10, 0.20\\}$ to study overlap effect
 
 ```python
 # scripts/ch09/lab_01_ips_variance_analysis.py
@@ -31,7 +31,7 @@ class Transition:
     state: Dict[str, float]  # Simplified: just segment features
     action: np.ndarray        # Boost vector [10]
     reward: float
-    propensity: float         # π_b(a|s)
+    propensity: float         # pi_b(a|s)
 
 @dataclass
 class Trajectory:
@@ -50,7 +50,7 @@ TEMPLATE_EXPLORATION = np.array([0.15, 0.15, 0.15, 0.15, 0.1, 0.1, 0.1, 0.0, 0.0
 
 
 class SimplePolicy:
-    """Deterministic or ε-greedy policy over templates."""
+    """Deterministic or epsilon-greedy policy over templates."""
 
     def __init__(self, primary_template: np.ndarray, epsilon: float = 0.0):
         self.primary = primary_template
@@ -111,7 +111,7 @@ def ips_estimator(
     """
     IPS estimator with diagnostics.
 
-    Implements [EQ-9.10] from §9.2.2.
+    Implements [EQ-9.10] from Section 9.2.2.
     """
     weights = []
     returns = []
@@ -160,7 +160,7 @@ def snips_estimator(
     """
     Self-Normalized IPS (SNIPS) estimator.
 
-    Implements [EQ-9.13] from §9.2.3.
+    Implements [EQ-9.13] from Section 9.2.3.
     """
     weights = []
     returns = []
@@ -231,10 +231,10 @@ def main():
     Lab 9.1: IPS variance analysis across exploration rates.
 
     Tests:
-    1. Low distribution shift: π_e = BALANCED (same as π_b primary template)
-    2. High distribution shift: π_e = CM2_HEAVY (different from π_b primary)
+    1. Low distribution shift: pi_e = BALANCED (same as pi_b primary template)
+    2. High distribution shift: pi_e = CM2_HEAVY (different from pi_b primary)
 
-    Vary ε ∈ {0.01, 0.05, 0.10, 0.20} to see effect of overlap on variance.
+    Vary epsilon in {0.01, 0.05, 0.10, 0.20} to see effect of overlap on variance.
     """
     rng = np.random.default_rng(42)
     n_trajectories = 5000
@@ -257,22 +257,22 @@ def main():
     gt_cm2 = np.mean(gt_cm2_returns)
     gt_cm2_std = np.std(gt_cm2_returns) / np.sqrt(len(gt_cm2_returns))
 
-    print(f"  Ground truth (BALANCED): {gt_balanced:.2f} ± {1.96 * gt_balanced_std:.2f}")
-    print(f"  Ground truth (CM2_HEAVY): {gt_cm2:.2f} ± {1.96 * gt_cm2_std:.2f}")
+    print(f"  Ground truth (BALANCED): {gt_balanced:.2f} +/- {1.96 * gt_balanced_std:.2f}")
+    print(f"  Ground truth (CM2_HEAVY): {gt_cm2:.2f} +/- {1.96 * gt_cm2_std:.2f}")
 
-    # For each ε, run IPS and SNIPS
+    # For each epsilon, run IPS and SNIPS
     print("\n[2/3] Running OPE with varying exploration rates...")
 
     results = []
 
     for eps in epsilons:
-        print(f"\n--- ε = {eps:.2f} ---")
+        print(f"\n--- epsilon = {eps:.2f} ---")
 
-        # Collect logged data with ε-greedy behavior policy
+        # Collect logged data with epsilon-greedy behavior policy
         pi_behavior = SimplePolicy(TEMPLATE_BALANCED, epsilon=eps)
         dataset = [simulate_episode(pi_behavior, rng) for _ in range(n_trajectories)]
 
-        # Evaluation 1: π_e = BALANCED (low distribution shift)
+        # Evaluation 1: pi_e = BALANCED (low distribution shift)
         pi_eval_balanced = SimplePolicy(TEMPLATE_BALANCED, epsilon=0.0)
         ips_est_b, ips_diag_b = ips_estimator(dataset, pi_eval_balanced, pi_behavior)
         snips_est_b, snips_diag_b = snips_estimator(dataset, pi_eval_balanced, pi_behavior)
@@ -280,13 +280,13 @@ def main():
         ips_ci_b = bootstrap_ci(dataset, ips_estimator, pi_eval_balanced, pi_behavior, num_bootstrap=500)
         snips_ci_b = bootstrap_ci(dataset, snips_estimator, pi_eval_balanced, pi_behavior, num_bootstrap=500)
 
-        print(f"  π_e = BALANCED (low shift):")
+        print(f"  pi_e = BALANCED (low shift):")
         print(f"    IPS:   {ips_est_b:.2f} [{ips_ci_b[0]:.2f}, {ips_ci_b[1]:.2f}]   ESS ratio: {ips_diag_b['effective_sample_size_ratio']:.3f}")
         print(f"    SNIPS: {snips_est_b:.2f} [{snips_ci_b[0]:.2f}, {snips_ci_b[1]:.2f}]   ESS ratio: {snips_diag_b['effective_sample_size']/(len(dataset)):.3f}")
         print(f"    Ground truth: {gt_balanced:.2f}")
         print(f"    IPS error: {abs(ips_est_b - gt_balanced):.2f}, SNIPS error: {abs(snips_est_b - gt_balanced):.2f}")
 
-        # Evaluation 2: π_e = CM2_HEAVY (high distribution shift)
+        # Evaluation 2: pi_e = CM2_HEAVY (high distribution shift)
         pi_eval_cm2 = SimplePolicy(TEMPLATE_CM2_HEAVY, epsilon=0.0)
         ips_est_c, ips_diag_c = ips_estimator(dataset, pi_eval_cm2, pi_behavior)
         snips_est_c, snips_diag_c = snips_estimator(dataset, pi_eval_cm2, pi_behavior)
@@ -294,7 +294,7 @@ def main():
         ips_ci_c = bootstrap_ci(dataset, ips_estimator, pi_eval_cm2, pi_behavior, num_bootstrap=500)
         snips_ci_c = bootstrap_ci(dataset, snips_estimator, pi_eval_cm2, pi_behavior, num_bootstrap=500)
 
-        print(f"\n  π_e = CM2_HEAVY (high shift):")
+        print(f"\n  pi_e = CM2_HEAVY (high shift):")
         print(f"    IPS:   {ips_est_c:.2f} [{ips_ci_c[0]:.2f}, {ips_ci_c[1]:.2f}]   ESS ratio: {ips_diag_c['effective_sample_size_ratio']:.3f}")
         print(f"    SNIPS: {snips_est_c:.2f} [{snips_ci_c[0]:.2f}, {snips_ci_c[1]:.2f}]   ESS ratio: {snips_diag_c['effective_sample_size']/(len(dataset)):.3f}")
         print(f"    Ground truth: {gt_cm2:.2f}")
@@ -317,24 +317,24 @@ def main():
 
     fig, axes = plt.subplots(2, 2, figsize=(12, 10))
 
-    # Plot 1: ESS ratio vs. ε (both low and high shift)
+    # Plot 1: ESS ratio vs. epsilon (both low and high shift)
     ax = axes[0, 0]
     ax.plot(epsilons, [r["ess_ratio_balanced"] for r in results], 'o-', label="Low shift (BALANCED)")
     ax.plot(epsilons, [r["ess_ratio_cm2"] for r in results], 's-', label="High shift (CM2_HEAVY)")
     ax.axhline(1.0, linestyle='--', color='gray', label="Perfect ESS")
-    ax.set_xlabel("Exploration rate ε")
+    ax.set_xlabel("Exploration rate epsilon")
     ax.set_ylabel("Effective Sample Size Ratio")
     ax.set_title("ESS Ratio vs. Exploration Rate")
     ax.legend()
     ax.grid(True, alpha=0.3)
 
-    # Plot 2: CI width vs. ε
+    # Plot 2: CI width vs. epsilon
     ax = axes[0, 1]
     ax.plot(epsilons, [r["ips_ci_width_balanced"] for r in results], 'o-', label="Low shift")
     ax.plot(epsilons, [r["ips_ci_width_cm2"] for r in results], 's-', label="High shift")
-    ax.set_xlabel("Exploration rate ε")
+    ax.set_xlabel("Exploration rate epsilon")
     ax.set_ylabel("95% CI Width")
-    ax.set_title("IPS Confidence Interval Width vs. ε")
+    ax.set_title("IPS Confidence Interval Width vs. epsilon")
     ax.legend()
     ax.grid(True, alpha=0.3)
 
@@ -347,7 +347,7 @@ def main():
                      gt_balanced - 1.96 * gt_balanced_std,
                      gt_balanced + 1.96 * gt_balanced_std,
                      alpha=0.2, color='red')
-    ax.set_xlabel("Exploration rate ε")
+    ax.set_xlabel("Exploration rate epsilon")
     ax.set_ylabel("Estimated return")
     ax.set_title("OPE Estimates: Low Distribution Shift")
     ax.legend()
@@ -362,7 +362,7 @@ def main():
                      gt_cm2 - 1.96 * gt_cm2_std,
                      gt_cm2 + 1.96 * gt_cm2_std,
                      alpha=0.2, color='red')
-    ax.set_xlabel("Exploration rate ε")
+    ax.set_xlabel("Exploration rate epsilon")
     ax.set_ylabel("Estimated return")
     ax.set_title("OPE Estimates: High Distribution Shift")
     ax.legend()
@@ -376,12 +376,12 @@ def main():
     print("\n" + "=" * 70)
     print("Key Takeaways:")
     print("=" * 70)
-    print("1. Effective Sample Size (ESS) increases with ε (more exploration → better overlap)")
+    print("1. Effective Sample Size (ESS) increases with epsilon (more exploration -> better overlap)")
     print("2. SNIPS has similar bias to IPS but lower variance (self-normalization effect)")
-    print("3. High distribution shift (CM2_HEAVY) requires higher ε for reliable estimates")
-    print(f"4. For ε = 0.20, ESS ratio (high shift): {results[-1]['ess_ratio_cm2']:.3f}")
-    print(f"   vs. ε = 0.01, ESS ratio (high shift): {results[0]['ess_ratio_cm2']:.3f}")
-    print("5. CI widths shrink with higher ε, confirming variance reduction from overlap")
+    print("3. High distribution shift (CM2_HEAVY) requires higher epsilon for reliable estimates")
+    print(f"4. For epsilon = 0.20, ESS ratio (high shift): {results[-1]['ess_ratio_cm2']:.3f}")
+    print(f"   vs. epsilon = 0.01, ESS ratio (high shift): {results[0]['ess_ratio_cm2']:.3f}")
+    print("5. CI widths shrink with higher epsilon, confirming variance reduction from overlap")
 
 
 if __name__ == "__main__":
@@ -395,25 +395,25 @@ Lab 9.1: IPS Variance Analysis
 ======================================================================
 
 [1/3] Computing ground truth (on-policy evaluation)...
-  Ground truth (BALANCED): 87.45 ± 0.84
-  Ground truth (CM2_HEAVY): 72.31 ± 0.91
+  Ground truth (BALANCED): 87.45 +/- 0.84
+  Ground truth (CM2_HEAVY): 72.31 +/- 0.91
 
 [2/3] Running OPE with varying exploration rates...
 
---- ε = 0.01 ---
-  π_e = BALANCED (low shift):
+--- epsilon = 0.01 ---
+  pi_e = BALANCED (low shift):
     IPS:   87.12 [84.23, 90.45]   ESS ratio: 0.892
     SNIPS: 87.34 [85.11, 89.67]   ESS ratio: 0.901
     Ground truth: 87.45
     IPS error: 0.33, SNIPS error: 0.11
 
-  π_e = CM2_HEAVY (high shift):
+  pi_e = CM2_HEAVY (high shift):
     IPS:   71.89 [62.34, 81.23]   ESS ratio: 0.124
     SNIPS: 72.45 [68.12, 76.89]   ESS ratio: 0.156
     Ground truth: 72.31
     IPS error: 0.42, SNIPS error: 0.14
 
---- ε = 0.05 ---
+--- epsilon = 0.05 ---
 ...
 
 [3/3] Generating variance analysis plots...
@@ -422,28 +422,28 @@ Lab 9.1: IPS Variance Analysis
 ======================================================================
 Key Takeaways:
 ======================================================================
-1. Effective Sample Size (ESS) increases with ε (more exploration → better overlap)
+1. Effective Sample Size (ESS) increases with epsilon (more exploration -> better overlap)
 2. SNIPS has similar bias to IPS but lower variance (self-normalization effect)
-3. High distribution shift (CM2_HEAVY) requires higher ε for reliable estimates
-4. For ε = 0.20, ESS ratio (high shift): 0.687
-   vs. ε = 0.01, ESS ratio (high shift): 0.124
-5. CI widths shrink with higher ε, confirming variance reduction from overlap
+3. High distribution shift (CM2_HEAVY) requires higher epsilon for reliable estimates
+4. For epsilon = 0.20, ESS ratio (high shift): 0.687
+   vs. epsilon = 0.01, ESS ratio (high shift): 0.124
+5. CI widths shrink with higher epsilon, confirming variance reduction from overlap
 ```
 
 **Critical improvements over original lab:**
 1. Bootstrap confidence intervals (theory from [THM-9.2.1])
 2. Effective sample size ratio as diagnostic
 3. Two distribution shift scenarios (low/high)
-4. Variance analysis across ε values
+4. Variance analysis across epsilon values
 5. Publication-quality plots
 
 ---
 
-## Lab 9.2 — FQE Integration with Chapter 3 Bellman Operator {#lab-92-fqe-integration-with-chapter-3-bellman-operator}
+## Lab 9.2 --- FQE Integration with Chapter 3 Bellman Operator {#lab-92-fqe-integration-with-chapter-3-bellman-operator}
 
 **Objective:** Implement Fitted Q Evaluation (FQE) with explicit connection to the Bellman operator from Chapter 3, verify convergence properties, integrate with real Q-ensemble from Chapter 7.
 
-**Theory:** Implements FQE algorithm from §9.3.2, using Bellman operator $\mathcal{T}^\pi$ from [THM-3.5.1-Bellman] (Bellman expectation equation, [EQ-3.7]).
+**Theory:** Implements FQE algorithm from Section 9.3.2, using Bellman operator $\mathcal{T}^\pi$ from [THM-3.5.1-Bellman] (Bellman expectation equation, [EQ-3.7]).
 
 ```python
 # scripts/ch09/lab_02_fqe_bellman_operator.py
@@ -511,16 +511,16 @@ def bellman_operator_pi(
     dones = torch.FloatTensor(np.array([float(t.done) for t in transitions]))
 
     with torch.no_grad():
-        # Sample actions from π_e for next states
+        # Sample actions from pi_e for next states
         next_actions = torch.stack([
             torch.FloatTensor(pi_eval.sample(next_states[i].numpy()))
             for i in range(len(next_states))
         ])
 
-        # V^π(s') = E_{a'~π}[Q(s', a')] ≈ Q(s', a'_{sampled})
+        # V^pi(s') = E_{a'~pi}[Q(s', a')] approx Q(s', a'_sampled)
         next_q_values = q_func(next_states, next_actions)
 
-        # Bellman target: r + γ V^π(s')
+        # Bellman target: r + gamma V^pi(s')
         targets = rewards + gamma * (1 - dones) * next_q_values
 
     return targets
@@ -540,7 +540,7 @@ def fitted_q_evaluation(
     """
     Fitted Q Evaluation (FQE).
 
-    Algorithm (§9.3.2):
+    Algorithm (Section 9.3.2):
     1. Initialize $Q_0(s, a)$ arbitrarily
     2. For $k = 1, \\dots, K$:
         a. Compute Bellman targets $y_i = r_i + \\gamma V^{\\pi}(s_i')$
@@ -577,7 +577,7 @@ def fitted_q_evaluation(
             batch_indices = indices[start_idx:end_idx]
             batch = [transitions[i] for i in batch_indices]
 
-            # Compute Bellman targets (apply T^π operator)
+            # Compute Bellman targets (apply T^pi operator)
             targets = bellman_operator_pi(q_net, batch, pi_eval, gamma)
 
             # Current Q predictions
@@ -631,7 +631,7 @@ def main():
 
     Tasks:
     1. Generate synthetic dataset from behavior policy
-    2. Run FQE to estimate Q^{π_e}
+    2. Run FQE to estimate Q^{pi_e}
     3. Verify convergence via Bellman residual decay
     4. Compare FQE estimate to ground truth (on-policy evaluation)
     5. Plot: Loss curve, Bellman residual, Q-function visualization
@@ -683,7 +683,7 @@ def main():
 
     gt_mean = np.mean(gt_returns)
     gt_std = np.std(gt_returns) / np.sqrt(len(gt_returns))
-    print(f"  Ground truth V^π(s): {gt_mean:.2f} ± {1.96 * gt_std:.2f}")
+    print(f"  Ground truth V^pi(s): {gt_mean:.2f} +/- {1.96 * gt_std:.2f}")
 
     # Run FQE
     print("\n[3/4] Running Fitted Q Evaluation...")
@@ -706,8 +706,8 @@ def main():
     fqe_mean = np.mean(q_values)
     fqe_std = np.std(q_values) / np.sqrt(len(q_values))
 
-    print(f"  FQE estimate V^π(s): {fqe_mean:.2f} ± {1.96 * fqe_std:.2f}")
-    print(f"  Ground truth:        {gt_mean:.2f} ± {1.96 * gt_std:.2f}")
+    print(f"  FQE estimate V^pi(s): {fqe_mean:.2f} +/- {1.96 * fqe_std:.2f}")
+    print(f"  Ground truth:         {gt_mean:.2f} +/- {1.96 * gt_std:.2f}")
     print(f"  Absolute error:      {abs(fqe_mean - gt_mean):.2f}")
     print(f"  Relative error:      {100 * abs(fqe_mean - gt_mean) / abs(gt_mean):.1f}%")
 
@@ -756,7 +756,7 @@ def main():
     print("=" * 70)
     print("1. FQE implements the Bellman operator T^pi from [THM-3.5.1-Bellman]")
     print("   - [EQ-9.24]: (T^pi Q)(s,a) = E[r + gamma V^pi(s')]")
-    print("   - This is [EQ-3.8] (Bellman expectation for Q^pi) from Chapter 3")
+    print("   - This is the Q-function analogue of Chapter 3's fixed-point identity [EQ-3.8]")
     print()
     print("2. Convergence is guaranteed by [THM-3.6.2-Banach] (Banach fixed-point theorem)")
     print("   - T^pi is a contraction with modulus gamma = 0.95")
@@ -764,11 +764,11 @@ def main():
     print()
     print("3. Bellman residual measures distance from fixed point:")
     print(f"   - Final residual: {diagnostics['bellman_residuals'][-1]:.4f}")
-    print("   - Residual → 0 as k → ∞ (visible in Plot 2)")
+    print("   - Residual -> 0 as k -> infinity (visible in Plot 2)")
     print()
     print("4. FQE is 'model-free' policy evaluation:")
     print("   - Uses logged transitions, not explicit P(s'|s,a)")
-    print("   - Connects to OPE Direct Method (§9.3.1)")
+    print("   - Connects to OPE Direct Method (Section 9.3.1)")
 
 
 if __name__ == "__main__":
@@ -783,7 +783,7 @@ Lab 9.2: FQE with Chapter 3 Bellman Operator
   Generated 5000 transitions
 
 [2/4] Computing ground truth (on-policy evaluation)...
-  Ground truth V^π(s): 12.34 ± 0.18
+  Ground truth V^pi(s): 12.34 +/- 0.18
 
 [3/4] Running Fitted Q Evaluation...
 ======================================================================
@@ -801,8 +801,8 @@ Iteration  90/100  Loss: 0.2314   Bellman Residual: 0.3421
 Iteration  99/100  Loss: 0.1876   Bellman Residual: 0.2745
 
 [4/4] Estimating value function from FQE...
-  FQE estimate V^π(s): 12.18 ± 0.15
-  Ground truth:        12.34 ± 0.18
+  FQE estimate V^pi(s): 12.18 +/- 0.15
+  Ground truth:         12.34 +/- 0.18
   Absolute error:      0.16
   Relative error:      1.3%
 
@@ -814,7 +814,7 @@ Connection to Chapter 3 (Bellman Foundations):
 ======================================================================
 1. FQE implements the Bellman operator $T^{\pi}$ from [THM-3.5.1-Bellman]
    - [EQ-9.24]: $(T^{\pi} Q)(s,a) = \mathbb{E}[r + \gamma V^{\pi}(s')]$
-   - This is [EQ-3.8] (Bellman expectation for $Q^{\pi}$) from Chapter 3
+   - This is the Q-function analogue of Chapter 3's fixed-point identity [EQ-3.8]
 
 2. Convergence is guaranteed by [THM-3.6.2-Banach] (Banach fixed-point theorem)
    - $T^{\pi}$ is a $\gamma$-contraction
@@ -822,11 +822,11 @@ Connection to Chapter 3 (Bellman Foundations):
 
 3. Bellman residual measures distance from fixed point:
    - Final residual: 0.2745
-   - Residual → 0 as k → ∞ (visible in Plot 2)
+   - Residual -> 0 as k -> infinity (visible in Plot 2)
 
 4. FQE is 'model-free' policy evaluation:
    - Uses logged transitions, not explicit P(s'|s,a)
-   - Connects to OPE Direct Method (§9.3.1)
+   - Connects to OPE Direct Method (Section 9.3.1)
 ```
 
 **Critical improvements:**
@@ -838,11 +838,11 @@ Connection to Chapter 3 (Bellman Foundations):
 
 ---
 
-## Lab 9.3 — Estimator Comparison Against Ground Truth {#lab-93-estimator-comparison-against-ground-truth}
+## Lab 9.3 - Estimator Comparison Against Ground Truth {#lab-93-estimator-comparison-against-ground-truth}
 
-**Objective:** Compare all OPE estimators (IPS, SNIPS, PDIS, DR, FQE) on the same dataset against held-out ground truth. Measure MSE, Spearman rank correlation, and regret. Reproduce benchmarks from §9.6.
+**Objective:** Compare all OPE estimators (IPS, SNIPS, PDIS, DR, FQE) on the same dataset against held-out ground truth. Measure MSE, Spearman rank correlation, and regret. Reproduce benchmarks from Section 9.6.
 
-**Theory:** Implements evaluation protocol from §9.6.1.
+**Theory:** Implements evaluation protocol from Section 9.6.1.
 
 ```python
 # scripts/ch09/lab_03_estimator_comparison.py
@@ -864,16 +864,16 @@ def run_estimator_comparison(
     """
     Lab 9.3: Compare OPE estimators against ground truth.
 
-    Protocol (§9.6.1):
+    Protocol (Section 9.6.1):
     1. Generate K candidate policies with varying performance
     2. Collect logged data from behavior policy
-    3. Estimate J(π_k) using each OPE method
-    4. Evaluate J(π_k) online (ground truth)
-    5. Compute metrics: MSE, Spearman ρ, regret
+    3. Estimate J(pi_k) using each OPE method
+    4. Evaluate J(pi_k) online (ground truth)
+    5. Compute metrics: MSE, Spearman rho, regret
 
     Benchmarks (Voloshin+ 2021):
     - MSE < 5% of performance range
-    - Spearman ρ > 0.8
+    - Spearman rho > 0.8
     """
     np.random.seed(seed)
     print("=" * 70)
@@ -978,7 +978,7 @@ def run_estimator_comparison(
 
         print(f"\n  {method}:")
         print(f"    RMSE:     {rmse:.2f} ({mse_pct:.1f}% of range)")
-        print(f"    Spearman: ρ = {rho:.3f}, p = {p_value:.4f}")
+        print(f"    Spearman: rho = {rho:.3f}, p = {p_value:.4f}")
         print(f"    Best policy selected: {selected_policy_ope == best_policy_gt}")
         print(f"    Regret:   {regret:.2f} ({regret_pct:.1f}% of best)")
 
@@ -987,7 +987,9 @@ def run_estimator_comparison(
     print("Benchmark Comparison (Voloshin+ 2021 Standards):")
     print("=" * 70)
     for res in results_summary:
-        print(f"{res['method']:15s}  RMSE% = {res['rmse_pct']:.1f}%  (<5% ✓)  |  ρ = {res['spearman_rho']:.3f}  (>0.8 ✓)")
+        print(
+            f"{res['method']:15s}  RMSE% = {res['rmse_pct']:.1f}%  (<5% {'OK' if res['rmse_pct'] < 5.0 else 'HIGH'})  |  rho = {res['spearman_rho']:.3f}  (>0.8 {'OK' if res['spearman_rho'] > 0.8 else 'LOW'})"
+        )
 
     # Visualization
     print("\nGenerating plots...")
@@ -1035,7 +1037,7 @@ def run_estimator_comparison(
     ax.set_title("Error Distribution by Method")
     ax.grid(True, alpha=0.3, axis='y')
 
-    # Plot 4: RMSE and Spearman ρ comparison
+    # Plot 4: RMSE and Spearman rho comparison
     ax = axes[1, 1]
     x = np.arange(len(ope_methods))
     width = 0.35
@@ -1044,10 +1046,10 @@ def run_estimator_comparison(
     rho_vals = [res["spearman_rho"] * 100 for res in results_summary]  # Scale to %
 
     ax.bar(x - width/2, rmse_vals, width, label="RMSE % of range", alpha=0.8)
-    ax.bar(x + width/2, rho_vals, width, label="Spearman ρ × 100", alpha=0.8)
+    ax.bar(x + width/2, rho_vals, width, label="Spearman rho x 100", alpha=0.8)
 
     ax.axhline(5, linestyle='--', color='red', linewidth=2, label="Benchmark: RMSE < 5%")
-    ax.axhline(80, linestyle='--', color='green', linewidth=2, label="Benchmark: ρ > 0.8")
+    ax.axhline(80, linestyle='--', color='green', linewidth=2, label="Benchmark: rho > 0.8")
 
     ax.set_ylabel("Metric Value")
     ax.set_title("Benchmark Comparison")
@@ -1111,53 +1113,53 @@ Lab 9.3: OPE Estimator Comparison
 
   IPS:
     RMSE:     3.21 (9.7% of range)
-    Spearman: ρ = 0.879, p = 0.0012
+    Spearman: rho = 0.879, p = 0.0012
     Best policy selected: True
     Regret:   0.00 (0.0% of best)
 
   SNIPS:
     RMSE:     1.87 (5.6% of range)
-    Spearman: ρ = 0.927, p = 0.0001
+    Spearman: rho = 0.927, p = 0.0001
     Best policy selected: True
     Regret:   0.00 (0.0% of best)
 
   PDIS:
     RMSE:     2.14 (6.5% of range)
-    Spearman: ρ = 0.903, p = 0.0003
+    Spearman: rho = 0.903, p = 0.0003
     Best policy selected: True
     Regret:   0.00 (0.0% of best)
 
   DR (FQE):
     RMSE:     1.54 (4.7% of range)
-    Spearman: ρ = 0.945, p = 0.0000
+    Spearman: rho = 0.945, p = 0.0000
     Best policy selected: True
     Regret:   0.00 (0.0% of best)
 
 ======================================================================
 Benchmark Comparison (Voloshin+ 2021 Standards):
 ======================================================================
-IPS              RMSE% = 9.7%  (<5% ✗)  |  ρ = 0.879  (>0.8 ✓)
-SNIPS            RMSE% = 5.6%  (<5% ✗)  |  ρ = 0.927  (>0.8 ✓)
-PDIS             RMSE% = 6.5%  (<5% ✗)  |  ρ = 0.903  (>0.8 ✓)
-DR (FQE)         RMSE% = 4.7%  (<5% ✓)  |  ρ = 0.945  (>0.8 ✓)
+IPS              RMSE% = 9.7%  (<5% HIGH)  |  rho = 0.879  (>0.8 OK)
+SNIPS            RMSE% = 5.6%  (<5% HIGH)  |  rho = 0.927  (>0.8 OK)
+PDIS             RMSE% = 6.5%  (<5% HIGH)  |  rho = 0.903  (>0.8 OK)
+DR (FQE)         RMSE% = 4.7%  (<5% OK)    |  rho = 0.945  (>0.8 OK)
 
 Generating plots...
   Saved figure: lab_09_03_estimator_comparison.png
 ```
 
 **Interpretation:**
-- DR (FQE) meets both benchmarks (RMSE < 5%, ρ > 0.8)
+- DR (FQE) meets both benchmarks (RMSE < 5%, rho > 0.8)
 - All methods correctly identify the best policy (zero regret)
 - SNIPS outperforms vanilla IPS (variance reduction from self-normalization)
 - PDIS intermediate between IPS and SNIPS for this trajectory length
 
 ---
 
-## Lab 9.4 — Distribution Shift Stress Test {#lab-94-distribution-shift-stress-test}
+## Lab 9.4 - Distribution Shift Stress Test {#lab-94-distribution-shift-stress-test}
 
-**Objective:** Stress-test OPE estimators when π_e is very different from π_b (severe distribution shift). Document failure modes, weight explosion, and model extrapolation errors.
+**Objective:** Stress-test OPE estimators when $\\pi_e$ is very different from $\\pi_b$ (severe distribution shift). Document failure modes, weight explosion, and model extrapolation errors.
 
-**Theory:** Tests breakdown of [ASSUMP-9.1.1] (common support) and §9.7 (theory-practice gap).
+**Theory:** Tests breakdown of [ASSUMP-9.1.1] (common support) and Section 9.7 (theory-practice gap).
 
 ```python
 # scripts/ch09/lab_04_distribution_shift_stress_test.py
@@ -1171,10 +1173,10 @@ def run_distribution_shift_stress_test():
     Lab 9.4: Stress-test OPE under severe distribution shift.
 
     Scenarios:
-    1. Mild shift: π_e slightly different from π_b (10% of actions differ)
-    2. Moderate shift: π_e moderately different (50% of actions differ)
-    3. Severe shift: π_e very different (90% of actions differ)
-    4. Extrapolation: π_e visits states never seen under π_b
+    1. Mild shift: pi_e slightly different from pi_b (10% of actions differ)
+    2. Moderate shift: pi_e moderately different (50% of actions differ)
+    3. Severe shift: pi_e very different (90% of actions differ)
+    4. Extrapolation: pi_e visits states never seen under pi_b
 
     Metrics:
     - Effective sample size (ESS)
@@ -1202,14 +1204,14 @@ def run_distribution_shift_stress_test():
 
     for shift_name, shift_prob in shifts:
         print(f"\n{'='*70}")
-        print(f"Scenario: {shift_name} Shift (π_e differs {int(shift_prob*100)}% from π_b)")
+        print(f"Scenario: {shift_name} Shift (pi_e differs {int(shift_prob*100)}% from pi_b)")
         print('='*70)
 
         # Behavior policy: balanced
         pi_b = SimplePolicy(TEMPLATE_BALANCED, epsilon=0.05)
 
         # Evaluation policy: mix of balanced and CM2_heavy
-        # Higher shift_prob → more CM2_heavy actions
+        # Higher shift_prob -> more CM2_heavy actions
         class ShiftedPolicy(SimplePolicy):
             def __init__(self, shift_prob):
                 super().__init__(TEMPLATE_BALANCED, epsilon=0.0)
@@ -1267,9 +1269,9 @@ def run_distribution_shift_stress_test():
         print(f"  Ground truth:      {gt_mean:.2f}")
         print(f"  IPS estimate:      {ips_est:.2f}  (error: {ips_error:.2f})")
         print(f"  SNIPS estimate:    {snips_est:.2f}  (error: {snips_error:.2f})")
-        print(f"  ESS ratio:         {ess_ratio:.3f}  ({'✓ OK' if ess_ratio > 0.1 else '✗ LOW'})")
-        print(f"  Max weight:        {max_weight:.1f}  ({'✓ OK' if max_weight < 100 else '✗ HIGH'})")
-        print(f"  CI width:          {ci_width:.2f}  ({'✓ OK' if ci_width < 20 else '✗ WIDE'})")
+        print(f"  ESS ratio:         {ess_ratio:.3f}  ({'OK' if ess_ratio > 0.1 else 'LOW'})")
+        print(f"  Max weight:        {max_weight:.1f}  ({'OK' if max_weight < 100 else 'HIGH'})")
+        print(f"  CI width:          {ci_width:.2f}  ({'OK' if ci_width < 20 else 'WIDE'})")
 
     # Summary plot
     print("\n" + "=" * 70)
@@ -1350,8 +1352,8 @@ def run_distribution_shift_stress_test():
     print("4. Confidence intervals become uninformative:")
     print(f"   - Severe shift: CI width = {results[2]['ci_width']:.1f} (too wide for decision-making)")
     print()
-    print("5. Practical lesson: OPE requires ε ≥ 0.10 for reliable estimates")
-    print("   when π_e may differ substantially from π_b")
+    print("5. Practical lesson: OPE requires epsilon >= 0.10 for reliable estimates")
+    print("   when pi_e may differ substantially from pi_b")
 
 
 if __name__ == "__main__":
@@ -1365,44 +1367,44 @@ Lab 9.4: Distribution Shift Stress Test
 ======================================================================
 
 ======================================================================
-Scenario: Mild Shift (π_e differs 10% from π_b)
+Scenario: Mild Shift (pi_e differs 10% from pi_b)
 ======================================================================
   Ground truth:      86.45
   IPS estimate:      86.23  (error: 0.22)
   SNIPS estimate:    86.34  (error: 0.11)
-  ESS ratio:         0.847  (✓ OK)
-  Max weight:        12.3   (✓ OK)
-  CI width:          4.56   (✓ OK)
+  ESS ratio:         0.847  (OK)
+  Max weight:        12.3   (OK)
+  CI width:          4.56   (OK)
 
 ======================================================================
-Scenario: Moderate Shift (π_e differs 50% from π_b)
+Scenario: Moderate Shift (pi_e differs 50% from pi_b)
 ======================================================================
   Ground truth:      78.12
   IPS estimate:      77.34  (error: 0.78)
   SNIPS estimate:    77.89  (error: 0.23)
-  ESS ratio:         0.234  (✓ OK)
-  Max weight:        187.4  (✗ HIGH)
-  CI width:          12.34  (✓ OK)
+  ESS ratio:         0.234  (OK)
+  Max weight:        187.4  (HIGH)
+  CI width:          12.34  (OK)
 
 ======================================================================
-Scenario: Severe Shift (π_e differs 90% from π_b)
+Scenario: Severe Shift (pi_e differs 90% from pi_b)
 ======================================================================
   Ground truth:      71.23
   IPS estimate:      68.45  (error: 2.78)
   SNIPS estimate:    70.12  (error: 1.11)
-  ESS ratio:         0.034  (✗ LOW)
-  Max weight:        4521.2 (✗ HIGH)
-  CI width:          28.67  (✗ WIDE)
+  ESS ratio:         0.034  (LOW)
+  Max weight:        4521.2 (HIGH)
+  CI width:          28.67  (WIDE)
 
 ======================================================================
-Scenario: Extrapolation Shift (π_e differs 99% from π_b)
+Scenario: Extrapolation Shift (pi_e differs 99% from pi_b)
 ======================================================================
   Ground truth:      69.87
   IPS estimate:      51.23  (error: 18.64)
   SNIPS estimate:    66.34  (error: 3.53)
-  ESS ratio:         0.008  (✗ LOW)
-  Max weight:        45621.7 (✗ HIGH)
-  CI width:          67.89  (✗ WIDE)
+  ESS ratio:         0.008  (LOW)
+  Max weight:        45621.7 (HIGH)
+  CI width:          67.89  (WIDE)
 
 ======================================================================
 Key Takeaways:
@@ -1422,15 +1424,15 @@ Key Takeaways:
 4. Confidence intervals become uninformative:
    - Severe shift: CI width = 28.67 (too wide for decision-making)
 
-5. Practical lesson: OPE requires ε ≥ 0.10 for reliable estimates
-   when π_e may differ substantially from π_b
+5. Practical lesson: OPE requires epsilon >= 0.10 for reliable estimates
+   when pi_e may differ substantially from pi_b
 ```
 
 ---
 
-## Lab 9.5 — Clipped IPS and SNIPS: Bias--Variance Illustration {#lab-95-clipped-ips-snips-bias-variance}
+## Lab 9.5 - Clipped IPS and SNIPS: Bias--Variance Illustration {#lab-95-clipped-ips-snips-bias-variance}
 
-**Objective:** Illustrate the **negative bias** of clipped IPS [PROP-9.6.1] and the **variance reduction** of SNIPS [EQ-9.13] numerically. This lab provides the empirical foundation for understanding the bias--variance trade-off discussed in §9.6.3.
+**Objective:** Illustrate the **negative bias** of clipped IPS [PROP-9.6.1] and the **variance reduction** of SNIPS [EQ-9.13] numerically. This lab provides the empirical foundation for understanding the bias--variance trade-off discussed in Section 9.6.3.
 
 **Theory:** Implements [EQ-9.36] (clipped IPS) and [EQ-9.13] (SNIPS) with explicit bias/variance decomposition across multiple trials.
 
@@ -1479,7 +1481,7 @@ for x in range(5):
     for a in range(3):
         true_value += (1/5) * pt[a] * reward_fn(x, a)
 
-print(f"True value V(π_target): {true_value:.3f}")
+print(f"True value V(pi_target): {true_value:.3f}")
 
 # Experiment parameters
 n_trials = 300     # Number of independent experiments
@@ -1525,19 +1527,19 @@ clip_mean, clip_std = np.mean(clip_vals), np.std(clip_vals)
 snips_mean, snips_std = np.mean(snips_vals), np.std(snips_vals)
 
 print(f"\nTrue value: {true_value:.3f}")
-print(f"IPS     → mean: {ips_mean:.3f}  bias: {ips_mean - true_value:+.4f}  std: {ips_std:.3f}")
-print(f"Clipped → mean: {clip_mean:.3f}  bias: {clip_mean - true_value:+.4f}  std: {clip_std:.3f}")
-print(f"SNIPS   → mean: {snips_mean:.3f}  bias: {snips_mean - true_value:+.4f}  std: {snips_std:.3f}")
+print(f"IPS     -> mean: {ips_mean:.3f}  bias: {ips_mean - true_value:+.4f}  std: {ips_std:.3f}")
+print(f"Clipped -> mean: {clip_mean:.3f}  bias: {clip_mean - true_value:+.4f}  std: {clip_std:.3f}")
+print(f"SNIPS   -> mean: {snips_mean:.3f}  bias: {snips_mean - true_value:+.4f}  std: {snips_std:.3f}")
 ```
 
 **Expected output:**
 ```
-True value V(π_target): 0.820
+True value V(pi_target): 0.820
 
 True value: 0.820
-IPS     → mean: 0.821  bias: +0.0010  std: 0.088
-Clipped → mean: 0.804  bias: -0.0160  std: 0.061
-SNIPS   → mean: 0.818  bias: -0.0020  std: 0.071
+IPS     -> mean: 0.821  bias: +0.0010  std: 0.088
+Clipped -> mean: 0.804  bias: -0.0160  std: 0.061
+SNIPS   -> mean: 0.818  bias: -0.0020  std: 0.071
 ```
 
 **Interpretation:**
@@ -1562,7 +1564,7 @@ These five labs provide production-ready implementations of all major OPE estima
 
 1. **Lab 9.1**: Variance analysis, bootstrap CIs, exploration rate sweep
 2. **Lab 9.2**: FQE with explicit Bellman operator connection to Chapter 3
-3. **Lab 9.3**: Complete estimator comparison with benchmark metrics (MSE, Spearman ρ, regret)
+3. **Lab 9.3**: Complete estimator comparison with benchmark metrics (MSE, Spearman rho, regret)
 4. **Lab 9.4**: Stress testing under distribution shift, documenting failure modes
 5. **Lab 9.5**: Clipped IPS and SNIPS bias--variance illustration (proves [PROP-9.6.1] numerically)
 

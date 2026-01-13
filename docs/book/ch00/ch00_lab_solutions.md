@@ -307,8 +307,8 @@ The local agent is doing **"local refinement of garbage"**---there's no good reg
 ```
 
 This is the **COLD START PROBLEM**:
-> Local exploration assumes you're already in a good basin.
-> From random initialization, you're not.
+> Local exploration assumes we are already in a good basin.
+> From random initialization, we are not.
 
 ---
 
@@ -337,7 +337,7 @@ Results (averaged over 5 runs, after 200 warmup episodes):
     Once we're in a good basin, local refinement works.
 ```
 
-**Key Observation:** The gap between uniform and local *reverses* when starting from a warm policy. From cold start, uniform wins by 34%. From warm start, local actually *wins* by 3.7%! Local exploration works---and even excels---*once you're already in a good region*.
+**Key Observation:** The gap between uniform and local *reverses* when starting from a warm policy. From cold start, uniform wins by 34%. From warm start, local actually *wins* by 3.7%! Local exploration works---and even excels---*once we are already in a good region*.
 
 ---
 
@@ -463,7 +463,7 @@ The T^0.62 fit captures the transient, not the asymptote.
 | **Empirical fit** | Regret $\approx c \cdot T^\alpha$ for *observed* data |
 | **Asymptotic bound** | $\lim_{T\to\infty} \text{Regret}(T)/T^\alpha < \infty$ |
 
-The empirical exponent $\alpha = 0.62$ could drift as $T \to \infty$. With finite samples, you can fit almost any functional form.
+The empirical exponent $\alpha = 0.62$ could drift as $T \to \infty$. With finite samples, one can fit almost any functional form.
 
 ### What Should We Actually Expect?
 
@@ -481,7 +481,7 @@ Since total exploration is bounded, **regret should plateau** as $T \to \infty$-
 | $\varepsilon = \varepsilon_0 \cdot \lambda^t$ (geometric) | $O(1)$ --- bounded! | Total exploration is finite |
 | UCB | $O(\sqrt{KT \log T})$ | Optimal for stochastic bandits |
 
-**Common misconception:** "Constant $\varepsilon$-greedy gives $O(T^{2/3})$." This is **wrong**. Constant $\varepsilon$ gives *linear* regret $\Omega(\varepsilon T)$ because you explore forever. The $O(T^{2/3})$ bound requires *decaying* $\varepsilon$ or Explore-Then-Commit.
+**Common misconception:** "Constant $\varepsilon$-greedy gives $O(T^{2/3})$." This is **wrong**. Constant $\varepsilon$ gives *linear* regret $\Omega(\varepsilon T)$ because exploration continues forever. The $O(T^{2/3})$ bound requires *decaying* $\varepsilon$ or Explore-Then-Commit.
 
 ### What the Empirical Fit Actually Shows
 

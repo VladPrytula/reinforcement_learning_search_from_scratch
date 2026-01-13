@@ -1,3 +1,8 @@
+---
+title: "Chapter 1: Search Ranking as Optimization"
+author: "Vlad Prytula"
+---
+
 # Chapter 1 — Search Ranking as Optimization: From Business Goals to RL
 
 *Vlad Prytula*
@@ -49,7 +54,7 @@ Manual weights are **static, context-free, and suboptimal** by design. We need w
 
 **Our thesis**: Treat $\mathbf{w} = (w_1, \ldots, w_K) \in \mathbb{R}^K$ as **actions to be learned**, adapting to user and query context via reinforcement learning.
 
-In Chapter 0 (Motivation: Your First RL Experiment), we built a tiny, code-first prototype of this idea: three synthetic user types, a small action grid of boost templates, and a tabular Q-learning agent that learned context-adaptive boosts. In this chapter, we strip away implementation details and **formalize and generalize** that experiment as a contextual bandit with constraints.
+In Chapter 0 (Motivation: A First RL Experiment), we built a tiny, code-first prototype of this idea: three synthetic user types, a small action grid of boost templates, and a tabular Q-learning agent that learned context-adaptive boosts. In this chapter, we strip away implementation details and **formalize and generalize** that experiment as a contextual bandit with constraints.
 
 > **Notation**
 >
@@ -69,7 +74,7 @@ In Chapter 0 (Motivation: Your First RL Experiment), we built a tiny, code-first
 
 This chapter establishes the mathematical foundation: we formulate search ranking as a **constrained optimization problem**, then show why it requires **contextual decision-making** (bandits), and finally preview the RL framework we'll develop.
 
----
+***
 
 ## 1.2 From Clicks to Outcomes: The Reward Function
 
@@ -141,10 +146,10 @@ This is the set-based stability metric used in Chapter 10 [DEF-10.4] and impleme
 
 
 > Taken together, the scalar objective [EQ-1.2] and constraints (1.3a–c) define a **constrained stochastic optimization** problem over the boost weights $\mathbf w$. Formally, we would like to choose $\mathbf w$ to solve
-> $
+> $$
 > \max_{\mathbf w \in \mathbb{R}^K} \mathbb{E}_{x \sim \rho,\omega \sim P(\cdot \mid x,\mathbf w)}\big[ R(\mathbf w, x, \omega) \big]
 > \quad \text{subject to (1.3a–c).}
-> $
+> $$
 > From the perspective of a single query, there is no internal state evolution: each query arrives with a context $x$, we apply fixed boost weights $\mathbf w$, observe a random outcome, and then move on to the next independent query. This “context + one action + one noisy payoff” structure is exactly the **contextual bandit** template.
 >
 > In §1.3 we move from a single global choice of $\mathbf w$ to an explicit **policy** $\pi$ that maps each context $x$ to boost weights $\pi(x)$. In **Chapter 11**, when we introduce multi-step user/session dynamics with states and transitions, the resulting model becomes a **constrained Markov decision process (CMDP)**. Contextual bandits are the $\gamma = 0$ special case of an MDP.
@@ -153,13 +158,17 @@ This is the set-based stability metric used in Chapter 10 [DEF-10.4] and impleme
 **Now we understand the complete optimization problem:** maximize the scalar reward #EQ-1.2 subject to constraints #EQ-1.3. This establishes what we're optimizing. Next, we'll dive deep into one critical component—the engagement term—before implementing the reward function.
 
 ::: {.note title="Code $\leftrightarrow$ Config (constraints)"}
-Constraint-related knobs (`MOD-zoosim.config`) live in configuration so experiments remain reproducible and auditable. These implement #EQ-1.3 constraint definitions:
+Constraint-related knobs (`MOD-zoosim.config`) live in configuration so experiments remain reproducible and auditable. These reserve the knobs for #EQ-1.3 constraint definitions:
 
-- Rank stability multiplier (soft constraint): `lambda_rank` in `zoosim/core/config.py:230` (reserved for `primal--dual` constrained RL in Chapter 14; not used by the Chapter 1 simulator; implementation status: Chapter 14 §14.6)
+- Rank stability multiplier (soft constraint): `lambda_rank` in `zoosim/core/config.py:230` (reserved for `primal--dual` constrained RL in Chapter 14; not wired in current simulator)
 - Profitability floor (CM2) threshold: `cm2_floor` in `zoosim/core/config.py:232` (hard feasibility-filter pattern in Chapter 10, Exercise 10.3)
-- Exposure floors (strategic products): `exposure_floors` in `zoosim/core/config.py:233` (handled analogously to CM2 floors; hard feasibility filters in Chapter 10 and soft constraints in Chapter 14)
+- Exposure floors (strategic products): `exposure_floors` in `zoosim/core/config.py:233` (reserved; enforcement deferred to Chapter 10 hard filters and Chapter 14 soft constraints)
 
-These are surfaced in `ActionConfig` so experiments remain reproducible and auditable; later chapters separate hard production guardrails (Chapter 10) from soft constraint optimization via learned multipliers (Chapter 14).
+**Implementation status:** These config fields exist for forward compatibility; constraint enforcement logic appears in later chapters:
+
+- `cm2_floor`: Active enforcement in Chapter 10 (feasibility filter)
+- `exposure_floors`: Reserved; enforcement in Chapter 10
+- `lambda_rank`: Reserved; primal--dual optimization in Chapter 14
 :::
 
 ### 1.2.1 The Role of Engagement in Reward Design {#REM-1.2.1}
@@ -269,7 +278,7 @@ RPC monitoring (for production deployment): Log $\text{RPC}_t = \sum_{i=1}^t \te
 
 **Key observation**: The **optimal strategy depends on business weights** $(\alpha, \beta, \gamma, \delta)$. This is not a fixed optimization problem—it's a **multi-objective tradeoff** that requires careful calibration. In practice, these weights are set by business stakeholders, and the RL system must respect them.
 
----
+***
 
 ## 1.3 The Context Problem: Why Static Boosts Fail
 
@@ -338,7 +347,7 @@ where we've made the conditioning explicit: $\omega$ is drawn **after** observin
 
 This is **no longer a static optimization problem**—it's a **function learning problem**. We must learn a **policy** $\pi$ that maps contexts to actions. Welcome to reinforcement learning.
 
----
+***
 
 ## 1.4 Contextual Bandits: The RL Formulation
 
@@ -493,7 +502,7 @@ a_safe = clip_action(a_bad)  # -> [0.5, -0.3, 0.5, -0.5, 0.4]
 ::: {.note title="Code $\leftrightarrow$ Env (clipping)"}
 The production simulator (`MOD-zoosim.env`) enforces #EQ-1.11 action space bounds at ranking time.
 
-- Action clipping: `np.clip(..., -a_max, +a_max)` in `zoosim/envs/search_env.py:50`
+- Action clipping: `np.clip(..., -a_max, +a_max)` in `zoosim/envs/search_env.py:85`
 - Bound parameter: `SimulatorConfig.action.a_max` in `zoosim/core/config.py:229`
 - Feature standardization toggle: `standardize_features` in `zoosim/core/config.py:231` (applied in env when enabled)
 
@@ -513,7 +522,7 @@ cfg = config.load_default_config()  # uses SimulatorConfig.seed at `zoosim/core/
 env = ZooplusSearchEnv(cfg, seed=cfg.seed)
 state = env.reset()
 
-# Zero action of correct dimensionality; env will clip if needed (see `zoosim/envs/search_env.py:50`).
+# Zero action of correct dimensionality; env will clip if needed (see `zoosim/envs/search_env.py:85`).
 action = np.zeros(cfg.action.feature_dim, dtype=float)
 _, reward, done, info = env.step(action)
 
@@ -523,10 +532,10 @@ print("Top-k ranking indices:", info["ranking"])  # shape aligns with `Simulator
 
 This verifies the scoring path: base relevance + bounded boosts $\rightarrow$ ranking $\rightarrow$ behavior simulation $\rightarrow$ reward aggregation.
 
-**Output:**
+**Output** (representative; actual values depend on seed and config):
 ```
-Reward: 0.100, done=True
-Top-k ranking indices: [5458, 4421, 1512, 9366, 3414, 8953, 4523, 4260, 4520, 4831]
+Reward: ~27.0, done=True
+Top-k ranking indices: [list of cfg.top_k integers]
 ```
 
 #### Using the Gym Wrapper
@@ -544,8 +553,8 @@ env = GymZooplusEnv(cfg, seed=cfg.seed)
 obs, info = env.reset()
 print("obs dim:", obs.shape)  # |categories| + |query_types| + |segments|
 
-# Sample a valid bounded action (env clips incoming actions internally as well)
-action = env.action_space.sample()
+# Zero action for consistent baseline (env clips incoming actions internally as well)
+action = np.zeros(cfg.action.feature_dim, dtype=float)
 obs2, reward, terminated, truncated, info2 = env.step(action)
 
 print(f"reward={reward:.3f}, terminated={terminated}, truncated={truncated}")
@@ -553,13 +562,13 @@ print(f"reward={reward:.3f}, terminated={terminated}, truncated={truncated}")
 
 This interface is used in tests and ensures actions stay within $[-a_{\max}, +a_{\max}]^K$ with observation encoding derived from configuration.
 
-**Output:**
+**Output** (representative; actual values depend on seed and config):
 ```
-obs dim: (11,)
-reward= 0.100, terminated=True, truncated=False
+obs dim: (11,)  # |categories| + |query_types| + |segments|
+reward=~27.0, terminated=True, truncated=False
 ```
 
----
+***
 
 ## 1.5 From Optimization to Learning: Why RL?
 
@@ -618,7 +627,7 @@ The RL framework transforms our problem from:
 to:
 - **Function learning with feedback** (sample-efficient, safe, generalizes)
 
----
+***
 
 ## 1.6 Roadmap: From Bandits to Deep RL
 
@@ -676,7 +685,7 @@ Sections 1.7--1.8 are advanced/optional previews of measure-theoretic foundation
 
 
 
----
+***
 ## 1.7 (Advanced) Optimization Under Uncertainty and Off‑Policy Evaluation
 
 *This section is optional on a first reading.*
@@ -689,7 +698,7 @@ Readers primarily interested in the **contextual bandit formulation** and motiva
 
 The full measure‑theoretic machinery (Radon–Nikodym, conditional expectation) lives in **Chapter 2**. The full OPE toolbox (IPS, SNIPS, DR, FQE, SWITCH, MAGIC) lives in **Chapter 9**.
 
----
+***
 
 ### 1.7.1 Expected Utility and Well‑Defined Rewards
 
@@ -727,7 +736,7 @@ Conditions (1)–(2) ensure $Q(x,a) = \mathbb{E}[R(x,a,\omega) \mid x,a]$ is a w
 
 **Chapter 2, §2.6** formalizes these conditions as **Assumption 2.6.1 (OPE Probability Conditions)** and proves that the IPS estimator is unbiased under these assumptions. For now, note that our search setting satisfies all three: rewards are bounded (GMV and CM2 are finite), and we'll use exploration policies (e.g., $\varepsilon$-greedy with $\varepsilon > 0$) that ensure coverage.
 
----
+***
 
 ### 1.7.2 The Offline Evaluation Problem (Toy Cat‑Food Example)
 
@@ -826,7 +835,7 @@ print(f"Naive log average: {naive:.3f}  (this is V(pi_b), not V(pi_e))")
 
 There is *no* way to estimate what would have happened under action 1 from this dataset: the required probabilities and rewards simply do not appear.
 
----
+***
 
 ### 1.7.3 Importance Sampling at a High Level
 
@@ -864,9 +873,9 @@ We will:
 
 For this chapter, the only thing to remember is:
 
-> **OPE ≈ “reweight logged rewards by importance weights.”**
+> **OPE $\approx$ "reweight logged rewards by importance weights."**
 
----
+***
 
 ### 1.7.4 Coverage / Overlap and Logging Design
 
@@ -888,7 +897,7 @@ For real systems, this translates into concrete requirements: avoid fully determ
 
 **Chapter 9, §9.5** develops these requirements into a full logging protocol with formal assumptions (common support, propensity tracking), diagnostics (effective sample size), and production implementation guidance. The key intuition: **if we never explore an action, we can never evaluate it offline**.
 
----
+***
 
 ### 1.7.5 Preview: Existence of an Optimal Policy
 
@@ -909,7 +918,7 @@ Roughly, we need:
 
 **Existence guarantee.** Under mild topological conditions (compact action space, upper semicontinuous $Q$), a measurable optimal policy $\pi^*(x) = \arg\max_a Q(x,a)$ exists via measurable selection theorems—see **Chapter 2, §2.8.2 (Advanced: Measurable Selection)** for the Kuratowski--Ryll--Nardzewski theorem (Theorem 2.8.3). For our search setting—where $\mathcal{A} = [-a_{\max}, a_{\max}]^K$ is a compact box and scoring functions are continuous—this guarantees the optimization problem in §1.4 is well-posed: there exists a best policy $\pi^*$, and our learning algorithms will be judged by how close they get to it.
 
----
+***
 
 ### 1.7.6 Preview: Regret and Fundamental Limits
 
@@ -951,7 +960,7 @@ for a universal constant $c > 0$. No algorithm can do better than $\Omega(\sqrt{
 
 > **There is a built‑in price for exploration**, and even the best algorithm cannot beat it asymptotically.
 
----
+***
 
 ### 1.7.7 Where the Real Math Lives
 
@@ -973,7 +982,7 @@ For the rest of this chapter, only the high-level picture is needed:
 > we will sometimes need to evaluate policies **offline** via importance weights,
 > and there are fundamental limits on how quickly any algorithm can learn.
 
----
+***
 
 ## 1.8 (Advanced) Preview: Neural Q-Functions and Bellman Operators
 
@@ -1051,7 +1060,7 @@ For now, just absorb the vocabulary: **Bellman operator**, **fixed point**, **di
 
 **Looking ahead**: Chapter 11 extends our search problem to **multi-episode MDPs** where user retention and session dynamics create genuine state transitions. There, we'll need the full Bellman machinery. But for the MVP (Chapters 1-8), contextual bandits suffice.
 
----
+***
 
 ## 1.9 Constraints and Safety: Beyond Reward Maximization
 
@@ -1096,7 +1105,7 @@ is equivalent to the original constrained optimization problem: they have the sa
 
 **What this tells us:**
 
-Strong duality means we can solve the constrained problem #EQ-1.21 by solving the unconstrained Lagrangian #EQ-1.22---no duality gap. Practically, this justifies **primal--dual algorithms**: alternate between improving the policy (primal) and adjusting constraint penalties (dual), confident that convergence to the saddle point yields the constrained optimum.
+Strong duality means we can solve the constrained problem [EQ-1.21] by solving the unconstrained Lagrangian [EQ-1.22] --- no duality gap. Practically, this justifies **primal--dual algorithms**: alternate between improving the policy (primal) and adjusting constraint penalties (dual), confident that convergence to the saddle point yields the constrained optimum.
 
 The strict feasibility requirement ($\exists \tilde{\pi}$ with slack in the CM2 constraint) is typically easy to verify: the baseline production policy usually satisfies constraints with margin. If no such policy exists, the constraints may be infeasible---one is asking for profitability floors that no ranking can achieve. **Appendix C, §C.4.3** discusses diagnosing infeasible constraint configurations: diverging dual variables, Pareto frontiers below constraint thresholds, and $\varepsilon$-relaxation remedies.
 
@@ -1106,7 +1115,7 @@ The strict feasibility requirement ($\exists \tilde{\pi}$ with slack in the CM2 
 
 The saddle-point $(\theta^*, \boldsymbol{\lambda}^*)$ satisfies the Karush-Kuhn-Tucker (KKT) conditions for the constrained problem #EQ-1.21. For now, just note that **constraints require dual variables** $\boldsymbol{\lambda}$—we're not just learning a policy, but also learning how to trade off GMV, CM2, and strategic exposure dynamically.
 
----
+***
 
 ## 1.10 Summary and Looking Ahead
 
@@ -1148,7 +1157,7 @@ By the end of Chapter 2, we will be able to:
 
 Let's build.
 
----
+***
 
 ## Exercises
 
@@ -1207,6 +1216,6 @@ when $\gamma = 0$ (no future states). What happens if $\gamma > 0$?
 
 **Hint for MDP extension:** In the MDP Bellman equation, the term $\gamma \mathbb{E}_{x'}[V(x')]$ represents expected future value starting from next state $x'$ (sampled from transition dynamics $P(x' \mid x, a)$). For contextual bandits, there is no next state---the episode terminates after one action. Setting $\gamma = 0$ eliminates future rewards, reducing to the bandit case. When $\gamma > 0$, we get multi-step RL with inter-session dynamics (Chapter 11).
 
----
+***
 
 **Next Chapter**: We'll develop the **measure-theoretic foundations** needed for off-policy evaluation, position bias models, and counterfactual reasoning.

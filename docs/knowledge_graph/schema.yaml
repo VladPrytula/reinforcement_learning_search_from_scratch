@@ -14,7 +14,7 @@ node:
   required: [id, kind, title, status]
   fields:
     id: {type: string, unique: true}
-    kind: {type: enum, values: [chapter, section, equation, definition, theorem, remark, concept, algorithm, module, test, plan, doc]}
+    kind: {type: enum, values: [chapter, section, equation, definition, theorem, proposition, lemma, corollary, assumption, remark, concept, algorithm, module, test, plan, doc]}
     title: {type: string}
     status: {type: enum, values: [planned, in_progress, complete, archived]}
     file: {type: string, optional: true}

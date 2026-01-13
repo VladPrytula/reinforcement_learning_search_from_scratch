@@ -1,21 +1,173 @@
 """
-Complete solution to Chapter 1 toy problem.
+Complete solution to the Chapter 0 toy problem.
 
 Implements:
-1. Bandit Q-learning (incremental Monte Carlo) with epsilon-greedy exploration
-2. Baseline policies (random, static optimal, oracle)
-3. Learning curves and convergence analysis
-4. Verification of 90% optimality claim
+1. Contextual bandit learning with epsilon-greedy exploration
+2. Baseline policies (random, static, oracle)
+3. Learning curves and policy summary
 
 Author: Vlad Prytula
 
-Run: uv run python scripts/ch00/toy_problem_solution.py --all
+Usage:
+    # Reproduce the Chapter 0 figure + representative console output
+    uv run python scripts/ch00/toy_problem_solution.py --chapter0
+
+    # Run the more detailed simulator-based variant (used as a reference point later)
+    uv run python scripts/ch00/toy_problem_solution.py
 """
 
+import argparse
+import os
+import tempfile
+from pathlib import Path
+
+if "XDG_CACHE_HOME" not in os.environ:
+    os.environ["XDG_CACHE_HOME"] = str(Path(tempfile.gettempdir()) / "rl_search_from_scratch_cache")
+if "MPLCONFIGDIR" not in os.environ:
+    os.environ["MPLCONFIGDIR"] = str(Path(os.environ["XDG_CACHE_HOME"]) / "matplotlib")
+Path(os.environ["MPLCONFIGDIR"]).mkdir(parents=True, exist_ok=True)
+
 import numpy as np
-import matplotlib.pyplot as plt
-from typing import NamedTuple, Callable
+import matplotlib
+from typing import NamedTuple
 from collections import defaultdict
+
+matplotlib.use("Agg")
+matplotlib.set_loglevel("warning")
+import matplotlib.pyplot as plt
+
+
+# ============================================================================
+# Chapter 0 (book) minimal toy: closed-form reward + tabular Q
+# ============================================================================
+
+CHAPTER0_CONTEXTS: list[str] = ["price_hunter", "premium", "bulk_buyer"]
+CHAPTER0_ACTIONS: list[tuple[int, int]] = [(i, j) for i in range(5) for j in range(5)]
+
+
+def _chapter0_indices_to_weights(action: tuple[int, int]) -> tuple[float, float]:
+    i, j = action
+    w_discount = -1.0 + 0.5 * i
+    w_quality = -1.0 + 0.5 * j
+    return w_discount, w_quality
+
+
+def chapter0_reward(user_name: str, action: tuple[int, int], rng: np.random.Generator) -> float:
+    """Reward model used in Chapter 0 (pre-simulator): preference alignment + noise."""
+    w_discount, w_quality = _chapter0_indices_to_weights(action)
+
+    if user_name == "price_hunter":
+        base = 2.0 * w_discount - 0.5 * w_quality
+    elif user_name == "premium":
+        base = 2.0 * w_quality - 0.5 * w_discount
+    elif user_name == "bulk_buyer":
+        base = 1.0 - abs(w_discount) - abs(w_quality)
+    else:
+        raise ValueError(f"Unknown user_name: {user_name}")
+
+    noise = rng.normal(0.0, 0.5)
+    return float(base + noise)
+
+
+def train_chapter0_q_table(
+    *,
+    seed: int = 42,
+    n_train: int = 3000,
+    eps: float = 0.1,
+    learning_rate: float = 0.1,
+) -> tuple[dict[str, dict[tuple[int, int], float]], list[float]]:
+    """Train the Chapter 0 tabular agent and return (Q, reward_history)."""
+    rng = np.random.default_rng(seed)
+    q_table: dict[str, dict[tuple[int, int], float]] = {
+        ctx: {a: 0.0 for a in CHAPTER0_ACTIONS} for ctx in CHAPTER0_CONTEXTS
+    }
+    history: list[float] = []
+
+    for _ in range(n_train):
+        ctx = CHAPTER0_CONTEXTS[int(rng.integers(len(CHAPTER0_CONTEXTS)))]
+        if rng.random() < eps:
+            action = CHAPTER0_ACTIONS[int(rng.integers(len(CHAPTER0_ACTIONS)))]
+        else:
+            action = max(CHAPTER0_ACTIONS, key=lambda a: q_table[ctx][a])
+
+        r = chapter0_reward(ctx, action, rng)
+        q_table[ctx][action] = (1 - learning_rate) * q_table[ctx][action] + learning_rate * r
+        history.append(r)
+
+    return q_table, history
+
+
+def plot_chapter0_learning_curves(
+    history: list[float],
+    *,
+    seed: int = 42,
+    window: int = 100,
+) -> tuple[plt.Figure, plt.Axes]:
+    """Generate the Chapter 0 learning curve plot (including baselines)."""
+    rng = np.random.default_rng(seed + 12345)
+
+    smoothed = np.convolve(history, np.ones(window) / window, mode="valid")
+    episodes = np.arange(window, window + len(smoothed))
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    ax.plot(episodes, smoothed, label="Q-learning (smoothed)", linewidth=2, color="blue")
+
+    # Baselines (Monte Carlo estimates for reproducibility and sanity checks)
+    random_rewards = [
+        chapter0_reward(
+            rng.choice(CHAPTER0_CONTEXTS),
+            CHAPTER0_ACTIONS[int(rng.integers(len(CHAPTER0_ACTIONS)))],
+            rng,
+        )
+        for _ in range(5000)
+    ]
+    random_baseline = float(np.mean(random_rewards))
+
+    static_rewards = [
+        chapter0_reward(rng.choice(CHAPTER0_CONTEXTS), (2, 2), rng) for _ in range(3000)
+    ]
+    static_best = float(np.mean(static_rewards))
+
+    oracle_actions = {"price_hunter": (4, 0), "premium": (0, 4), "bulk_buyer": (2, 2)}
+    oracle_means = [
+        float(np.mean([chapter0_reward(ctx, oracle_actions[ctx], rng) for _ in range(200)]))
+        for ctx in CHAPTER0_CONTEXTS
+    ]
+    oracle = float(np.mean(oracle_means))
+
+    ax.axhline(random_baseline, color="red", linestyle="--", label=f"Random policy ({random_baseline:.2f})")
+    ax.axhline(static_best, color="orange", linestyle="--", label=f"Static (2,2) ({static_best:.2f})")
+    ax.axhline(oracle, color="green", linestyle="--", label=f"Oracle ({oracle:.2f})")
+    ax.axhline(0.8 * oracle, color="green", linestyle=":", alpha=0.6, label=f"80% Oracle ({0.8 * oracle:.2f})")
+
+    ax.set_xlabel("Episode")
+    ax.set_ylabel(f"Reward (smoothed over {window} episodes)")
+    ax.set_title("Learning Curve: Contextual Bandit for Boost Optimization")
+    ax.legend(loc="lower right")
+    ax.grid(alpha=0.3)
+
+    plt.tight_layout()
+    return fig, ax
+
+
+def run_chapter0(seed: int, plot_path: Path | None) -> int:
+    q_table, history = train_chapter0_q_table(seed=seed, n_train=3000, eps=0.1, learning_rate=0.1)
+
+    final_avg = float(np.mean(history[-100:]))
+    print(f"Final average reward (last 100 episodes): {final_avg:.3f}")
+    print("\nLearned policy:")
+    for ctx in CHAPTER0_CONTEXTS:
+        a_star = max(CHAPTER0_ACTIONS, key=lambda a: q_table[ctx][a])
+        print(f"  {ctx:15s} -> action {a_star} (Q = {q_table[ctx][a_star]:.3f})")
+
+    if plot_path is not None:
+        fig, _ = plot_chapter0_learning_curves(history, seed=seed, window=100)
+        plot_path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(plot_path, dpi=150)
+        print(f"\nSaved learning curve to {plot_path.as_posix()}")
+
+    return 0
 
 
 # ============================================================================
@@ -31,7 +183,7 @@ class UserType(NamedTuple):
 USER_TYPES = {
     "price_hunter": UserType(discount_sensitivity=0.9, quality_sensitivity=0.1),
     "premium": UserType(discount_sensitivity=0.1, quality_sensitivity=0.9),
-    "bulk_buyer": UserType(discount_sensitivity=0.3, quality_sensitivity=0.5),
+    "bulk_buyer": UserType(discount_sensitivity=0.5, quality_sensitivity=0.5),
 }
 
 
@@ -388,7 +540,7 @@ def run_learning_experiment(policy: Policy,
 def main():
     """Run complete toy problem solution."""
     print("=" * 70)
-    print("Chapter 1 Toy Problem: Complete Solution")
+    print("Chapter 0 Toy Problem: Complete Solution")
     print("=" * 70)
 
     # Discretize action space
@@ -470,7 +622,7 @@ def main():
 
     ax.set_xlabel('Training Episodes', fontsize=12)
     ax.set_ylabel('Mean Reward', fontsize=12)
-    ax.set_title('Chapter 1 Toy Problem: Learning Curves', fontsize=14, fontweight='bold')
+    ax.set_title('Toy Problem: Learning Curves', fontsize=14, fontweight='bold')
     ax.legend(loc='lower right', fontsize=10)
     ax.grid(True, alpha=0.3)
 
@@ -497,4 +649,25 @@ def main():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Chapter 0 toy problem (book-aligned) + reference implementation.")
+    parser.add_argument(
+        "--chapter0",
+        action="store_true",
+        help="Reproduce Chapter 0 console output and regenerate docs/book/ch00/learning_curves.png.",
+    )
+    parser.add_argument("--seed", type=int, default=42, help="Random seed (default: 42).")
+    parser.add_argument(
+        "--plot-path",
+        type=Path,
+        default=None,
+        help="Optional plot output path (overrides defaults).",
+    )
+    parser.add_argument("--no-plot", action="store_true", help="Disable plot generation.")
+    args = parser.parse_args()
+
+    if args.chapter0:
+        default_plot = Path("docs/book/ch00/learning_curves.png")
+        plot_path = None if args.no_plot else (args.plot_path or default_plot)
+        raise SystemExit(run_chapter0(seed=args.seed, plot_path=plot_path))
+
     main()

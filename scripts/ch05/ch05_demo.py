@@ -7,7 +7,7 @@ Demonstrates the three core components from Chapter 5:
 3. Reward aggregation (multi-objective scalarization)
 
 Usage:
-    python scripts/ch05_demo.py
+    uv run python scripts/ch05/ch05_demo.py
 """
 
 from __future__ import annotations
@@ -290,9 +290,9 @@ def main() -> None:
     print("\nNext steps:")
     print("- Chapter 6: Implement RL agents (LinUCB, Thompson Sampling)")
     print("- Chapter 7: Continuous action spaces (Q-learning for boosts)")
-    print("- Chapter 8: Add constraints (CM2 floors, exposure guarantees)")
+    print("- Chapter 10: Robustness and guardrails (CM2 floors, exposure guarantees)")
     print("\nFor exercises and labs, see:")
-    print("  docs/book/drafts/ch05/exercises_labs.md")
+    print("  docs/book/ch05/exercises_labs.md")
     print("=" * 80 + "\n")
 
 

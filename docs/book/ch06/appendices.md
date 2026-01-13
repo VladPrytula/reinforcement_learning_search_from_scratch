@@ -192,9 +192,9 @@ Even if model is misspecified, contextual bandits **still improve over static po
 
 **Failure Mode 1: Feature engineering is poor**
 
-If $\phi(x)$ doesn't capture context-action interactions, bandits converge to **random** or **best static** template.
+If $\phi(x)$ does not capture context-action interactions, bandits converge to **random** or **best static** template.
 
-**Example:** If features only include query length, product price (no interaction terms), linear model can't learn "cheap products for bargain hunters, premium for quality seekers".
+**Example:** If features only include query length, product price (no interaction terms), linear model cannot learn "cheap products for bargain hunters, premium for quality seekers".
 
 **Diagnostic:** Selection frequencies converge to uniform or single template.
 

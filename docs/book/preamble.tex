@@ -1,12 +1,149 @@
 % LaTeX preamble for PDF compilation
 % Minimal configuration - source files use proper LaTeX commands
 
-\usepackage{tcolorbox}
+\usepackage[most]{tcolorbox}
+\usepackage{newunicodechar}
 
-% Define CalloutNote environment for callout boxes
+% Unicode used in admonition/callout titles (also appears in PDF bookmarks).
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+
+% =============================================================================
+% CALLOUT / ADMONITION BOXES (tcolorbox)
+%
+% Used by:
+% - docs/book/callouts.lua  (::: fenced div callouts)
+% - docs/book/admonitions.lua (MkDocs !!! / ??? admonitions)
+% =============================================================================
+
+% Note box (blue) - matches callouts.lua
 \newtcolorbox{CalloutNote}[1]{
-  colback=blue!5!white,
-  colframe=blue!75!black,
-  fonttitle=\bfseries,
-  title=#1
+  breakable,
+  colback=blue!4!white,
+  colframe=blue!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% MkDocs admonitions use NoteBox (keep it as an alias).
+\newtcolorbox{NoteBox}[1]{
+  breakable,
+  colback=blue!4!white,
+  colframe=blue!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Tip box (green)
+\newtcolorbox{TipBox}[1]{
+  breakable,
+  colback=green!4!white,
+  colframe=green!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Warning box (orange)
+\newtcolorbox{WarningBox}[1]{
+  breakable,
+  colback=orange!4!white,
+  colframe=orange!60!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Danger box (red)
+\newtcolorbox{DangerBox}[1]{
+  breakable,
+  colback=red!4!white,
+  colframe=red!50!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Info box (cyan)
+\newtcolorbox{InfoBox}[1]{
+  breakable,
+  colback=cyan!4!white,
+  colframe=cyan!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Example box (purple)
+\newtcolorbox{ExampleBox}[1]{
+  breakable,
+  colback=violet!4!white,
+  colframe=violet!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Important box (magenta)
+\newtcolorbox{ImportantBox}[1]{
+  breakable,
+  colback=magenta!4!white,
+  colframe=magenta!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Caution box (yellow)
+\newtcolorbox{CautionBox}[1]{
+  breakable,
+  colback=yellow!10!white,
+  colframe=yellow!60!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Abstract box (gray)
+\newtcolorbox{AbstractBox}[1]{
+  breakable,
+  colback=gray!4!white,
+  colframe=gray!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Question box (teal)
+\newtcolorbox{QuestionBox}[1]{
+  breakable,
+  colback=teal!4!white,
+  colframe=teal!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Quote box (light gray)
+\newtcolorbox{QuoteBox}[1]{
+  breakable,
+  colback=gray!2!white,
+  colframe=gray!30!black,
+  boxrule=0.5pt,
+  arc=0pt,
+  leftrule=3pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily\itshape
 }

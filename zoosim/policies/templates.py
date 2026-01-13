@@ -1,13 +1,13 @@
 """Discrete boost templates for contextual bandit policies.
 
-Mathematical basis: [DEF-6.1] (Boost Template)
+Mathematical basis: [DEF-6.1.1] (Boost Template)
 
 Templates define interpretable boost strategies that can be selected
 by contextual bandit algorithms (LinUCB, Thompson Sampling).
 
 References:
     - Chapter 6, §6.1: Discrete Template Action Space
-    - [DEF-6.1]: Boost Template definition
+    - [DEF-6.1.1]: Boost Template definition
     - [EQ-6.1]: Template application formula
 """
 
@@ -26,7 +26,7 @@ from zoosim.world.catalog import Product
 class BoostTemplate:
     """Single boost template with semantic label.
 
-    Mathematical correspondence: Template t: C → ℝ from [DEF-6.1]
+    Mathematical correspondence: Template t: C → ℝ from [DEF-6.1.1]
 
     A boost template assigns a boost value to each product based on its
     attributes (margin, brand, popularity, price, discount, strategic flag).
@@ -130,7 +130,7 @@ def create_standard_templates(
         templates: List of M=8 boost templates
 
     References:
-        - [DEF-6.1] Boost Template definition
+        - [DEF-6.1.1] Boost Template definition
         - Table in Chapter 6, §6.1.1 for template specifications
     """
     p25 = catalog_stats["price_p25"]

@@ -29,7 +29,7 @@ Mathematical references:
     - [THM-2.3.1]: Law of Total Probability
     - [EQ-2.1]: PBM click probability
     - [EQ-2.3]: DBN examination probability
-    - [EQ-2.4]: IPS estimator
+    - [EQ-2.9]: IPS estimator
     - [THM-2.6.1]: Unbiasedness of IPS
 """
 
@@ -52,13 +52,16 @@ sys.path.insert(0, str(PROJECT_ROOT))
 # Fallback implementations when zoosim is not fully configured
 # =============================================================================
 
-# Try to import from zoosim; use fallback if not available
+# Try to import from zoosim; use fallback if not available.
 try:
-    from zoosim.core.config import SimulatorConfig, UserConfig, SegmentParams
-    from zoosim.world.users import sample_user, User
+    from zoosim.core import config as zoosim_config
+    from zoosim.ranking import relevance as zoosim_relevance
+    from zoosim.world import catalog as zoosim_catalog
+    from zoosim.world import queries as zoosim_queries
+    from zoosim.world import users as zoosim_users
 
     ZOOSIM_AVAILABLE = True
-except ImportError:
+except Exception:
     ZOOSIM_AVAILABLE = False
 
 
@@ -132,12 +135,13 @@ def fallback_sample_user(
 ) -> FallbackUser:
     """Sample a user from the segment distribution (fallback implementation).
 
-    Mathematical correspondence: Implements sampling from discrete probability
-    measure ρ on segment space, as defined in [DEF-2.2.2].
+    Mathematical correspondence: Implements sampling from a discrete probability
+    measure on segment space, equivalently a probability vector p_seg as defined in
+    [DEF-2.2.6].
 
     Args:
         segments: List of segment names
-        segment_mix: Probability vector ρ (must sum to 1)
+        segment_mix: Probability vector p_seg (must sum to 1)
         segment_params: Parameters per segment
         rng: Random number generator
 
@@ -178,11 +182,11 @@ def lab_2_1_segment_mix_sanity_check(
     Lab 2.1 Solution: Segment Mix Sanity Check.
 
     Verifies that empirical segment frequencies from sampling converge to
-    the theoretical probability vector ρ (Strong Law of Large Numbers).
+    the theoretical segment distribution p_seg (Strong Law of Large Numbers).
 
     Mathematical correspondence:
-        - [DEF-2.2.2]: Probability measure on discrete space
-        - SLLN: ρ̂_n → ρ a.s. as n → ∞
+        - [DEF-2.2.6]: Segment distribution on a finite space
+        - SLLN: p_hat_seg,n -> p_seg almost surely as n -> ∞
 
     Args:
         seed: Random seed for reproducibility
@@ -206,8 +210,8 @@ def lab_2_1_segment_mix_sanity_check(
     if verbose:
         print(f"\nSampling {n_samples:,} users from segment distribution (seed={seed})...")
         print("\nTheoretical segment mix (from config):")
-        for seg, rho in zip(segments, theoretical):
-            print(f"  {seg:15s}: ρ = {rho:.3f}")
+        for seg, p_seg in zip(segments, theoretical):
+            print(f"  {seg:15s}: p_seg = {p_seg:.3f}")
 
     # Sample users and count segments
     counts = {seg: 0 for seg in segments}
@@ -222,9 +226,9 @@ def lab_2_1_segment_mix_sanity_check(
 
     if verbose:
         print(f"\nEmpirical segment frequencies (n={n_samples:,}):")
-        for seg, rho_hat, rho in zip(segments, empirical, theoretical):
-            delta = rho_hat - rho
-            print(f"  {seg:15s}: ρ̂ = {rho_hat:.3f}  (Δ = {delta:+.3f})")
+        for seg, p_hat_seg, p_seg in zip(segments, empirical, theoretical):
+            delta = p_hat_seg - p_seg
+            print(f"  {seg:15s}: p_hat_seg = {p_hat_seg:.3f}  (Δ = {delta:+.3f})")
 
     # Compute deviation metrics
     l_inf = np.max(np.abs(empirical - theoretical))
@@ -238,8 +242,8 @@ def lab_2_1_segment_mix_sanity_check(
         print(f"  L2 (Euclidean):       {l2:.3f}")
 
         # Expected deviation from CLT
-        max_rho = max(theoretical)
-        expected_std = np.sqrt(max_rho * (1 - max_rho) / n_samples)
+        max_p_seg = max(theoretical)
+        expected_std = np.sqrt(max_p_seg * (1 - max_p_seg) / n_samples)
         if l_inf < 3 * expected_std:
             print(
                 "\n✓ Empirical frequencies match theoretical distribution within expected variance."
@@ -298,7 +302,7 @@ def lab_2_1_multi_seed_analysis(
 
     if verbose:
         # Print results table
-        print(f"\nResults (L∞ = max|ρ̂_i - ρ_i|):\n")
+        print(f"\nResults (L∞ = max|p_hat_seg_i - p_seg_i|):\n")
         header = "Sample Size |" + "".join([f"  Seed {s:>4}  |" for s in seeds]) + "   Mean   |   Std"
         print(header)
         print("-" * len(header))
@@ -320,7 +324,7 @@ def lab_2_1_multi_seed_analysis(
 
         print("\nLaw of Large Numbers interpretation:")
         print("  As n → ∞, L∞ → 0 (a.s.). The 1/√n scaling matches CLT predictions.")
-        print("  Deviations at finite n are bounded by √(ρ_i(1-ρ_i)/n) per coordinate.")
+        print("  Deviations at finite n are bounded by √(p_seg_i(1-p_seg_i)/n) per coordinate.")
 
     return {"seeds": seeds, "n_samples_list": n_samples_list, "l_inf_results": results}
 
@@ -389,7 +393,7 @@ def lab_2_1_degenerate_distribution(seed: int = 42, verbose: bool = True) -> dic
         print(f"\n  ✓ Mathematically valid (sums to {sum(mix_a):.1f})")
         print("  ✓ Code executes correctly")
         low_prob = [seg for seg, p in zip(segments, mix_a) if p < 0.01]
-        print(f"\n  ⚠ Practical concern: {len(low_prob)} segments have ρ < 0.01")
+        print(f"\n  ⚠ Practical concern: {len(low_prob)} segments have p_seg < 0.01")
         for seg in low_prob:
             print(f"    - '{seg}' appears in only ~{mix_a[segments.index(seg)]*100:.1f}% of data")
         print("\n  → OPE implication: If target policy π₁ upweights rare segments,")
@@ -402,8 +406,8 @@ def lab_2_1_degenerate_distribution(seed: int = 42, verbose: bool = True) -> dic
         print("\n" + "─" * 70)
         print("Test Case B: Zero-probability segment (positivity violation)")
         print("─" * 70)
-        print("  Goal: Demonstrate what happens when ρ(segment) = 0")
-        print("  Config: [0.40, 0.35, 0.25, 0.00]  ← litter_heavy has ρ = 0")
+        print("  Goal: Demonstrate what happens when p_seg(segment) = 0")
+        print("  Config: [0.40, 0.35, 0.25, 0.00]  ← litter_heavy has p_seg = 0")
 
     rng = np.random.default_rng(seed + 1)
     mix_b = [0.40, 0.35, 0.25, 0.00]
@@ -421,12 +425,12 @@ def lab_2_1_degenerate_distribution(seed: int = 42, verbose: bool = True) -> dic
         print(f"  Empirical: {{{', '.join([f'{k}: {v:.3f}' for k, v in empirical_b.items()])}}}")
         zero_segs = [seg for seg, p in zip(segments, mix_b) if p == 0.0]
         print(f"\n  ✓ Sampling completed successfully (code works correctly)")
-        print(f"  ✓ As expected: '{zero_segs[0]}' never appears (ρ = 0)")
+        print(f"  ✓ As expected: '{zero_segs[0]}' never appears (p_seg = 0)")
         print(f"\n  ⚠ DETECTED: Positivity assumption [THM-2.6.1] violated!")
         print("    This is not a bug—it's what we're testing for.")
         print("\n  → Mathematical consequence:")
         print("    If target policy π₁ wants to evaluate litter_heavy users,")
-        print("    but logging policy π₀ assigns ρ = 0, then:")
+        print("    but logging policy π₀ assigns p_seg = 0, then:")
         print("      w = π₁(litter_heavy) / π₀(litter_heavy) = π₁ / 0 = undefined")
         print("    The Radon-Nikodym derivative dπ₁/dπ₀ does not exist.")
         print("\n  → Practical consequence:")
@@ -457,8 +461,8 @@ def lab_2_1_degenerate_distribution(seed: int = 42, verbose: bool = True) -> dic
         print("    - Some segments get wrong sampling rates")
         print("    - All downstream estimates become biased")
         print("    - The bias is silent and hard to detect post-hoc")
-        print("\n  → Remedy: Always validate sum(ρ) = 1 before sampling")
-        print("    (with tolerance for floating-point: |sum(ρ) - 1| < 1e-9)")
+        print("\n  → Remedy: Always validate sum(p_seg) = 1 before sampling")
+        print("    (with tolerance for floating-point: |sum(p_seg) - 1| < 1e-9)")
 
     # Summary
     if verbose:
@@ -494,8 +498,9 @@ def compute_base_score(query_type: str, query_intent: str, product_category: str
     """
     Compute base relevance score for query-product pair.
 
-    Mathematical correspondence: Implements score function s: Q × P → [0,1]
-    satisfying Proposition 2.8.1 (boundedness and integrability).
+    Mathematical correspondence: Implements score function s: Q × P → R
+    satisfying Proposition 2.8.1 (measurability and square-integrability).
+    Scores are NOT bounded to [0,1]---Gaussian noise makes them unbounded.
 
     Args:
         query_type: Type of query ('category', 'brand', 'generic')
@@ -504,7 +509,7 @@ def compute_base_score(query_type: str, query_intent: str, product_category: str
         rng: Random generator
 
     Returns:
-        Base score in [0, 1]
+        Base score (unbounded real, typically near 0.5 with std ~0.15)
     """
     # Category match component
     if query_type == "category" and query_intent == product_category:
@@ -514,9 +519,9 @@ def compute_base_score(query_type: str, query_intent: str, product_category: str
     else:
         category_score = 0.3
 
-    # Add noise to simulate semantic/embedding variance
+    # Add noise to simulate semantic/embedding variance (unbounded)
     noise = rng.normal(0, 0.15)
-    score = np.clip(category_score + noise, 0.0, 1.0)
+    score = category_score + noise  # NOT clipped---scores are unbounded per Prop 2.8.1
 
     return float(score)
 
@@ -526,7 +531,7 @@ def lab_2_2_base_score_integration(seed: int = 3, verbose: bool = True) -> dict:
     Lab 2.2 Solution: Query Measure and Base Score Integration.
 
     Links click-model measure P to simulator code paths and verifies
-    that base scores are bounded as predicted by Proposition 2.8.1.
+    that base scores are square-integrable as predicted by Proposition 2.8.1.
 
     Args:
         seed: Random seed
@@ -541,75 +546,115 @@ def lab_2_2_base_score_integration(seed: int = 3, verbose: bool = True) -> dict:
         print("=" * 70)
 
     rng = np.random.default_rng(seed)
-    config = get_default_config()
-
-    categories = ["dog_food", "cat_food", "litter", "toys"]
-    query_types = ["category", "brand", "generic"]
-
-    if verbose:
-        print(f"\nGenerating catalog and sampling users/queries (seed={seed})...")
-        print(f"\nCatalog statistics:")
-        print(f"  Products: 10,000 (simulated)")
-        print(f"  Categories: {categories}")
-        print(f"  Embedding dimension: 16")
-        print(f"\nUser/Query samples (n=100):")
-
-    # Generate user-query-product scores
     n_queries = 100
     n_products_per_query = 100
-    all_scores = []
+    all_scores: List[float] = []
 
-    user_samples = []
-    for i in range(n_queries):
-        user = fallback_sample_user(
-            config.segments, config.segment_mix, config.segment_params, rng
-        )
-        query_type = rng.choice(query_types)
-        query_intent = rng.choice(categories)
+    if ZOOSIM_AVAILABLE:
+        cfg = zoosim_config.load_default_config()
+        catalog = zoosim_catalog.generate_catalog(cfg.catalog, rng)
+        categories = list(cfg.catalog.categories)
 
-        if i < 2 and verbose:
-            print(f"\nSample {i+1}:")
-            print(f"  User segment: {user.segment}")
-            print(f"  Query type: {query_type}")
-            print(f"  Query intent: {query_intent}")
+        if verbose:
+            print(f"\nGenerating catalog and sampling users/queries (seed={seed})...")
+            print(f"\nCatalog statistics:")
+            print(f"  Products: {cfg.catalog.n_products:,} (simulated)")
+            print(f"  Categories: {categories}")
+            print(f"  Embedding dimension: {cfg.catalog.embedding_dim}")
+            print(f"\nUser/Query samples (n={n_queries}):")
 
-        # Compute scores for products
-        for _ in range(n_products_per_query):
-            product_category = rng.choice(categories)
-            score = compute_base_score(query_type, query_intent, product_category, rng)
-            all_scores.append(score)
+        for i in range(n_queries):
+            user = zoosim_users.sample_user(config=cfg, rng=rng)
+            query = zoosim_queries.sample_query(user=user, config=cfg, rng=rng)
 
-        user_samples.append(user)
+            if i < 2 and verbose:
+                print(f"\nSample {i+1}:")
+                print(f"  User segment: {user.segment}")
+                print(f"  Query type: {query.query_type}")
+                print(f"  Query intent: {query.intent_category}")
 
-    all_scores = np.array(all_scores)
+            product_indices = rng.choice(len(catalog), size=n_products_per_query, replace=False)
+            subset = [catalog[j] for j in product_indices]
+            scores = zoosim_relevance.batch_base_scores(
+                query=query, catalog=subset, config=cfg, rng=rng
+            )
+            all_scores.extend(scores)
+
+        all_scores_arr = np.array(all_scores, dtype=float)
+    else:
+        config = get_default_config()
+        categories = ["dog_food", "cat_food", "litter", "toys"]
+        query_types = ["category", "brand", "generic"]
+
+        if verbose:
+            print(f"\nGenerating catalog and sampling users/queries (seed={seed})...")
+            print(f"\nCatalog statistics:")
+            print(f"  Products: 10,000 (simulated)")
+            print(f"  Categories: {categories}")
+            print(f"  Embedding dimension: 16")
+            print(f"\nUser/Query samples (n={n_queries}):")
+
+        for i in range(n_queries):
+            user = fallback_sample_user(
+                config.segments, config.segment_mix, config.segment_params, rng
+            )
+            query_type = rng.choice(query_types)
+            query_intent = rng.choice(categories)
+
+            if i < 2 and verbose:
+                print(f"\nSample {i+1}:")
+                print(f"  User segment: {user.segment}")
+                print(f"  Query type: {query_type}")
+                print(f"  Query intent: {query_intent}")
+
+            for _ in range(n_products_per_query):
+                product_category = rng.choice(categories)
+                score = compute_base_score(query_type, query_intent, product_category, rng)
+                all_scores.append(score)
+
+        all_scores_arr = np.array(all_scores, dtype=float)
+
+    mean = float(np.mean(all_scores_arr))
+    std = float(np.std(all_scores_arr))
+    min_score = float(np.min(all_scores_arr))
+    max_score = float(np.max(all_scores_arr))
 
     if verbose:
         print("\n...")
         print(f"\nBase score statistics across {n_queries} queries × {n_products_per_query} products each:")
-        print(f"\n  Score mean:  {np.mean(all_scores):.3f}")
-        print(f"  Score std:   {np.std(all_scores):.3f}")
-        print(f"  Score min:   {np.min(all_scores):.3f}")
-        print(f"  Score max:   {np.max(all_scores):.3f}")
+        print(f"\n  Score mean:  {mean:.3f}")
+        print(f"  Score std:   {std:.3f}")
+        print(f"  Score min:   {min_score:.3f}")
+        print(f"  Score max:   {max_score:.3f}")
 
-        percentiles = [10, 25, 50, 75, 90]
+        percentiles = [5, 25, 50, 75, 95]
         print(f"\nScore percentiles:")
         for p in percentiles:
-            print(f"  {p}th: {np.percentile(all_scores, p):.3f}")
+            print(f"  {p}th: {np.percentile(all_scores_arr, p):.3f}")
 
-        # Verify boundedness
-        bounded = np.all(all_scores >= 0) and np.all(all_scores <= 1)
-        print(f"\n✓ All scores bounded in [0, 1] as required by Proposition 2.8.1" if bounded else "✗ Score bounds violated!")
-        print(f"✓ Score mean ≈ 0.5 (expected for random query-product pairs)")
-        print(f"✓ Score std ≈ 0.19 (reasonable spread without pathological concentration)")
+        finite_variance = np.isfinite(np.var(all_scores_arr))
+        if finite_variance:
+            print(
+                "\n✓ Scores are square-integrable (finite variance) as required by Proposition 2.8.1"
+            )
+        else:
+            print("\n✗ Score variance is infinite!")
+
+        print(f"✓ Score std ≈ {std:.2f} (finite second moment)")
+
+        if (min_score < 0.0) or (max_score > 1.0):
+            print("⚠ Scores NOT bounded to [0,1]---Gaussian noise makes them unbounded")
+        else:
+            print("✓ Scores fall within [0,1] in this run (but are not guaranteed to)")
 
     return {
         "n_queries": n_queries,
         "n_products_per_query": n_products_per_query,
-        "scores": all_scores,
-        "mean": float(np.mean(all_scores)),
-        "std": float(np.std(all_scores)),
-        "min": float(np.min(all_scores)),
-        "max": float(np.max(all_scores)),
+        "scores": all_scores_arr,
+        "mean": mean,
+        "std": std,
+        "min": min_score,
+        "max": max_score,
     }
 
 
@@ -618,7 +663,7 @@ def lab_2_2_user_sampling_verification(seed: int = 42, n_users: int = 500, verbo
     Lab 2.2 Task 1: User sampling and score verification.
 
     Replaces placeholder with actual draws from sample_user and
-    confirms statistics remain bounded.
+    verifies score square-integrability.
 
     Args:
         seed: Random seed
@@ -632,64 +677,89 @@ def lab_2_2_user_sampling_verification(seed: int = 42, n_users: int = 500, verbo
         print("=" * 70)
         print("Task 1: User Sampling and Score Verification")
         print("=" * 70)
-        print(f"\nSampling {n_users} users with full zoosim pipeline...")
+        print(f"\nSampling {n_users} users and checking base-score integrability...")
 
     rng = np.random.default_rng(seed)
-    config = get_default_config()
+    scores_per_user = 100
 
-    categories = ["dog_food", "cat_food", "litter", "toys"]
-    query_types = ["category", "brand", "generic"]
+    if ZOOSIM_AVAILABLE:
+        cfg = zoosim_config.load_default_config()
+        catalog = zoosim_catalog.generate_catalog(cfg.catalog, rng)
+        segments = list(cfg.users.segments)
+        segment_mix = list(cfg.users.segment_mix)
+        segment_counts = {seg: 0 for seg in segments}
+        segment_scores: Dict[str, List[float]] = {seg: [] for seg in segments}
 
-    segment_counts = {seg: 0 for seg in config.segments}
-    segment_scores = {seg: [] for seg in config.segments}
+        for _ in range(n_users):
+            user = zoosim_users.sample_user(config=cfg, rng=rng)
+            segment_counts[user.segment] += 1
+            query = zoosim_queries.sample_query(user=user, config=cfg, rng=rng)
 
-    for _ in range(n_users):
-        user = fallback_sample_user(
-            config.segments, config.segment_mix, config.segment_params, rng
-        )
-        segment_counts[user.segment] += 1
+            product_indices = rng.choice(len(catalog), size=scores_per_user, replace=False)
+            subset = [catalog[j] for j in product_indices]
+            scores = zoosim_relevance.batch_base_scores(
+                query=query, catalog=subset, config=cfg, rng=rng
+            )
+            segment_scores[user.segment].extend(scores)
+    else:
+        config = get_default_config()
+        categories = ["dog_food", "cat_food", "litter", "toys"]
+        query_types = ["category", "brand", "generic"]
+        segments = list(config.segments)
+        segment_mix = list(config.segment_mix)
+        segment_counts = {seg: 0 for seg in segments}
+        segment_scores = {seg: [] for seg in segments}
 
-        # Generate 100 scores for this user
-        query_type = rng.choice(query_types)
-        query_intent = rng.choice(categories)
-        for _ in range(100):
-            product_category = rng.choice(categories)
-            score = compute_base_score(query_type, query_intent, product_category, rng)
-            segment_scores[user.segment].append(score)
+        for _ in range(n_users):
+            user = fallback_sample_user(
+                config.segments, config.segment_mix, config.segment_params, rng
+            )
+            segment_counts[user.segment] += 1
+
+            query_type = rng.choice(query_types)
+            query_intent = rng.choice(categories)
+            for _ in range(scores_per_user):
+                product_category = rng.choice(categories)
+                score = compute_base_score(query_type, query_intent, product_category, rng)
+                segment_scores[user.segment].append(score)
 
     if verbose:
         print(f"\nUser segment distribution:")
-        for seg in config.segments:
+        for seg in segments:
             pct = 100 * segment_counts[seg] / n_users
-            expected = config.segment_mix[config.segments.index(seg)] * 100
+            expected = segment_mix[segments.index(seg)] * 100
             print(f"  {seg:15s}: {pct:5.1f}%  (expected: {expected:.1f}%)")
 
         print("\nScore statistics by segment:\n")
         print(f"{'Segment':<14} | {'n':>4} | {'Score Mean':>10} | {'Score Std':>9} | {'Min':>6} | {'Max':>6}")
         print("-" * 65)
 
-        for seg in config.segments:
-            scores = np.array(segment_scores[seg])
+        seg_means: Dict[str, float] = {}
+        for seg in segments:
+            scores = np.array(segment_scores[seg], dtype=float)
             n = segment_counts[seg]
+            seg_means[seg] = float(np.mean(scores)) if len(scores) else float("nan")
             print(
                 f"{seg:<14} | {n:>4} |    {np.mean(scores):.3f}   |   {np.std(scores):.3f}   | {np.min(scores):.3f}  | {np.max(scores):.3f}"
             )
 
-        # ANOVA test (simplified)
-        all_means = [np.mean(segment_scores[seg]) for seg in config.segments]
-        f_stat = np.var(all_means) / 0.001  # Rough estimate
-        print(f"\nCross-segment consistency check:")
-        print(f"  ANOVA F-statistic: {f_stat:.2f} (p≈0.87)")
-        print("  → No significant difference in score distributions across segments")
-        print("  → Base scores are segment-independent (as expected from [DEF-5.2])")
+        all_scores = np.concatenate(
+            [np.array(segment_scores[seg], dtype=float) for seg in segments if segment_scores[seg]]
+        )
+        overall_mean = float(np.mean(all_scores))
+        overall_std = float(np.std(all_scores))
+        max_abs_mean_shift = max(abs(m - overall_mean) for m in seg_means.values())
+        print(f"\nCross-segment mean shift (descriptive):")
+        print(f"  Overall mean: {overall_mean:.3f}")
+        print(f"  Max |mean(seg) - overall|: {max_abs_mean_shift:.3f}")
+        print(f"  Effect (max/overall std): {max_abs_mean_shift / overall_std:.2f}")
 
-        # Verify Proposition 2.8.1
-        all_scores = np.concatenate([np.array(segment_scores[seg]) for seg in config.segments])
-        n_total = len(all_scores)
         print(f"\nProposition 2.8.1 verification:")
-        print(f"  ✓ All {n_users} × 100 = {n_total:,} scores in [0, 1]")
+        print(f"  ✓ Finite variance (std ≈ {overall_std:.2f}) across all segments")
         print(f"  ✓ No infinite or NaN values")
-        print(f"  ✓ Score integrability confirmed")
+        print(f"  ✓ Score square-integrability confirmed")
+        if (float(np.min(all_scores)) < 0.0) or (float(np.max(all_scores)) > 1.0):
+            print(f"  ⚠ Scores NOT bounded to [0,1]---Gaussian noise yields unbounded support")
 
     return {
         "segment_counts": segment_counts,
@@ -717,76 +787,82 @@ def lab_2_2_score_histogram(seed: int = 42, n_samples: int = 10_000, verbose: bo
         print("=" * 70)
         print("Task 2: Score Distribution Histogram")
         print("=" * 70)
-        print(f"\nComputing scores for {n_samples:,} query-product pairs...")
 
     rng = np.random.default_rng(seed)
 
-    categories = ["dog_food", "cat_food", "litter", "toys"]
-    query_types = ["category", "brand", "generic"]
+    if ZOOSIM_AVAILABLE:
+        cfg = zoosim_config.load_default_config()
+        catalog = zoosim_catalog.generate_catalog(cfg.catalog, rng)
+        user = zoosim_users.sample_user(config=cfg, rng=rng)
+        query = zoosim_queries.sample_query(user=user, config=cfg, rng=rng)
 
-    scores = []
-    for _ in range(n_samples):
-        query_type = rng.choice(query_types)
-        query_intent = rng.choice(categories)
-        product_category = rng.choice(categories)
-        score = compute_base_score(query_type, query_intent, product_category, rng)
-        scores.append(score)
+        if verbose:
+            print(f"\nComputing base scores for a representative query (seed={seed})...")
+            print(f"  User segment: {user.segment}")
+            print(f"  Query type: {query.query_type}")
+            print(f"  Query intent: {query.intent_category}")
 
-    scores = np.array(scores)
+        subset_size = min(n_samples, len(catalog))
+        product_indices = rng.choice(len(catalog), size=subset_size, replace=False)
+        subset = [catalog[j] for j in product_indices]
+        scores = np.array(
+            zoosim_relevance.batch_base_scores(query=query, catalog=subset, config=cfg, rng=rng),
+            dtype=float,
+        )
+    else:
+        categories = ["dog_food", "cat_food", "litter", "toys"]
+        query_types = ["category", "brand", "generic"]
+        scores = np.array(
+            [
+                compute_base_score(
+                    rng.choice(query_types),
+                    rng.choice(categories),
+                    rng.choice(categories),
+                    rng,
+                )
+                for _ in range(n_samples)
+            ],
+            dtype=float,
+        )
 
-    # Compute histogram
-    bins = np.linspace(0, 1, 11)
-    hist, _ = np.histogram(scores, bins=bins)
+    lo = float(np.floor(np.min(scores) * 10.0) / 10.0)
+    hi = float(np.ceil(np.max(scores) * 10.0) / 10.0)
+    bins = np.linspace(lo, hi, 11)
+    hist, edges = np.histogram(scores, bins=bins)
 
     if verbose:
-        print(f"\nScore distribution summary:")
-        print("  Shape: Approximately beta-distributed (peaked near 0.5)")
-        print("  This matches the assumption in Proposition 2.8.1")
+        mean = float(np.mean(scores))
+        std = float(np.std(scores))
+        min_score = float(np.min(scores))
+        max_score = float(np.max(scores))
+        frac_lt0 = float(np.mean(scores < 0.0))
+        frac_gt1 = float(np.mean(scores > 1.0))
 
-        # ASCII histogram
-        print("\nHistogram (ASCII representation):\n")
-        max_freq = max(hist)
-        print("       Frequency")
-        for level in [2000, 1500, 1000, 500, 0]:
-            row = f"    {level:>4} |"
-            for h in hist:
-                if h >= level:
-                    row += "█"
-                else:
-                    row += " "
-            print(row)
-        print("         |" + "_" * len(hist))
-        print("         0   0.25  0.5  0.75  1.0")
-        print("                 Score")
+        print("\nScore distribution summary:")
+        print(f"  Mean: {mean:.3f}")
+        print(f"  Std:  {std:.3f}")
+        print(f"  Min:  {min_score:.3f}")
+        print(f"  Max:  {max_score:.3f}")
+        print(f"  P(score < 0): {100*frac_lt0:.1f}%")
+        print(f"  P(score > 1): {100*frac_gt1:.1f}%")
 
-        print("\nHistogram data (for plotting):")
-        for i in range(len(hist)):
-            lo, hi = bins[i], bins[i + 1]
-            print(f"  Bins: [{lo:.2f}-{hi:.2f}): {hist[i]}")
+        print("\nHistogram (10 bins):")
+        max_freq = int(max(hist)) if len(hist) else 0
+        for i, count in enumerate(hist):
+            bar_len = int(round((count / max_freq) * 30)) if max_freq else 0
+            bar = "#" * bar_len
+            print(f"  [{edges[i]:6.2f}, {edges[i+1]:6.2f}): {count:5d} {bar}")
 
-        print("""
-Radon-Nikodym interpretation:
-  The score distribution f_base(s) serves as the "dominating measure" μ.
-  When we condition on different policies π₀, π₁, we get derived measures:
-
-    P_{π_k}(score ∈ ds) = w_k(s) · f_base(s) ds
-
-  where w_k(s) = dP_{π_k}/dμ is the Radon-Nikodym derivative.
-
-  For IPS [EQ-2.4], we compute:
-    ρ = w₁(s)/w₀(s) = (dP_{π₁}/dμ)/(dP_{π₀}/dμ) = dP_{π₁}/dP_{π₀}
-
-  The histogram shows that scores concentrate around 0.5, implying:
-  - Random policies produce similar score distributions
-  - Importance weights ρ ≈ 1 for similar policies (low variance)
-  - Weights diverge when π₁ ≠ π₀ substantially (high variance OPE)
-""")
+        print("\nRadon-Nikodym interpretation:")
+        print("  The empirical score histogram is a concrete proxy for a dominating measure mu.")
+        print("  Policies induce different measures by reweighting which items are shown/clicked.")
+        print("  Importance sampling weights are Radon-Nikodym derivatives (Chapter 9).")
 
     return {
         "scores": scores,
         "hist": hist,
         "bins": bins,
-        "n_samples": n_samples,
+        "n_samples": int(len(scores)),
     }
 
 
@@ -989,7 +1065,7 @@ def extended_ips_verification(seed: int = 42, verbose: bool = True) -> dict:
     """
     Extended Lab: IPS Estimator Verification.
 
-    Verifies that the Inverse Propensity Scoring (IPS) estimator from [EQ-2.4]
+    Verifies that the Inverse Propensity Scoring (IPS) estimator from [EQ-2.9]
     is unbiased under positivity assumption [THM-2.6.1].
 
     Args:
@@ -1376,7 +1452,7 @@ def simulate_utility_cascade(
     pos_bias_vec = behavior.pos_bias.get(query_type, behavior.pos_bias["generic"])
 
     for k in range(n_positions):
-        # Examination probability [EQ-2.12]
+        # Examination probability [EQ-2.6]
         pos_bias_k = pos_bias_vec[k] if k < len(pos_bias_vec) else 0.1
         exam_prob = _sigmoid(pos_bias_k + 0.2 * satisfaction)
 
@@ -1384,7 +1460,7 @@ def simulate_utility_cascade(
             stop_reason = "exam_fail"
             break
 
-        # Latent utility [EQ-2.10]
+        # Latent utility [EQ-2.4]
         utility = (
             behavior.alpha_rel * relevances[k]
             + behavior.alpha_price * (-0.5) * np.log1p(prices[k])  # Assume theta_price = -0.5
@@ -1392,7 +1468,7 @@ def simulate_utility_cascade(
             + rng.normal(0, behavior.sigma_u)
         )
 
-        # Click probability [EQ-2.11]
+        # Click probability [EQ-2.5]
         click_prob = _sigmoid(utility)
         if rng.random() < click_prob:
             clicks[k] = 1
@@ -1413,7 +1489,7 @@ def simulate_utility_cascade(
 
         satisfaction_trajectory.append(satisfaction)
 
-        # Abandonment check [EQ-2.14]
+        # Abandonment check [EQ-2.8]
         if satisfaction < behavior.abandonment_threshold:
             stop_reason = "abandonment"
             break
@@ -1569,10 +1645,10 @@ def lab_2_5_utility_cascade_dynamics(seed: int = 42, verbose: bool = True) -> di
     3. Stopping conditions (exam failure, abandonment, purchase limit)
 
     Mathematical correspondence:
-        - [EQ-2.10]: Latent utility
-        - [EQ-2.12]: Examination probability with satisfaction
-        - [EQ-2.13]: Satisfaction dynamics
-        - [EQ-2.14]: Stopping time
+        - [EQ-2.4]: Latent utility
+        - [EQ-2.6]: Examination probability with satisfaction
+        - [EQ-2.7]: Satisfaction dynamics
+        - [EQ-2.8]: Stopping time
 
     Args:
         seed: Random seed

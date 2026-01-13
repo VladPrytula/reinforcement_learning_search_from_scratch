@@ -4,18 +4,13 @@
 
 ## 2.1 Motivation: Why Search Needs Measure Theory
 
-**The "Vegetables" Defense.** This chapter is the mathematical "eat your vegetables" moment of the book. It introduces $\sigma$-algebras, measurable spaces, and Radon-Nikodym derivatives.
+This chapter develops the measure-theoretic probability framework—$\sigma$-algebras, measurable spaces, and Radon–Nikodym derivatives—that underlies off-policy evaluation (OPE) and, more broadly, reinforcement learning on general state and action spaces.
 
-You might ask: *"I just want to rank pet food. Why do I need a $\sigma$-algebra?"*
-
-**The Answer: Off-Policy Evaluation (OPE).**
-
-Every time you compute an importance weight $w_t = \frac{\pi(a|x)}{\mu(a|x)}$ to estimate the value of a new ranking algorithm without A/B testing, you are calculating a **Radon-Nikodym derivative**.
-- If your probability spaces aren't rigorous, that ratio is mathematically undefined (especially in continuous embedding spaces where $P(x)=0$).
-- If the ratio is undefined, your estimator is invalid.
-- If your estimator is invalid, you might accidentally deploy a policy that destroys revenue.
-
-We build this machinery not for the joy of abstraction, but to ensure that when we divide two probabilities later, the result is a number we can trust with millions of dollars.
+A natural question is why such machinery is needed for ranking. The answer is that OPE is a change-of-measure argument. When we compute an importance weight
+$$
+w_t = \frac{\pi(a\mid x)}{\mu(a\mid x)},
+$$
+we are computing a Radon–Nikodym derivative. On continuous representations (e.g., embeddings), point probabilities are typically zero, so ratios must be defined at the level of measures, not by naive counting. The purpose of this chapter is to make these ratios and expectations mathematically well-defined so that later estimators are theorems rather than heuristics.
 
 **The attribution puzzle.** Consider a simple question: *What is the probability that a user clicks on the third-ranked product?*
 
@@ -48,24 +43,25 @@ The **Position Bias Model (PBM)** and **Dynamic Bayesian Network (DBN)** formali
 
 **Why this matters for RL.** Chapter 1 used $\mathbb{E}[R \mid W]$ informally. Now we make it precise: expectations are **Lebesgue integrals** over probability measures, with $\mathbb{E}[R \mid W]$ a $\sigma(W)$‑measurable random variable and regular versions $\mathbb{E}[R \mid W=w]$ defined when standard Borel assumptions hold. Policy gradients (Chapter 8) require interchanging $\nabla_\theta$ with $\mathbb{E}$—justified by Dominated Convergence. Off‑policy evaluation (Chapter 9) uses importance sampling—defined via Radon–Nikodym derivatives. Without this chapter's foundations, those algorithms are heuristics. With them, they are theorems.
 
-Let's begin.
+We begin.
 
-??? tip "How much measure theory do you need? (Reading guide)"
-    **For practitioners focused on implementation:** You can safely skim §§2.2--2.4 (measure-theoretic foundations) on first pass and return to them when a later chapter invokes a specific result. The essential material for algorithms is:
+??? tip "How much measure theory is needed? (Reading guide)"
+    **Implementation-first reading:** On a first pass, it is reasonable to skim §§2.2--2.4 (measure-theoretic foundations) and return when a later chapter invokes a specific result. The algorithm-facing core is:
 
     - **§2.5 (Click Models)**: Position Bias Model and DBN---these directly parameterize user behavior in the simulator
     - **§2.6 (Propensity Scoring)**: Foundation for importance weighting in off-policy evaluation (Chapter 9)
     - **§2.7--2.8 (Computational Verification & RL Bridges)**: NumPy experiments and connections to MDP formalism
 
-    **For readers building theoretical depth:** §§2.2--2.4 provide the rigorous foundations that make policy gradient interchange (Chapter 8) and Radon--Nikodym importance weights (Chapter 9) theorems rather than heuristics. The proofs there are self-contained and follow Folland's *Real Analysis* [@folland:real_analysis:1999].
+    **Theory-first reading:** §§2.2--2.4 provide the rigorous foundations that make policy gradient interchange (Chapter 8) and Radon--Nikodym importance weights (Chapter 9) theorems rather than heuristics. The proofs there are self-contained and follow Folland's *Real Analysis* [@folland:real_analysis:1999].
 
-    **Bottom line:** If you see a $\sigma$-algebra and your eyes glaze over, skip to §2.5 and come back later. The algorithms will still work; you'll just be taking the theory on faith temporarily.
+    **Navigation:** If $\sigma$-algebras are heavy on a first reading, begin with §2.5 and return to §§2.2--2.4 as needed.
 
-!!! note for all that follows "Assumptions (probability and RL foundations)"
+!!! note "Assumptions (probability and RL foundations)"
+    These assumptions apply throughout this chapter.
     - Spaces $\mathcal{S}$, $\mathcal{A}$, contexts $\mathcal{X}$, and outcome spaces are standard Borel (measurable subsets of Polish spaces, i.e. separable completely metrizable topological spaces). This guarantees existence of regular conditional probabilities and measurable stochastic kernels.
     - Rewards are integrable: $R \in L^1$. For discounted RL with $0 \le \gamma < 1$, assume bounded rewards (or a uniform bound on expected discounted sums) so value iteration is well-defined.
     - Transition and policy kernels $P(\cdot \mid s,a)$ and $\pi(\cdot \mid s)$ are Markov kernels measurable in their arguments.
-    - Off‑policy evaluation (IPS): positivity/overlap — if $\pi(a \mid x) > 0$ then $\mu(a \mid x) > 0$ for the logging policy $\mu$.
+    - Off-policy evaluation (IPS): positivity/overlap - if $\pi(a \mid x) > 0$ then $\mu(a \mid x) > 0$ for the logging policy $\mu$.
 
 ??? info "Background: Standard Borel and Polish Spaces"
     **Polish space**: A topological space that is separable (has a countable dense subset) and completely metrizable (admits a complete metric inducing its topology). Examples: $\mathbb{R}^n$, separable Hilbert spaces, the space of continuous functions $C([0,1])$, discrete countable sets.
@@ -112,16 +108,12 @@ Elements of $\mathcal{F}$ are called **measurable sets** or **events**.
 
 The $\sigma$-algebra structure ensures probability theory is **consistent** (no contradictions) and **complete** (all natural events are measurable).
 
-!!! warning "Crucial: The Billion-Dollar Derivative"
-    Here is the "screamingly loud" connection to practice:
-
-    In Chapter 9, we will define the **Importance Sampling weight** for Off-Policy Evaluation:
-    $$ \rho = \frac{d\mathbb{P}^\pi}{d\mathbb{P}^\mu} $$
-
-    This object $\rho$ is a **Radon-Nikodym derivative**. For it to exist, the target policy measure $\mathbb{P}^\pi$ must be *absolutely continuous* with respect to the logging policy measure $\mathbb{P}^\mu$.
-
-    **This condition is defined entirely on $\sigma$-algebras.**
-    Without $\sigma$-algebras, we cannot rigorously define when it is safe to evaluate a new model offline. The failure of this condition (called *support deficiency*) is the #1 cause of catastrophic failure in production OPE systems.
+!!! warning "Practical anchor: importance weights"
+    In Chapter 9 we define the importance weight as a Radon-Nikodym derivative:
+    $$
+    \rho = \frac{d\mathbb{P}^\pi}{d\mathbb{P}^\mu}.
+    $$
+    Existence requires absolute continuity (overlap) $\mathbb{P}^\pi \ll \mathbb{P}^\mu$. See [REM-2.3.5] for the canonical identity behind importance weighting.
 
 ---
 
@@ -143,11 +135,17 @@ The triple $(\Omega, \mathcal{F}, \mathbb{P})$ is called a **probability space**
 
 **Example 2.2.4** (Uniform distribution on $[0,1]$). Let $\Omega = [0,1]$, $\mathcal{F} = \mathcal{B}([0,1])$ (Borel sets). Define $\mathbb{P}((a, b)) = b - a$ for intervals $(a, b) \subseteq [0,1]$. **Carathéodory's Extension Theorem** [@folland:real_analysis:1999, Theorem 1.14] says that any countably additive set function defined on an algebra (here, finite unions of intervals) extends uniquely to the $\sigma$-algebra it generates. Applying it here extends $\mathbb{P}$ uniquely to all Borel sets, giving the **Lebesgue measure** restricted to $[0,1]$.
 
-**Remark 2.2.2** (Necessity of countable additivity). Why require *countable* additivity rather than just finite additivity? Consider the Lebesgue measure of singletons in $[0,1]$: if $\mathbb{P}(\{x\}) > 0$ for all $x \in [0,1]$, then $\sigma$-additivity forces
+**Remark 2.2.2** (Necessity of countable additivity). Why require *countable* additivity rather than just finite additivity? Suppose $\mathbb{P}(\{x\}) > 0$ for all $x \in [0,1]$. Define
+
 $$
-\mathbb{P}([0,1]) = \sum_{x \in [0,1]} \mathbb{P}(\{x\}) = \infty,
+A_n = \{x \in [0,1] : \mathbb{P}(\{x\}) \geq 1/n\}.
 $$
-contradicting normalization. Only $\sigma$-additivity eliminates such inconsistencies on uncountable spaces. Finite additivity is too weak for continuous probability.
+
+For each $n$, $A_n$ must be finite: otherwise, we could extract a countable subset $\{x_1, x_2, \ldots\} \subseteq A_n$ and $\sigma$-additivity would give $\mathbb{P}(\bigcup_k \{x_k\}) = \sum_k \mathbb{P}(\{x_k\}) \geq \sum_k 1/n = \infty$, contradicting $\mathbb{P}([0,1]) = 1$. But $\bigcup_n A_n = \{x : \mathbb{P}(\{x\}) > 0\}$ is a countable union of finite sets, hence countable. Thus at most countably many singletons can have positive measure.
+
+For $[0,1]$ with uncountably many points, if each singleton had positive measure, some $A_n$ would be infinite---contradiction. Thus $\mathbb{P}(\{x\}) = 0$ for all but countably many $x$. This is why continuous distributions require $\sigma$-additivity: it forces "most" probability mass to spread across intervals rather than accumulate at points.
+
+**RL connection.** This necessity propagates to off-policy evaluation: when actions live in continuous spaces $\mathcal{A} \subseteq \mathbb{R}^d$, we cannot define importance weights as ratios of point masses. Instead, the Radon-Nikodym theorem (Section 2.3) provides density-based weights $\rho(a \mid x) = \pi_1(a \mid x) / \pi_0(a \mid x)$---a direct consequence of $\sigma$-additivity enabling absolute continuity.
 
 
 ---
@@ -167,7 +165,7 @@ $$
 
 **Example 2.2.6** (GMV as a random variable). Let $\Omega$ be the space of all search sessions (rankings, clicks, purchases). Define $\text{GMV}: \Omega \to \mathbb{R}_+$ by summing purchase prices. Then $\text{GMV}$ is a non-negative real-valued random variable.
 
-**Proposition 2.2.1** (Measurability of compositions) {#THM-2.2.1}. If $X: \Omega_1 \to \Omega_2$ is $(\mathcal{F}_1, \mathcal{F}_2)$-measurable and $f: \Omega_2 \to \Omega_3$ is $(\mathcal{F}_2, \mathcal{F}_3)$-measurable, then $f \circ X: \Omega_1 \to \Omega_3$ is $(\mathcal{F}_1, \mathcal{F}_3)$-measurable.
+**Proposition 2.2.1** (Measurability of compositions) {#PROP-2.2.1}. If $X: \Omega_1 \to \Omega_2$ is $(\mathcal{F}_1, \mathcal{F}_2)$-measurable and $f: \Omega_2 \to \Omega_3$ is $(\mathcal{F}_2, \mathcal{F}_3)$-measurable, then $f \circ X: \Omega_1 \to \Omega_3$ is $(\mathcal{F}_1, \mathcal{F}_3)$-measurable.
 
 *Proof.* For $A \in \mathcal{F}_3$,
 $$
@@ -175,9 +173,9 @@ $$
 $$
 Since $f$ is measurable, $f^{-1}(A) \in \mathcal{F}_2$. Since $X$ is measurable, $X^{-1}(f^{-1}(A)) \in \mathcal{F}_1$. $\square$
 
-**Remark 2.2.2** (Inverse-image composition technique). The proof uses the inverse-image composition identity $(f\circ X)^{-1}(A) = X^{-1}(f^{-1}(A))$ and closure of $\sigma$-algebras under inverse images. This "inverse-image trick" will reappear when showing measurability of stopped processes in Section 2.4.
+**Remark 2.2.3** (Inverse-image composition technique). The proof uses the inverse-image composition identity $(f\circ X)^{-1}(A) = X^{-1}(f^{-1}(A))$ and closure of $\sigma$-algebras under inverse images. This "inverse-image trick" will reappear when showing measurability of stopped processes in Section 2.4.
 
-**Remark 2.2.3** (RL preview). In RL, states $S_t$, actions $A_t$, rewards $R_t$ are all random variables on a common probability space $(\Omega, \mathcal{F}, \mathbb{P})$ induced by the policy $\pi$ and environment dynamics. Measurability ensures $\mathbb{P}(R_t > r)$ is well-defined for all thresholds $r$.
+**Remark 2.2.4** (RL preview). In RL, states $S_t$, actions $A_t$, rewards $R_t$ are all random variables on a common probability space $(\Omega, \mathcal{F}, \mathbb{P})$ induced by the policy $\pi$ and environment dynamics. Measurability ensures $\mathbb{P}(R_t > r)$ is well-defined for all thresholds $r$.
 
 ---
 
@@ -241,7 +239,7 @@ $$
 
 **Remark 2.2.7** (Dominated convergence, informal). The **Dominated Convergence Theorem** complements monotone convergence: if $X_n \to X$ almost surely and there exists an integrable random variable $Y$ with $|X_n| \le Y$ for all $n$, then $X$ is integrable and $\mathbb{E}[X_n] \to \mathbb{E}[X]$. Intuitively, a single integrable bound $Y$ prevents “mass from escaping to infinity,” allowing us to interchange limit and expectation. In later chapters this justifies moving gradients or limits inside expectations when rewards or score functions are uniformly bounded.
 
-**Remark 2.2.4** (RL preview: reward expectations). In RL, the value function $V^\pi(s) = \mathbb{E}^\pi[\sum_{t=0}^\infty \gamma^t R_t \mid S_0 = s]$ is an expectation over trajectories. For this to be well-defined, we need $R_t$ to be measurable and integrable. The Monotone Convergence Theorem (THM-2.2.3) allows us to interchange limits and expectations when computing Bellman operator fixed points (Chapter 3).
+**Remark 2.2.8** (RL preview: reward expectations). In RL, the value function $V^\pi(s) = \mathbb{E}^\pi[\sum_{t=0}^\infty \gamma^t R_t \mid S_0 = s]$ is an expectation over trajectories. For this to be well-defined, we need $R_t$ to be measurable and integrable. The Monotone Convergence Theorem [THM-2.2.3] allows us to interchange limits and expectations when computing Bellman operator fixed points (Chapter 3).
 
 ### 2.2.5 Measurable Functions
 
@@ -252,11 +250,19 @@ $$
 f^{-1}(A) := \{x \in E : f(x) \in A\} \in \mathcal{E}.
 $$
 
-**Remark 2.2.4** (Checking measurability via generators). If $\mathcal{F}$ is generated by a collection $\mathcal{G}$ (e.g., open intervals for Borel sets on $\mathbb{R}$), it suffices to check $f^{-1}(G) \in \mathcal{E}$ for all $G \in \mathcal{G}$.
+**Remark 2.2.9** (Checking measurability via generators). If $\mathcal{F}$ is generated by a collection $\mathcal{G}$ (e.g., open intervals for Borel sets on $\mathbb{R}$), it suffices to check $f^{-1}(G) \in \mathcal{E}$ for all $G \in \mathcal{G}$.
 
-**Example 2.2.7** (Real‑valued measurability). For $f: (E, \mathcal{E}) \to (\mathbb{R}, \mathcal{B}(\mathbb{R}))$, measurability is equivalent to $f^{-1}((\! -\! \infty, a)) \in \mathcal{E}$ for all $a \in \mathbb{R}$.
+**Example 2.2.9** (Real‑valued measurability). For $f: (E, \mathcal{E}) \to (\mathbb{R}, \mathcal{B}(\mathbb{R}))$, measurability is equivalent to $f^{-1}((\! -\! \infty, a)) \in \mathcal{E}$ for all $a \in \mathbb{R}$.
 
 This definition justifies the **random variable** definition (2.2.3): a random variable is simply a measurable map from $(\Omega, \mathcal{F})$ into a codomain measurable space.
+
+### 2.2.6 Segment Distributions (Finite Spaces)
+
+**Definition 2.2.6** (Segment distribution) {#DEF-2.2.6}
+
+Let $\mathcal{S}_{\text{seg}} = \{s_1, \ldots, s_K\}$ be a finite set of user segments equipped with the power-set $\sigma$-algebra $2^{\mathcal{S}_{\text{seg}}}$. A **segment distribution** is a probability measure $\mathbb{P}_{\text{seg}}$ on $\mathcal{S}_{\text{seg}}$. Equivalently, it is a probability vector $\mathbf{p}_{\text{seg}} \in \Delta_K$ such that $\mathbb{P}_{\text{seg}}(\{s_i\}) = (\mathbf{p}_{\text{seg}})_i$ and $\sum_{i=1}^K (\mathbf{p}_{\text{seg}})_i = 1$.
+
+**Remark 2.2.10** (Simulator connection). In our simulator, $\mathcal{S}_{\text{seg}}$ is the finite set of segment labels (e.g., `price_hunter`, `premium`), and $\mathbf{p}_{\text{seg}}$ is sampled by `zoosim/world/users.py::sample_user`.
 
 ---
 
@@ -350,11 +356,31 @@ Let $X \in L^1(\Omega, \mathcal{F}, \mathbb{P})$ and $\mathcal{G} \subseteq \mat
 
 *Proof.* This is a deep result from measure theory, proven via the **Radon-Nikodym Theorem** [@folland:real_analysis:1999, Theorem 3.8]. Informally, Radon-Nikodym says that if a (finite) measure $\nu$ is absolutely continuous with respect to another measure $\mathbb{P}$, then there exists an integrable density $h$ such that $\nu(A) = \int_A h \, d\mathbb{P}$ for all $A$; we write $h = d\nu/d\mathbb{P}$. We cite this result and defer the full proof to standard references. The key idea: define a signed measure $\nu(A) = \int_A X \, d\mathbb{P}$ for $A \in \mathcal{G}$. This measure is absolutely continuous with respect to $\mathbb{P}$ restricted to $\mathcal{G}$. The Radon-Nikodym Theorem provides the density $d\nu/d\mathbb{P}$, which is precisely $\mathbb{E}[X \mid \mathcal{G}]$. $\square$
 
-**Remark 2.3.2** (The Radon-Nikodym connection). Conditional expectation is fundamentally a **change of measure** problem. This reappears in off-policy RL (Chapter 9): importance sampling ratios $\rho_t = \pi(a_t \mid s_t) / \mu(a_t \mid s_t)$ are Radon-Nikodym derivatives relating two policies.
+**Remark 2.3.2** (Radon-Nikodym preview). Existence and uniqueness of conditional expectations ultimately rest on the Radon-Nikodym theorem [THM-2.3.4-RN]. The same theorem yields the importance weights used in off-policy evaluation; see [REM-2.3.5].
 
-**Practitioner Note:** In `zoosim`, when we compute `importance_weights` in the IPS estimator (Section 2.6.2), we are numerically approximating this derivative. If the logging policy $\pi_0$ assigns 0 probability to an action that $\pi_1$ wants to take (violating absolute continuity), the derivative explodes to $\infty$. The theory tells us exactly *where* our code will crash or produce garbage variance.
+**Code note:** In `zoosim`, the IPS estimator computes `weights` (the importance-weighted ratios) implementing the Radon-Nikodym weight from [REM-2.3.5]. If overlap fails---i.e., $\pi_0(a \mid x) = 0$ while $\pi_1(a \mid x) > 0$---then the weight is undefined (formally infinite), and estimators based on it are ill-posed; implementations will either error or exhibit uncontrolled variance.
 
-**Remark 2.3.4** (Conditioning on a random variable vs a value). We write $\mathbb{E}[R \mid W]$ for the $\sigma(W)$‑measurable conditional expectation. When evaluating at a value $w$, we use a regular conditional distribution $\mathbb{P}(R \in \cdot \mid W = w)$ (which exists under the standard Borel assumption) and set
+**Theorem 2.3.4** (Radon-Nikodym) {#THM-2.3.4-RN}
+
+Let $\mu$ and $\nu$ be $\sigma$-finite measures on $(\Omega, \mathcal{F})$ with $\nu \ll \mu$ (absolute continuity: $\mu(A) = 0 \Rightarrow \nu(A) = 0$ for all $A \in \mathcal{F}$). Then there exists a non-negative measurable function $f: \Omega \to [0, \infty)$ such that for all $A \in \mathcal{F}$:
+$$
+\nu(A) = \int_A f \, d\mu.
+$$
+The function $f$, unique $\mu$-a.e., is called the **Radon-Nikodym derivative** and written $f = \frac{d\nu}{d\mu}$.
+
+*Proof.* See [@folland:real_analysis:1999, Theorem 3.8]. $\square$
+
+**Remark 2.3.5** (Importance sampling as change of measure) {#REM-2.3.5}. Let $\mu$ and $\nu$ be probability measures on a measurable space $(\mathcal{A}, \mathcal{E})$ with $\nu \ll \mu$. For any $\mu$-integrable function $f$,
+$$
+\int_{\mathcal{A}} f(a)\, \nu(da) = \int_{\mathcal{A}} f(a)\, \frac{d\nu}{d\mu}(a)\, \mu(da).
+$$
+In off-policy evaluation, for each fixed context $x$ we take $\mu(\cdot) := \pi_0(\cdot \mid x)$ (logging policy) and $\nu(\cdot) := \pi_1(\cdot \mid x)$ (evaluation policy). The **importance weight** is the Radon-Nikodym derivative
+$$
+\rho(a \mid x) := \frac{d\pi_1(\cdot \mid x)}{d\pi_0(\cdot \mid x)}(a),
+$$
+which reduces to the ratio $\pi_1(a \mid x)/\pi_0(a \mid x)$ in the finite-action case. Absolute continuity $\pi_1(\cdot \mid x) \ll \pi_0(\cdot \mid x)$ is exactly the overlap condition: if $\pi_1(a \mid x) > 0$ then $\pi_0(a \mid x) > 0$.
+
+**Remark 2.3.6** (Conditioning on a random variable vs a value). We write $\mathbb{E}[R \mid W]$ for the $\sigma(W)$‑measurable conditional expectation. When evaluating at a value $w$, we use a regular conditional distribution $\mathbb{P}(R \in \cdot \mid W = w)$ (which exists under the standard Borel assumption) and set
 $$
 \mathbb{E}[R \mid W = w] := \int r \, d\mathbb{P}(R \in dr \mid W = w).
 $$
@@ -397,8 +423,9 @@ A sequence of random variables $\{X_t\}_{t=0}^\infty$ is **adapted** to filtrati
 
 Let $\{\mathcal{F}_t\}$ be a filtration on $(\Omega, \mathcal{F}, \mathbb{P})$. A random variable $\tau: \Omega \to \mathbb{N} \cup \{\infty\}$ is a **stopping time** if for all $t \in \mathbb{N}$,
 $$
-\{\tau = t\} \in \mathcal{F}_t.
+\{\tau \le t\} \in \mathcal{F}_t.
 $$
+In discrete time this is equivalent to requiring $\{\tau = t\} \in \mathcal{F}_t$ for all $t$.
 
 **Intuition**: The event "we stop at time $t$" is determined by information available **up to and including** time $t$. No future information is used to decide when to stop.
 
@@ -418,29 +445,31 @@ the first position the user does not examine (or $\tau = \infty$ if user examine
 
 **Theorem 2.4.1** (Measurability at a Stopping Time) {#THM-2.4.1}
 
-If $\{X_t\}$ is adapted to $\{\mathcal{F}_t\}$ and $\tau$ is a stopping time, then $X_\tau$ (defined as $X_\tau(\omega) = X_{\tau(\omega)}(\omega)$ when $\tau(\omega) < \infty$) is measurable with respect to $\mathcal{F}_\tau := \{A \in \mathcal{F} : A \cap \{\tau = t\} \in \mathcal{F}_t \text{ for all } t\}$.
+If $\{X_t\}$ is adapted to $\{\mathcal{F}_t\}$ and $\tau$ is a stopping time, then $X_\tau$ (defined as $X_\tau(\omega) = X_{\tau(\omega)}(\omega)$ when $\tau(\omega) < \infty$) is measurable with respect to the stopped $\sigma$-algebra
+$$
+\mathcal{F}_\tau := \{A \in \mathcal{F} : A \cap \{\tau \le t\} \in \mathcal{F}_t \text{ for all } t\}.
+$$
 
 *Proof.*
 
-**Step 1** (Reduce to cylinder events). It suffices to show $\{X_\tau \in B\} \in \mathcal{F}_\tau$ for all Borel $B \subseteq \mathbb{R}$, since $X_\tau$ is real-valued.
+**Step 1** (Reduce to Borel preimages). It suffices to show $\{X_\tau \in B\} \in \mathcal{F}_\tau$ for all Borel $B \subseteq \mathbb{R}$, since $X_\tau$ is real-valued.
 
-**Step 2** (Slice by deterministic times). For each $t \in \mathbb{N}$, define $A_t := \{\tau = t\} \cap \{X_t \in B\}$. Then
+**Step 2** (Verify the defining condition). Fix $t \in \mathbb{N}$. We show $\{X_\tau \in B\} \cap \{\tau \le t\} \in \mathcal{F}_t$. Decompose:
 $$
-\{X_\tau \in B\} = \bigcup_{t=0}^{\infty} A_t,
+\{X_\tau \in B\} \cap \{\tau \le t\}
+= \bigcup_{k=0}^{t} \left(\{\tau = k\} \cap \{X_k \in B\}\right).
 $$
-because on $\{\tau = t\}$ we have $X_\tau = X_t$.
+Indeed, on $\{\tau = k\}$ we have $X_\tau = X_k$, and on $\{\tau \le t\}$ only the indices $k \le t$ contribute.
 
-**Step 3** (Measurability of slices). Since $\tau$ is a stopping time, $\{\tau = t\} \in \mathcal{F}_t$. Adaptation implies $X_t$ is $\mathcal{F}_t$‑measurable, so $\{X_t \in B\} \in \mathcal{F}_t$. Hence $A_t \in \mathcal{F}_t$ for all $t$.
-
-**Step 4** (Definition of $\mathcal{F}_\tau$). By definition, $E \in \mathcal{F}_\tau$ iff $E \cap \{\tau = t\} \in \mathcal{F}_t$ for all $t$. For $E = \{X_\tau \in B\}$ and each $t$:
+**Step 3** (Measurability of each slice). Since $\tau$ is a stopping time, $\{\tau \le k\} \in \mathcal{F}_k$ for each $k$. For $k=0$ we have $\{\tau = 0\} = \{\tau \le 0\} \in \mathcal{F}_0$. For $k \ge 1$,
 $$
-E \cap \{\tau = t\} = \{\tau = t\} \cap \{X_t \in B\} = A_t \in \mathcal{F}_t.
+\{\tau = k\} = \{\tau \le k\} \setminus \{\tau \le k-1\} \in \mathcal{F}_k.
 $$
-Therefore $E \in \mathcal{F}_\tau$.
+By adaptation, $\{X_k \in B\} \in \mathcal{F}_k$. Therefore $\{\tau = k\} \cap \{X_k \in B\} \in \mathcal{F}_k \subseteq \mathcal{F}_t$ for each $k \le t$.
 
-**Step 5** (Conclusion). Since pre‑images of Borel sets under $X_\tau$ lie in $\mathcal{F}_\tau$, $X_\tau$ is $\mathcal{F}_\tau$‑measurable. $\square$
+**Step 4** (Conclusion). The union in Step 2 is finite, hence lies in $\mathcal{F}_t$. Since this holds for all $t$, we have $\{X_\tau \in B\} \in \mathcal{F}_\tau$. $\square$
 
-**Remark 2.4.2** (Stopping‑time measurability technique). The method slices $\{X_\tau \in B\}$ along deterministic times and uses adaptation/stopping‑time properties to establish measurability on each slice. This is the **inverse‑image + partition** technique, mirroring Remark 2.2.2 and Remark 2.3.1.
+**Remark 2.4.2** (Stopping‑time measurability technique). The method slices $\{X_\tau \in B\}$ along deterministic times and uses adaptation/stopping‑time properties to establish measurability on each slice. This is the **inverse‑image + partition** technique, mirroring Remark 2.2.3 and Remark 2.3.1.
 
 **Remark 2.4.1** (RL preview: episodic termination). In RL, episode length is often a stopping time: $\tau = \min\{t : \text{terminal state reached}\}$. The return $G = \sum_{t=0}^{\tau} \gamma^t R_t$ is $\mathcal{F}_\tau$-measurable. For infinite-horizon discounted settings, we need $\tau = \infty$ with probability 1 (continuing tasks).
 
@@ -553,7 +582,7 @@ The **DBN cascade model** specifies:
 
 **Key difference from PBM**: Examination at position $k+1$ depends on outcomes at position $k$ (via $S_k$). This is a **Markov chain** over positions, not independent Bernoullis.
 
-**Proposition 2.5.1** (Marginal examination probability in DBN) {#THM-2.5.1}. Under the DBN model, the probability of examining position $k$ is
+**Proposition 2.5.1** (Marginal examination probability in DBN) {#PROP-2.5.1}. Under the DBN model, the probability of examining position $k$ is
 $$
 \mathbb{P}(E_k = 1) = \prod_{j=1}^{k-1} \left[1 - \text{rel}(p_j) \cdot s(p_j)\right].
 \tag{2.3}
@@ -566,15 +595,15 @@ $$
 
 **Step 2** (Recursive structure): User examines position $k$ if and only if they examined all positions $1, \ldots, k-1$ without being satisfied. By #EQ-2.2, $E_k = 1$ iff $E_{k-1} = 1$ and $S_{k-1} = 0$.
 
-**Step 3** (Probability of not being satisfied): At position $j$, user is satisfied iff $C_j = 1$ and $S_j = 1$. Thus,
+**Step 3** (Probability of satisfaction given examination): Along the cascade, given examination at position $j$, satisfaction occurs iff the user clicks AND is satisfied given the click:
 $$
-\mathbb{P}(S_j = 1) = \mathbb{P}(C_j = 1) \cdot s(p_j) = \text{rel}(p_j) \cdot s(p_j).
+\mathbb{P}(S_j = 1 \mid E_j = 1) = \mathbb{P}(C_j = 1 \mid E_j = 1) \cdot s(p_j) = \text{rel}(p_j) \cdot s(p_j).
 $$
-So $\mathbb{P}(S_j = 0) = 1 - \text{rel}(p_j) \cdot s(p_j)$.
+So $\mathbb{P}(S_j = 0 \mid E_j = 1) = 1 - \text{rel}(p_j) \cdot s(p_j)$.
 
-**Step 4** (Chain rule): Since user must avoid satisfaction at all $j < k$,
+**Step 4** (Chain rule via cascade): Since examination at position $k$ requires not being satisfied at all $j < k$:
 $$
-\mathbb{P}(E_k = 1) = \mathbb{P}(E_1 = 1) \cdot \prod_{j=1}^{k-1} \mathbb{P}(S_j = 0) = \prod_{j=1}^{k-1} \left[1 - \text{rel}(p_j) \cdot s(p_j)\right].
+\mathbb{P}(E_k = 1) = \prod_{j=1}^{k-1} \mathbb{P}(S_j = 0 \mid E_j = 1) = \prod_{j=1}^{k-1} \left[1 - \text{rel}(p_j) \cdot s(p_j)\right].
 $$
 $\square$
 
@@ -586,7 +615,11 @@ $\square$
 
 This is empirically more accurate than PBM's position-only dependence.
 
-**Remark 2.5.3** (Stopping time interpretation). The abandonment position $\tau = \min\{k : S_k = 1\}$ is a stopping time with respect to the filtration $\mathcal{F}_k = \sigma(E_1, C_1, S_1, \ldots, E_k, C_k, S_k)$. This connects to Section 2.4: user behavior is a stopped random process.
+**Remark 2.5.3** (Stopping time interpretation). The stopping position
+$$
+\tau = \min\{k : S_k = 1 \text{ or } k = M\}
+$$
+from Definition 2.5.2 is a stopping time with respect to the filtration $\mathcal{F}_k = \sigma(E_1, C_1, S_1, \ldots, E_k, C_k, S_k)$. This connects to Section 2.4: user behavior is a stopped random process.
 
 ---
 
@@ -605,29 +638,38 @@ This is empirically more accurate than PBM's position-only dependence.
 
 **When to use DBN:** Off-policy evaluation, counterfactual ranking, realistic simulation. More accurate but computationally expensive.
 
-**Chapter 0 connection:** The toy simulator in Chapter 0 used a simplified PBM (fixed examination probabilities $\theta_k$, independent clicks). The production simulator `zoosim` implements a richer **Utility-Based Cascade Model** (§2.5.4) that nests both PBM and DBN as special cases, configurable via `zoosim/core/config.py`. PBM and DBN remain valuable as analytical reference models---their simpler structure enables closed-form analysis that guides intuition for the production model.
+**Chapter 0 connection:** The toy simulator in Chapter 0 used a simplified PBM (fixed examination probabilities $\theta_k$, independent clicks). The production simulator `zoosim` implements a richer **Utility-Based Cascade Model** (§2.5.4), configurable via `zoosim/core/config.py`. This production model reproduces PBM's marginal factorization under a parameter specialization (Proposition 2.5.4) and exhibits cascade-style dependence driven by an internal state, analogous in spirit to DBN.
 
-!!! note "Code ↔ Config (position bias and satisfaction)"
+**Remark 2.5.5** (Limitations relative to the simulator). PBM and DBN are analytically valuable but omit mechanisms that matter in `zoosim/dynamics/behavior.py`:
+
+- **User heterogeneity**: segment-dependent preference parameters (price, private label, category affinities)
+- **Continuous internal state**: a real-valued satisfaction/patience state rather than a binary stop indicator
+- **Purchases and saturation**: purchase events and hard caps (e.g., max purchases) that influence termination
+- **Query-typed position bias**: different position-bias curves by query class, not a single $\{\theta_k\}$
+
+These omissions are benign for closed-form derivations (e.g., #EQ-2.1, #EQ-2.3) but become first-order in production evaluation and simulation.
+
+!!! note "Code <-> Config (position bias and satisfaction)"
     PBM and DBN parameters map to configuration fields:
-    - Examination bias vectors: `zoosim/core/config.py:178` (`BehaviorConfig.pos_bias`)
-    - Satisfaction dynamics weights: `zoosim/core/config.py:165` (`BehaviorConfig`)
-    KG: `MOD-zoosim.behavior`, `CN-ClickModel`.
+    - Examination bias vectors: `BehaviorConfig.pos_bias` in `zoosim/core/config.py:180-186`
+    - Satisfaction dynamics: `BehaviorConfig.satisfaction_gain`, `BehaviorConfig.satisfaction_decay`, `BehaviorConfig.abandonment_threshold`, `BehaviorConfig.post_purchase_fatigue` in `zoosim/core/config.py:175-179`
+    <!-- KG: MOD-zoosim.behavior, CN-ClickModel. -->
 
-!!! note "Code ↔ Behavior (Stopping Times & Satisfaction)"
+!!! note "Code <-> Behavior (Stopping Times & Satisfaction)"
     The abstract stopping time $\tau$ from [DEF-2.4.3] is implemented concretely in the user session loop:
 
     - **Implementation**: `zoosim/dynamics/behavior.py` inside `simulate_session`
     - **The Filtration**: The loop state (current `satisfaction`, `purchase_count`) represents $\mathcal{F}_t$.
     - **The Stopping Rule**:
       ```python
-      # The stopping time τ implementation
+      # The stopping time tau implementation
       if rng.random() > examine_prob: break        # Abandonment (PBM/DBN)
       if satisfaction < abandonment_threshold: break  # Satisfaction termination
       if purchase_count >= purchase_limit: break      # Saturation
       ```
     - **Integration**: The `SessionOutcome` returned is the stopped process $X_\tau$.
 
-    KG: `MOD-zoosim.behavior`, `CN-ClickModel`, `CODE-behavior.simulate_session`.
+    <!-- KG: MOD-zoosim.behavior, CN-ClickModel, CODE-behavior.simulate_session. -->
 
 ---
 
@@ -644,69 +686,69 @@ Let user $u$ have preference parameters $(\theta_{\text{price}}, \theta_{\text{p
 1. **Latent utility at position $k$:**
    $$
    U_k = \alpha_{\text{rel}} \cdot \text{match}(q, p_k) + \alpha_{\text{price}} \cdot \theta_{\text{price}} \cdot \log(1 + \text{price}_k) + \alpha_{\text{pl}} \cdot \theta_{\text{pl}} \cdot \mathbf{1}_{\text{is\_pl}(p_k)} + \alpha_{\text{cat}} \cdot \theta_{\text{cat}}(\text{cat}_k) + \varepsilon_k
-   \tag{2.10}
+   \tag{2.4}
    $$
-   {#EQ-2.10}
+   {#EQ-2.4}
    where $\text{match}(q, p_k) = \cos(\phi_q, \phi_{p_k})$ is semantic similarity (Chapter 5), $\text{cat}_k$ is the category of product $p_k$, and $\varepsilon_k \stackrel{\text{iid}}{\sim} \mathcal{N}(0, \sigma_u^2)$ is utility noise.
 
 2. **Click probability given examination:**
    $$
    \mathbb{P}(C_k = 1 \mid E_k = 1, U_k) = \sigma(U_k) := \frac{1}{1 + e^{-U_k}}
-   \tag{2.11}
+   \tag{2.5}
    $$
-   {#EQ-2.11}
+   {#EQ-2.5}
 
 3. **Examination probability (cascade with satisfaction):**
    $$
    \mathbb{P}(E_k = 1 \mid \mathcal{F}_{k-1}) = \sigma(\text{pos\_bias}_k(q) + \beta_{\text{exam}} \cdot S_{k-1})
-   \tag{2.12}
+   \tag{2.6}
    $$
-   {#EQ-2.12}
+   {#EQ-2.6}
    where $\text{pos\_bias}_k(q)$ depends on query type and position, and $S_{k-1}$ is the running satisfaction state.
 
 4. **Satisfaction dynamics:**
    $$
    S_k = S_{k-1} + \gamma_{\text{gain}} \cdot U_k \cdot C_k - \gamma_{\text{decay}} \cdot (1 - C_k) - \gamma_{\text{fatigue}} \cdot B_k
-   \tag{2.13}
+   \tag{2.7}
    $$
-   {#EQ-2.13}
+   {#EQ-2.7}
    where $B_k \in \{0, 1\}$ indicates purchase at position $k$, and $\gamma_{\text{fatigue}}$ captures post-purchase satiation.
 
 5. **Stopping time:**
    $$
    \tau = \min\{k : E_k = 0 \text{ or } S_k < \theta_{\text{abandon}} \text{ or } \sum_{j \leq k} B_j \geq n_{\max}\}
-   \tag{2.14}
+   \tag{2.8}
    $$
-   {#EQ-2.14}
+   {#EQ-2.8}
    The session terminates at the first position where examination fails, satisfaction drops below threshold, or the purchase limit is reached.
 
 **Why this model?** The Utility-Based Cascade captures three phenomena that pure PBM and DBN miss:
 
-- **User heterogeneity**: Different users have different price sensitivities ($\theta_{\text{price}}$), brand preferences ($\theta_{\text{pl}}$), and category affinities ($\boldsymbol{\theta}_{\text{cat}}$). A premium user clicks expensive items; a price hunter clicks discounts. The utility structure [EQ-2.10] makes this heterogeneity explicit.
+- **User heterogeneity**: Different users have different price sensitivities ($\theta_{\text{price}}$), brand preferences ($\theta_{\text{pl}}$), and category affinities ($\boldsymbol{\theta}_{\text{cat}}$). A premium user clicks expensive items; a price hunter clicks discounts. The utility structure [EQ-2.4] makes this heterogeneity explicit.
 
 - **Satisfaction dynamics**: Unlike DBN's binary satisfaction, our running state $S_k$ accumulates positive utility on clicks and decays on non-clicks. This models realistic shopping fatigue: a user who sees several irrelevant results becomes less likely to continue, even if they haven't yet clicked.
 
 - **Purchase satiation**: The $\gamma_{\text{fatigue}}$ term captures the observation that users who just bought something are less likely to continue browsing. This is economically significant for GMV optimization.
 
-**Proposition 2.5.4** (Nesting Property) {#PROP-2.5.4}
+**Proposition 2.5.4** (Nesting relations) {#PROP-2.5.4}
 
-The Utility-Based Cascade Model recovers PBM exactly and approximates DBN:
+The Utility-Based Cascade Model contains PBM as a parameter specialization (at the level of per-position marginals) and, in general, induces cascade-style dependence through its internal state.
 
-**(a) PBM recovery (exact):** Set $\alpha_{\text{price}} = \alpha_{\text{pl}} = \alpha_{\text{cat}} = 0$, $\sigma_u = 0$, $\beta_{\text{exam}} = 0$, $\gamma_{\text{gain}} = \gamma_{\text{decay}} = 0$, and $\theta_{\text{abandon}} = -\infty$. Then:
+**(a) PBM marginal factorization.** Set $\alpha_{\text{price}} = \alpha_{\text{pl}} = \alpha_{\text{cat}} = 0$, $\sigma_u = 0$, $\beta_{\text{exam}} = 0$, $\gamma_{\text{gain}} = \gamma_{\text{decay}} = \gamma_{\text{fatigue}} = 0$, and $\theta_{\text{abandon}} = -\infty$ with $n_{\max} = \infty$ (no termination from purchases). Then for each position $k$,
 $$
-\mathbb{P}(C_k = 1) = \sigma(\alpha_{\text{rel}} \cdot \text{match}) \cdot \sigma(\text{pos\_bias}_k)
+\mathbb{P}(C_k = 1) = \theta_k \cdot \text{rel}(p_k),
 $$
-which factors as a position-dependent term times a relevance-dependent term---the PBM structure from Definition 2.5.1.
+where $\theta_k := \sigma(\text{pos\_bias}_k(q))$ and $\text{rel}(p_k) := \sigma(\alpha_{\text{rel}}\cdot \text{match}(q,p_k))$. This matches the PBM marginal formula #EQ-2.1 under the above identification.
 
-**(b) DBN recovery (limiting case):** Additionally set $\gamma_{\text{gain}} > 0$, $\gamma_{\text{decay}} > 0$, and $\theta_{\text{abandon}} = 0$. As $\beta_{\text{exam}} \to \infty$, the sigmoid $\sigma(\beta_{\text{exam}} \cdot S_{k-1})$ converges to a step function, recovering DBN's hard cascade logic where examination depends deterministically on previous satisfaction. For finite $\beta_{\text{exam}} \gg 1$, the Utility model provides a **continuous relaxation** of DBN that preserves the qualitative cascade structure while enabling gradient-based optimization.
+**(b) Cascade dependence (DBN-like mechanism).** If $\beta_{\text{exam}} \ne 0$ and the state $S_k$ evolves nontrivially, then the examination probability at position $k$ depends on the past through $S_{k-1}$. In particular, in general the pairs $(E_k, C_k)$ are not independent across positions. The DBN model is a discrete-state, hard-stopping cascade driven by a binary satisfaction variable; Definition 2.5.3 should be viewed as a smooth state-space cascade rather than a distributionally identical reduction.
 
-*Proof sketch.* Part (a): With zeroed preference weights and no satisfaction dynamics, utility reduces to $U_k = \alpha_{\text{rel}} \cdot \text{match}(q, p_k)$ (deterministic). Examination probability becomes $\sigma(\text{pos\_bias}_k)$ (position-only), and click probability given examination is $\sigma(U_k)$. These are independent across positions.
+*Proof.* For (a), under the stated specialization, Definition 2.5.3(3) yields $\mathbb{P}(E_k=1 \mid \mathcal{F}_{k-1})=\sigma(\text{pos\_bias}_k(q))=:\theta_k$, independent of the past. Definition 2.5.3(1) makes $U_k=\alpha_{\text{rel}}\cdot \text{match}(q,p_k)$ deterministic, hence Definition 2.5.3(2) gives $\mathbb{P}(C_k=1\mid E_k=1)=\sigma(U_k)=:\text{rel}(p_k)$. Therefore $\mathbb{P}(C_k=1)=\mathbb{P}(C_k=1\mid E_k=1)\mathbb{P}(E_k=1)=\theta_k\,\text{rel}(p_k)$.
 
-Part (b): With active satisfaction dynamics, the examination probability $\sigma(\text{pos\_bias}_k + \beta_{\text{exam}} \cdot S_{k-1})$ depends on $S_{k-1}$, which in turn depends on clicks at positions $1, \ldots, k-1$. This creates the cascade dependence structure. The key difference from DBN is that our model uses soft sigmoids rather than hard binary decisions ($S_k \in \{0,1\}$). In the limit $\beta_{\text{exam}} \to \infty$, the sigmoid sharpens to a step function, recovering DBN's deterministic continuation rule. $\square$
+For (b), Definition 2.5.3(4) implies $S_{k-1}$ is $\mathcal{F}_{k-1}$-measurable and depends on prior clicks/purchases. By Definition 2.5.3(3), $\mathbb{P}(E_k=1\mid \mathcal{F}_{k-1})$ depends on $S_{k-1}$, hence on past outcomes, which induces dependence across positions. $\square$
 
 **Proposition 2.5.5** (Stopping Time Validity) {#PROP-2.5.5}
 
-The stopping time $\tau$ from [EQ-2.14] is a valid stopping time with respect to the natural filtration $\mathcal{F}_k = \sigma(E_1, C_1, B_1, S_1, \ldots, E_k, C_k, B_k, S_k)$.
+The stopping time $\tau$ from [EQ-2.8] is a valid stopping time with respect to the natural filtration $\mathcal{F}_k = \sigma(E_1, C_1, B_1, S_1, \ldots, E_k, C_k, B_k, S_k)$.
 
 *Proof.* We verify that $\{\tau \leq k\} \in \mathcal{F}_k$ for all $k \geq 1$. The event $\{\tau \leq k\}$ is the union:
 $$
@@ -717,7 +759,7 @@ Each component event at position $j \leq k$ is determined by $(E_1, \ldots, E_j,
 
 **Remark 2.5.4** (Why this proof matters). The stopping time validity ensures that the session outcome $X_\tau = (C_1, \ldots, C_\tau, B_1, \ldots, B_\tau)$ is a well-defined random variable on the underlying probability space. This is essential for defining rewards (Chapter 1) and value functions (Chapter 3) rigorously. Without this guarantee, the "GMV of a session" would be mathematically undefined.
 
-!!! note "Code ↔ Theory (Complete Mapping for Utility-Based Cascade)"
+!!! note "Code <-> Theory (Complete Mapping for Utility-Based Cascade)"
     Every term in Definition 2.5.3 maps directly to `BehaviorConfig` and `behavior.py`:
 
     | Theory Symbol | Code Reference | Default Value |
@@ -737,7 +779,7 @@ Each component event at position $j \leq k$ is determined by $(E_1, \ldots, E_j,
 
     **Implementation location**: `zoosim/dynamics/behavior.py:67-118` (`simulate_session` function).
 
-    KG: `DEF-2.5.3`, `PROP-2.5.4`, `PROP-2.5.5`, `MOD-zoosim.behavior`, `CODE-behavior.simulate_session`.
+    <!-- KG: DEF-2.5.3, PROP-2.5.4, PROP-2.5.5, MOD-zoosim.behavior, CODE-behavior.simulate_session. -->
 
 We have now formalized three click models with increasing realism: PBM (§2.5.1) for analytical tractability, DBN (§2.5.2) for cascade dynamics, and the Utility-Based Cascade (§2.5.4) for production simulation. The nesting property (Proposition 2.5.4) ensures that insights from the simpler models transfer to the richer one. Next, we turn to off-policy evaluation, where all three models serve as the outcome distribution $P(\cdot \mid x, a)$ in importance sampling.
 
@@ -746,6 +788,8 @@ We have now formalized three click models with increasing realism: PBM (§2.5.1)
 ## 2.6 Unbiased Estimation via Propensity Scoring
 
 A central challenge in RL for search: we observe clicks under a **logging policy** (current production ranking), but want to evaluate a **new policy** (candidate ranking) without deploying it. This requires **off-policy evaluation (OPE)** via **propensity scoring**.
+
+Throughout this section, we write contexts as $x \sim \mathcal{D}$ for a distribution $\mathcal{D}$ on $\mathcal{X}$, propensities as $\pi_0(a \mid x)$ and $\pi_1(a \mid x)$, and we reserve $\rho$ for importance weights (Radon-Nikodym derivatives) as in [REM-2.3.5].
 
 ### 2.6.1 The Counterfactual Evaluation Problem
 
@@ -771,46 +815,44 @@ For all $(x, a) \in \mathcal{X} \times \mathcal{A}$:
 
 1. **Measurability**: $R(x, a, \omega)$ is measurable as a function of $\omega$.
 2. **Integrability**: $\mathbb{E}[|R(x, a, \omega)|] < \infty$ (finite first moment).
-3. **Absolute continuity (coverage)**: The outcome kernel $P(\cdot \mid x, a)$ is absolutely continuous with respect to some reference measure $\mu$ on $\Omega$. Equivalently, if the evaluation policy $\pi_{\text{eval}}$ assigns positive probability to action $a$ in context $x$, then the logging policy $\pi_{\text{log}}$ must also assign positive probability: $\pi_{\text{eval}}(a \mid x) > 0 \Rightarrow \pi_{\text{log}}(a \mid x) > 0$.
+3. **Overlap (policy absolute continuity)**: For each context $x$, the evaluation policy $\pi_1(\cdot \mid x)$ is absolutely continuous with respect to the logging policy $\pi_0(\cdot \mid x)$, written $\pi_1(\cdot \mid x) \ll \pi_0(\cdot \mid x)$. In the finite-action case this is the support condition $\pi_1(a \mid x) > 0 \Rightarrow \pi_0(a \mid x) > 0$.
 
-Conditions (1)–(2) ensure $Q(x,a) := \mathbb{E}[R(x,a,\omega) \mid x,a]$ is a well-defined finite Lebesgue integral. Condition (3) is the **coverage** or **overlap** assumption: it guarantees that likelihood ratios $dP(\cdot\mid x,a') / dP(\cdot\mid x,a)$ exist whenever we reweight from the logging policy to the evaluation policy, preventing division by zero in importance weights.
+Conditions (1)–(2) ensure $Q(x,a) := \mathbb{E}[R(x,a,\omega) \mid x,a]$ is a well-defined finite expectation. Condition (3) is the **coverage** or **overlap** assumption: it guarantees that the importance weight is well-defined. In the finite-action case this weight is the ratio $\pi_1(a \mid x)/\pi_0(a \mid x)$ in [EQ-2.9]; in general it is the Radon–Nikodym derivative $d\pi_1(\cdot\mid x)/d\pi_0(\cdot\mid x)$.
 
-> **Remark 2.6.1a (Why absolute continuity?).**
-> Off-policy evaluation requires reweighting logged data: we estimate the value of a new policy $\pi_{\text{eval}}$ using data collected under a different policy $\pi_{\text{log}}$. Conceptually, we divide "probabilities under $\pi_{\text{eval}}$" by "probabilities under $\pi_{\text{log}}$." Absolute continuity formalizes "the denominator is never zero where the numerator is positive," ensuring these ratios are well-defined. The Radon–Nikodym theorem (§2.3) provides the measure-theoretic machinery for this reweighting.
+> **Remark 2.6.1a (Why overlap?).**
+> Off-policy evaluation reweights logged actions: we estimate the value of $\pi_1$ using data collected under $\pi_0$. In the finite-action case, IPS uses the ratio $\pi_1(a \mid x)/\pi_0(a \mid x)$. For general action spaces, this ratio is replaced by the Radon–Nikodym derivative $d\pi_1(\cdot\mid x)/d\pi_0(\cdot\mid x)$. The overlap condition $\pi_1(\cdot \mid x) \ll \pi_0(\cdot \mid x)$ is exactly what guarantees that this derivative exists.
 
 > **Remark 2.6.1b (Verification for our setting).**
-> In the search ranking simulator (Chapters 4–5), condition (1) holds because rewards aggregate measurable click outcomes; condition (2) holds because rewards are bounded (GMV, CM2, and click indicators are all bounded functions of product prices and scores); condition (3) requires the logging policy to have sufficient **exploration**—e.g., an $\varepsilon$-greedy policy with $\varepsilon > 0$ ensures all actions have positive probability, satisfying coverage.
+> In the search ranking simulator (Chapters 4--5): condition (1) holds because rewards aggregate measurable click outcomes; condition (2) holds because rewards have **finite first moments**---prices are lognormal (finite moments), purchases per session are bounded by `BehaviorConfig.max_purchases`, and click counts are bounded by `top_k`; condition (3) requires sufficient **exploration** in the logging policy---e.g., an $\varepsilon$-greedy policy with $\varepsilon > 0$ ensures all actions have positive probability, satisfying coverage.
 
 ---
 
 **Definition 2.6.1** (Propensity Score) {#DEF-2.6.1}
 
 Let $\pi_0$ be a stochastic logging policy that produces ranking $a \in \mathcal{A}$ for context $x$ with probability $\pi_0(a \mid x)$. The **propensity score** of action (ranking) $a$ in context $x$ is
-$$
-\rho(x, a) := \pi_0(a \mid x).
-$$
+the conditional probability $\pi_0(a \mid x)$.
 
 **Definition 2.6.2** (Inverse Propensity Scoring Estimator) {#DEF-2.6.2}
 
 Let $(x_1, a_1, r_1), \ldots, (x_N, a_N, r_N)$ be logged data collected under policy $\pi_0$, where $a_i \sim \pi_0(\cdot \mid x_i)$ and $r_i = R(x_i, a_i, \omega_i)$ is the observed reward. The **IPS estimator** for the expected reward under new policy $\pi_1$ is
 $$
 \hat{V}_{\text{IPS}}(\pi_1) := \frac{1}{N} \sum_{i=1}^N \frac{\pi_1(a_i \mid x_i)}{\pi_0(a_i \mid x_i)} r_i.
-\tag{2.4}
+\tag{2.9}
 $$
-{#EQ-2.4}
+{#EQ-2.9}
 
 **Theorem 2.6.1** (Unbiasedness of IPS) {#THM-2.6.1}
 
 Under Assumption 2.6.1 (OPE Probability Conditions) and assuming **correct logging** (observed actions $a_i$ are sampled from $\pi_0(\cdot \mid x_i)$), the IPS estimator is **unbiased**:
 $$
-\mathbb{E}[\hat{V}_{\text{IPS}}(\pi_1)] = V(\pi_1) := \mathbb{E}_{x \sim \rho, a \sim \pi_1(\cdot \mid x)}[R(x, a)].
+\mathbb{E}[\hat{V}_{\text{IPS}}(\pi_1)] = V(\pi_1) := \mathbb{E}_{x \sim \mathcal{D}, a \sim \pi_1(\cdot \mid x)}[R(x, a)].
 $$
 
 *Proof.*
 
-**Step 1** (Expand expectation over data and outcomes): The expectation is over contexts $x_i \sim \rho$, actions $a_i \sim \pi_0(\cdot \mid x_i)$, and outcomes $\omega$ drawn from the environment:
+**Step 1** (Expand expectation over data and outcomes): The expectation is over contexts $x_i \sim \mathcal{D}$, actions $a_i \sim \pi_0(\cdot \mid x_i)$, and outcomes $\omega$ drawn from the environment:
 $$
-\mathbb{E}[\hat{V}_{\text{IPS}}(\pi_1)] = \mathbb{E}_{x \sim \rho}\left[\mathbb{E}_{a \sim \pi_0(\cdot \mid x)}\left[\mathbb{E}_{\omega}\left[\frac{\pi_1(a \mid x)}{\pi_0(a \mid x)} R(x, a, \omega)\mid x,a\right]\right]\right].
+\mathbb{E}[\hat{V}_{\text{IPS}}(\pi_1)] = \mathbb{E}_{x \sim \mathcal{D}}\left[\mathbb{E}_{a \sim \pi_0(\cdot \mid x)}\left[\mathbb{E}_{\omega}\left[\frac{\pi_1(a \mid x)}{\pi_0(a \mid x)} R(x, a, \omega)\mid x,a\right]\right]\right].
 $$
 Since the importance ratio depends only on $(x,a)$, we can take it outside the inner expectation and define the conditional mean reward $\mu(x,a) := \mathbb{E}_{\omega}[R(x,a,\omega) \mid x,a]$. For brevity, write $R(x,a) := \mu(x,a)$ in the steps below.
 
@@ -826,15 +868,15 @@ $$
 
 **Step 4** (Substitute into outer expectation):
 $$
-\mathbb{E}[\hat{V}_{\text{IPS}}(\pi_1)] = \mathbb{E}_{x \sim \rho}\left[\mathbb{E}_{a \sim \pi_1(\cdot \mid x)}[R(x, a)]\right] = V(\pi_1).
+\mathbb{E}[\hat{V}_{\text{IPS}}(\pi_1)] = \mathbb{E}_{x \sim \mathcal{D}}\left[\mathbb{E}_{a \sim \pi_1(\cdot \mid x)}[R(x, a)]\right] = V(\pi_1).
 $$
 $\square$
 
-**Remark 2.6.1** (The importance sampling mechanism). This proof uses the **importance sampling technique**: reweight samples from distribution $\pi_0$ to estimate expectations under $\pi_1$. In the finite‑action case, fix a context $x$ and view $\mu(a) := \pi_0(a \mid x)$ and $\nu(a) := \pi_1(a \mid x)$ as probability mass functions on $\mathcal{A}$. The Radon–Nikodym derivative $d\nu/d\mu$ is just the pointwise ratio $w(a) = \nu(a)/\mu(a)$ on actions with $\mu(a) > 0$, and IPS computes
+**Remark 2.6.1** (Importance sampling mechanism). This proof is a finite-action instantiation of the Radon-Nikodym identity in [REM-2.3.5]. For each fixed context $x$, define $\mu(a) := \pi_0(a \mid x)$ and $\nu(a) := \pi_1(a \mid x)$ on $\mathcal{A}$. The weight $\rho(a \mid x) = d\nu/d\mu$ satisfies
 $$
-\sum_a w(a) R(x,a)\,\mu(a) = \sum_a R(x,a)\,\nu(a),
+\sum_{a \in \mathcal{A}} \rho(a \mid x)\, R(x,a)\, \mu(a) = \sum_{a \in \mathcal{A}} R(x,a)\, \nu(a),
 $$
-that is, the expectation of $R$ under $\nu$ via a **change of measure** from $\mu$ to $\nu$. In full measure‑theoretic notation, $V(\pi_1)=\int R \, d(\rho\times\pi_1)$ and IPS implements the same mechanism using the Radon–Nikodym derivative $d(\rho\times\pi_1)/d(\rho\times\pi_0) = d\pi_1/d\pi_0$, so that $d(\rho\times\pi_1) = (d\pi_1/d\pi_0)\, d(\rho\times\pi_0)$. For the topological and measurability assumptions that guarantee these derivatives and conditional expectations behave well, see the “Background: Standard Borel and Polish Spaces” box in §2.2.
+which is exactly the algebra used in Steps 2-3.
 
 **Remark 2.6.2** (High variance caveat). While IPS is unbiased, it has **high variance** when $\pi_1$ and $\pi_0$ differ substantially (i.e., when $\pi_1(a \mid x)/\pi_0(a \mid x)$ is large for some $(x, a)$). This is the **curse of importance sampling**. Chapter 9 introduces variance-reduction techniques: **capping**, **doubly robust estimation**, and **SWITCH estimators**.
 
@@ -843,20 +885,20 @@ that is, the expectation of $R$ under $\nu$ via a **change of measure** from $\m
 For a cap $c > 0$, the **clipped IPS** estimator is
 $$
 \hat{V}_{\text{clip}}(\pi_1) := \frac{1}{N} \sum_{i=1}^N \min\Big\{c, \; \frac{\pi_1(a_i \mid x_i)}{\pi_0(a_i \mid x_i)}\Big\} r_i.
-\tag{2.7}
+\tag{2.10}
 $$
-{#EQ-2.7}
+{#EQ-2.10}
 
 **Definition 2.6.4** (Self‑normalized IPS, SNIPS) {#DEF-2.6.4}
 
 The **SNIPS** estimator normalizes by the sum of weights:
 $$
 \hat{V}_{\text{SNIPS}}(\pi_1) := \frac{\sum_{i=1}^N \frac{\pi_1(a_i \mid x_i)}{\pi_0(a_i \mid x_i)} r_i}{\sum_{i=1}^N \frac{\pi_1(a_i \mid x_i)}{\pi_0(a_i \mid x_i)}}.
-\tag{2.8}
+\tag{2.11}
 $$
-{#EQ-2.8}
+{#EQ-2.11}
 
-**Remark 2.6.5** (SNIPS properties). SNIPS reduces variance but loses unbiasedness; under mild regularity it is consistent as $N \to \infty$. Clipped IPS [EQ-2.7] trades bias for variance: for nonnegative rewards, clipping induces **negative bias** (the estimator systematically underestimates). Formal bias and consistency results, along with numerical experiments illustrating the bias--variance trade-off, live in **Chapter 9** (Off-Policy Evaluation), specifically [PROP-9.6.1] and Lab 9.5.
+**Remark 2.6.5** (SNIPS properties). SNIPS reduces variance but loses unbiasedness; under mild regularity it is consistent as $N \to \infty$. Clipped IPS [EQ-2.10] trades bias for variance: for nonnegative rewards, clipping induces **negative bias** (the estimator systematically underestimates). Formal bias and consistency results, along with numerical experiments illustrating the bias--variance trade-off, live in **Chapter 9** (Off-Policy Evaluation), specifically [PROP-9.6.1] and Lab 9.5.
 
 ---
 
@@ -864,23 +906,23 @@ $$
 
 For search ranking, the action space $\mathcal{A}$ consists of **permutations** of $M$ products: $|\mathcal{A}| = M!$. Computing exact propensities $\pi_0(a \mid x)$ for full rankings is intractable when $M$ is large (e.g., $M=50 \Rightarrow 50! \approx 10^{64}$ rankings).
 
-**Position-based approximation** (Plackett-Luce model): If policy $\pi$ ranks products by scores $s_\pi(p \mid x)$, approximate the ranking distribution via sequential sampling. Let $R_k$ be the set of remaining items after positions $1,\ldots,k-1$ have been chosen: $R_k := \{p : p \notin \{p_1,\ldots,p_{k-1}\}\}$. Then
+**Position-based approximation** (Plackett–Luce model): Let $w_\pi(p \mid x) > 0$ be a positive weight for product $p$ under policy $\pi$ in context $x$ (for a real-valued score $s_\pi(p \mid x)$, a standard choice is $w_\pi(p \mid x) = \exp(s_\pi(p \mid x))$). Approximate the ranking distribution via sequential sampling. Let $R_k$ be the set of remaining items after positions $1,\ldots,k-1$ have been chosen: $R_k := \{p : p \notin \{p_1,\ldots,p_{k-1}\}\}$. Then
 $$
-\pi(p_k \mid x, p_1, \ldots, p_{k-1}) = \frac{s_\pi(p_k \mid x)}{\sum_{p \in R_k} s_\pi(p \mid x)}.
-\tag{2.5}
+\pi(p_k \mid x, p_1, \ldots, p_{k-1}) = \frac{w_\pi(p_k \mid x)}{\sum_{p \in R_k} w_\pi(p \mid x)}.
+\tag{2.12}
 $$
-{#EQ-2.5}
+{#EQ-2.12}
 
 This gives propensity for full ranking $a = (p_1, \ldots, p_M)$:
 $$
-\pi(a \mid x) = \prod_{k=1}^M \frac{s_\pi(p_k \mid x)}{\sum_{p \in R_k} s_\pi(p \mid x)}.
-\tag{2.6}
+\pi(a \mid x) = \prod_{k=1}^M \frac{w_\pi(p_k \mid x)}{\sum_{p \in R_k} w_\pi(p \mid x)}.
+\tag{2.13}
 $$
-{#EQ-2.6}
+{#EQ-2.13}
 
 **Practical simplification (top-$K$ propensity):** Only reweight top $K$ positions (e.g., $K=5$), treating lower positions as fixed:
 $$
-\rho_{\text{top-}K}(x, a) = \prod_{k=1}^K \frac{s_{\pi_0}(p_k \mid x)}{\sum_{j=k}^M s_{\pi_0}(p_j \mid x)}.
+\pi_0^{(K)}(a \mid x) := \prod_{k=1}^K \frac{w_{\pi_0}(p_k \mid x)}{\sum_{j=k}^M w_{\pi_0}(p_j \mid x)}.
 $$
 
 This reduces computational cost while retaining most signal (users rarely examine beyond position 5–10).
@@ -902,9 +944,9 @@ The **item‑position factorization** that uses per‑position marginals yields
 $$
 \tilde{w}(A,B) = \frac{\pi(A@1)}{\mu(A@1)} \cdot \frac{\pi(B@2)}{\mu(B@2)} = \frac{1/3}{2/3} \cdot \frac{1/3}{2/3} = \tfrac{1}{4},\quad \tilde{w}(B,A) = \frac{2/3}{1/3} \cdot \frac{2/3}{1/3} = 4.
 $$
-Hence $\mathbb{E}_\mu[\tilde{w} R] = \tfrac{2}{3} \cdot \tfrac{1}{4} \cdot 1 + \tfrac{1}{3} \cdot 4 \cdot 0 = \tfrac{1}{6} \ne V(\pi) = \tfrac{1}{3}$. The factorization produces **biased IPS** because item‑position marginals ignore the correlation structure of full rankings. List‑level propensities (product of conditionals, #EQ‑2.6) avoid this pitfall.
+Hence $\mathbb{E}_\mu[\tilde{w} R] = \tfrac{2}{3} \cdot \tfrac{1}{4} \cdot 1 + \tfrac{1}{3} \cdot 4 \cdot 0 = \tfrac{1}{6} \ne V(\pi) = \tfrac{1}{3}$. The factorization produces **biased IPS** because item‑position marginals ignore the correlation structure of full rankings. List‑level propensities (product of conditionals, #EQ-2.13) avoid this pitfall.
 
-**Remark 2.6.3** (Chapter 9 preview). Off-policy evaluation in production search systems uses **clipped IPS**, **doubly robust estimators**, or **learned propensities** from logged data. The full treatment lives in Chapter 9 (Off-Policy Evaluation), with implementation in `evaluation/ope.py`.
+**Remark 2.6.3** (Chapter 9 preview). Off-policy evaluation in production search systems uses **clipped IPS**, **doubly robust estimators**, or **learned propensities** from logged data. The full treatment lives in Chapter 9 (Off-Policy Evaluation), with implementation in `zoosim/evaluation/ope.py`.
 
 ---
 
@@ -914,7 +956,7 @@ We verify the theory numerically using simple Python experiments.
 
 ### 2.7.1 Simulating PBM and DBN Click Models
 
-Let's generate synthetic click data under PBM and DBN models and verify that marginal probabilities match theoretical predictions.
+We generate synthetic click data under PBM and DBN models and verify that marginal probabilities match theoretical predictions.
 
 ```python
 import numpy as np
@@ -1052,7 +1094,7 @@ print(f"Satisfaction: {satisfaction}")
 # Simulate
 E_dbn, C_dbn, S_dbn, tau_dbn = simulate_dbn(relevance, satisfaction, n_sessions=50000)
 
-# Verify examination probabilities match Proposition 2.5.1 (EQ-2.3)
+# Verify examination probabilities match Proposition 2.5.1 [EQ-2.3]
 def theoretical_exam_dbn(relevance, satisfaction, k):
     """Compute P(E_k = 1) using Proposition 2.5.1."""
     if k == 0:
@@ -1106,7 +1148,7 @@ This confirms Definitions 2.5.1 (PBM) and 2.5.2 (DBN), and Proposition 2.5.1 (DB
 
 ### 2.7.2 Verifying IPS Unbiasedness
 
-Let's simulate off-policy evaluation: collect data under logging policy $\pi_0$, estimate performance of new policy $\pi_1$ using IPS, and verify unbiasedness.
+We simulate off-policy evaluation: collect data under logging policy $\pi_0$, estimate performance of new policy $\pi_1$ using IPS, and verify unbiasedness.
 
 ```python
 # ============================================================================
@@ -1153,7 +1195,7 @@ def simulate_context_bandit(
         w = pi_tgt_probs[a] / pi_log_probs[a]
         importance_weights.append(w)
 
-    # IPS estimator (EQ-2.4)
+    # IPS estimator [EQ-2.9]
     ips_estimate = np.mean(np.array(logged_rewards) * np.array(importance_weights))
 
     # Naive estimator (biased)
@@ -1243,18 +1285,18 @@ print(f"  Biased? {'PASS (expected)' if abs(naive_mean - true_value) > 0.05 else
 ```
 
 **Key results:**
-1. **IPS is unbiased**: Mean IPS estimate ≈ true value (bias < 0.01), confirming Theorem 2.6.1
+1. **IPS is unbiased**: Mean IPS estimate $\approx$ true value (bias < 0.01), confirming Theorem 2.6.1
 2. **Naive estimator is biased**: Underestimates target policy value by ~30% (logging policy is uniform, target is greedy)
 3. **Variance tradeoff**: IPS has higher variance (std = 0.087) than naive (std = 0.018) due to importance weights
 
 This validates the theoretical unbiasedness result while illustrating the **bias-variance tradeoff**: IPS removes bias at the cost of increased variance.
 
-!!! note "Code ↔ Env/Reward (session step and aggregation)"
+!!! note "Code <-> Env/Reward (session step and aggregation)"
     The end‑to‑end simulator routes theory to code:
-    - Env step calls behavior: `zoosim/envs/search_env.py:52` (`behavior.simulate_session`)
-    - Reward aggregation per #EQ‑1.2: `zoosim/dynamics/reward.py:50`
-    - Env returns ranking, clicks, buys: `zoosim/envs/search_env.py:69`
-    KG: `MOD-zoosim.env`, `MOD-zoosim.reward`, `EQ-1.2`.
+    - Env step calls behavior: `zoosim/envs/search_env.py:93-100` (`behavior.simulate_session`)
+    - Reward aggregation per #EQ-1.2: `zoosim/dynamics/reward.py:60-65`
+    - Env returns ranking, clicks, buys: `zoosim/envs/search_env.py:113-120`
+    <!-- KG: MOD-zoosim.env, MOD-zoosim.reward, EQ-1.2. -->
 
 ---
 
@@ -1303,9 +1345,9 @@ for g in range(2):
 
 The numerical experiment confirms the Tower Property: averaging the conditional expectation $\mathbb{E}[Z\mid \mathcal{H}]$ over the coarser $\mathcal{G}$ equals $\mathbb{E}[Z\mid \mathcal{G}]$.
 
-!!! note "Code ↔ Theory (Tower Property)"
+!!! note "Code <-> Theory (Tower Property)"
     This numerical check verifies [THM-2.3.2] (Tower Property) by constructing nested $\sigma$‑algebras via parity (\#groups=2) and mod‑4 (\#groups=4) partitions and confirming $\mathbb{E}[\mathbb{E}[Z\mid \mathcal{H}]\mid \mathcal{G}] = \mathbb{E}[Z\mid \mathcal{G}]$.
-    KG: `THM-2.3.2`.
+    <!-- KG: THM-2.3.2. -->
 
 ---
 
@@ -1317,22 +1359,46 @@ Before diving into MDPs, we establish a key integrability result that ensures re
 
 **Proposition 2.8.1** (Score Integrability) {#PROP-2.8.1}
 
-Under the standard Borel assumptions (see §2.1 assumptions box), the base relevance score function $s: \mathcal{Q} \times \mathcal{P} \to [0, 1]$ satisfies:
+Under the standard Borel assumptions (see §2.1 assumptions box), the base relevance score function $s: \mathcal{Q} \times \mathcal{P} \to \mathbb{R}$ satisfies:
 
-1. **Boundedness**: $s(q, p) \in [0, 1]$ for all query-product pairs $(q, p) \in \mathcal{Q} \times \mathcal{P}$
-2. **Measurability**: $s$ is $(\mathcal{B}(\mathcal{Q}) \otimes \mathcal{B}(\mathcal{P}), \mathcal{B}([0,1]))$-measurable
-3. **Integrability**: For any probability measure $\mu$ on $\mathcal{Q} \times \mathcal{P}$,
-   $$
-   \mathbb{E}_{(Q,P) \sim \mu}[s(Q, P)] \leq 1 < \infty.
-   $$
+1. **Measurability**: $s$ is $(\mathcal{B}(\mathcal{Q}) \otimes \mathcal{B}(\mathcal{P}), \mathcal{B}(\mathbb{R}))$-measurable
+2. **Square-integrability**: Under the simulator-induced distribution, $s \in L^2$
 
-*Proof sketch.* Boundedness holds by construction of the relevance scoring function (cosine similarity is normalized to $[0,1]$). Measurability follows from continuity of the score function on Polish spaces (Borel measurable). Integrability is immediate from boundedness. $\square$
+*Proof.*
 
-**Consequence for OPE (Theorem 2.6.1):** The integrability assumption in Theorem 2.6.1 is satisfied whenever rewards are bounded functions of bounded scores. Since $R(x, a, \omega)$ aggregates GMV, CM2, and clicks—all bounded when prices and scores are bounded—the IPS estimator is well-defined.
+**Step 1** (Score decomposition). The simulator's relevance score decomposes as
+$$
+s(q, p) = s_{\text{sem}}(q, p) + s_{\text{lex}}(q, p) + \varepsilon,
+$$
+where $s_{\text{sem}}$ is the cosine similarity between query and product embeddings, $s_{\text{lex}} = \log(1 + \text{overlap}(q, p))$ is the lexical overlap component, and $\varepsilon \sim \mathcal{N}(0, \sigma^2)$ is independent observation noise.
 
-!!! note "Code ↔ Theory (Score Boundedness Verification)"
-    Lab 2.2 verifies Proposition 2.8.1 empirically by computing score statistics over thousands of query-product pairs. The implementation in `zoosim/ranking/relevance.py` enforces $s \in [0, 1]$ via cosine similarity normalization.
-    KG: `PROP-2.8.1`, `LAB-2.2`.
+**Step 2** (Measurability). The cosine similarity $s_{\text{sem}}: \mathbb{R}^d \times \mathbb{R}^d \to [-1, 1]$ is continuous (hence Borel measurable) away from the origin. The logarithm $\log: (0, \infty) \to \mathbb{R}$ is continuous. Compositions and sums of Borel-measurable functions are Borel measurable ([@folland:real_analysis:1999, Proposition 2.6]). The noise $\varepsilon$ is measurable as a random variable by construction. Thus $s$ is $(\mathcal{B}(\mathcal{Q}) \otimes \mathcal{B}(\mathcal{P}) \otimes \mathcal{B}(\mathbb{R}), \mathcal{B}(\mathbb{R}))$-measurable.
+
+**Step 3** (Finite second moments). We verify each component:
+
+- *Semantic component*: $|s_{\text{sem}}(q, p)| \leq 1$, so $s_{\text{sem}}^2 \leq 1$.
+- *Lexical component*: The overlap count is bounded by token-set sizes: $\text{overlap}(q, p) \leq \min(|q|, |p|) \leq M$ where $M$ is the maximum query/product token count in the simulator. Thus $s_{\text{lex}}^2 \leq (\log(1 + M))^2 < \infty$.
+- *Noise component*: $\mathbb{E}[\varepsilon^2] = \sigma^2 < \infty$ by assumption.
+
+**Step 4** (Square-integrability of sum). By independence of $\varepsilon$ from $(q, p)$ and the elementary inequality $(a + b + c)^2 \leq 3(a^2 + b^2 + c^2)$,
+$$
+\mathbb{E}[s(Q, P)^2] \leq 3\bigl(\mathbb{E}[s_{\text{sem}}^2] + \mathbb{E}[s_{\text{lex}}^2] + \mathbb{E}[\varepsilon^2]\bigr) \leq 3\bigl(1 + (\log(1+M))^2 + \sigma^2\bigr) < \infty.
+$$
+Thus $s \in L^2$ under the simulator-induced distribution. $\square$
+
+**Remark 2.8.1a** (Boundedness not required). The OPE machinery (Theorem 2.6.1) requires only integrability, not boundedness. Our scores are square-integrable but **not** bounded to $[0, 1]$---the Gaussian noise component is unbounded. This is typical of realistic relevance models where measurement noise and model uncertainty introduce unbounded perturbations.
+
+**Consequence for OPE (Theorem 2.6.1):** The integrability assumption in Theorem 2.6.1 is satisfied when rewards have **finite first moments**. Since $R(x, a, \omega)$ aggregates GMV (lognormal prices with finite moments), CM2 (bounded margin rates), and clicks (bounded by `top_k`)---all with finite expectations---the IPS estimator is well-defined.
+
+!!! note "Code <-> Theory (Score Distribution)"
+    Lab 2.2 verifies Proposition 2.8.1 empirically. The implementation in `zoosim/ranking/relevance.py` combines:
+
+    - Cosine similarity (bounded $[-1,1]$)
+    - Lexical overlap $\log(1+\text{overlap})$ (bounded by token-set sizes)
+    - Gaussian noise (unbounded but integrable)
+
+    Scores are NOT constrained to $[0,1]$; empirically they cluster near 0 with std $\sim 0.2$.
+    <!-- KG: PROP-2.8.1, LAB-2.2. -->
 
 ---
 
@@ -1343,8 +1409,8 @@ Under the standard Borel assumptions (see §2.1 assumptions box), the base relev
 **Definition 2.8.1** (MDP, informal preview). An MDP is a tuple $(\mathcal{S}, \mathcal{A}, P, R, \gamma)$ where:
 - $\mathcal{S}$: State space (measurable space)
 - $\mathcal{A}$: Action space (measurable space)
-- $P: \mathcal{S} \times \mathcal{A} \times \mathcal{S} \to [0, 1]$: Transition kernel (probability measure)
-- $R: \mathcal{S} \times \mathcal{A} \to \mathbb{R}$: Reward function (random variable)
+- $P(\cdot \mid s,a)$: Markov transition kernel on $\mathcal{S}$ (for each $(s,a)$, $P(\cdot \mid s,a)$ is a probability measure on $\mathcal{S}$, and $(s,a) \mapsto P(B \mid s,a)$ is measurable for each measurable $B \subseteq \mathcal{S}$)
+- $R: \mathcal{S} \times \mathcal{A} \to \mathbb{R}$: measurable one-step reward function (the realized reward random variables are $R_t := R(S_t, A_t)$ on the induced trajectory space)
 - $\gamma \in [0, 1)$: Discount factor
 
 A policy $\pi: \mathcal{S} \to \Delta(\mathcal{A})$ maps states to probability distributions over actions. Together with initial state distribution $\rho_0$, this defines a **probability space over trajectories**:
@@ -1360,12 +1426,12 @@ $$
 **What we've learned enables:**
 - **Measurability**: $S_t, A_t, R_t$ are random variables (Section 2.2.3)
 - **Conditional expectation**: $V^\pi(s) = \mathbb{E}[G_0 \mid S_0 = s]$ is well-defined (Section 2.3.2)
-- **Infinite sums**: Monotone Convergence Theorem (THM-2.2.3) justifies interchanging $\sum$ and $\mathbb{E}$
+- **Infinite sums**: Monotone Convergence Theorem [THM-2.2.3] justifies interchanging $\sum$ and $\mathbb{E}$
 - **Filtrations**: $\mathcal{F}_t = \sigma(S_0, A_0, \ldots, S_t, A_t)$ models "information up to time $t$" (Section 2.4.1)
 
 Chapter 3 makes this rigorous and proves convergence of value iteration via contraction mappings.
 
-**Remark 2.8.1** (Uncountable trajectory space). Even when per-step state and action spaces are finite, the space of infinite-horizon trajectories $\Omega = (\mathcal{S} \times \mathcal{A} \times \mathbb{R})^{\mathbb{N}}$ is uncountable (same cardinality as $[0,1]$). There is no meaningful "uniform counting" on $\Omega$; probabilities must be defined as measures on $\sigma$-algebras.
+**Remark 2.8.1b** (Uncountable trajectory space). Even when per-step state and action spaces are finite, the space of infinite-horizon trajectories $\Omega = (\mathcal{S} \times \mathcal{A} \times \mathbb{R})^{\mathbb{N}}$ is uncountable (same cardinality as $[0,1]$). There is no meaningful "uniform counting" on $\Omega$; probabilities must be defined as measures on $\sigma$-algebras.
 
 **Proposition 2.8.2** (Bellman measurability and contraction) {#PROP-2.8.2}.
 
@@ -1373,9 +1439,9 @@ Assume standard Borel state/action spaces, bounded measurable rewards $r(s,a)$, 
 - the policy evaluation operator
   $$
   (\mathcal{T}^\pi V)(s) := \int_{\mathcal{A}} r(s,a)\, \pi(da\mid s) + \gamma \int_{\mathcal{A}}\int_{\mathcal{S}} V(s')\, P(ds'\mid s,a)\, \pi(da\mid s)
-  \tag{2.9}
+  \tag{2.14}
   $$
-  {#EQ-2.9}
+  {#EQ-2.14}
   maps bounded measurable functions to bounded measurable functions and satisfies $\|\mathcal{T}^\pi V - \mathcal{T}^\pi W\|_\infty \le \gamma \|V - W\|_\infty$;
 - the control operator
   $$
@@ -1434,7 +1500,7 @@ That is, a **measurable optimal selector** (greedy policy) exists.
 
 1. **Bellman optimality operator is well-defined:** The pointwise maximum $(\mathcal{T}V)(s) = \max_{a} \{r(s,a) + \gamma \mathbb{E}[V(S') \mid s,a]\}$ produces a measurable function $\mathcal{T}V: \mathcal{S} \to \mathbb{R}$ when $V$ is measurable.
 
-2. **Optimal policies are random variables:** The greedy policy $\pi^*(s) \in \arg\max_a Q(s,a)$ is a measurable function, so we can evaluate expectations like $\mathbb{E}_{S \sim \rho}[R(S, \pi^*(S))]$.
+2. **Optimal policies are random variables:** The greedy policy $\pi^*(s) \in \arg\max_a Q(s,a)$ is a measurable function, so we can evaluate expectations like $\mathbb{E}_{S \sim \rho_0}[R(S, \pi^*(S))]$ when $S$ is drawn from an initial state distribution $\rho_0$.
 
 3. **Value iteration convergence machinery works:** Chapter 3 proves that iterating $V_{n+1} = \mathcal{T}V_n$ converges to the unique fixed point $V^*$. Measurability of $\mathcal{T}$ at each step is essential for this operator-theoretic argument.
 
@@ -1446,9 +1512,9 @@ That is, a **measurable optimal selector** (greedy policy) exists.
 
 - **Continuous boost actions (Chapter 7):** When we learn $Q(x,a)$ for $a \in [-a_{\max}, a_{\max}]^K$ (continuous action space), this theorem becomes essential. Neural Q-networks approximate $Q$ as $Q_\theta(x,a)$; upper semicontinuity (A2) may fail in practice (neural nets are not inherently u.s.c.), requiring care in implementation.
 
-- **General state/action spaces:** If you extend this work to continuous state representations (e.g., learned embeddings $x \in \mathbb{R}^d$), the standard Borel assumption on $\mathcal{S}$ is critical. Pathological spaces exist where measurable selection fails without these topological conditions.
+- **General state/action spaces:** In extensions to continuous state representations (e.g., learned embeddings $x \in \mathbb{R}^d$), the standard Borel assumption on $\mathcal{S}$ becomes critical. Pathological spaces exist where measurable selection fails without these topological conditions.
 
-**Practical takeaway.** For this book's finite-action and compact-action applications, you can treat optimal policies as "obviously measurable" and skip the set-theoretic details on first reading. The theorem provides the rigorous foundation we need when we claim (in Chapter 3) that value iteration produces well-defined optimal policies. It's the difference between "it works in practice" and "we can prove it works in theory."
+**Practical takeaway.** In the finite-action and compact-action settings emphasized early in this book, measurability of greedy selectors is immediate; the selection theorem becomes essential primarily when passing to genuinely continuous action spaces. On a first reading, we may treat the set-theoretic details as background and focus on the consequences stated above.
 
 *References:* The original Kuratowski--Ryll--Nardzewski theorem appears in [@kuratowski:selectors:1965]. For textbook treatments: [@kechris:classical_dsp:1995, §36] provides the definitive descriptive set theory perspective; [@bertsekas:stochastic_oc:1996, Chapter 7] develops the RL-specific machinery and verifies standard Borel conditions for typical RL state/action spaces.
 
@@ -1459,14 +1525,14 @@ That is, a **measurable optimal selector** (greedy policy) exists.
 The **contextual bandit** (one-step MDP, no state transitions) is the foundation for Chapters 6–8:
 
 **Setup:**
-- Context $x \sim \rho$ (user, query)
+- Context $x \sim \mathcal{D}$ (user, query)
 - Policy $\pi: \mathcal{X} \to \Delta(\mathcal{A})$ selects action (boost weights) $a \sim \pi(\cdot \mid x)$
 - Outcome $\omega \sim P(\cdot \mid x, a)$ drawn from click model (PBM or DBN)
 - Reward $R(x, a, \omega)$ aggregates GMV, CM2, clicks (Chapter 1, #EQ-1.2)
 
 **Goal:** Learn policy $\pi^*$ maximizing
 $$
-V(\pi) = \mathbb{E}_{x \sim \rho, a \sim \pi(\cdot \mid x), \omega \sim P(\cdot \mid x, a)}[R(x, a, \omega)].
+V(\pi) = \mathbb{E}_{x \sim \mathcal{D}, a \sim \pi(\cdot \mid x), \omega \sim P(\cdot \mid x, a)}[R(x, a, \omega)].
 $$
 
 **Click models provide $P(\cdot \mid x, a)$:**
@@ -1475,7 +1541,7 @@ $$
 
 **Propensity scores (Section 2.6) enable off-policy learning:**
 - Collect data under exploration policy $\pi_0$ (e.g., $\epsilon$-greedy, Thompson Sampling)
-- Estimate $V(\pi_1)$ for candidate policies via IPS #EQ-2.4
+- Estimate $V(\pi_1)$ for candidate policies via IPS #EQ-2.9
 - Select best policy without online deployment risk
 
 **Chapter connections:**
@@ -1522,10 +1588,10 @@ All rely on the probability foundations built in this chapter.
 !!! tip "Production Checklist (Chapter 2)"
     **Configuration alignment:**
 
-    The simulator implements the **Utility-Based Cascade Model** (§2.5.4), which nests PBM and DBN as special cases, with the following configuration surface:
+    The simulator implements the **Utility-Based Cascade Model** (§2.5.4). Under a parameter specialization it reproduces PBM's marginal factorization (Proposition 2.5.4), and in general it exhibits cascade-style dependence through an internal state.
 
     - **Position bias**: `BehaviorConfig.pos_bias` in `zoosim/core/config.py:180-186` — dictionary mapping query types to position bias vectors (PBM-like behavior)
-    - **Satisfaction dynamics**: `BehaviorConfig.satisfaction_decay` and `satisfaction_gain` in `zoosim/core/config.py:175-176` — DBN-like cascade stopping
+    - **Satisfaction dynamics**: `BehaviorConfig.satisfaction_decay` and `satisfaction_gain` in `zoosim/core/config.py:175-176` — state-driven cascade dependence (DBN-like mechanism)
     - **Abandonment threshold**: `BehaviorConfig.abandonment_threshold` in `zoosim/core/config.py:177` — session termination condition
     - **Seeds**: `SimulatorConfig.seed` in `zoosim/core/config.py:252` for reproducible click patterns
 
@@ -1538,13 +1604,22 @@ All rely on the probability foundations built in this chapter.
     **Tests:**
 
     - `tests/ch09/test_ope.py`: Verifies OPE estimator behavior
-    - `tests/ch02/test_behavior.py`: Verifies empirical CTR matches theoretical predictions (within Monte Carlo error)
+    - `tests/ch02/test_behavior.py`: Verifies position bias monotonicity (click rates decrease with position); does NOT verify exact PBM/DBN equation matches
     - `tests/ch02/test_segment_sampling.py`: Verifies segment frequencies converge to configured probabilities
+
+    **Score distribution (Lab 2.2):**
+
+    - Lab 2.2 validates integrability; scores are NOT bounded to $[0,1]$
+    - Empirically, scores cluster near 0 with std $\sim 0.2$
+
+    **Reward moments:**
+
+    - GMV/CM2 have finite moments (lognormal prices); not bounded
+    - Click counts bounded by `top_k`
 
     **Assertions:**
 
     - Check $0 \leq \theta_k \leq 1$ for all position bias values
-    - Check $0 \leq \text{rel}(p) \leq 1$ and $0 \leq s(p) \leq 1$ for relevance/satisfaction scores
     - Check positivity assumption $\pi_0(a \mid x) > 0$ when computing IPS weights
 
 ---
@@ -1582,8 +1657,11 @@ Show that this is a **conditional expectation**: $(\mathcal{T}^\pi V)(s) = \math
 
 ### Labs
 
-- [Lab 2.1 — Segment Mix Sanity Check](./exercises_labs.md#lab-21--segment-mix-sanity-check): sample thousands of users via `zoosim.users` and verify empirical frequencies converge to the measure-theoretic $\rho$ from §2.3.
+- [Lab 2.1 — Segment Mix Sanity Check](./exercises_labs.md#lab-21--segment-mix-sanity-check): sample thousands of users via `zoosim.users` and verify empirical frequencies converge to the segment distribution $\mathbf{p}_{\text{seg}}$ from [DEF-2.2.6].
 - [Lab 2.2 — Query Measure and Base Score Integration](./exercises_labs.md#lab-22--query-measure-and-base-score-integration): connect the PBM/DBN derivations to simulator base scores by logging statistics from `zoosim.queries` and `zoosim.relevance`.
+- [Lab 2.3 — Textbook Click Model Verification](./exercises_labs.md#lab-23--textbook-click-model-verification): verify PBM and DBN toy simulators match the closed-form predictions from [EQ-2.1] and [EQ-2.3].
+- [Lab 2.4 — Nesting Verification ([PROP-2.5.4])](./exercises_labs.md#lab-24--nesting-verification): show that the Utility-Based Cascade reduces to PBM under the parameter specialization in [PROP-2.5.4].
+- [Lab 2.5 — Utility-Based Cascade Dynamics ([DEF-2.5.3])](./exercises_labs.md#lab-25--utility-based-cascade-dynamics): empirically validate position decay, satisfaction dynamics, and stopping conditions from [EQ-2.4]–[EQ-2.8].
 
 ---
 
@@ -1597,17 +1675,15 @@ Show that this is a **conditional expectation**: $(\mathcal{T}^\pi V)(s) = \math
 5. **Click models for search**: PBM (position bias), DBN (cascade), theoretical formulas vs empirical validation
 6. **Propensity scoring**: Unbiased off-policy estimation via IPS, importance sampling mechanism
 
-- **Why it matters for RL:**
+**Why it matters for RL:**
 - **Chapter 1's rewards are now rigorous**: $\mathbb{E}[R \mid W]$ is a $\sigma(W)$‑measurable conditional expectation, and (under standard Borel assumptions) $\mathbb{E}[R \mid W = w] = \int r\, d\mathbb{P}(R \in dr \mid W = w)$ is a regular conditional expectation.
 - **Chapter 3's Bellman operators are measurable**: Value functions are conditional expectations
 - **Chapters 6–8's bandits have formal semantics**: Contexts, actions, outcomes are random variables
 - **Chapter 9's off-policy evaluation is justified**: IPS unbiasedness proven via measure theory under positivity and integrability; clipped IPS incurs negative bias and SNIPS trades bias for variance.
 
-**Next chapter:** Stochastic processes, Markov chains, Bellman operators, and contraction mappings. We'll prove value iteration converges using the Banach Fixed-Point Theorem—all enabled by the foundations built here.
+**Next chapter:** We develop stochastic processes, Markov chains, Bellman operators, and contraction mappings, and we prove value iteration convergence via the Banach fixed-point theorem.
 
-**The key realization:** RL is applied probability theory. Every algorithm is an expectation, every policy is a conditional distribution, every convergence proof uses measure-theoretic limit theorems. Without this chapter, RL is heuristics. With it, RL is mathematics.
-
-Let's continue building.
+**Central lesson:** Reinforcement learning is applied probability theory: algorithms are expectations, policies are conditional distributions, and convergence proofs rely on measure-theoretic limit theorems. This chapter supplies the hypotheses required for those results.
 
 ---
 
@@ -1621,4 +1697,4 @@ The primary references for this chapter are:
 - [@chapelle:position_bias:2009] — Unbiased learning to rank via propensity scoring
 - [@wang:position_bias_contextual:2016] — Position bias in contextual bandits for search
 
-Full bibliography lives in `references.bib`.
+Full bibliography lives in `docs/references.bib`.

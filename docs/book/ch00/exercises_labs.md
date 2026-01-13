@@ -1,6 +1,6 @@
 # Chapter 0 --- Exercises \& Labs (Application Mode)
 
-We keep every experiment executable. These warm-ups extend the Chapter 0 toy environment and force you to compare learning curves against the analytical expectations stated in the draft.
+We keep every experiment executable. These warm-ups extend the Chapter 0 toy environment and require us to compare learning curves against the analytical expectations stated in the draft.
 
 ## Lab 0.1 --- Tabular Boost Search (Toy World)
 
@@ -42,7 +42,7 @@ Per-user reward: {'price_hunter': 14.62, 'premium': 22.65, 'bulk_buyer': 11.02}
 **What to analyze**
 1. Compare the printed percentages against the oracle baseline emitted by `scripts/ch00/toy_problem_solution.py`.
 2. Highlight which segments remain under-optimized and tie that back to action-grid resolution (Section 0.3).
-3. Export the figure `toy_problem_learning_curves.png` produced by the script and annotate regime changes (exploration vs exploitation) in your lab notes.
+3. Export the figure `toy_problem_learning_curves.png` produced by the script and annotate regime changes (exploration vs exploitation) in the lab notes.
 
 ## Exercise 0.2 --- Stress-Testing Reward Weights
 
@@ -73,7 +73,7 @@ Reward with delta=0.3: 0.30
 
 **Discussion prompts**
 - Explain why the oversized $\delta$ inflates reward despite lower GMV, linking directly to the `delta/alpha` $\leq 0.10$ guideline in Chapter 1.
-- Propose how you would encode the same guardrail once you migrate to the full simulator (`zoosim/dynamics/reward.py` assertions already enforce it).
+- Propose how the same guardrail can be encoded once we migrate to the full simulator (`zoosim/dynamics/reward.py` assertions already enforce it).
 
 ---
 
@@ -95,7 +95,7 @@ results = exercise_0_1_reward_sensitivity(seed=42)
 **What to analyze:**
 1. Does the learned policy change across configurations? For which user types?
 2. Which configuration shows the highest risk of "clickbait" behavior (high engagement, questionable quality)?
-3. Connect your findings to the guardrail discussion in Chapter 1.
+3. Connect the findings to the guardrail discussion in Chapter 1.
 
 **Time estimate:** 20 minutes
 
@@ -105,7 +105,7 @@ results = exercise_0_1_reward_sensitivity(seed=42)
 
 **Learning objective:** Understand how exploration strategy effectiveness depends on policy quality.
 
-This is the pedagogical highlight of Chapter 0. You'll form a hypothesis, test it, discover it's wrong, diagnose why, and validate when the original intuition *does* hold.
+This is the pedagogical highlight of Chapter 0. We form a hypothesis, test it, discover it is wrong, diagnose why, and validate when the original intuition does hold.
 
 ### Setup
 
@@ -115,9 +115,9 @@ We compare two $\varepsilon$-greedy exploration strategies on the toy world:
 
 ### Part A --- Form Hypothesis (5 min)
 
-Before running experiments, predict: *Which strategy will converge faster?*
+Before running experiments, predict: *Which strategy converges faster?*
 
-Write down your reasoning. The intuitive answer is "local exploration should be more efficient because it exploits structure near good solutions."
+Write down the reasoning. The intuitive answer is "local exploration should be more efficient because it exploits structure near good solutions."
 
 ### Part B --- Cold Start Experiment (10 min)
 
@@ -137,7 +137,7 @@ results = exercise_0_2_action_geometry(
 
 **Questions:**
 1. Which strategy wins? By how much?
-2. Does this match your hypothesis?
+2. Does this match the hypothesis?
 
 ### Part C --- Diagnosis (10 min)
 
@@ -159,7 +159,7 @@ The code also runs a warm start experiment: first train with uniform for 200 epi
 
 ### Part E --- Synthesis (15 min)
 
-Connect your findings to real RL algorithms:
+Connect the findings to real RL algorithms:
 
 1. **SAC** uses entropy regularization that naturally decays. How does this relate to the cold start problem?
 2. **$\varepsilon$-greedy** schedules typically decay $\varepsilon$ from 0.9 $\rightarrow$ 0.05. Why?
@@ -201,7 +201,7 @@ results = exercise_0_4_constrained_qlearning(seed=42)
 ```
 
 **What to analyze:**
-1. Do you get a clean Pareto frontier? Why or why not?
+1. Do we obtain a clean Pareto frontier? Why or why not?
 2. What causes the high violation rates?
 3. Propose an alternative approach (hint: Lagrangian relaxation, chance constraints)
 
@@ -257,12 +257,12 @@ results = exercise_0_5_bandit_bellman_bridge()
 
 ```bash
 # Run all exercises
-python scripts/ch00/lab_solutions.py --all
+uv run python scripts/ch00/lab_solutions.py --all
 
 # Run specific exercise
-python scripts/ch00/lab_solutions.py --exercise lab0.1
-python scripts/ch00/lab_solutions.py --exercise 0.2  # Action Geometry
+uv run python scripts/ch00/lab_solutions.py --exercise lab0.1
+uv run python scripts/ch00/lab_solutions.py --exercise 0.2  # Action Geometry
 
 # Interactive menu
-python scripts/ch00/lab_solutions.py
+uv run python scripts/ch00/lab_solutions.py
 ```

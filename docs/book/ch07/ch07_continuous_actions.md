@@ -272,7 +272,7 @@ This is "model-based" in the sense that we learn a model of expected reward $Q(x
 
 ### 7.2.4 Connection to Chapter 3: Bellman Operators and Q-Regression
 
-**Recall from Chapter 3:** The Bellman operator for Q-functions is ([EQ-3.14]):
+**Recall from Chapter 3:** The Bellman optimality operator for value functions is ([EQ-3.12]). The corresponding backup for Q-functions takes the form:
 $$
 (\mathcal{T}Q)(x, a) = R(x, a) + \gamma \mathbb{E}_{x' \sim P(\cdot | x, a)} \left[ \max_{a' \in \mathcal{A}} Q(x', a') \right]
 $$
@@ -304,7 +304,7 @@ Then Q-regression **alone is insufficient**—we'll need:
 - **Off-policy correction**: IPS weights for logged data (Chapter 9)
 
 !!! warning "The Deadly Triad (Sutton–Barto)"
-    Neural Q-functions introduce **the deadly triad** [@sutton:rl_book:2018, Section 11.3]:
+    Neural Q-functions introduce **the deadly triad** [@sutton:barto:2018, Section 11.3]:
 
     1. **Function approximation**: $Q_\theta$ cannot represent all value functions perfectly.
     2. **Bootstrapping**: TD targets $r + \gamma Q_\theta(x', a')$ use the same network being trained.
@@ -602,8 +602,8 @@ for _ in range(config.n_iters):
 - $a_{\text{new}} = [0.5, -0.8, 0.9, \ldots]$: CEM-optimized, produces ranking $R_{\text{new}}$
 
 If $Q_\theta$ is slightly miscalibrated, $a_{\text{new}}$ might have:
-- Higher predicted reward: $Q_\theta(x, a_{\text{new}}) > Q_\theta(x, a_{\text{old}})$ ✓
-- But worse true reward: $R(x, a_{\text{new}}) < R(x, a_{\text{old}})$ ✗ (overestimation)
+- Higher predicted reward: $Q_\theta(x, a_{\text{new}}) > Q_\theta(x, a_{\text{old}})$ (OK)
+- But worse true reward: $R(x, a_{\text{new}}) < R(x, a_{\text{old}})$ (FAIL; overestimation)
 - And catastrophic rank change: $\Delta\text{rank}@10(R_{\text{old}}, R_{\text{new}}) = 8$ (user sees 8 new products in top 10)
 
 **Solution: Constrain CEM to a trust region around the previous action.**

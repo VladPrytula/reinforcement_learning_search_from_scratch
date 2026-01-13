@@ -27,7 +27,7 @@ Prove the following properties:
 
 **Solution:**
 
-See `solutions/ex6_1.pdf` for detailed proof.
+See `docs/book/ch06/ch06_lab_solutions.md` (Exercise 6.1) for a complete proof and numerical verification.
 
 ---
 
@@ -216,7 +216,7 @@ Run on simulator for 50k episodes with $\epsilon \in \{0.05, 0.1, 0.2\}$. Compar
 
 **Solution:**
 
-See `solutions/ex6_4_epsilon_greedy.py` for implementation and plots.
+See `docs/book/ch06/ch06_lab_solutions.md` (Exercise 6.4) and the runnable implementation in `scripts/ch06/lab_solutions/`.
 
 ---
 
@@ -410,10 +410,12 @@ def create_diversity_template(catalog_stats, a_max=5.0):
 
 1. Run the demo script in simple-feature mode:
    ```bash
-   python scripts/ch06/template_bandits_demo.py \
+   uv run python scripts/ch06/template_bandits_demo.py \
        --n-static 2000 \
        --n-bandit 20000 \
-       --features simple
+       --features simple \
+       --world-seed 20250322 \
+       --bandit-base-seed 20250349
    ```
 2. Record:
    - Best static template and its GMV (should be Premium with GMV $\approx$ 7.11)
@@ -434,11 +436,13 @@ def create_diversity_template(catalog_stats, a_max=5.0):
 
 1. Run the demo with oracle latents:
    ```bash
-   python scripts/ch06/template_bandits_demo.py \
+   uv run python scripts/ch06/template_bandits_demo.py \
        --n-static 2000 \
        --n-bandit 20000 \
        --features rich \
-       --rich-regularization blend \
+       --world-seed 20250322 \
+       --bandit-base-seed 20250349 \
+       --hparam-mode rich_est \
        --prior-weight 50 \
        --lin-alpha 0.2 \
        --ts-sigma 0.5
@@ -461,10 +465,13 @@ def create_diversity_template(catalog_stats, a_max=5.0):
 
 1. Run the demo with estimated latents:
    ```bash
-   python scripts/ch06/template_bandits_demo.py \
+   uv run python scripts/ch06/template_bandits_demo.py \
        --n-static 2000 \
        --n-bandit 20000 \
        --features rich_est \
+       --world-seed 20250322 \
+       --bandit-base-seed 20250349 \
+       --hparam-mode rich_est \
        --prior-weight 50 \
        --lin-alpha 0.2 \
        --ts-sigma 0.5
@@ -494,10 +501,10 @@ def create_diversity_template(catalog_stats, a_max=5.0):
 2. Compute the "reversal magnitude": How many GMV points does the winner advantage change by?
 3. **Key insight question:** Why does feature noise favor Thompson Sampling?
    - Hint: Consider LinUCB's UCB bonus shrinkage vs. TS's perpetual posterior variance.
-4. **Production question:** In a real e-commerce system, do you have oracle latents or estimated latents?
+4. **Production question:** In a real e-commerce system, do we have oracle latents or only estimated latents?
 5. Write a 3-sentence recommendation for which algorithm to use in production.
 
-**Expected synthesis:** Production systems have noisy estimated features, so **Thompson Sampling should be your default**. LinUCB is appropriate only when feature quality is exceptionally high (direct measurements, carefully validated estimates, or A/B test signals). This is Lesson 5.
+**Expected synthesis:** Production systems have noisy estimated features, so Thompson Sampling is a robust default. LinUCB is most appropriate when feature quality is exceptionally high (direct measurements, carefully validated estimates, or A/B test signals). This is Lesson 5.
 ---
 
 ### Lab 6.3: Hyperparameter Sensitivity (20 min)
@@ -573,7 +580,7 @@ selection_matrix = np.zeros((M, num_windows))
 
 ### Advanced Lab 6.A: From CPU Loops to GPU Batches (60--120 min)
 
-This is an advanced, end-to-end lab that teaches you how and why to move from the canonical but slow Chapter 6 implementation under `scripts/ch06/` to the GPU-accelerated path under `scripts/ch06/optimization_gpu/`. It assumes you have completed at least Labs 6.1--6.3.
+This is an advanced, end-to-end lab that teaches how and why to move from the canonical (but slow) Chapter 6 implementation under `scripts/ch06/` to the GPU-accelerated path under `scripts/ch06/optimization_gpu/`. It assumes completion of at least Labs 6.1--6.3.
 
 See the dedicated draft:
 
@@ -585,7 +592,7 @@ for:
 - A guided tour of `template_bandits_gpu.py`, `ch06_compute_arc_gpu.py`, and `run_bandit_matrix_gpu.py`
 - Step-by-step tasks comparing CPU and GPU runs, exploring batch size and device choices, and extending diagnostics
 
-This advanced lab is optional for first-time readers but **strongly recommended** if you plan to scale Chapter 6 experiments to many seeds, feature variants, or larger episode counts.
+This advanced lab is optional for first-time readers but strongly recommended if we plan to scale Chapter 6 experiments to many seeds, feature variants, or larger episode counts.
 
 for w in range(num_windows):
     window_selections = selection_history[w*window_size:(w+1)*window_size]
@@ -714,9 +721,9 @@ class HierarchicalBandit:
     - Understanding of representation learning (Chapter 12)
     - Pretraining on logged data (Chapter 13)
 
-    **If you haven't completed Chapter 12-13:** Skip this exercise or treat it as a reading exercise (analyze the provided solution without implementing from scratch).
+    **If Chapters 12-13 are not completed:** Skip this exercise or treat it as a reading exercise (analyze the provided solution without implementing from scratch).
 
-    **For advanced students:** This is a preview of techniques you'll use in deep RL chapters.
+    **For advanced students:** This is a preview of techniques used in later deep RL chapters.
 
 **Problem:**
 
@@ -765,7 +772,7 @@ Run three conditions:
 
 **Problem:**
 
-Current templates are **product-only** (don't depend on query). Extend to **query-conditional templates**:
+Current templates are **product-only** (do not depend on query). Extend to **query-conditional templates**:
 
 **Example:** "Discount" template should:
 - Boost discounted products **more** for query `"deals"`, `"sale"`
@@ -812,20 +819,15 @@ Metrics:
 
 ## Solutions
 
-Complete solutions with code, plots, and mathematical derivations are provided in:
+Complete solutions are provided in:
 
-- `solutions/theory/ex6_1_cosine_properties.pdf`
-- `solutions/theory/ex6_2_ridge_regression.pdf`
-- `solutions/theory/ex6_3_ts_linucb_equivalence.pdf`
-- `solutions/implementation/ex6_4_epsilon_greedy.py`
-- `solutions/implementation/ex6_5_cholesky_ts.py`
-- `solutions/implementation/ex6_6_diversity_template.py`
-- `solutions/labs/lab6_1_hyperparameters/` (heatmap + analysis)
-- `solutions/labs/lab6_2_visualization/` (3 plots + interpretation)
-- `solutions/labs/lab6_3_robustness/` (box plot + assessment)
-- `solutions/advanced/ex6_7_hierarchical.py`
-- `solutions/advanced/ex6_8_neural_linear/` (notebook + pretrained model)
-- `solutions/advanced/ex6_9_query_conditional.py`
+- `docs/book/ch06/ch06_lab_solutions.md` (rendered solutions with representative outputs)
+- `scripts/ch06/lab_solutions/` (runnable code)
+
+Run all solutions:
+```bash
+uv run python -m scripts.ch06.lab_solutions --all
+```
 
 ---
 
@@ -847,5 +849,3 @@ Complete solutions with code, plots, and mathematical derivations are provided i
 - **Deep dive (200 min):** Core + Advanced 6.7-6.9
 
 ---
-
-*Chapter 6 Exercises & Labs --- First Draft --- 2025*

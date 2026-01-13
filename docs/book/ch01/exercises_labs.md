@@ -43,7 +43,7 @@ Manual computation of R = alpha*GMV + beta*CM2 + gamma*STRAT + delta*CLICKS:
 
 Simulator-reported reward: 134.09
 
-Verification: |computed - reported| = 0.00 < 0.01 ✓
+Verification: |computed - reported| = 0.00 < 0.01 [OK]
 
 The simulator correctly implements [EQ-1.2].
 ```
@@ -449,7 +449,7 @@ Action space volume: 0.0312
 1. Extend `ActionSpace` to support different norms: L2 ball ($\|a\|_2 \leq r$) vs. Linf box (current).
 2. For $K=2$ and $a_{\max}=1$, plot the action space. Sample 1000 points uniformly---how many fall within the L2 ball $\|a\|_2 \leq 1$?
 3. Implement action discretization: divide each dimension into $n$ bins and return the $n^K$ grid points. For $K=5, n=10$, how many discrete actions?
-4. Verify clipping behavior matches `zoosim/envs/search_env.py:50` by reading the production code.
+4. Verify clipping behavior matches `zoosim/envs/search_env.py:85` by reading the production code.
 
 ---
 

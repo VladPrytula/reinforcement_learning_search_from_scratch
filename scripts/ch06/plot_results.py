@@ -63,12 +63,13 @@ def plot_segment_comparison(
 
     fig, ax = plt.subplots(figsize=(14, 7))
 
-    # Static baseline
+    # Static baseline (best static template from the reference run)
+    static_name = simple["static_best"]["name"]
     ax.bar(
         x - 3 * width,
         static_gmvs,
         width,
-        label="Static (CM2 Boost)",
+        label=f"Static ({static_name})",
         color="gray",
         alpha=0.8,
     )
@@ -238,4 +239,3 @@ if __name__ == "__main__":
     plot_template_frequencies(oracle_json_arg, out_dir_arg, suffix="rich_oracle")
     plot_template_frequencies(estimated_json_arg, out_dir_arg, suffix="rich_estimated")
     print("Done.")
-

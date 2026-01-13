@@ -18,11 +18,11 @@ The three-stage arc teaches the chapter's deepest lesson:
 Usage
 -----
 export PYTHONUNBUFFERED=1
-python scripts/ch06/ch06_compute_arc.py \\
+uv run python scripts/ch06/ch06_compute_arc.py \\
     --n-static 2000 \\
     --n-bandit 20000 \\
     --base-seed 2025_0601 \\
-    --out-dir docs/book/drafts/ch06/data
+    --out-dir docs/book/ch06/data
 """
 
 from __future__ import annotations
@@ -76,7 +76,7 @@ def main() -> None:
     parser.add_argument(
         "--out-dir",
         type=Path,
-        default=Path("docs/book/drafts/ch06/data"),
+        default=Path("docs/book/ch06/data"),
         help="Output directory for JSON summaries.",
     )
     parser.add_argument(
@@ -187,7 +187,7 @@ def main() -> None:
     )
 
     if linucb_gmv < static_gmv * 0.9:
-        print("\n⚠️  BANDITS UNDERPERFORM STATIC (expected for pedagogical arc!)")
+        print("\n[WARN] Bandits underperform static (expected for pedagogical arc).")
 
     # ------------------------------------------------------------------
     # Experiment 2: Rich features with ORACLE latents (LinUCB wins)
@@ -239,7 +239,7 @@ def main() -> None:
     if oracle_linucb_gmv > oracle_ts_gmv:
         print("\n✓ LINUCB WINS WITH ORACLE FEATURES (precise exploitation)")
     else:
-        print("\n⚠️  TS wins with oracle features (unexpected, check hyperparameters)")
+        print("\n[WARN] TS wins with oracle features (unexpected; check hyperparameters).")
 
     # ------------------------------------------------------------------
     # Experiment 3: Rich features with ESTIMATED latents (TS wins)
@@ -291,7 +291,7 @@ def main() -> None:
     if est_ts_gmv > est_linucb_gmv:
         print("\n✓ TS WINS WITH ESTIMATED FEATURES (robust exploration)")
     else:
-        print("\n⚠️  LinUCB wins with estimated features (unexpected, check hyperparameters)")
+        print("\n[WARN] LinUCB wins with estimated features (unexpected; check hyperparameters).")
 
     # ------------------------------------------------------------------
     # Figures
@@ -319,7 +319,7 @@ def main() -> None:
         plot_template_frequencies(rich_est_json, figures_dir, suffix="rich_estimated")
 
     except ImportError as exc:
-        print(f"\n⚠️  Plotting skipped (plot_results.py not available): {exc}")
+        print(f"\n[WARN] Plotting skipped: {exc}")
         print("    Implement scripts/ch06/plot_results.py to enable figure generation.")
 
     # ------------------------------------------------------------------

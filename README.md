@@ -165,3 +165,9 @@ obs, info = env.reset()
 action = env.action_space.sample()
 obs, reward, terminated, truncated, info = env.step(action)
 ```
+
+---
+
+## Acknowledgments
+
+This book was written with substantial assistance from [Claude Opus 4.5](https://www.anthropic.com/claude) (Anthropic). Claude helped develop lab exercises, refine mathematical exposition, debug implementations, and ensure pedagogical clarity throughout the chapters. The collaboration exemplifies how AI can augment technical writing while maintaining rigorous standards.

@@ -89,7 +89,7 @@ WORLD_SEED=20250322
 BANDIT_SEED=20250349
 BATCH_SIZE=1024
 DEVICE="auto"  # Will use CUDA if available, else MPS, else CPU
-OUTPUT_DIR="docs/book/drafts/ch06/data/gpu_verification_$(date +%Y%m%dT%H%M%S)"
+OUTPUT_DIR="docs/book/ch06/data/gpu_verification_$(date +%Y%m%dT%H%M%S)"
 
 # Colors for output
 RED='\033[0;31m'
@@ -114,15 +114,12 @@ echo ""
 echo "Start time: $(date)"
 echo ""
 
-# Activate virtual environment
-source .venv/bin/activate
-
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
 
 # Check device availability
 echo -e "${YELLOW}Checking device availability...${NC}"
-python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}'); print(f'MPS available: {torch.backends.mps.is_available() if hasattr(torch.backends, \"mps\") else False}')"
+uv run python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}'); print(f'MPS available: {torch.backends.mps.is_available() if hasattr(torch.backends, \"mps\") else False}')"
 echo ""
 
 # ==============================================================================
@@ -133,7 +130,7 @@ echo "GPU TEST 1: Compute Arc - Simple → Rich Features"
 echo "==============================================================================${NC}"
 echo ""
 
-python scripts/ch06/optimization_gpu/ch06_compute_arc_gpu.py \
+uv run python scripts/ch06/optimization_gpu/ch06_compute_arc_gpu.py \
     --n-static $N_STATIC \
     --n-bandit $N_BANDIT \
     --base-seed $WORLD_SEED \
@@ -157,7 +154,7 @@ echo "GPU TEST 2: Batch Matrix Runner - All Scenarios"
 echo "==============================================================================${NC}"
 echo ""
 
-python scripts/ch06/optimization_gpu/run_bandit_matrix_gpu.py \
+uv run python scripts/ch06/optimization_gpu/run_bandit_matrix_gpu.py \
     --n-static $N_STATIC \
     --n-bandit $N_BANDIT \
     --world-seed-base $WORLD_SEED \

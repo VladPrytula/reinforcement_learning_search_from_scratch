@@ -261,7 +261,7 @@ $$
 $$
 The function $f$ is the **Radon-Nikodym derivative** $d\nu/d\mu$.
 
-*For a complete proof, see Chapter 2 [THM-2.4.3-RN] or [@folland:real_analysis:1999, §3.2].*
+*For a complete proof, see Chapter 2 [THM-2.3.4-RN] or [@folland:real_analysis:1999, §3.2].*
 
 If $q \ll p$ (i.e., $q$ is absolutely continuous with respect to $p$), the Radon-Nikodym derivative $dq/dp$ exists, and:
 $$
@@ -275,7 +275,7 @@ $$
 
 This measure-theoretic foundation ensures the IS identity holds in full generality—for discrete, continuous, and mixed distributions—and connects OPE to the broader theory of change-of-measure techniques in probability (Girsanov theorem, Esscher transform, exponential families via Esscher transform).
 
-**Connection to Chapter 2.** For readers who completed Chapter 2's treatment of measure theory, this is the Radon-Nikodym theorem [THM-2.4.3] applied to trajectory distributions. The common support assumption [ASSUMP-9.1.1] is equivalent to absolute continuity $p_{\pi_e} \ll p_{\pi_b}$: the evaluation policy's trajectory distribution must be absolutely continuous with respect to the behavior policy's. When this fails (e.g., $\pi_e$ takes actions with zero probability under $\pi_b$), the Radon-Nikodym derivative is undefined, and importance sampling breaks down—exactly as shown in [EX-9.1.2]. You first saw a **single-step, bandit-level** version of IPS, clipped IPS, and SNIPS in Chapter 2; this chapter generalizes those ideas to full trajectories.
+**Connection to Chapter 2.** For readers who completed Chapter 2's treatment of measure theory, this is the Radon-Nikodym theorem [THM-2.3.4-RN] applied to trajectory distributions. The common support assumption [ASSUMP-9.1.1] is equivalent to absolute continuity $p_{\pi_e} \ll p_{\pi_b}$: the evaluation policy's trajectory distribution must be absolutely continuous with respect to the behavior policy's. When this fails (e.g., $\pi_e$ takes actions with zero probability under $\pi_b$), the Radon-Nikodym derivative is undefined, and importance sampling breaks down—exactly as shown in [EX-9.1.2]. You first saw a **single-step, bandit-level** version of IPS, clipped IPS, and SNIPS in Chapter 2; this chapter generalizes those ideas to full trajectories.
 
 ---
 
@@ -650,14 +650,14 @@ where $\{s_0^{(i)}\}_{i=1}^n$ are initial states from logged trajectories.
 
 **Goal:** Estimate $Q^{\pi_e}(s, a)$
 
-**Recall from Chapter 3:** The Q-function satisfies the Bellman equation:
+By analogy with Chapter 3, the Q-function satisfies the Bellman expectation equation:
 $$
 Q^{\pi}(s, a) = \mathbb{E}_{s' \sim P(\cdot|s,a)}\left[r + \gamma \mathbb{E}_{a' \sim \pi(\cdot|s')}[Q^\pi(s', a')]\right]
 \tag{9.20}
 $$
 {#EQ-9.20}
 
-This is [EQ-3.8] from [THM-3.5.1-Bellman] (Bellman Expectation Equation, from `ch03_stochastic_processes_bellman_foundations.md`), specialized to $Q^\pi$.
+This is the Q-function analogue of Chapter 3's fixed-point identity [EQ-3.8] from [THM-3.5.1-Bellman] (Bellman Expectation Equation, `ch03_stochastic_processes_bellman_foundations.md`).
 
 **FQE procedure:**
 
@@ -692,7 +692,7 @@ $$
 
 where $\{s_0^{(i)}\}$ are initial states from logged trajectories.
 
-**Connection to Chapter 3.** FQE is **policy evaluation via Bellman iteration** (analogous to [EQ-3.13] from Chapter 3) applied to a **fixed policy** $\pi_e$ using **logged data** instead of exact transitions. The policy evaluation Bellman operator from [THM-3.5.1-Bellman] becomes:
+**Connection to Chapter 3.** FQE is **policy evaluation via Bellman iteration** (analogous to the fixed-point characterization [EQ-3.8] from Chapter 3) applied to a **fixed policy** $\pi_e$ using **logged data** instead of exact transitions. The policy evaluation Bellman operator from [THM-3.5.1-Bellman] becomes:
 
 $$
 (\mathcal{T}^{\pi_e} Q)(s, a) = \mathbb{E}_{s' \sim P(\cdot|s,a)}\left[R(s,a,s') + \gamma \mathbb{E}_{a' \sim \pi_e(\cdot|s')}[Q(s', a')]\right]
@@ -708,13 +708,13 @@ FQE approximates this operator using empirical samples from $\mathcal{D}$.
     - FQE implements the action-value version $\mathcal{T}^\pi Q$ using fitted regression
     - FQE implementation: `zoosim/evaluation/ope.py:530-561` (target computation + regression)
     - Bellman residual tracking: `diagnostics["final_loss"]` at line 557
-    - Connection: `EQ-9.24 depends_on THM-3.5.1-Bellman` (Bellman expectation for $Q^\pi$)
+    - Connection: `EQ-9.24 depends_on THM-3.5.1-Bellman` (Q-function analogue of the Bellman expectation equation)
 
-    **Note:** Chapter 3 contains two separate theorem files. We reference `ch03_stochastic_processes_bellman_foundations.md` for Bellman equations [THM-3.5.1-Bellman] and the Banach fixed-point theorem [THM-3.6.2-Banach]. The file `ch03_bellman_and_regret.md` contains regret bounds [THM-3.5.1-Regret] and CMDP theory [THM-3.6.2-Slater]—distinct results with colliding numbers.
+    **Note:** Chapter 3's canonical file `ch03_stochastic_processes_bellman_foundations.md` contains the Bellman equations [THM-3.5.1-Bellman] and the Banach fixed-point theorem [THM-3.6.2-Banach] that justify contraction-based convergence intuition behind FQE. Regret guarantees for bandit exploration live in Chapter 6 ([THM-6.1], [THM-6.2]) and information-theoretic lower bounds live in Appendix D ([THM-D.3.1]). Constrained optimization / CMDP duality and primal-dual methods live in Appendix C ([THM-C.2.1], [COR-C.3.1], [ALG-C.5.1]).
 
-**Why FQE works.** Under correct model specification and sufficient data coverage, FQE converges to the true $Q^{\pi_e}$. The Bellman operator $\mathcal{T}^{\pi_e}$ is a $\gamma$-contraction in the supremum norm (Chapter 3, [THM-3.6.2-Banach] — Banach Fixed-Point Theorem), so repeated application reduces error: $\|\hat{Q}_k - Q^{\pi_e}\|_\infty \leq \gamma^k \|\hat{Q}_0 - Q^{\pi_e}\|_\infty \to 0$ as $k \to \infty$.
+**Why FQE works.** Under correct model specification and sufficient data coverage, FQE converges to the true $Q^{\pi_e}$. The relevant Bellman operator is a $\gamma$-contraction in the supremum norm (Chapter 3, [THM-3.7.1]), and Banach's fixed-point theorem then yields convergence under exact iteration (Chapter 3, [THM-3.6.2-Banach]): $\|\hat{Q}_k - Q^{\pi_e}\|_\infty \leq \gamma^k \|\hat{Q}_0 - Q^{\pi_e}\|_\infty \to 0$ as $k \to \infty$.
 
-**Caveat (Function Approximation).** The contraction property [THM-3.6.2-Banach] holds in the $\|\cdot\|_\infty$ (supremum) norm over the **full state-action space**. With function approximation (neural networks, linear models), FQE minimizes error in a **weighted empirical norm** determined by the data distribution $d_{\pi_b}$, not the $\|\cdot\|_\infty$ norm. Under distribution mismatch between $\pi_b$ and $\pi_e$, FQE can diverge—this is the **"deadly triad"** of off-policy learning + function approximation + bootstrapping [@sutton:rl_book:2018, §11.3]. Convergence guarantees require additional conditions: compatible function approximation [@tsitsiklis:analysis_td:1997], gradient correction methods [@sutton:fast_gradient:2009], or density ratio estimation [@liu:marginal_importance_sampling:2018].
+**Caveat (Function Approximation).** The contraction property [THM-3.7.1] holds in the $\|\cdot\|_\infty$ (supremum) norm over the **full state-action space**. With function approximation (neural networks, linear models), FQE minimizes error in a **weighted empirical norm** determined by the data distribution $d_{\pi_b}$, not the $\|\cdot\|_\infty$ norm. Under distribution mismatch between $\pi_b$ and $\pi_e$, FQE can diverge—this is the **"deadly triad"** of off-policy learning + function approximation + bootstrapping [@sutton:barto:2018, §11.3]. Convergence guarantees require additional conditions: compatible function approximation [@tsitsiklis:analysis_td:1997], gradient correction methods [@sutton:fast_gradient:2009], or density ratio estimation [@liu:marginal_importance_sampling:2018].
 
 **When FQE fails.**
 
@@ -1858,7 +1858,7 @@ In this example, **Doubly Robust** achieves the lowest error, followed closely b
 
 - **Chapter 2 (Position Bias and Click Models)**: OPE propensities $\pi_b(a|s)$ are analogous to position bias propensities $P(\text{exam}|k)$ in click models. Both require careful estimation from observational data. [DEF-2.3.1] introduced propensity weighting for unbiased CTR estimates—OPE generalizes this to sequential decision-making.
 
-- **Chapter 3 (Bellman Operators)**: FQE ([EQ-9.21]) applies the policy evaluation Bellman operator $\mathcal{T}^\pi$ from [THM-3.5.1-Bellman] (Bellman Expectation Equation) to logged data. The contraction property ([THM-3.6.2-Banach] — Banach Fixed-Point Theorem) guarantees convergence of FQE iterations under correct model specification. Note: These theorems reside in `ch03_stochastic_processes_bellman_foundations.md`; the separate file `ch03_bellman_and_regret.md` contains different results (regret bounds, CMDP theory) with colliding theorem numbers.
+- **Chapter 3 (Bellman Operators)**: FQE ([EQ-9.21]) applies the policy evaluation Bellman operator $\mathcal{T}^\pi$ from [THM-3.5.1-Bellman] (Bellman Expectation Equation) to logged data. Under exact iteration and correct model specification, the contraction property [THM-3.7.1] and Banach fixed-point theorem [THM-3.6.2-Banach] yield convergence of the corresponding Bellman iterations. Regret theory is treated separately in Chapter 6, while CMDP duality and primal-dual methods are developed in Appendix C.
 
 - **Chapter 7 (Q-Ensemble)**: The Q-function $\hat{Q}(s,a)$ trained in Ch7 can be used directly in DR and FQE. Our production DR implementation (§9.8.2) reuses `QEnsemble` from `zoosim/policies/q_ensemble.py`.
 

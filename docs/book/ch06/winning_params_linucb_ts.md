@@ -8,12 +8,11 @@ This document records the **Algorithm Selection Principle** discovered in Chapte
 
 ## Configuration A: Rich Features + Oracle Latents (LinUCB Wins)
 
-When you have access to true user latent preferences (oracle features), LinUCB's precise exploitation wins:
+When we have access to true user latent preferences (oracle features), LinUCB's precise exploitation is marginally better in the reference run:
 
 ```bash
-python scripts/ch06/template_bandits_demo.py \
+uv run python scripts/ch06/template_bandits_demo.py \
     --features rich \
-    --rich-regularization blend \
     --n-static 2000 \
     --n-bandit 20000 \
     --world-seed 20250322 \
@@ -39,10 +38,10 @@ python scripts/ch06/template_bandits_demo.py \
 
 ## Configuration B: Rich Features + Estimated Latents (TS Wins)
 
-In production, you don't have oracle latents---you must estimate user preferences from behavior. With noisy estimated features, Thompson Sampling's robust exploration wins:
+In production we do not have oracle latents---we estimate user preferences from behavior. With noisy estimated features, Thompson Sampling's robust exploration wins:
 
 ```bash
-python scripts/ch06/template_bandits_demo.py \
+uv run python scripts/ch06/template_bandits_demo.py \
     --features rich_est \
     --n-static 2000 \
     --n-bandit 20000 \
@@ -87,7 +86,7 @@ python scripts/ch06/template_bandits_demo.py \
 | `--prior-weight` | 50 | Pseudo-count for static priors |
 | `--lin-alpha` | 0.2 | LinUCB exploration bonus (conservative) |
 | `--ts-sigma` | 0.5 | Thompson Sampling posterior std |
-| `--rich-regularization` | blend | Regularization mode for rich features |
+| `--rich-regularization` | none | Keep oracle latents unregularized (canonical); other modes are used only in robustness checks |
 | `--n-static` | 2000 | Episodes for static baseline evaluation |
 | `--n-bandit` | 20000 | Episodes for bandit training |
 
@@ -98,10 +97,11 @@ python scripts/ch06/template_bandits_demo.py \
 To reproduce the complete three-stage narrative:
 
 ```bash
-python scripts/ch06/ch06_compute_arc.py \
+uv run python scripts/ch06/ch06_compute_arc.py \
     --n-static 2000 \
     --n-bandit 20000 \
     --base-seed 20250322 \
+    --bandit-seed 20250349 \
     --out-dir docs/book/ch06/data \
     --prior-weight 50 \
     --lin-alpha 0.2 \

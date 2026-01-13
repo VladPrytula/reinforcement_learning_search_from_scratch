@@ -15,6 +15,7 @@ nav:
           - "Ch 1 — Exercises & Labs": book/ch01/exercises_labs.md
           - "Ch 2 — Probability, Measure, Click Models": book/ch02/ch02_probability_measure_click_models.md
           - "Ch 2 — Exercises & Labs": book/ch02/exercises_labs.md
+          - "Ch 2 — Lab Solutions": book/ch02/ch02_lab_solutions.md
           - "Ch 3 — Stochastic Processes & Bellman": book/ch03/ch03_stochastic_processes_bellman_foundations.md
           - "Ch 3 — Exercises & Labs": book/ch03/exercises_labs.md
       - Part II - Simulator:

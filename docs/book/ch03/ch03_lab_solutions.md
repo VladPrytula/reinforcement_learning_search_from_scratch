@@ -2,9 +2,9 @@
 
 *Vlad Prytula*
 
-These solutions demonstrate the operator-theoretic foundations of reinforcement learning. Every solution weaves rigorous theory ([DEF-3.3.1], [THM-3.6.2-Banach], [THM-3.7.1]) with runnable implementations, following the principle: **proofs illuminate practice, code verifies theory**.
+These solutions demonstrate the operator-theoretic foundations of reinforcement learning. Every solution weaves rigorous theory ([DEF-3.6.3], [THM-3.6.2-Banach], [THM-3.7.1]) with runnable implementations, following the principle that proofs illuminate practice and code verifies theory.
 
-All outputs shown are actual results from running the code with specified seeds.
+All numeric outputs shown are from running the code with fixed seeds. Some blocks are abbreviated for readability (ellipses indicate omitted lines).
 
 ---
 
@@ -14,11 +14,10 @@ All outputs shown are actual results from running the code with specified seeds.
 
 ### Theoretical Foundation
 
-Recall from [THM-3.7.1] that the Bellman operator for an MDP with discount factor $\gamma < 1$ is a **$\gamma$-contraction** in the $\|\cdot\|_\infty$ norm:
+Recall from [THM-3.7.1] that the Bellman operator for an MDP with discount factor $\gamma < 1$ is a **$\gamma$-contraction** in the $\|\cdot\|_\infty$ norm (see [EQ-3.16]):
 
 $$
-\|\mathcal{T}V_1 - \mathcal{T}V_2\|_\infty \leq \gamma \|V_1 - V_2\|_\infty \quad \forall V_1, V_2
-\tag{3.3}
+\|\mathcal{T}V_1 - \mathcal{T}V_2\|_\infty \leq \gamma \|V_1 - V_2\|_\infty \quad \forall V_1, V_2.
 $$
 
 This property is fundamental: it guarantees that value iteration converges to a unique fixed point $V^*$ exponentially fast ([THM-3.6.2-Banach], Banach Fixed-Point Theorem).
@@ -41,31 +40,37 @@ Lab 3.1: Contraction Ratio Tracker
 
 MDP Configuration:
   States: 3, Actions: 2
-  Discount factor γ = 0.9
+  Discount factor gamma = 0.9
 
-Theoretical bound [THM-3.7.1]: ||TV₁ - TV₂||∞ ≤ 0.9·||V₁ - V₂||∞
+Theoretical bound [THM-3.7.1]: ||T V1 - T V2||_inf <= 0.9 * ||V1 - V2||_inf
 
 Computing contraction ratios across 20 random V pairs...
 
-Seed       Ratio        ≤ γ?
+Seed       Ratio        <= gamma?
 ------------------------------
-97862      0.8722       ✓
-86255      0.8651       ✓
-75234      0.8234       ✓
-45678      0.8891       ✓
-12345      0.8456       ✓
-...
+8925       0.7763       OK
+77395      0.7240       OK
+65457      0.7509       OK
+43887      0.6131       OK
+43301      0.7543       OK
+85859      0.8856       OK
+8594       0.4745       OK
+69736      0.7208       OK
+20146      0.4828       OK
+9417       0.5208       OK
+... (10 more seeds)
 
 ==================================================
 CONTRACTION RATIO STATISTICS
 ==================================================
-  Theoretical bound (γ): 0.900
-  Empirical mean:        0.856
-  Empirical std:         0.028
-  Empirical min:         0.789
-  Empirical max:         0.891
-  Slack (γ - max):       0.009
-  All ratios ≤ γ?        ✓ YES
+  Theoretical bound (gamma): 0.900
+  Empirical mean:        0.624
+  Empirical std:         0.183
+  Empirical min:         0.202
+  Empirical max:         0.886
+  Slack (gamma - max):   0.014
+  All ratios <= gamma?   YES
+...
 ```
 
 ### Task 1: Explaining the Slack
@@ -75,16 +80,16 @@ CONTRACTION RATIO STATISTICS
 The proof of [THM-3.7.1] uses several inequalities that are not always tight:
 
 1. **The max operator is 1-Lipschitz**: The key step uses
-   $$|\max_a f(a) - \max_a g(a)| \leq \max_a |f(a) - g(a)|$$
-   This is equality only when the argmax is the same for both functions. When $V_1$ and $V_2$ induce different optimal actions at some state, the actual difference is smaller.
+	   $$|\sup_a f(a) - \sup_a g(a)| \leq \sup_a |f(a) - g(a)|$$
+	   In the finite-action case, $\sup$ is $\max$. Equality holds only when the maximizers coincide for both functions. When $V_1$ and $V_2$ induce different optimal actions at some state, the actual difference is smaller.
 
 2. **Transition probability averaging**: The expected future value is
-   $$\sum_{s'} P(s'|s,a)[V_1(s') - V_2(s')]$$
+	   $$\sum_{s'} P(s'|s,a)[V_1(s') - V_2(s')]$$
    Unless $V_1 - V_2$ has constant sign across all states, this sum is strictly less than $\|V_1 - V_2\|_\infty$.
 
 3. **Structure in the MDP**: Real MDPs have structure. Not all $(V_1, V_2)$ pairs achieve the worst case. The bound $\gamma$ is tight only for adversarially constructed examples.
 
-**Practical implication**: Value iteration often converges **faster** than the worst-case $\gamma^k$ rate. This is good news for practitioners.
+**Practical implication**: Value iteration can converge faster than the worst-case $\gamma^k$ bound; the contraction argument provides a guarantee, not a runtime prediction.
 
 ### Task 2: Multiple Seeds and Extrema
 
@@ -94,14 +99,14 @@ Running across 100 seeds:
 results = lab_3_1_contraction_ratio_tracker(n_seeds=100, verbose=False)
 print(f"Min ratio: {results['min']:.4f}")
 print(f"Max ratio: {results['max']:.4f}")
-print(f"Slack (γ - max): {results['slack']:.4f}")
+print(f"Slack (gamma - max): {results['slack']:.4f}")
 ```
 
 **Output:**
 ```
-Min ratio: 0.7234
-Max ratio: 0.8956
-Slack (γ - max): 0.0044
+Min ratio: 0.2015
+Max ratio: 0.8937
+Slack (gamma - max): 0.0063
 ```
 
 The maximum observed ratio approaches but never exceeds $\gamma = 0.9$, confirming [THM-3.7.1].
@@ -118,20 +123,19 @@ The maximum observed ratio approaches but never exceeds $\gamma = 0.9$, confirmi
 
 ### Theoretical Foundation
 
-From [THM-3.6.2-Banach] (Banach Fixed-Point Theorem), value iteration satisfies:
+From [COR-3.7.3] (see the rate bound [EQ-3.18]), value iteration satisfies:
 
 $$
-\|V_k - V^*\|_\infty \leq \gamma^k \|V_0 - V^*\|_\infty
-\tag{Rate}
+\|V_k - V^*\|_\infty \leq \frac{\gamma^k}{1-\gamma}\|\mathcal{T}V_0 - V_0\|_\infty.
 $$
 
-To achieve tolerance $\varepsilon$, we need $\gamma^k \|V_0 - V^*\|_\infty < \varepsilon$:
+To achieve tolerance $\varepsilon$, it suffices to choose $k$ so that the right-hand side is at most $\varepsilon$. Writing $C := \|\mathcal{T}V_0 - V_0\|_\infty/(1-\gamma)$, this is the condition $\gamma^k C \le \varepsilon$, hence:
 
 $$
-k > \frac{\log(\|V_0 - V^*\|_\infty / \varepsilon)}{\log(1/\gamma)} \approx \frac{\log(1/\varepsilon)}{1-\gamma}
+k > \frac{\log(C / \varepsilon)}{\log(1/\gamma)} \approx \frac{\log(C/\varepsilon)}{1-\gamma},
 $$
 
-where we used $\log(1/\gamma) \approx 1 - \gamma$ for $\gamma$ close to 1. Thus **iteration complexity scales as $O(1/(1-\gamma))$**.
+where we used $\log(1/\gamma) \approx 1 - \gamma$ for $\gamma$ close to 1. For fixed tolerance (and problem-dependent $C$), **iteration complexity scales as $O(1/(1-\gamma))$**.
 
 ### Solution
 
@@ -155,26 +159,27 @@ MDP Configuration:
   States: 3, Actions: 2
   Convergence tolerance: 1e-06
 
-Running value iteration for γ ∈ [0.5, 0.7, 0.9, 0.95, 0.99]...
+Running value iteration for gamma in [0.5, 0.7, 0.9, 0.95, 0.99]...
 
-γ        Iters    1/(1-γ)    Ratio
+gamma    Iters    1/(1-gamma)    Ratio
 ----------------------------------------
-0.50     19       2.0        9.50
-0.70     34       3.3        10.24
-0.90     71       10.0       7.10
-0.95     122      20.0       6.10
-0.99     451      100.0      4.51
+0.50     21       2.0        10.50
+0.70     39       3.3        11.70
+0.90     128      10.0       12.80
+0.95     261      20.0       13.05
+0.99     1327     100.0      13.27
 
 ==================================================
-ANALYSIS: Iteration Count vs 1/(1-γ)
+ANALYSIS: Iteration Count vs 1/(1-gamma)
 ==================================================
 
-Linear fit: Iters ≈ 4.67 × 1/(1-γ) + 11.2
+Linear fit: Iters ~ 13.32 * 1/(1-gamma) + -5.5
 
-Theory predicts: Iters ~ C · 1/(1-γ) · log(1/ε)
-  With ε = 1e-06, log(1/ε) ≈ 13.8
-  Expected slope ≈ log(1/ε) ≈ 13.8
-  Observed slope: 4.67
+Theory predicts: Iters ~ C * 1/(1-gamma) * log(1/eps)
+  With eps = 1e-06, log(1/eps) ~ 13.8
+  Expected slope ~ log(1/eps) ~ 13.8
+  Observed slope: 13.32
+...
 ```
 
 ### Analysis: The $O(1/(1-\gamma))$ Relationship
@@ -183,25 +188,22 @@ The iteration count scales approximately as $1/(1-\gamma)$. Let's understand why
 
 | $\gamma$ | Effective Horizon $\frac{1}{1-\gamma}$ | Iterations | Ratio |
 |----------|----------------------------------------|------------|-------|
-| 0.5      | 2                                      | 19         | 9.5   |
-| 0.7      | 3.3                                    | 34         | 10.2  |
-| 0.9      | 10                                     | 71         | 7.1   |
-| 0.95     | 20                                     | 122        | 6.1   |
-| 0.99     | 100                                    | 451        | 4.5   |
+| 0.5      | 2                                      | 21         | 10.5  |
+| 0.7      | 3.3                                    | 39         | 11.7  |
+| 0.9      | 10                                     | 128        | 12.8  |
+| 0.95     | 20                                     | 261        | 13.1  |
+| 0.99     | 100                                    | 1327       | 13.3  |
 
 **Key observations:**
 
 1. **Linear scaling confirmed**: Iterations grow approximately linearly with $1/(1-\gamma)$.
 
-2. **The constant factor**: The ratio (Iters / Horizon) decreases as $\gamma \to 1$ because:
-   - The MDP structure remains fixed
-   - Larger $\gamma$ means more "smoothing" of value differences
-   - Contraction is tighter in practice for larger $\gamma$
+2. **The constant factor**: The ratio (Iters / Horizon) is roughly constant and close to $\log(1/\\varepsilon)$ for fixed tolerance $\varepsilon$ (up to problem-dependent constants hidden in the initial error term). This is consistent with the contraction bound derived from [THM-3.6.2-Banach].
 
 3. **Computational cost diverges**: As $\gamma \to 1$ (infinite horizon):
-   - $\gamma = 0.99$: ~450 iterations
-   - $\gamma = 0.999$: ~4500 iterations (extrapolated)
-   - $\gamma = 0.9999$: ~45000 iterations (extrapolated)
+   - $\gamma = 0.99$: ~1300 iterations (this run)
+   - $\gamma = 0.999$: ~13000 iterations (rough extrapolation)
+   - $\gamma = 0.9999$: ~130000 iterations (rough extrapolation)
 
 **Practical guidance**: Use the smallest $\gamma$ that captures the relevant planning horizon. Unnecessarily large $\gamma$ wastes computation.
 
@@ -221,25 +223,28 @@ perturb_results = extended_perturbation_sensitivity(
 
 **Actual Output:**
 ```
-==================================================
+======================================================================
 Extended Lab: Perturbation Sensitivity Analysis
-==================================================
+======================================================================
 
-Original MDP (γ = 0.9):
-  V* = [8.234, 9.012, 7.456]
+Original MDP (gamma = 0.9):
+  V* = [7.45069962 6.50651745 5.63453744]
 
-Theoretical bound: ||V*_perturbed - V*||∞ ≤ ||ΔR||∞ / (1-γ)
-  With γ = 0.9, bound = ||ΔR||∞ / 0.10 = 10.0 × ||ΔR||∞
+Theoretical bound [PROP-3.7.4]: ||V*_perturbed - V*||_inf <= ||DeltaR||_inf / (1-gamma)
+  With gamma = 0.9, bound = ||DeltaR||_inf / 0.10 = 10.0 * ||DeltaR||_inf
 
-||ΔR||∞    Bound        Mean ||ΔV*||    Max ||ΔV*||     Bound OK?
+||DeltaR||_inf Bound        Mean ||DeltaV*||   Max ||DeltaV*||    Bound OK?
 -----------------------------------------------------------------
-0.01       0.100        0.0312          0.0478          ✓
-0.05       0.500        0.1623          0.2891          ✓
-0.10       1.000        0.3245          0.5234          ✓
-0.20       2.000        0.6512          1.1023          ✓
-0.50       5.000        1.6234          2.8912          ✓
+0.01       0.100        0.0400          0.0840          OK
+0.05       0.500        0.2000          0.3623          OK
+0.10       1.000        0.4028          0.6865          OK
+0.20       2.000        0.7811          1.7013          OK
+0.50       5.000        1.5165          3.2851          OK
 
-All perturbation bounds satisfied: ✓ YES
+==================================================
+All perturbation bounds satisfied: YES
+==================================================
+...
 ```
 
 **Interpretation**: The sensitivity bound $\|V^*_{perturbed} - V^*\|_\infty \leq \|\Delta R\|_\infty / (1-\gamma)$ tells us:
@@ -247,10 +252,10 @@ All perturbation bounds satisfied: ✓ YES
 1. **Reward errors amplify**: Small errors in reward estimation cause larger errors in value function, amplified by $1/(1-\gamma)$.
 
 2. **$\gamma$ controls sensitivity**: Higher $\gamma$ means more sensitivity:
-   - $\gamma = 0.9$: 10× amplification
-   - $\gamma = 0.99$: 100× amplification
+   - $\gamma = 0.9$: 10x amplification
+   - $\gamma = 0.99$: 100x amplification
 
-3. **Practical implication**: In long-horizon problems, reward modeling errors matter MORE. Be careful with reward design!
+3. **Practical implication**: In long-horizon problems, reward modeling errors matter more; this motivates careful reward design and validation.
 
 ---
 
@@ -258,7 +263,7 @@ All perturbation bounds satisfied: ✓ YES
 
 **Goal:** Empirically verify [THM-3.6.2-Banach]:
 1. **Existence**: A unique fixed point $V^*$ exists
-2. **Convergence**: From ANY $V_0$, value iteration converges to $V^*$
+2. **Convergence**: From any $V_0$, value iteration converges to $V^*$
 3. **Rate**: $\|V_k - V^*\|_\infty \leq \gamma^k \|V_0 - V^*\|_\infty$
 
 ### Solution
@@ -279,47 +284,48 @@ banach_results = extended_banach_convergence_verification(
 Extended Lab: Banach Fixed-Point Theorem Verification
 ======================================================================
 
-Reference V* (from V₀ = 0):
-  V* = [8.234, 9.012, 7.456]
-  Converged in 71 iterations
+Reference V* (from V0 = 0):
+  V* = [7.45070814 6.50652596 5.63454596]
+  Converged in 215 iterations
 
 Testing convergence from 10 random initializations...
 
-Init #   ||V₀||∞      Iters    ||V_final - V*||∞
+Init #   ||V0||_inf   Iters    ||V_final - V*||_inf
 --------------------------------------------------
-1        23.45        71       2.34e-11
-2        78.12        74       1.89e-11
-3        5.67         68       3.12e-11
-4        156.34       77       2.56e-11
-5        0.89         65       1.45e-11
-6        42.10        72       2.01e-11
-7        91.23        75       2.78e-11
-8        12.34        69       1.67e-11
-9        203.45       79       3.45e-11
-10       34.56        71       1.98e-11
+1        80.73        235      1.72e-09
+2        13.44        220      3.15e-11
+3        12.03        203      1.77e-09
+4        72.98        203      1.16e-11
+5        53.61        190      3.57e-11
+6        92.98        220      1.71e-09
+7        41.55        226      1.72e-09
+8        34.85        206      1.74e-09
+9        37.55        227      1.76e-09
+10       11.65        206      5.25e-12
 
 ==================================================
 BANACH FIXED-POINT THEOREM VERIFICATION
 ==================================================
 
 [THM-3.6.2-Banach] Verification Results:
-  (1) Existence:   V* exists ✓
-  (2) Uniqueness:  All 10 initializations → same V*: ✓
-  (3) Convergence: All trials converged ✓
-  (4) Rate bound:  γᵏ bound violated 0 times across all trials ✓
+  (1) Existence:   V* exists OK
+  (2) Uniqueness:  All 10 initializations -> same V*: OK
+  (3) Convergence: All trials converged OK
+  (4) Rate bound:  gamma^k bound violated 0 times across all trials OK
+...
 ```
 
 ### Why This Matters
 
 The Banach Fixed-Point Theorem provides **ironclad guarantees**:
 
-1. **Global convergence**: No matter where you start, you WILL converge to $V^*$. This is why value iteration is so robust---no clever initialization required.
+1. **Global convergence**: No matter where we start, we converge to $V^*$. This is why value iteration is robust---no clever initialization is required.
 
-2. **Unique optimum**: There's exactly one optimal value function. No local optima to worry about, no sensitivity to initialization (for finding the optimal value).
+2. **Unique optimum**: There is exactly one optimal value function. No local optima to worry about, no sensitivity to initialization (for finding the optimal value).
 
-3. **Exponential convergence**: Error shrinks by factor $\gamma$ each iteration. This is FAST---much faster than the $O(1/k)$ rate of gradient descent.
+3. **Exponential convergence**: Error shrinks by factor $\gamma$ each iteration, in contrast to the $O(1/k)$ rates typical of first-order optimization methods.
 
-**Contrast with general optimization**: In neural network training, local optima, saddle points, and initialization sensitivity are major concerns. The Bellman operator's contraction property eliminates all these issues. This is why dynamic programming works so reliably when it's applicable.
+**Contrast with general optimization**: In neural network training, local optima, saddle points, and initialization sensitivity are major concerns. The contraction property of the Bellman operator eliminates all these issues. This is why dynamic programming works so reliably when it is applicable.
 
 ---
 
@@ -347,15 +353,15 @@ Extended Lab: Discount Factor Analysis
 MDP: 3 states, 2 actions
 Convergence tolerance: 1e-08
 
-γ      Horizon    Iters    ||V*||∞    Avg Ratio
+gamma  Horizon    Iters    ||V*||_inf    Avg Ratio
 --------------------------------------------------
-0.00   1.0        1        1.200      0.000
-0.30   1.4        4        1.674      0.234
-0.50   2.0        9        2.234      0.456
-0.70   3.3        22       3.456      0.678
-0.90   10.0       71       8.234      0.872
-0.95   20.0       122      14.567     0.934
-0.99   100.0      451      67.890     0.987
+0.00   1.0        2        1.200      0.000
+0.30   1.4        16       1.459      0.299
+0.50   2.0        27       1.950      0.500
+0.70   3.3        52       3.008      0.700
+0.90   10.0       172      7.451      0.900
+0.95   20.0       351      13.696     0.950
+0.99   100.0      1786     62.830     0.990
 ```
 
 ### Key Insights
@@ -364,11 +370,11 @@ Convergence tolerance: 1e-08
    - $\gamma = 0.9$: Look ~10 steps ahead
    - $\gamma = 0.99$: Look ~100 steps ahead
 
-**2. The bandit case ($\gamma = 0$)**: Converges in ONE iteration! Why? Because
+**2. The bandit case ($\gamma = 0$)**: A single Bellman backup reaches the fixed point, because
    $$V(s) = \max_a R(s,a)$$
-   requires no bootstrapping from future values. This is the contextual bandit from Chapter 1.
+   requires no bootstrapping from future values. (With an update-based stopping rule $\|V_{k+1}-V_k\|_\infty<\varepsilon$, one extra iteration is used to *confirm* the fixed point numerically.)
 
-**3. Value magnitude grows**: As $\gamma$ increases, $V^*$ accumulates more total discounted reward. With $\gamma = 0.99$, values are ~50× larger than $\gamma = 0.5$.
+**3. Value magnitude grows**: As $\gamma$ increases, $V^*$ accumulates more total discounted reward. In this toy MDP, $\|V^*\|_\infty$ at $\gamma = 0.99$ is about 32x larger than at $\gamma = 0.5$.
 
 **4. Contraction ratio approaches $\gamma$**: The empirical contraction ratio closely tracks the theoretical bound as $\gamma \to 1$.
 
@@ -385,11 +391,11 @@ These labs validated the operator-theoretic foundations of Chapter 3:
 
 | Lab | Key Discovery | Chapter Reference |
 |-----|--------------|-------------------|
-| Lab 3.1 | Contraction ratio ≤ γ always (with slack) | [THM-3.7.1], [EQ-3.16] |
-| Lab 3.2 | Iterations scale as O(1/(1-γ)) | [THM-3.6.2-Banach] |
-| Extended: Perturbation | Value errors ≤ reward errors / (1-γ) | Corollary 3.7.3 |
-| Extended: Discount | γ controls horizon, sensitivity, complexity | Section 3.4 |
-| Extended: Banach | Global convergence from ANY initialization | [THM-3.6.2-Banach] |
+| Lab 3.1 | Contraction ratio <= gamma always (with slack) | [THM-3.7.1], [EQ-3.16] |
+| Lab 3.2 | Iterations scale as $O(1/(1-\gamma))$ | [THM-3.6.2-Banach] |
+| Extended: Perturbation | Value errors <= reward errors / (1-gamma) | [PROP-3.7.4] |
+| Extended: Discount | gamma controls horizon, sensitivity, complexity | Section 3.4 |
+| Extended: Banach | Global convergence from any initialization | [THM-3.6.2-Banach] |
 
 **Key Lessons:**
 
@@ -399,7 +405,7 @@ These labs validated the operator-theoretic foundations of Chapter 3:
 
 3. **$\gamma$ is a complexity dial**: Higher $\gamma$ means longer horizons, larger values, more iterations, and more sensitivity to errors. Choose wisely.
 
-4. **Global convergence is remarkable**: Unlike deep learning where initialization matters enormously, value iteration converges to the same $V^*$ from ANY starting point. This robustness comes from the contraction property.
+4. **Global convergence is remarkable**: Unlike many non-convex optimization problems where initialization can matter, value iteration converges to the same $V^*$ from any starting point. This robustness comes from the contraction property.
 
 5. **Perturbation sensitivity scales with horizon**: The $1/(1-\gamma)$ amplification factor appears everywhere---in iteration count, value magnitude, and error sensitivity. Long-horizon RL is fundamentally harder.
 
@@ -411,7 +417,7 @@ These theoretical properties explain why:
 - **Reward design matters** (errors amplify by $1/(1-\gamma)$)
 - **Discount tuning is important** (it controls the entire complexity profile)
 
-Chapter 4 begins building the simulator where we'll apply these foundations.
+Chapter 4 begins building the simulator where we will apply these foundations.
 
 ---
 
@@ -421,19 +427,19 @@ All solutions are in `scripts/ch03/lab_solutions.py`:
 
 ```bash
 # Run all labs
-python scripts/ch03/lab_solutions.py --all
+.venv/bin/python scripts/ch03/lab_solutions.py --all
 
 # Run specific lab
-python scripts/ch03/lab_solutions.py --lab 3.1
-python scripts/ch03/lab_solutions.py --lab 3.2
+.venv/bin/python scripts/ch03/lab_solutions.py --lab 3.1
+.venv/bin/python scripts/ch03/lab_solutions.py --lab 3.2
 
 # Run extended labs
-python scripts/ch03/lab_solutions.py --extended perturbation
-python scripts/ch03/lab_solutions.py --extended discount
-python scripts/ch03/lab_solutions.py --extended banach
+.venv/bin/python scripts/ch03/lab_solutions.py --extended perturbation
+.venv/bin/python scripts/ch03/lab_solutions.py --extended discount
+.venv/bin/python scripts/ch03/lab_solutions.py --extended banach
 
 # Interactive menu
-python scripts/ch03/lab_solutions.py
+.venv/bin/python scripts/ch03/lab_solutions.py
 ```
 
 ---
@@ -468,7 +474,7 @@ Taking supremum over all $s$: $\|\mathcal{T}V_1 - \mathcal{T}V_2\|_\infty \leq \
 When $\gamma = 0$, the Bellman equation reduces to:
 $$V^*(s) = \max_a R(s, a)$$
 
-This is exactly the Chapter 1 bandit optimality condition [EQ-1.9]--[EQ-1.10]: the optimal value equals the max Q-value. The Bellman operator becomes $(\mathcal{T}V)(s) = \max_a R(s,a)$, which is independent of $V$! This is why bandits converge in one iteration.
+This is exactly the Chapter 1 bandit optimality condition ([EQ-1.9] and [EQ-1.10]): the optimal value equals the statewise supremum of the immediate $Q$-values. The Bellman operator with $\gamma = 0$ becomes $(\mathcal{T}V)(s) = \sup_a R(s,a)$, which does not depend on $V$; hence value iteration reaches the fixed point in one step.
 
 ---
 

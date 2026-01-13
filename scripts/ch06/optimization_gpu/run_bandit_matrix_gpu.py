@@ -131,7 +131,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("docs/book/drafts/ch06/data"),
+        default=Path("docs/book/ch06/data"),
     )
     parser.add_argument("--batch-size", type=int, default=1_024)
     parser.add_argument(

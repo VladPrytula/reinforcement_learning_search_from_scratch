@@ -1,0 +1,2484 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% LaTeX preamble for PDF compilation
+% Minimal configuration - source files use proper LaTeX commands
+
+\usepackage[most]{tcolorbox}
+\usepackage{newunicodechar}
+
+% Unicode used in admonition/callout titles (also appears in PDF bookmarks).
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+
+% =============================================================================
+% CALLOUT / ADMONITION BOXES (tcolorbox)
+%
+% Used by:
+% - docs/book/callouts.lua  (::: fenced div callouts)
+% - docs/book/admonitions.lua (MkDocs !!! / ??? admonitions)
+% =============================================================================
+
+% Note box (blue) - matches callouts.lua
+\newtcolorbox{CalloutNote}[1]{
+  breakable,
+  colback=blue!4!white,
+  colframe=blue!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% MkDocs admonitions use NoteBox (keep it as an alias).
+\newtcolorbox{NoteBox}[1]{
+  breakable,
+  colback=blue!4!white,
+  colframe=blue!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Tip box (green)
+\newtcolorbox{TipBox}[1]{
+  breakable,
+  colback=green!4!white,
+  colframe=green!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Warning box (orange)
+\newtcolorbox{WarningBox}[1]{
+  breakable,
+  colback=orange!4!white,
+  colframe=orange!60!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Danger box (red)
+\newtcolorbox{DangerBox}[1]{
+  breakable,
+  colback=red!4!white,
+  colframe=red!50!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Info box (cyan)
+\newtcolorbox{InfoBox}[1]{
+  breakable,
+  colback=cyan!4!white,
+  colframe=cyan!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Example box (purple)
+\newtcolorbox{ExampleBox}[1]{
+  breakable,
+  colback=violet!4!white,
+  colframe=violet!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Important box (magenta)
+\newtcolorbox{ImportantBox}[1]{
+  breakable,
+  colback=magenta!4!white,
+  colframe=magenta!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Caution box (yellow)
+\newtcolorbox{CautionBox}[1]{
+  breakable,
+  colback=yellow!10!white,
+  colframe=yellow!60!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Abstract box (gray)
+\newtcolorbox{AbstractBox}[1]{
+  breakable,
+  colback=gray!4!white,
+  colframe=gray!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Question box (teal)
+\newtcolorbox{QuestionBox}[1]{
+  breakable,
+  colback=teal!4!white,
+  colframe=teal!40!black,
+  boxrule=0.5pt,
+  arc=2pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily
+}
+
+% Quote box (light gray)
+\newtcolorbox{QuoteBox}[1]{
+  breakable,
+  colback=gray!2!white,
+  colframe=gray!30!black,
+  boxrule=0.5pt,
+  arc=0pt,
+  leftrule=3pt,
+  title={#1},
+  fonttitle=\bfseries\sffamily\itshape
+}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\section{Chapter 1 --- Search Ranking as Optimization: From Business
+Goals to
+RL}\label{chapter-1-search-ranking-as-optimization-from-business-goals-to-rl}
+
+\emph{Vlad Prytula}
+
+\subsection{1.1 The Problem: Balancing Multiple Objectives in
+Search}\label{the-problem-balancing-multiple-objectives-in-search}
+
+\textbf{A concrete dilemma.} A pet supplies retailer faces a challenge.
+User A searches for ``cat food''---a price-sensitive buyer who abandons
+carts if shipping costs are high. User B issues the same query---a
+premium shopper loyal to specific brands, willing to pay more for
+quality. The current search system shows them \textbf{identical
+rankings} because boost weights are static, tuned once for the
+``average'' user. User A sees expensive premium products and abandons.
+User B sees discount items and questions the retailer's quality. Both
+users are poorly served by a one-size-fits-all approach.
+
+\textbf{The business tension.} Every e-commerce search system must
+balance competing objectives:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Revenue (GMV)}: Show products users will buy, at good prices
+\item
+  \textbf{Profitability (CM2)}: Prioritize items with healthy margins
+\item
+  \textbf{Strategic goals (STRAT)}: Promote strategic products (new
+  launches, house brands, clearance)---tracked as \textbf{purchases} in
+  the reward and \textbf{exposure} in guardrails
+\item
+  \textbf{User experience}: Maintain relevance, diversity, and
+  satisfaction
+\end{itemize}
+
+Traditional search systems rely on \textbf{manually tuned boost
+parameters}: category multipliers, price/discount bonuses, profit
+margins, strategic product flags. Before writing the scoring function,
+we fix our spaces.
+
+\textbf{Spaces (Working Definitions).} \phantomsection\label{DEF-1.1.0}
+
+\begin{itemize}
+\tightlist
+\item
+  \(\mathcal{P}\): \textbf{Product catalog}, a finite set of \(M\)
+  products. Each \(p \in \mathcal{P}\) carries attributes (price,
+  category, margin, embedding).
+\item
+  \(\mathcal{Q}\): \textbf{Query space}, the set of possible search
+  queries. In practice, a finite vocabulary or embedding space
+  \(\mathcal{Q} \subset \mathbb{R}^{d_q}\).
+\item
+  \(\mathcal{U}\): \textbf{User space}, characterizing users by segment,
+  purchase history, and preferences. Finite segments or embedding space
+  \(\mathcal{U} \subset \mathbb{R}^{d_u}\).
+\item
+  \(\mathcal{X}\): \textbf{Context space}, typically
+  \(\mathcal{X} \subseteq \mathcal{U} \times \mathcal{Q} \times \mathcal{H} \times \mathcal{T}\)
+  where \(\mathcal{H}\) is session history and \(\mathcal{T}\) is time
+  features. We assume \(\mathcal{X}\) is a compact subset of
+  \(\mathbb{R}^{d_x}\) for some \(d_x\) (verified in Chapter 4).
+\item
+  \(\mathcal{A} = [-a_{\max}, +a_{\max}]^K\): \textbf{Action space}, a
+  compact subset of \(\mathbb{R}^K\) (boost weights bounded by
+  \(a_{\max} > 0\)).
+\item
+  \(\Omega\): \textbf{Outcome space}, the sample space for stochastic
+  user behavior (clicks, purchases, abandonment). Equipped with
+  probability measure \(\mathbb{P}\) (formalized in Chapter 2).
+\end{itemize}
+
+\emph{Measure-theoretic structure (\(\sigma\)-algebras, probability
+kernels, conditional distributions) is developed in Chapter 2. For this
+chapter, we work with these as sets supporting the functions and
+expectations below.}
+
+A typical scoring function looks like:
+
+\[
+s: \mathcal{P} \times \mathcal{Q} \times \mathcal{U} \to \mathbb{R}, \quad s(p, q, u) = r_{\text{ES}}(q, p) + \sum_{k=1}^{K} w_k \phi_k(p, u, q)
+\tag{1.1}
+\label{EQ-1.1}\]
+
+where: -
+\(r_{\text{ES}}: \mathcal{Q} \times \mathcal{P} \to \mathbb{R}_+\) is a
+\textbf{base relevance score} (e.g., BM25 or neural embeddings) -
+\(\phi_k: \mathcal{P} \times \mathcal{U} \times \mathcal{Q} \to \mathbb{R}\)
+are \textbf{engineered features} (margin, discount, bestseller status,
+category match) - \(w_k \in \mathbb{R}\) are \textbf{manually tuned
+weights}, collected as
+\(\mathbf{w} = (w_1, \ldots, w_K) \in \mathbb{R}^K\)
+
+Note that we've made the user dependence explicit: \(s(p, q, u)\)
+depends on product \(p \in \mathcal{P}\), query \(q \in \mathcal{Q}\),
+\textbf{and user} \(u \in \mathcal{U}\) through the feature functions
+\(\phi_k\).
+
+\textbf{Why manual tuning fails.} The core problem: \(w_k\) cannot adapt
+to context. The ``price hunter'' (User A) cares about bulk pricing and
+discounts. The ``premium shopper'' (User B) values quality over price. A
+generic query (``cat food'') tolerates exploration; a specific query
+(``Royal Canin Veterinary Diet Renal Support'') demands precision.
+
+\textbf{Numerical evidence of the problem.} Suppose we tune
+\(w_{\text{discount}} = 2.0\) to maximize average GMV across all users.
+For price hunters, this works well---they click frequently on discounted
+items. But for premium shoppers, this destroys relevance---they see
+cheap products ranked above their preferred brands, leading to zero
+purchases and session abandonment. Conversely, if we tune
+\(w_{\text{discount}} = 0.3\) for premium shoppers, price hunters see
+full-price items and also abandon.
+
+Manual weights are \textbf{static, context-free, and suboptimal} by
+design. We need weights that adapt.
+
+\textbf{Our thesis}: Treat
+\(\mathbf{w} = (w_1, \ldots, w_K) \in \mathbb{R}^K\) as \textbf{actions
+to be learned}, adapting to user and query context via reinforcement
+learning.
+
+In Chapter 0 (Motivation: A First RL Experiment), we built a tiny,
+code-first prototype of this idea: three synthetic user types, a small
+action grid of boost templates, and a tabular Q-learning agent that
+learned context-adaptive boosts. In this chapter, we strip away
+implementation details and \textbf{formalize and generalize} that
+experiment as a contextual bandit with constraints.
+
+\begin{quote}
+\textbf{Notation}
+
+Throughout this chapter: - \textbf{Spaces}: \(\mathcal{X}\) (contexts),
+\(\mathcal{A}\) (actions), \(\Omega\) (outcomes), \(\mathcal{Q}\)
+(queries), \(\mathcal{P}\) (products), \(\mathcal{U}\) (users) -
+\textbf{Distributions}: \(\rho\) (context distribution over
+\(\mathcal{X}\)), \(P(\omega \mid x, a)\) (outcome distribution) -
+\textbf{Probability}: \(\mathbb{P}\) (probability measure),
+\(\mathbb{E}\) (expectation) - \textbf{Real/natural numbers}:
+\(\mathbb{R}\), \(\mathbb{N}\), \(\mathbb{R}_+\) (non-negative reals) -
+\textbf{Norms}: \(\|\cdot\|_2\) (Euclidean), \(\|\cdot\|_\infty\)
+(supremum) - \textbf{Operators}: \(\mathcal{T}\) (Bellman operator,
+introduced in Chapter 3)
+
+We index equations as EQ-X.Y, theorems as THM-X.Y, definitions as
+DEF-X.Y, remarks as REM-X.Y, and assumptions as ASM-X.Y for
+cross-reference. Anchors like \texttt{\{\#THM-1.7.2\}} enable internal
+linking.
+\end{quote}
+
+\begin{quote}
+\textbf{On Mathematical Rigor}
+
+This chapter provides \textbf{working definitions} and builds intuition
+for the RL formulation. We specify function signatures (domains,
+codomains, types) but defer \textbf{measure-theoretic
+foundations}---\(\sigma\)-algebras on \(\mathcal{X}\) and \(\Omega\),
+measurability conditions, integrability requirements---to
+\textbf{Chapters 2--3}. Key results (existence of optimal policies and
+the regret lower-bound preview in §1.7.6) state their assumptions
+explicitly; verification that our search setting satisfies these
+assumptions appears in later chapters. Readers seeking Bourbaki-level
+rigor should treat this chapter as motivation and roadmap; the rigorous
+development begins in Chapter 2.
+\end{quote}
+
+This chapter establishes the mathematical foundation: we formulate
+search ranking as a \textbf{constrained optimization problem}, then show
+why it requires \textbf{contextual decision-making} (bandits), and
+finally preview the RL framework we'll develop.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1.2 From Clicks to Outcomes: The Reward
+Function}\label{from-clicks-to-outcomes-the-reward-function}
+
+Let's make the business objectives precise. Consider a single search
+session:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{User} \(u\) with segment
+  \(\sigma \in \{\text{price\_hunter}, \text{pl\_lover}, \text{premium}, \text{litter\_heavy}\}\)
+  issues \textbf{query} \(q\)
+\item
+  System scores products \(\{p_1, \ldots, p_M\}\) using boost weights
+  \(\mathbf{w}\), producing ranking \(\pi\)
+\item
+  User examines results with \textbf{position bias} (top slots get more
+  attention), clicks on subset \(C \subseteq \{1, \ldots, M\}\),
+  purchases subset \(B \subseteq C\)
+\item
+  Session generates \textbf{outcomes}: GMV, CM2 (contribution margin 2),
+  clicks, strategic purchases
+\end{enumerate}
+
+We aggregate these into a \textbf{scalar reward}:
+
+\[
+R(\mathbf{w}, u, q, \omega) = \alpha \cdot \text{GMV}(\mathbf{w}, u, q, \omega) + \beta \cdot \text{CM2}(\mathbf{w}, u, q, \omega) + \gamma \cdot \text{STRAT}(\mathbf{w}, u, q, \omega) + \delta \cdot \text{CLICKS}(\mathbf{w}, u, q, \omega)
+\tag{1.2}
+\label{EQ-1.2}\]
+
+where \(\omega \in \Omega\) represents the stochastic user behavior
+conditioned on the ranking \(\pi_{\mathbf{w}}(u, q)\) induced by boost
+weights \(\mathbf{w}\), and
+\((\alpha, \beta, \gamma, \delta) \in \mathbb{R}_+^4\) are
+\textbf{business weight parameters} reflecting strategic priorities. The
+outcome components (GMV, CM2, STRAT, CLICKS) depend on the full context
+\((\mathbf{w}, u, q)\) through the ranking, though we often abbreviate
+this dependence when clear from context.
+
+\begin{CalloutNote}{Two strategic quantities: reward vs. constraints}
+
+In the reward \eqref{EQ-1.2}, \(\text{STRAT}(\omega)\) counts
+\textbf{strategic purchases} in the session (purchased items whose
+\texttt{strategic\_flag} is true). In guardrails like \eqref{EQ-1.3b},
+we instead track \textbf{strategic exposure}---how many strategic items
+were shown in the ranking, regardless of whether they were bought.
+
+We keep both on purpose: reward incentivizes realized strategic
+outcomes, while exposure floors enforce minimum visibility even before
+conversion. In code, the reward-side quantity appears as
+\texttt{RewardBreakdown.strat} in
+\texttt{zoosim/dynamics/reward.py:34-39}.
+
+\end{CalloutNote}
+
+\textbf{Standing assumption (Integrability).} Throughout this chapter,
+we assume
+\(R: \mathcal{A} \times \mathcal{U} \times \mathcal{Q} \times \Omega \to \mathbb{R}\)
+is measurable in \(\omega\) and
+\(\mathbb{E}[|R(\mathbf{w}, u, q, \omega)|] < \infty\) for all
+\((\mathbf{w}, u, q)\). This ensures expectations like
+\(\mathbb{E}[R \mid \mathbf{w}]\) are well-defined. The formal
+regularity conditions appear as \textbf{Assumption 2.6.1 (OPE
+Probability Conditions)} in Chapter 2, §2.6; verification for our
+bounded-reward setting is in Chapter 2.
+
+\textbf{Remark} (connection to Chapter 0). The Chapter 0 toy used a
+simplified instance of this reward with
+\((\alpha,\beta,\gamma,\delta) \approx (0.6, 0.3, 0, 0.1)\) and no
+explicit STRAT term. All analysis in this chapter applies to that
+setting.
+
+\textbf{Key insight}: \(R\) depends on \(\mathbf{w}\)
+\textbf{indirectly} through the ranking \(\pi\) induced by scores from
+\eqref{EQ-1.1}. A product ranked higher gets more exposure, more clicks,
+and influences downstream purchases. This is \textbf{not a simple
+function}---it's stochastic, nonlinear, and noisy.
+
+\subsubsection{Constraints: Not All Rewards Are
+Acceptable}\label{constraints-not-all-rewards-are-acceptable}
+
+High GMV alone is insufficient. A retailer must enforce
+\textbf{guardrails}:
+
+\begin{equation}
+\mathbb{E}[\text{CM2} \mid \mathbf{w}] \geq \tau_{\text{margin}}
+\tag{1.3a}
+\end{equation} \phantomsection\label{EQ-1.3a}
+
+\begin{equation}
+\mathbb{E}[\text{Exposure}_{\text{strategic}} \mid \mathbf{w}] \geq \tau_{\text{STRAT}}
+\tag{1.3b}
+\end{equation} \phantomsection\label{EQ-1.3b}
+
+\begin{equation}
+\mathbb{E}[\Delta \text{rank@}k \mid \mathbf{w}] \leq \tau_{\text{stability}}
+\tag{1.3c}
+\end{equation} \phantomsection\label{EQ-1.3c}
+\phantomsection\label{EQ-1.3}
+
+where the notation \(\mathbb{E}[\cdot \mid \mathbf{w}]\) denotes
+expectation over stochastic user behavior \(\omega\) and context
+distribution \(\rho(x)\) when action (boost weights) \(\mathbf{w}\) is
+applied, i.e.,
+\(\mathbb{E}[\text{CM2} \mid \mathbf{w}] := \mathbb{E}_{x \sim \rho, \omega \sim P(\cdot \mid x, \mathbf{w})}[\text{CM2}(\mathbf{w}, x, \omega)]\).
+
+\textbf{Definition} (\(\Delta\text{rank@}k\)). Let
+\(\pi_{\mathbf{w}}(q) = (p_1, \ldots, p_M)\) be the ranking induced by
+boost weights \(\mathbf{w}\) for query \(q\), and let
+\(\pi_{\text{base}}(q)\) be a reference ranking (e.g., the production
+baseline). Let \(\text{TopK}_{\mathbf{w}}(q)\) and
+\(\text{TopK}_{\text{base}}(q)\) denote the \emph{sets} of top-\(k\)
+items under these rankings. Define: \[
+\Delta\text{rank@}k(\mathbf{w}, q) := 1 - \frac{|\text{TopK}_{\mathbf{w}}(q) \cap \text{TopK}_{\text{base}}(q)|}{k}
+\] the fraction of top-\(k\) items that changed (set churn). Values
+range in \([0, 1]\); \(\Delta\text{rank@}k = 0\) means identical
+top-\(k\) \emph{set} (reordering within the top-\(k\) does not count),
+and \(\Delta\text{rank@}k = 1\) means the two top-\(k\) sets are
+disjoint.
+
+This is the set-based stability metric used in Chapter 10
+\hyperref[DEF-10.4]{10.4} and implemented in
+\texttt{zoosim/monitoring/metrics.py:89-118}. A position-wise mismatch
+rate is a different metric; if we use it, we will name it explicitly and
+not call it ``Delta-Rank@k''.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{CM2 floor} (1.3a): Prevent sacrificing profitability for
+  revenue
+\item
+  \textbf{Exposure floor} (1.3b): Ensure strategic products (new
+  launches, house brands) get visibility
+\item
+  \textbf{Rank stability} (1.3c): Limit reordering volatility (users
+  expect consistency); \(\tau_{\text{stability}} \approx 0.2\) is
+  typical
+\end{itemize}
+
+\begin{quote}
+Taken together, the scalar objective \eqref{EQ-1.2} and constraints
+(1.3a--c) define a \textbf{constrained stochastic optimization} problem
+over the boost weights \(\mathbf w\). Formally, we would like to choose
+\(\mathbf w\) to solve \[
+\max_{\mathbf w \in \mathbb{R}^K} \mathbb{E}_{x \sim \rho,\omega \sim P(\cdot \mid x,\mathbf w)}\big[ R(\mathbf w, x, \omega) \big]
+\quad \text{subject to (1.3a–c).}
+\] From the perspective of a single query, there is no internal state
+evolution: each query arrives with a context \(x\), we apply fixed boost
+weights \(\mathbf w\), observe a random outcome, and then move on to the
+next independent query. This ``context + one action + one noisy payoff''
+structure is exactly the \textbf{contextual bandit} template.
+
+In §1.3 we move from a single global choice of \(\mathbf w\) to an
+explicit \textbf{policy} \(\pi\) that maps each context \(x\) to boost
+weights \(\pi(x)\). In \textbf{Chapter 11}, when we introduce multi-step
+user/session dynamics with states and transitions, the resulting model
+becomes a \textbf{constrained Markov decision process (CMDP)}.
+Contextual bandits are the \(\gamma = 0\) special case of an MDP.
+\end{quote}
+
+\textbf{Now we understand the complete optimization problem:} maximize
+the scalar reward \eqref{EQ-1.2} subject to constraints \eqref{EQ-1.3}.
+This establishes what we're optimizing. Next, we'll dive deep into one
+critical component---the engagement term---before implementing the
+reward function.
+
+\begin{CalloutNote}{Code \$\textbackslash{}leftrightarrow\$ Config (constraints)}
+
+Constraint-related knobs (\texttt{MOD-zoosim.config}) live in
+configuration so experiments remain reproducible and auditable. These
+reserve the knobs for \eqref{EQ-1.3} constraint definitions:
+
+\begin{itemize}
+\tightlist
+\item
+  Rank stability multiplier (soft constraint): \texttt{lambda\_rank} in
+  \texttt{zoosim/core/config.py:230} (reserved for
+  \texttt{primal-\/-dual} constrained RL in Chapter 14; not wired in
+  current simulator)
+\item
+  Profitability floor (CM2) threshold: \texttt{cm2\_floor} in
+  \texttt{zoosim/core/config.py:232} (hard feasibility-filter pattern in
+  Chapter 10, Exercise 10.3)
+\item
+  Exposure floors (strategic products): \texttt{exposure\_floors} in
+  \texttt{zoosim/core/config.py:233} (reserved; enforcement deferred to
+  Chapter 10 hard filters and Chapter 14 soft constraints)
+\end{itemize}
+
+\textbf{Implementation status:} These config fields exist for forward
+compatibility; constraint enforcement logic appears in later chapters:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{cm2\_floor}: Active enforcement in Chapter 10 (feasibility
+  filter)
+\item
+  \texttt{exposure\_floors}: Reserved; enforcement in Chapter 10
+\item
+  \texttt{lambda\_rank}: Reserved; primal--dual optimization in Chapter
+  14
+\end{itemize}
+
+\end{CalloutNote}
+
+\subsubsection{1.2.1 The Role of Engagement in Reward
+Design}\label{REM-1.2.1}
+
+\phantomsection\label{REM-1.2.1}
+
+In practice, search objectives are \textbf{hierarchically structured},
+not flat:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Viability constraints} (must satisfy or system is unusable):
+  CTR \(> 0\), latency \(< 500\)ms, uptime \(> 99.9\%\)
+\item
+  \textbf{Business outcomes} (what we optimize): GMV, profitability
+  (CM2), strategic positioning
+\item
+  \textbf{Strategic nudges} (tiebreakers for long-term value):
+  exploration, new product exposure, brand building
+\end{enumerate}
+
+Engagement (clicks, dwell time, add-to-cart actions) \textbf{straddles
+this hierarchy}: it is partly viability (zero clicks \(\Rightarrow\)
+dead search, users abandon platform), partly outcome (clicks signal
+incomplete attribution---mobile browse, desktop purchase), and partly
+strategic (exploration value---today's clicks reveal preferences for
+tomorrow's sessions).
+
+\textbf{Why include \(\delta \cdot \text{CLICKS}\) in the reward?}
+
+We include \(\delta \cdot \text{CLICKS}\) as a \textbf{soft viability
+term} in the reward function \eqref{EQ-1.2}. This serves three purposes:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Incomplete attribution}: E-commerce has imperfect conversion
+  tracking. A user clicks product \(p\) on mobile, adds to cart,
+  completes purchase on desktop 3 days later. We observe the click, but
+  GMV attribution goes to a different session (or is lost entirely in
+  cross-device gaps). The click is a \textbf{leading indicator} of
+  future GMV not captured in \(\omega\).
+\item
+  \textbf{Exploration value}: Clicks reveal user preferences even
+  without immediate purchase. If user \(u\) clicks on premium brand
+  products but doesn't convert, we learn \(u\) is exploring that
+  segment---valuable for future sessions. This is \textbf{information
+  acquisition}: clicks are samples from the user's latent utility
+  function.
+\item
+  \textbf{Platform health}: A search system with high GMV but near-zero
+  CTR is \textbf{brittle}---one price shock or inventory gap causes
+  catastrophic user abandonment. Engagement is a \textbf{leading
+  indicator of retention}: users who click regularly have higher
+  lifetime value (LTV) than those who occasionally convert high-value
+  purchases but otherwise ignore search results.
+\end{enumerate}
+
+\textbf{The clickbait risk.} However, \textbf{\(\delta\) must be
+carefully bounded}. If \(\delta/\alpha\) is too large, the agent learns
+\textbf{``clickbait'' strategies}: optimize CTR at the expense of
+conversion rate (CVR \(= \text{purchases}/\text{clicks}\)). The
+pathological case: show irrelevant but visually attractive products
+(e.g., cute cat toys for dog owners), achieve high clicks but zero
+sales, and still get rewarded due to
+\(\delta \cdot \text{CLICKS} \gg 0\).
+
+\textbf{Practical guideline}: Set
+\(\delta/\alpha \in [0.01, 0.10]\)---engagement is a \emph{tiebreaker},
+not the primary objective. We want clicks to be a \textbf{soft
+regularizer} that prevents GMV-maximizing policies from collapsing
+engagement, not a dominant term that drives the optimization.
+
+\textbf{Diagnostic metric}: Monitor \textbf{revenue per click (RPC)} \[
+\text{RPC}_t = \frac{\sum_{i=1}^t \text{GMV}_i}{\sum_{i=1}^t \text{CLICKS}_i}
+\] (cumulative GMV per click up to episode \(t\)). If \(\text{RPC}_t\)
+drops \(>10\%\) below baseline while CTR rises during training, the
+agent is learning clickbait---reduce \(\delta\) immediately.
+
+\textbf{Control-theoretic analogy}: This is similar to LQR with
+\textbf{state and control penalties}:
+\(c(x, u) = x^\top Q x + u^\top R u\). We penalize both deviation from
+target state (GMV, CM2) and control effort (engagement as ``cost'' of
+achieving GMV). The relative weights \(Q, R\) encode the tradeoff. In
+our case, \(\alpha, \beta, \gamma, \delta\) play the role of \(Q\), and
+we're learning the optimal policy \(\pi^*(x)\) under this cost
+structure. See Appendix B (and Section 1.10) for deeper connections to
+classical control.
+
+\textbf{Multi-episode perspective} (Chapter 11 preview): In a
+\textbf{Markov Decision Process (MDP)} with inter-session dynamics,
+engagement enters \emph{implicitly} through its effect on retention and
+lifetime value:
+
+\[
+V^\pi(s_0) = \mathbb{E}_\pi\left[\sum_{t=0}^\infty \gamma^t \text{GMV}_t \mid s_0\right]
+\tag{1.2'}
+\label{EQ-1.2-prime}\]
+
+If today's clicks increase the probability that user \(u\) returns
+tomorrow (state transition
+\(s_{t+1} = f(s_t, \text{clicks}_t, \ldots)\)), then maximizing
+\eqref{EQ-1.2-prime}e automatically incentivizes engagement. We wouldn't
+need \(\delta \cdot \text{CLICKS}\) in the single-step reward---it would
+be \emph{derived} from optimal long-term value.
+
+However, the \textbf{single-step contextual bandit} (our MVP
+formulation) cannot model inter-session dynamics. Each search is treated
+as independent: user arrives, we rank, user interacts, episode
+terminates. No \(s_{t+1}\), no retention modeling. Including
+\(\delta \cdot \text{CLICKS}\) is a \textbf{heuristic proxy} for the
+missing LTV component---mathematically imperfect, but empirically
+essential for search systems.
+
+\textbf{The honest assessment}: This is a \textbf{theory-practice
+tradeoff}. The ``correct'' formulation is \eqref{EQ-1.2-prime}e
+(multi-episode MDP), but it requires modeling complex user dynamics
+(churn, seasonality, cross-session preferences) that are expensive to
+simulate and hard to learn from. The single-step approximation
+\eqref{EQ-1.2} with \(\delta \cdot \text{CLICKS}\) is
+\textbf{pragmatic}: it captures 80\% of the value with 20\% of the
+complexity. For the MVP, this is the right tradeoff. Chapter 11 extends
+to multi-episode settings where engagement is properly modeled as state
+dynamics.
+
+\begin{CalloutNote}{Cross-reference — Chapter 11}
+
+The full multi-episode treatment and implementation live in
+\texttt{Chapter\ 11\ —\ Multi-Episode\ Inter-Session\ MDP} (see
+\texttt{docs/book/syllabus.md}). There we add
+\texttt{zoosim/multi\_episode/session\_env.py} and
+\texttt{zoosim/multi\_episode/retention.py} to operationalize
+\eqref{EQ-1.2-prime}e with a retention/hazard state and validate that
+engagement raises long-term value without needing an explicit
+\(\delta \cdot \text{CLICKS}\) term.
+
+\end{CalloutNote}
+
+\begin{CalloutNote}{Code \$\textbackslash{}leftrightarrow\$ Config (reward weights)}
+
+Business weights in \texttt{RewardConfig} (\texttt{MOD-zoosim.config})
+implement \eqref{EQ-1.2} parameters and must satisfy engagement bounds
+from this section:
+
+\begin{itemize}
+\tightlist
+\item
+  \(\alpha\) (GMV): Primary objective, normalized to 1.0 by convention
+\item
+  \(\beta/\alpha\) (CM2 weight): Profit sensitivity, typically
+  \(\in [0.3, 0.8]\) (higher \(\Rightarrow\) prioritize margin over
+  revenue)
+\item
+  \(\gamma/\alpha\) (STRAT weight): Strategic priority (reward units per
+  strategic purchase; see \texttt{RewardConfig.gamma\_strat}, default
+  \(\gamma = 2.0\) in this repo)
+\item
+  \textbf{\(\delta/\alpha\) (CLICKS weight): Bounded
+  \(\in [0.01, 0.10]\) to prevent clickbait strategies}
+\end{itemize}
+
+Validation (enforced in code): see \texttt{zoosim/dynamics/reward.py:56}
+for an assertion on \(\delta/\alpha\) in the production reward path. The
+numerical range \([0.01, 0.10]\) is an engineering guardrail motivated
+by clickbait failure modes; Appendix C provides the duality background
+for constrained optimization, not a derivation of this specific bound.
+
+Diagnostic: Compute
+\(\text{RPC}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i\) after each
+policy update. If RPC drops \(>10\%\) while CTR rises, reduce \(\delta\)
+by 30--50\%.
+
+\end{CalloutNote}
+
+\begin{CalloutNote}{Code \$\textbackslash{}leftrightarrow\$ Simulator Layout}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{zoosim/core/config.py} (\texttt{MOD-zoosim.config}):
+  SimulatorConfig/RewardConfig with seeds, guardrails, and reward
+  weights
+\item
+  \texttt{zoosim/world/\{catalog,users,queries\}.py}: deterministic
+  catalog + segment + query generation (Chapter 4)
+\item
+  \texttt{zoosim/ranking/\{relevance,features\}.py}: base relevance and
+  boost feature engineering (Chapter 5)
+\item
+  \texttt{zoosim/dynamics/\{behavior,reward\}.py}
+  (\texttt{MOD-zoosim.behavior}, \texttt{MOD-zoosim.reward}):
+  click/abandonment dynamics + reward aggregation for \eqref{EQ-1.2}
+\item
+  \texttt{zoosim/envs/\{search\_env.py,gym\_env.py\}}
+  (\texttt{MOD-zoosim.env}): single-step environment and Gym wrapper
+  wiring the simulator together
+\item
+  \texttt{zoosim/multi\_episode/\{session\_env.py,retention.py\}}:
+  Chapter 11's retention-aware MDP implementing \eqref{EQ-1.2-prime}e
+\end{itemize}
+
+\end{CalloutNote}
+
+\subsubsection{Verifying the Reward
+Function}\label{verifying-the-reward-function}
+
+Before diving into theory, let's implement \eqref{EQ-1.2} and see what
+it does:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Minimal implementation of \#EQ{-}1.2 (full version: Lab 1.3 in exercises\_labs.md)}
+\KeywordTok{def}\NormalTok{ compute\_reward(gmv, cm2, strat, clicks, alpha}\OperatorTok{=}\FloatTok{1.0}\NormalTok{, beta}\OperatorTok{=}\FloatTok{0.5}\NormalTok{, gamma}\OperatorTok{=}\FloatTok{0.2}\NormalTok{, delta}\OperatorTok{=}\FloatTok{0.1}\NormalTok{):}
+    \CommentTok{"""R = alpha*GMV + beta*CM2 + gamma*STRAT + delta*CLICKS"""}
+    \ControlFlowTok{return}\NormalTok{ alpha }\OperatorTok{*}\NormalTok{ gmv }\OperatorTok{+}\NormalTok{ beta }\OperatorTok{*}\NormalTok{ cm2 }\OperatorTok{+}\NormalTok{ gamma }\OperatorTok{*}\NormalTok{ strat }\OperatorTok{+}\NormalTok{ delta }\OperatorTok{*}\NormalTok{ clicks}
+
+\CommentTok{\# Strategy A (GMV{-}focused): gmv=120, cm2=15, strat=1, clicks=3}
+\CommentTok{\# Strategy B (Balanced):    gmv=100, cm2=35, strat=3, clicks=4}
+\NormalTok{R\_A }\OperatorTok{=}\NormalTok{ compute\_reward(}\DecValTok{120}\NormalTok{, }\DecValTok{15}\NormalTok{, }\DecValTok{1}\NormalTok{, }\DecValTok{3}\NormalTok{)  }\CommentTok{\# = 128.00}
+\NormalTok{R\_B }\OperatorTok{=}\NormalTok{ compute\_reward(}\DecValTok{100}\NormalTok{, }\DecValTok{35}\NormalTok{, }\DecValTok{3}\NormalTok{, }\DecValTok{4}\NormalTok{)  }\CommentTok{\# = 118.50}
+\end{Highlighting}
+\end{Shaded}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llllll@{}}
+\toprule\noalign{}
+Strategy & GMV & CM2 & STRAT & CLICKS & Reward \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+A (GMV-focused) & 120 & 15 & 1 & 3 & \textbf{128.00} \\
+B (Balanced) & 100 & 35 & 3 & 4 & 118.50 \\
+\end{longtable}
+}
+
+Wait---Strategy A won? With profitability-focused weights
+\((\alpha=0.5, \beta=1.0, \gamma=0.5, \delta=0.1)\), the result flips:
+Strategy A scores 75.80, Strategy B scores \textbf{86.90}. The optimal
+strategy depends on business weights---this is a multi-objective
+tradeoff, not a fixed optimization. See \textbf{Lab 1.3--1.4} for full
+implementations and weight sensitivity analysis.
+
+\textbf{Revenue-per-click diagnostic} (clickbait detection): Strategy A
+gets fewer clicks (3 vs 4) but 60\% higher GMV per click (EUR 40 vs EUR
+25)---\emph{quality over quantity}. The metric
+\(\text{RPC} = \text{GMV}/\text{CLICKS}\) monitors for clickbait: if RPC
+drops while CTR rises, reduce \(\delta\) immediately. See \textbf{Lab
+1.5} for the full implementation with alerting thresholds.
+
+The bound \(\delta/\alpha = 0.10\) is at the upper limit. We recommend
+starting with \(\delta/\alpha = 0.05\) and monitoring RPC over time. If
+RPC degrades, the agent has learned to exploit the engagement term.
+
+\begin{CalloutNote}{Code \$\textbackslash{}leftrightarrow\$ Simulator}
+
+The minimal example above mirrors the simulator's reward path. In
+production, \texttt{RewardConfig} (\texttt{MOD-zoosim.config}) in
+\texttt{zoosim/core/config.py} holds the business weights, and
+\texttt{compute\_reward} (\texttt{MOD-zoosim.reward}) in
+\texttt{zoosim/dynamics/reward.py} implements \eqref{EQ-1.2} aggregation
+with a detailed breakdown. Keeping these constants in configuration
+avoids magic numbers in code and guarantees reproducibility across
+experiments.
+
+RPC monitoring (for production deployment): Log
+\(\text{RPC}_t = \sum_{i=1}^t \text{GMV}_i / \sum_{i=1}^t \text{CLICKS}_i\)
+as a running average per Section 1.2.1. Alert if RPC drops \(>10\%\)
+below baseline. See Chapter 10 (Robustness) for drift detection and
+automatic \(\delta\) adjustment.
+
+\end{CalloutNote}
+
+\textbf{Key observation}: The \textbf{optimal strategy depends on
+business weights} \((\alpha, \beta, \gamma, \delta)\). This is not a
+fixed optimization problem---it's a \textbf{multi-objective tradeoff}
+that requires careful calibration. In practice, these weights are set by
+business stakeholders, and the RL system must respect them.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1.3 The Context Problem: Why Static Boosts
+Fail}\label{the-context-problem-why-static-boosts-fail}
+
+Current production systems use \textbf{fixed boost weights}
+\(\mathbf{w}_{\text{static}}\) for all queries. Let's see why this
+fails.
+
+\subsubsection{Experiment: User Segment
+Heterogeneity}\label{experiment-user-segment-heterogeneity}
+
+Simulate two user types with different preferences. See
+\texttt{zoosim/dynamics/behavior.py} for the production
+click/abandonment model; the toy model in \textbf{Lab 1.6} is simplified
+for exposition.
+
+\begin{CalloutNote}{Code \$\textbackslash{}leftrightarrow\$ Behavior (production click model)}
+
+Production (\texttt{MOD-zoosim.behavior}, concept
+\texttt{CN-ClickModel}) implements an examination--click--purchase
+process with position bias:
+
+\begin{itemize}
+\tightlist
+\item
+  Click probability: \texttt{click\_prob\ =\ sigmoid(utility)} in
+  \texttt{zoosim/dynamics/behavior.py}
+\item
+  Position bias: \texttt{\_position\_bias()} using
+  \texttt{BehaviorConfig.pos\_bias} in \texttt{zoosim/core/config.py}
+\item
+  Purchase: \texttt{sigmoid(buy\_logit)} in
+  \texttt{zoosim/dynamics/behavior.py}
+\end{itemize}
+
+Chapter 2 formalizes click models and position bias; Chapter 5 connects
+these to off-policy evaluation.
+
+\end{CalloutNote}
+
+\textbf{Experiment results} (full implementation: \textbf{Lab 1.6} in
+\texttt{exercises\_labs.md}):
+
+With static discount boost \(w = 2.0\), user segments respond
+dramatically differently:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+User Type & Expected Clicks & Relative Performance \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Price hunter & 0.997 & Baseline \\
+Premium shopper & 0.428 & \textbf{57\% fewer clicks} \\
+\end{longtable}
+}
+
+\textbf{Analysis}: The static weight is \textbf{over-optimized for price
+hunters} and \textbf{under-performs for premium shoppers}. Ideally, we'd
+adapt per segment: price hunters get
+\(w_{\text{discount}} \approx 2.0\), premium shoppers get
+\(w_{\text{discount}} \approx 0.5\). But production systems use
+\textbf{one global \(\mathbf{w}\)}---this is wasteful.
+
+\begin{quote}
+\textbf{Note (Toy vs.~Production Models):} The toy model uses linear
+utility and multiplicative position bias. Production uses sigmoid
+probabilities, calibrated position bias from \texttt{BehaviorConfig},
+and an examination--click--purchase cascade. The toy suffices to show
+\textbf{user heterogeneity}; Chapter 2 develops the full PBM/DBN click
+model with measure-theoretic foundations.
+\end{quote}
+
+\subsubsection{The Context Space}\label{the-context-space}
+
+Define \textbf{context} \(x\) as the information available at ranking
+time:
+
+\[
+x = (u, q, h, t) \in \mathcal{X}
+\tag{1.4}
+\label{EQ-1.4}\]
+
+where: - \(u\): User features (segment, past purchases, location) -
+\(q\): Query features (tokens, category, specificity) - \(h\): Session
+history (coarse, not full trajectory---this is a bandit) - \(t\): Time
+features (seasonality, day-of-week)
+
+\textbf{Key insight}: The optimal boost weights \(\mathbf{w}^*(x)\)
+should be a \textbf{function of context}. This transforms our problem
+from:
+
+\[
+\text{Static optimization: } \quad \max_{\mathbf{w} \in \mathbb{R}^K} \mathbb{E}_{x \sim \rho, \omega \sim P(\cdot \mid x, \mathbf{w})}[R(\mathbf{w}, x, \omega)]
+\tag{1.5}
+\label{EQ-1.5}\]
+
+to:
+
+\[
+\text{Contextual optimization: } \quad \max_{\pi: \mathcal{X} \to \mathbb{R}^K} \mathbb{E}_{x \sim \rho, \omega \sim P(\cdot \mid x, \pi(x))}[R(\pi(x), x, \omega)]
+\tag{1.6}
+\label{EQ-1.6}\]
+
+where we've made the conditioning explicit: \(\omega\) is drawn
+\textbf{after} observing context \(x\) and choosing action
+\(a = \pi(x)\), consistent with the causal graph
+\(x \to a \to \omega \to R\).
+
+This is \textbf{no longer a static optimization problem}---it's a
+\textbf{function learning problem}. We must learn a \textbf{policy}
+\(\pi\) that maps contexts to actions. Welcome to reinforcement
+learning.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1.4 Contextual Bandits: The RL
+Formulation}\label{contextual-bandits-the-rl-formulation}
+
+Let's formalize the RL setup. We'll start with the \textbf{single-step
+(contextual bandit)} framing, then preview the full MDP extension.
+
+\subsubsection{Building Intuition: Why ``Bandit'' Not
+``MDP''?}\label{building-intuition-why-bandit-not-mdp}
+
+In traditional RL, an agent interacts with an environment over multiple
+timesteps, and actions affect future states (e.g., a robot's position
+determines what it can reach next). In search ranking, each query is
+\textbf{independent}---showing User A a certain ranking doesn't change
+what User B sees when they search later. There's no ``state'' that
+evolves over time within a single session. This simplification is called
+a \textbf{contextual bandit}: one-shot decisions conditioned on context,
+with no sequential dependencies.
+
+Let's build up the components incrementally:
+
+\textbf{Context \(\mathcal{X}\)}: ``What do we observe before choosing
+boosts?'' - User features: segment (price\_hunter, premium,
+litter\_heavy, pl\_lover), purchase history, location - Query features:
+tokens, category match, query specificity - Session context: time of
+day, device type, recent browsing - In our pet supplies example:
+\((u=\text{premium}, q=\text{"cat food"}, h=\text{empty cart}, t=\text{evening})\)
+
+\textbf{Action \(\mathcal{A}\)}: ``What do we control?'' - Boost weights
+\(\mathbf{w} \in [-a_{\max}, +a_{\max}]^K\) for \(K\) features
+(discount, margin, private label, bestseller, recency) - Bounded to
+prevent catastrophic behavior: \(|w_k| \leq a_{\max}\) (typically
+\(a_{\max} \in [0.3, 1.0]\)) - Continuous space---not discrete arms like
+classic bandits
+
+\textbf{Reward \(R\)}: ``What do we optimize?'' - Scalar combination
+from \eqref{EQ-1.2}:
+\(R = \alpha \cdot \text{GMV} + \beta \cdot \text{CM2} + \gamma \cdot \text{STRAT} + \delta \cdot \text{CLICKS}\)
+- Stochastic---depends on user behavior \(\omega\) (clicks, purchases) -
+Observable after each search session
+
+\textbf{Distribution \(\rho\)}: ``How are contexts sampled?'' -
+Real-world query stream from users - We don't control this---contexts
+arrive from the environment - Must generalize across the distribution of
+contexts
+
+Now we can formalize this as a mathematical object.
+
+\subsubsection{Problem Setup}\label{DEF-1.4.1}
+
+\phantomsection\label{DEF-1.4.1}
+
+\textbf{Working Definition 1.4.1} (Contextual Bandit for Search
+Ranking). \phantomsection\label{WDEF-1.4.1}
+
+A contextual bandit is a tuple \((\mathcal{X}, \mathcal{A}, R, \rho)\)
+where:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Context space} \(\mathcal{X} \subset \mathbb{R}^{d_x}\):
+  Compact space of user-query features (see DEF-1.1.0, EQ-1.4)
+\item
+  \textbf{Action space}
+  \(\mathcal{A} = [-a_{\max}, +a_{\max}]^K \subset \mathbb{R}^K\):
+  Compact set of bounded boost weights
+\item
+  \textbf{Reward function}
+  \(R: \mathcal{X} \times \mathcal{A} \times \Omega \to \mathbb{R}\):
+  Measurable in \(\omega\), integrable (see EQ-1.2, Standing Assumption)
+\item
+  \textbf{Context distribution} \(\rho\): Probability measure on
+  \(\mathcal{X}\) (the query/user arrival distribution)
+\end{enumerate}
+
+\emph{This is a working definition. The measure-theoretic formalization
+(Borel \(\sigma\)-algebras on \(\mathcal{X}\) and \(\mathcal{A}\),
+probability kernel \(P(\omega \mid x, a)\), measurable policy class)
+appears in Chapter 2.}
+
+At each round \(t = 1, 2, \ldots\): - Observe context \(x_t \sim \rho\)
+- Select action \(a_t = \pi(x_t)\) (boost weights) - Rank products using
+score \(s_i = r_{\text{ES}}(q, p_i) + a_t^\top \phi(p_i, u, q)\) - User
+interacts with ranking, generates outcome \(\omega_t\) - Receive reward
+\(R_t = R(x_t, a_t, \omega_t)\) - Update policy \(\pi\)
+
+\textbf{Objective}: Maximize expected cumulative reward:
+
+\[
+\max_{\pi} \mathbb{E}_{x \sim \rho, \omega} \left[ \sum_{t=1}^{T} R(x_t, \pi(x_t), \omega_t) \right]
+\tag{1.7}
+\label{EQ-1.7}\]
+
+subject to constraints (1.3a-c).
+
+Now the structure is clear: we make a \textbf{single decision} per
+context (choose boost weights), observe a \textbf{stochastic outcome}
+(user behavior), receive a \textbf{scalar reward}, and move to the next
+\textbf{independent context}. No sequential state transitions---that's
+what makes it a ``bandit'' rather than a full MDP.
+
+\subsubsection{The Value Function}\label{the-value-function}
+
+Define the \textbf{value} of a policy \(\pi\) as:
+
+\[
+V(\pi) = \mathbb{E}_{x \sim \rho}[Q(x, \pi(x))]
+\tag{1.8}
+\label{EQ-1.8}\]
+
+where \(Q(x, a) = \mathbb{E}_{\omega}[R(x, a, \omega)]\) is the
+\textbf{expected reward} for context \(x\) and action \(a\). The
+\textbf{optimal value} is:
+
+\[
+V^* = \max_{\pi} V(\pi) = \mathbb{E}_{x \sim \rho}\left[\max_{a \in \mathcal{A}} Q(x, a)\right]
+\tag{1.9}
+\label{EQ-1.9}\]
+
+and the \textbf{optimal policy} is:
+
+\[
+\pi^*(x) = \arg\max_{a \in \mathcal{A}} Q(x, a)
+\tag{1.10}
+\label{EQ-1.10}\]
+
+\textbf{Key observation}: If we knew \(Q(x, a)\) for all \((x, a)\),
+we'd simply evaluate it on a grid and pick the max. But \(Q\) is
+\textbf{unknown and expensive to estimate}---each evaluation requires a
+full search session with real users. This is the
+\textbf{exploration-exploitation tradeoff}:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Exploration}: Try diverse actions to learn \(Q(x, a)\)
+\item
+  \textbf{Exploitation}: Use current \(Q\) estimate to maximize reward
+\end{itemize}
+
+\subsubsection{Action Space Structure: Bounded
+Continuous}\label{action-space-structure-bounded-continuous}
+
+Unlike discrete bandits (finite arms), our action space
+\(\mathcal{A} = [-a_{\max}, +a_{\max}]^K\) is \textbf{continuous and
+bounded}. This introduces both challenges and opportunities:
+
+\textbf{Challenges}: - Cannot enumerate all actions - Need continuous
+optimization (gradient-based or derivative-free) - Exploration is harder
+(infinite actions to try)
+
+\textbf{Opportunities}: - Smoothness: Nearby actions have similar
+rewards (we hope!) - Function approximation: Learn \(Q(x, a)\) as a
+neural network - Gradient information: If \(Q\) is differentiable in
+\(a\), use \(\nabla_a Q\) to find \(\arg\max\)
+
+\textbf{Bounded actions are critical}: Without bounds, the RL agent
+could set \(w_{\text{discount}} = 10^6\) (destroying relevance) or
+\(w_{\text{margin}} = -10^6\) (promoting loss-leaders indefinitely).
+Bounds enforce \textbf{safety}:
+
+\[
+|a_k| \leq a_{\max} \quad \forall k \in \{1, \ldots, K\}
+\tag{1.11}
+\label{EQ-1.11}\]
+
+Typical range: \(a_{\max} \in [0.3, 1.0]\) (determined by domain
+experts).
+
+\subsubsection{Implementation: Bounded Action
+Space}\label{implementation-bounded-action-space}
+
+The key operation is \textbf{clipping} uncalibrated policy outputs to
+the bounded space \(\mathcal{A}\):
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ numpy }\ImportTok{as}\NormalTok{ np}
+
+\CommentTok{\# Project action onto A = [{-}a\_max, +a\_max]\^{}K (full class: Lab 1.7)}
+\KeywordTok{def}\NormalTok{ clip\_action(a, a\_max}\OperatorTok{=}\FloatTok{0.5}\NormalTok{):}
+    \CommentTok{"""Enforce \#EQ{-}1.11 bounds. Critical for safety."""}
+    \ControlFlowTok{return}\NormalTok{ np.clip(a, }\OperatorTok{{-}}\NormalTok{a\_max, a\_max)}
+
+\CommentTok{\# Neural policy might output unbounded values}
+\NormalTok{a\_bad }\OperatorTok{=}\NormalTok{ np.array([}\FloatTok{1.2}\NormalTok{, }\OperatorTok{{-}}\FloatTok{0.3}\NormalTok{, }\FloatTok{0.8}\NormalTok{, }\OperatorTok{{-}}\FloatTok{1.5}\NormalTok{, }\FloatTok{0.4}\NormalTok{])}
+\NormalTok{a\_safe }\OperatorTok{=}\NormalTok{ clip\_action(a\_bad)  }\CommentTok{\# {-}\textgreater{} [0.5, {-}0.3, 0.5, {-}0.5, 0.4]}
+\end{Highlighting}
+\end{Shaded}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Action & Before & After Clipping \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(a_1\) & 1.2 & 0.5 \\
+\(a_2\) & -0.3 & -0.3 \\
+\(a_3\) & 0.8 & 0.5 \\
+\(a_4\) & -1.5 & -0.5 \\
+\(a_5\) & 0.4 & 0.4 \\
+\end{longtable}
+}
+
+\textbf{Key takeaway}: Always \textbf{clip actions before applying} them
+to the scoring function. Neural policies can output unbounded values; we
+must project them onto \(\mathcal{A}\). Align \texttt{a\_max} with
+\texttt{SimulatorConfig.action.a\_max} in \texttt{zoosim/core/config.py}
+to ensure consistency. See \textbf{Lab 1.7} for the full
+\texttt{ActionSpace} class with sampling, validation, and volume
+computation.
+
+\begin{CalloutNote}{Code \$\textbackslash{}leftrightarrow\$ Env (clipping)}
+
+The production simulator (\texttt{MOD-zoosim.env}) enforces
+\eqref{EQ-1.11}1 action space bounds at ranking time.
+
+\begin{itemize}
+\tightlist
+\item
+  Action clipping: \texttt{np.clip(...,\ -a\_max,\ +a\_max)} in
+  \texttt{zoosim/envs/search\_env.py:85}
+\item
+  Bound parameter: \texttt{SimulatorConfig.action.a\_max} in
+  \texttt{zoosim/core/config.py:229}
+\item
+  Feature standardization toggle: \texttt{standardize\_features} in
+  \texttt{zoosim/core/config.py:231} (applied in env when enabled)
+\end{itemize}
+
+Keeping examples consistent with these guards avoids silent
+discrepancies between notebooks and the simulator.
+
+\end{CalloutNote}
+
+\subsubsection{Minimal End-to-End Check: One Step in the
+Simulator}\label{minimal-end-to-end-check-one-step-in-the-simulator}
+
+Tie the concepts together by running a single simulated step with a
+bounded action.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ numpy }\ImportTok{as}\NormalTok{ np}
+\ImportTok{from}\NormalTok{ zoosim.core }\ImportTok{import}\NormalTok{ config}
+\ImportTok{from}\NormalTok{ zoosim.envs }\ImportTok{import}\NormalTok{ ZooplusSearchEnv}
+
+\NormalTok{cfg }\OperatorTok{=}\NormalTok{ config.load\_default\_config()  }\CommentTok{\# uses SimulatorConfig.seed at \textasciigrave{}zoosim/core/config.py:252\textasciigrave{}}
+\NormalTok{env }\OperatorTok{=}\NormalTok{ ZooplusSearchEnv(cfg, seed}\OperatorTok{=}\NormalTok{cfg.seed)}
+\NormalTok{state }\OperatorTok{=}\NormalTok{ env.reset()}
+
+\CommentTok{\# Zero action of correct dimensionality; env will clip if needed (see \textasciigrave{}zoosim/envs/search\_env.py:85\textasciigrave{}).}
+\NormalTok{action }\OperatorTok{=}\NormalTok{ np.zeros(cfg.action.feature\_dim, dtype}\OperatorTok{=}\BuiltInTok{float}\NormalTok{)}
+\NormalTok{\_, reward, done, info }\OperatorTok{=}\NormalTok{ env.step(action)}
+
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"Reward: }\SpecialCharTok{\{}\NormalTok{reward}\SpecialCharTok{:.3f\}}\SpecialStringTok{, done=}\SpecialCharTok{\{}\NormalTok{done}\SpecialCharTok{\}}\SpecialStringTok{"}\NormalTok{)}
+\BuiltInTok{print}\NormalTok{(}\StringTok{"Top{-}k ranking indices:"}\NormalTok{, info[}\StringTok{"ranking"}\NormalTok{])  }\CommentTok{\# shape aligns with \textasciigrave{}SimulatorConfig.top\_k\textasciigrave{}}
+\end{Highlighting}
+\end{Shaded}
+
+This verifies the scoring path: base relevance + bounded boosts
+\(\rightarrow\) ranking \(\rightarrow\) behavior simulation
+\(\rightarrow\) reward aggregation.
+
+\textbf{Output} (representative; actual values depend on seed and
+config):
+
+\begin{verbatim}
+Reward: ~27.0, done=True
+Top-k ranking indices: [list of cfg.top_k integers]
+\end{verbatim}
+
+\paragraph{Using the Gym Wrapper}\label{using-the-gym-wrapper}
+
+For RL loops and baselines, use the Gymnasium wrapper which exposes
+standard \texttt{reset/step} and action/observation spaces consistent
+with configuration.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ numpy }\ImportTok{as}\NormalTok{ np}
+\ImportTok{from}\NormalTok{ zoosim.core }\ImportTok{import}\NormalTok{ config}
+\ImportTok{from}\NormalTok{ zoosim.envs }\ImportTok{import}\NormalTok{ GymZooplusEnv}
+
+\NormalTok{cfg }\OperatorTok{=}\NormalTok{ config.load\_default\_config()}
+\NormalTok{env }\OperatorTok{=}\NormalTok{ GymZooplusEnv(cfg, seed}\OperatorTok{=}\NormalTok{cfg.seed)}
+
+\NormalTok{obs, info }\OperatorTok{=}\NormalTok{ env.reset()}
+\BuiltInTok{print}\NormalTok{(}\StringTok{"obs dim:"}\NormalTok{, obs.shape)  }\CommentTok{\# |categories| + |query\_types| + |segments|}
+
+\CommentTok{\# Zero action for consistent baseline (env clips incoming actions internally as well)}
+\NormalTok{action }\OperatorTok{=}\NormalTok{ np.zeros(cfg.action.feature\_dim, dtype}\OperatorTok{=}\BuiltInTok{float}\NormalTok{)}
+\NormalTok{obs2, reward, terminated, truncated, info2 }\OperatorTok{=}\NormalTok{ env.step(action)}
+
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"reward=}\SpecialCharTok{\{}\NormalTok{reward}\SpecialCharTok{:.3f\}}\SpecialStringTok{, terminated=}\SpecialCharTok{\{}\NormalTok{terminated}\SpecialCharTok{\}}\SpecialStringTok{, truncated=}\SpecialCharTok{\{}\NormalTok{truncated}\SpecialCharTok{\}}\SpecialStringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+This interface is used in tests and ensures actions stay within
+\([-a_{\max}, +a_{\max}]^K\) with observation encoding derived from
+configuration.
+
+\textbf{Output} (representative; actual values depend on seed and
+config):
+
+\begin{verbatim}
+obs dim: (11,)  # |categories| + |query_types| + |segments|
+reward=~27.0, terminated=True, truncated=False
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1.5 From Optimization to Learning: Why
+RL?}\label{from-optimization-to-learning-why-rl}
+
+At this point, one might ask: \textbf{Why not just optimize equation
+(1.6) directly?} If we can evaluate \(R(a, x)\) for any \((a, x)\), can
+we not use gradient descent?
+
+\subsubsection{The Sample Complexity
+Bottleneck}\label{the-sample-complexity-bottleneck}
+
+\textbf{Problem}: Evaluating \(R(a, x)\) requires \textbf{running a live
+search session}: 1. Apply boost weights \(a\) to score products 2. Show
+ranked results to user 3. Wait for clicks/purchases 4. Compute
+\(R = \alpha \cdot \text{GMV} + \ldots\)
+
+This is \textbf{expensive and risky}: - \textbf{Expensive}: Each
+evaluation takes seconds (user interaction) and costs money (potential
+lost sales) - \textbf{Risky}: Trying bad actions \((a)\) can hurt user
+experience and revenue - \textbf{Noisy}: User behavior is
+stochastic---one sample has high variance
+
+\textbf{Sample complexity estimate:} Suppose we have
+\(|\mathcal{X}| = 100\) contexts (user segments \(\times\) query types),
+\(|\mathcal{A}| = 10^5\) discretized actions (gridding \(K=5\) boost
+features into 10 bins each), and need \(G = 10\) gradient samples per
+action to estimate \(\nabla_a R\) with low variance.
+
+\textbf{Naive grid search:} Evaluate \(R(x, a)\) for all \((x,a)\)
+pairs: - Cost:
+\(|\mathcal{X}| \cdot |\mathcal{A}| = 100 \cdot 10^5 = 10^7\) search
+sessions - At 1 session/second, this takes \textbf{116 days}
+
+\textbf{Gradient descent:} Estimate \(\nabla_a R\) for one context via
+finite differences: - Cost per iteration:
+\(2K \cdot G = 2 \cdot 5 \cdot 10 = 100\) sessions (forward differences
+in \(K\) dimensions, \(G\) samples each) - For \(T = 1000\) iterations
+to converge: \(100 \cdot 1000 = 10^5\) sessions per context - Total:
+\(|\mathcal{X}| \cdot 10^5 = 100 \cdot 10^5 = 10^7\) sessions (same as
+grid search!)
+
+\textbf{RL with exploration:} Learn \(Q(x,a)\) via bandits with
+\(\sim \sqrt{T}\) regret: - Cost: \(T \sim 10^4\) sessions total (across
+all contexts, amortized) - Wallclock: \textbf{3 hours} at 1
+session/second
+
+This \textbf{1000x speedup} is why we use RL for search ranking.
+
+\textbf{Gradient-based optimization} would require: - Thousands of
+evaluations per context \(x\) - Directional derivatives
+\(\nabla_a R(a, x)\) via finite differences - No safety guarantees
+(could try catastrophically bad \(a\))
+
+This is \textbf{not feasible} in production.
+
+\subsubsection{RL as Sample-Efficient, Safe
+Exploration}\label{rl-as-sample-efficient-safe-exploration}
+
+Reinforcement learning provides:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Off-policy learning}: Train on historical data (past search
+  logs) without deploying new policies
+\item
+  \textbf{Exploration strategies}: Principled methods (UCB, Thompson
+  Sampling) that balance exploration vs.~exploitation
+\item
+  \textbf{Safety constraints}: Enforce bounds (1.11) and constraints
+  (1.3a-c) during learning
+\item
+  \textbf{Function approximation}: Learn \(Q(x, a)\) or \(\pi(x)\) as
+  neural networks, generalizing across contexts
+\item
+  \textbf{Continual learning}: Adapt to distribution shift (seasonality,
+  new products) via online updates
+\end{enumerate}
+
+The RL framework transforms our problem from: - \textbf{Black-box
+optimization} (expensive, unsafe, no generalization)
+
+to: - \textbf{Function learning with feedback} (sample-efficient, safe,
+generalizes)
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1.6 Roadmap: From Bandits to Deep
+RL}\label{roadmap-from-bandits-to-deep-rl}
+
+Chapter 0 provided an informal, code-first toy example; Chapters 1--3
+now build the mathematical foundations that justify and generalize it.
+This section provides a \textbf{roadmap through the book} (the 4-part
+structure and what each chapter accomplishes). For the \textbf{roadmap
+through this chapter} specifically, see the section headers below.
+
+\subsubsection{Part I: Foundations (Chapters
+1-3)}\label{part-i-foundations-chapters-1-3}
+
+We've established the business problem and contextual bandit formulation
+(Chapter 1). To evaluate policies safely without online experiments, we
+need \textbf{measure-theoretic foundations} for off-policy evaluation
+(Chapter 2: absolute continuity, Radon-Nikodym derivatives). To extend
+beyond bandits to multi-step sessions, we need \textbf{Bellman operators
+and convergence theory} (Chapter 3: contractions, fixed points).
+
+\textbf{Chapter 1 (this chapter)}: Formulate search ranking as
+contextual bandit \textbf{Chapter 2}: Probability, measure theory, and
+click models (position bias, abandonment) \textbf{Chapter 3}: Operators
+and contractions (Bellman equation, convergence)
+
+\subsubsection{Part II: Simulator (Chapters
+4-5)}\label{part-ii-simulator-chapters-4-5}
+
+Before implementing RL algorithms, we need a \textbf{realistic
+environment} to test them. Chapters 4-5 build a production-quality
+simulator with synthetic catalogs, users, queries, and behavior models.
+This enables safe offline experimentation before deploying to real
+search traffic.
+
+\textbf{Chapter 4}: Catalog, users, queries---generative models for
+realistic environments \textbf{Chapter 5}: Position bias and
+counterfactuals---why we need off-policy evaluation (OPE)
+
+\subsubsection{Part III: Policies (Chapters
+6-8)}\label{part-iii-policies-chapters-6-8}
+
+With a simulator, we can now develop \textbf{algorithms}: discrete
+template bandits (Chapter 6), continuous action Q-learning (Chapter 7),
+and policy gradients (Chapter 8).
+
+Hard constraint handling (feasibility filters for CM2 floors) and
+operational stability monitoring are treated in Chapter 10 (Guardrails);
+the underlying duality theory is developed in Appendix C, and the
+\texttt{primal-\/-dual} optimization viewpoint is implemented in Chapter
+14.
+
+Chapter 6 develops bandits with formal regret bounds; Chapter 7
+establishes convergence under realizability (but no regret guarantees
+for continuous actions); Chapter 8 proves the Policy Gradient Theorem
+and analyzes the theory-practice gap. All three provide PyTorch
+implementations.
+
+\textbf{Chapter 6}: Discrete template bandits (LinUCB, Thompson Sampling
+over fixed strategies) \textbf{Chapter 7}: Continuous actions via
+\(Q(x, a)\) regression (neural Q-functions) \textbf{Chapter 8}: Policy
+gradient methods (REINFORCE, PPO, theory-practice gap)
+
+\subsubsection{Part IV: Evaluation, Robustness \& Multi-Episode MDPs
+(Chapters
+9-11)}\label{part-iv-evaluation-robustness-multi-episode-mdps-chapters-9-11}
+
+Before production deployment, we need \textbf{safety guarantees}:
+off-policy evaluation to test policies on historical data (Chapter 9),
+robustness checks and guardrails with production monitoring (Chapter
+10), and the extension to multi-episode dynamics where user engagement
+compounds across sessions (Chapter 11).
+
+\textbf{Chapter 9}: Off-policy evaluation (IPS, SNIPS, DR---how to test
+policies safely) \textbf{Chapter 10}: Robustness and guardrails (drift
+detection, stability metrics, hard feasibility filters for CM2 floors,
+A/B testing, monitoring) \textbf{Chapter 11}: Multi-episode MDPs
+(inter-session retention, hazard modeling, long-term user value)
+
+\subsubsection{The Journey Ahead}\label{the-journey-ahead}
+
+By the end of this chapter, we will: - \textbf{Prove} convergence of
+bandit algorithms under general conditions - \textbf{Implement}
+production-quality deep RL agents (NumPy/PyTorch) - \textbf{Understand}
+when theory applies and when it breaks (the deadly triad, function
+approximation divergence) - \textbf{Deploy} RL systems safely (OPE,
+constraints, monitoring)
+
+Let's begin.
+
+\begin{CalloutNote}{How to read this chapter on first pass.}
+
+Sections 1.1--1.6, 1.9, and 1.10 form the core path: they set up search
+as a constrained contextual bandit and explain why we use RL rather than
+static tuning. Sections 1.7--1.8 are advanced/optional previews of
+measure-theoretic foundations, the Bellman operator, and off-policy
+evaluation. Skim or skip these on first reading and return after
+Chapters 2--3.
+
+\end{CalloutNote}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 0\tabcolsep) * \real{0.0556}}@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\#\# 1.7 (Advanced) Optimization Under Uncertainty and Off‑Policy
+Evaluation \\
+\emph{This section is optional on a first reading.} \\
+Readers primarily interested in the \textbf{contextual bandit
+formulation} and motivation for RL can safely skim this section and jump
+to \S1.9 (Constraints) or Chapter 2. Here we take an early, slightly
+more formal look at: \\
+* \textbf{Expected reward and well‑posedness} (why the expectations we
+write down actually exist) * \textbf{Off‑policy evaluation (OPE)} at a
+\emph{conceptual} level * Two preview results: \textbf{existence of an
+optimal policy} and a \textbf{regret lower bound} \\
+The full measure‑theoretic machinery (Radon--Nikodym, conditional
+expectation) lives in \textbf{Chapter 2}. The full OPE toolbox (IPS,
+SNIPS, DR, FQE, SWITCH, MAGIC) lives in \textbf{Chapter 9}. \\
+\end{longtable}
+}
+
+\subsubsection{1.7.1 Expected Utility and Well‑Defined
+Rewards}\label{expected-utility-and-welldefined-rewards}
+
+Up to now we've treated expressions like
+\(\mathbb{E}[R(\mathbf{w}, x, \omega)]\) as if they were obviously
+meaningful. Let's make that explicit.
+
+Recall the stochastic reward from section 1.2:
+
+\begin{itemize}
+\tightlist
+\item
+  Context \(x \in \mathcal{X}\) (user, query, etc.)
+\item
+  Action \(a \in \mathcal{A}\) (boost weights \(\mathbf{w}\))
+\item
+  Outcome \(\omega \in \Omega\) (user behavior: clicks, purchases,
+  abandonment)
+\item
+  Reward \(R(x, a, \omega) \in \mathbb{R}\) (scalarized
+  GMV/CM2/STRAT/CLICKS)
+\end{itemize}
+
+We define the \textbf{expected utility} (\(Q\)‑function) of action \(a\)
+in context \(x\) as
+
+\[
+Q(x, a) := \mathbb{E}_{\omega \sim P(\cdot \mid x, a)}[R(x, a, \omega)].
+\tag{1.12}
+\label{EQ-1.12}\]
+
+Here \(P(\cdot \mid x, a)\) is the outcome distribution induced by
+showing the ranking determined by \((x,a)\) in our click model.
+
+To even \emph{define} \(Q(x,a)\), we need basic regularity conditions.
+These are made rigorous in Chapter 2 (Assumption 2.6.1); we preview them
+informally here:
+
+\textbf{Regularity conditions for well-defined rewards (informal):}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Measurability}: \(R(x, a, \omega)\) is measurable as a
+  function of \(\omega\).
+\item
+  \textbf{Integrability}: Rewards have finite expectation:
+  \(\mathbb{E}[|R(x, a, \omega)|] < \infty\).
+\item
+  \textbf{Coverage / overlap}: If the evaluation policy ever plays an
+  action in a context, the logging policy must have taken that action
+  with positive probability there. This is \textbf{absolute continuity}
+  \(\pi_{\text{eval}} \ll \pi_{\text{log}}\), ensuring importance
+  weights \(\pi_{\text{eval}}(a\mid x) / \pi_{\text{log}}(a\mid x)\) are
+  finite.
+\end{enumerate}
+
+Conditions (1)--(2) ensure
+\(Q(x,a) = \mathbb{E}[R(x,a,\omega) \mid x,a]\) is a well-defined finite
+Lebesgue integral. Condition (3) is critical for \textbf{off-policy
+evaluation} (§1.7.2 below): when we estimate the value of a new policy
+using data from an old policy, we reweight observations by likelihood
+ratios. Absolute continuity guarantees these ratios exist (the
+denominator is never zero where the numerator is positive).
+
+\textbf{Continuous-action remark.} Our action space
+\(\mathcal{A} = [-a_{\max}, +a_{\max}]^K\) is continuous. In this case,
+\(\pi_e(a\mid x)\) and \(\pi_b(a\mid x)\) should be read as
+\emph{densities} (Radon--Nikodym derivatives) with respect to Lebesgue
+measure on \(\mathcal{A}\), and importance weights are density ratios.
+The coverage condition becomes a support condition:
+\(\operatorname{supp}(\pi_e(\cdot\mid x)) \subseteq \operatorname{supp}(\pi_b(\cdot\mid x))\).
+
+\textbf{Chapter 2, §2.6} formalizes these conditions as
+\textbf{Assumption 2.6.1 (OPE Probability Conditions)} and proves that
+the IPS estimator is unbiased under these assumptions. For now, note
+that our search setting satisfies all three: rewards are bounded (GMV
+and CM2 are finite), and we'll use exploration policies (e.g.,
+\(\varepsilon\)-greedy with \(\varepsilon > 0\)) that ensure coverage.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{1.7.2 The Offline Evaluation Problem (Toy Cat‑Food
+Example)}\label{the-offline-evaluation-problem-toy-catfood-example}
+
+In §1.4 we defined the value of a policy \(\pi\) as
+
+\[
+V(\pi) = \mathbb{E}_{x \sim \rho,\, \omega}[ R(x, \pi(x), \omega) ],
+\tag{1.7a}
+\label{EQ-1.7a}\]
+
+where \(\rho\) is the context distribution (query/user stream).
+
+So far we implicitly assumed we can just \emph{deploy} any candidate
+policy \(\pi\) to estimate \(V(\pi)\) online:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Pick boost weights \(a = \pi(x)\).
+\item
+  Show ranking to users.
+\item
+  Observe reward \(R(x,a,\omega)\).
+\item
+  Average over many sessions.
+\end{enumerate}
+
+In a real search system, this is often \textbf{too risky}:
+
+\begin{itemize}
+\tightlist
+\item
+  Every exploratory policy hits \textbf{GMV} and \textbf{CM2}.
+\item
+  It affects \textbf{real users} and competes with other experiments.
+\item
+  It may violate \textbf{constraints} (CM2 floor, rank stability,
+  strategic exposure).
+\end{itemize}
+
+This is where \textbf{off‑policy evaluation (OPE)} enters:
+
+\begin{quote}
+Can we estimate \(V(\pi_e)\) for a new evaluation policy \(\pi_e\) using
+only logs collected under an old behavior policy \(\pi_b\)?
+\end{quote}
+
+Formally, suppose we have a log
+
+\[
+\mathcal{D} = {(x_i, a_i, r_i)}_{i=1}^n,
+\]
+
+where \(x_i \sim \rho\), \(a_i \sim \pi_b(\cdot \mid x_i)\), and
+\(r_i = R(x_i, a_i, \omega_i)\).
+
+A \textbf{naïve idea} is to just average rewards in the logs:
+
+\[
+\hat{V}_{\text{naive}} := \frac{1}{n} \sum_{i=1}^n r_i.
+\]
+
+This clearly estimates \(V(\pi_b)\), not \(V(\pi_e)\).
+
+\paragraph{Toy example: two cat‑food
+templates}\label{toy-example-two-catfood-templates}
+
+Take a single query type ``cat food'' and two ranking templates:
+
+\begin{itemize}
+\tightlist
+\item
+  \(a_{\text{GMV}}\) --- aggressive discount boosts (high GMV, risky
+  CM2),
+\item
+  \(a_{\text{SAFE}}\) --- conservative boosts (lower GMV, safer CM2).
+\end{itemize}
+
+Consider:
+
+\begin{itemize}
+\tightlist
+\item
+  Logging policy \(\pi_b\): always uses \(a_{\text{SAFE}}\),
+\item
+  Evaluation policy \(\pi_e\): would always use \(a_{\text{GMV}}\).
+\end{itemize}
+
+The log contains \(n\) sessions:
+
+\[
+\mathcal{D} = {(x_i, a_i, r_i)}_{i=1}^n, \quad a_i \equiv a_{\text{SAFE}}.
+\]
+
+The empirical average
+
+\[
+\hat{V}_{\text{naive}} = \frac{1}{n} \sum_{i=1}^n r_i
+\]
+
+tells us how good \textbf{\(a_{\text{SAFE}}\)} is. It tells us
+\textbf{nothing} about \(a_{\text{GMV}}\), because that action was never
+taken: there are \emph{no facts in the data} about what would have
+happened under \(a_{\text{GMV}}\).
+
+\begin{quote}
+\textbf{Key lesson:} OPE cannot recover counterfactuals from
+\textbf{purely deterministic logging} that never explores the actions of
+interest.
+\end{quote}
+
+We need a way to reuse logs from \(\pi_b\) while ``pretending'' they
+came from \(\pi_e\). That is exactly what \textbf{importance sampling}
+does.
+
+A tiny NumPy sketch makes this concrete:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{import}\NormalTok{ numpy }\ImportTok{as}\NormalTok{ np}
+
+\CommentTok{\# Logged under pi\_b: always choose SAFE (action 0)}
+\NormalTok{logged\_actions }\OperatorTok{=}\NormalTok{ np.array([}\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{])}
+\NormalTok{logged\_rewards }\OperatorTok{=}\NormalTok{ np.array([}\FloatTok{0.8}\NormalTok{, }\FloatTok{1.1}\NormalTok{, }\FloatTok{0.9}\NormalTok{, }\FloatTok{1.0}\NormalTok{, }\FloatTok{1.2}\NormalTok{])  }\CommentTok{\# CM2{-}safe template}
+
+\CommentTok{\# New policy pi\_e: always choose GMV{-}heavy (action 1)}
+\KeywordTok{def}\NormalTok{ pi\_b(a):}
+    \ControlFlowTok{return} \FloatTok{1.0} \ControlFlowTok{if}\NormalTok{ a }\OperatorTok{==} \DecValTok{0} \ControlFlowTok{else} \FloatTok{0.0}  \CommentTok{\# deterministic SAFE}
+\KeywordTok{def}\NormalTok{ pi\_e(a):}
+    \ControlFlowTok{return} \FloatTok{1.0} \ControlFlowTok{if}\NormalTok{ a }\OperatorTok{==} \DecValTok{1} \ControlFlowTok{else} \FloatTok{0.0}  \CommentTok{\# deterministic GMV}
+
+\NormalTok{naive }\OperatorTok{=}\NormalTok{ logged\_rewards.mean()}
+\BuiltInTok{print}\NormalTok{(}\SpecialStringTok{f"Naive log average: }\SpecialCharTok{\{}\NormalTok{naive}\SpecialCharTok{:.3f\}}\SpecialStringTok{  (this is V(pi\_b), not V(pi\_e))"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+There is \emph{no} way to estimate what would have happened under action
+1 from this dataset: the required probabilities and rewards simply do
+not appear.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{1.7.3 Importance Sampling at a High
+Level}\label{importance-sampling-at-a-high-level}
+
+To estimate \(V(\pi_e)\) from data generated under \(\pi_b\), we
+reweight logged samples by how much more (or less) likely they would be
+under \(\pi_e\).
+
+For a logged triplet \((x,a,r)\), define the \textbf{importance weight}
+
+\[
+w(x,a) = \frac{\pi_e(a \mid x)}{\pi_b(a \mid x)}.
+\tag{1.7b}
+\label{EQ-1.7b}\]
+
+Intuition:
+
+\begin{itemize}
+\tightlist
+\item
+  If \(\pi_e(a \mid x) > \pi_b(a \mid x)\), then \(w > 1\): this sample
+  should count \textbf{more}, because \(\pi_e\) would have produced it
+  more often.
+\item
+  If \(\pi_e(a \mid x) < \pi_b(a \mid x)\), then \(w < 1\): it should
+  count \textbf{less}.
+\end{itemize}
+
+The \textbf{inverse propensity scoring (IPS)} estimator for the value of
+\(\pi_e\) is
+
+\[
+\hat{V}_{\text{IPS}}(\pi_e)
+= \frac{1}{n} \sum_{i=1}^n w(x_i,a_i) \cdot r_i
+= \frac{1}{n} \sum_{i=1}^n \frac{\pi_e(a_i \mid x_i)}{\pi_b(a_i \mid x_i)} \cdot r_i.
+\tag{1.7c}
+\label{EQ-1.7c}\]
+
+Under the regularity conditions (measurability, integrability) and an
+additional \textbf{coverage} condition (next subsection), IPS is
+\textbf{unbiased}: in expectation, it recovers the true value
+\(V(\pi_e)\) from data logged under \(\pi_b\). Chapter 2, §2.6
+formalizes these as \textbf{Assumption 2.6.1} and proves unbiasedness
+rigorously.
+
+We will:
+
+\begin{itemize}
+\tightlist
+\item
+  Prove the general change‑of‑measure identity behind (1.7c) in
+  \textbf{Chapter 2} (Radon--Nikodym).
+\item
+  Implement IPS, SNIPS, DR, FQE, and friends in \textbf{Chapter 9},
+  including variance and diagnostics.
+\end{itemize}
+
+For this chapter, the only thing to remember is:
+
+\begin{quote}
+\textbf{OPE \(\approx\) ``reweight logged rewards by importance
+weights.''}
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{1.7.4 Coverage / Overlap and Logging
+Design}\label{coverage-overlap-and-logging-design}
+
+The formula (1.7b) only makes sense when the denominator is non‑zero
+whenever the numerator is:
+
+\[
+\pi_e(a \mid x) > 0 \quad \Rightarrow \quad \pi_b(a \mid x) > 0.
+\tag{1.7d}
+\label{EQ-1.7d}\]
+
+This is the \textbf{coverage} or \textbf{overlap} condition: any action
+that \(\pi_e\) might take in context \(x\) must have been tried with
+\emph{some} positive probability by \(\pi_b\).
+
+If \(\pi_b(a \mid x) = 0\) but \(\pi_e(a \mid x) > 0\), the weight
+\(w(x,a)\) would be infinite. Informally:
+
+\begin{quote}
+If the logging policy never took action \(a\) in context \(x\), the data
+contains \textbf{no information} about that counterfactual.
+\end{quote}
+
+For real systems, this translates into concrete requirements: avoid
+fully deterministic logging (use \(\varepsilon\)-greedy or mixture
+policies with \(\varepsilon \in [0.01, 0.10]\)), store propensities
+\(\pi_b(a \mid x)\) alongside each interaction, and design logging with
+future evaluation policies in mind---if we plan to evaluate aggressive
+boost strategies later, we must explore them occasionally now.
+
+\textbf{Chapter 9, §9.5} develops these requirements into a full logging
+protocol with formal assumptions (common support, propensity tracking),
+diagnostics (effective sample size), and production implementation
+guidance. The key intuition: \textbf{if we never explore an action, we
+can never evaluate it offline}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{1.7.5 Preview: Existence of an Optimal
+Policy}\label{preview-existence-of-an-optimal-policy}
+
+In §1.4 we wrote
+
+\[
+\pi^*(x) = \arg\max_{a \in \mathcal{A}} Q(x,a), \qquad
+V^* = \max_{\pi} V(\pi),
+\]
+
+as if the maximizer always existed and was a nice measurable function.
+In continuous spaces, this is surprisingly non‑trivial.
+
+Roughly, we need:
+
+\begin{itemize}
+\tightlist
+\item
+  A \textbf{compact} and nicely behaved action space \(\mathcal{A}\),
+\item
+  A \textbf{measurable} and upper semicontinuous \(Q(x,a)\),
+\item
+  A bit of measure‑theory to ensure the argmax can be chosen
+  \textbf{measurably} in \(x\).
+\end{itemize}
+
+\textbf{Existence guarantee.} Under mild topological conditions (compact
+action space, upper semicontinuous \(Q\)), a measurable optimal policy
+\(\pi^*(x) = \arg\max_a Q(x,a)\) exists via measurable selection
+theorems---see \textbf{Chapter 2, §2.8.2 (Advanced: Measurable
+Selection)} for the Kuratowski--Ryll--Nardzewski theorem (Theorem
+2.8.3). For our search setting---where
+\(\mathcal{A} = [-a_{\max}, a_{\max}]^K\) is a compact box and scoring
+functions are continuous---this guarantees the optimization problem in
+§1.4 is well-posed: there exists a best policy \(\pi^*\), and our
+learning algorithms will be judged by how close they get to it.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{1.7.6 Preview: Regret and Fundamental
+Limits}\label{preview-regret-and-fundamental-limits}
+
+The last concept we preview is \textbf{regret}---how far a learning
+algorithm falls short of the optimal policy over time.
+
+For a fixed policy \(\pi\) and the optimal policy \(\pi^*\), define the
+\textbf{instantaneous regret} at round \(t\):
+
+\[
+\text{regret}_t = Q(x_t, \pi^*(x_t)) - Q(x_t, \pi(x_t)),
+\tag{1.13}
+\label{EQ-1.13}\]
+
+and the \textbf{cumulative regret} over \(T\) rounds:
+
+\[
+\text{Regret}_T = \sum_{t=1}^{T} \text{regret}_t.
+\tag{1.14}
+\label{EQ-1.14}\]
+
+We say an algorithm has \textbf{sublinear regret} if
+
+\[
+\lim_{T \to \infty} \frac{\text{Regret}_T}{T} = 0,
+\tag{1.15}
+\label{EQ-1.15}\]
+
+i.e., average per‑round regret goes to zero.
+
+Information-theoretic lower bounds for stochastic bandits establish a
+fundamental limit on learning speed. \textbf{Theorem 6.0} (Minimax Lower
+Bound) in Chapter 6 states: for any learning algorithm and any time
+horizon \(T\), there exists a \(K\)-armed bandit instance such that
+
+\[
+\mathbb{E}[\mathrm{Regret}_T] \geq c\sqrt{KT}
+\]
+
+for a universal constant \(c > 0\). No algorithm can do better than
+\(\Omega(\sqrt{KT})\) regret uniformly over all bandit problems. We must
+pay at least this price to discover which arms are good. UCB and
+Thompson Sampling are ``optimal'' because they match this bound up to
+logarithmic factors. For contextual bandits, the lower bound becomes
+\(\Omega(d\sqrt{T})\) where \(d\) is the feature dimension; see Chapter
+6 and \textbf{Appendix D} for the complete treatment via Fano's
+inequality and the data processing inequality. Here, the message is
+simply:
+
+\begin{quote}
+\textbf{There is a built‑in price for exploration}, and even the best
+algorithm cannot beat it asymptotically.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{1.7.7 Where the Real Math
+Lives}\label{where-the-real-math-lives}
+
+This section deliberately kept things at a \textbf{preview} level:
+
+\begin{itemize}
+\tightlist
+\item
+  We introduced \textbf{expected utility} \(Q(x,a)\) and stated
+  regularity conditions (measurability, integrability, coverage) to make
+  expectations like (1.12) well-posed; these are formalized in Chapter 2
+  as Assumption 2.6.1.
+\item
+  We sketched \textbf{off‑policy evaluation} via importance sampling and
+  stressed the coverage condition (1.7d).
+\item
+  We previewed two structural results: existence of an optimal policy
+  (discussed in \S1.7.5, rigorous treatment in Ch2 \S2.8.2 via
+  measurable selection) and a fundamental regret lower bound
+  ({[}THM-6.0{]} in Chapter 6, proof via Fano's inequality in Appendix
+  D).
+\end{itemize}
+
+The full story is split across later chapters:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Chapter 2} builds the measure‑theoretic foundation
+  (probability spaces, conditional expectation, Radon--Nikodym), and
+  proves the change‑of‑measure identities that justify importance
+  weights.
+\item
+  \textbf{Chapter 6} develops bandit algorithms (LinUCB, Thompson
+  Sampling) and proves regret upper bounds that match this lower‑bound
+  rate up to logs.
+\item
+  \textbf{Chapter 9} turns IPS into a full‑blown OPE toolbox, with
+  model‑based and doubly‑robust estimators, variance analysis, and
+  production diagnostics.
+\end{itemize}
+
+For the rest of this chapter, only the high-level picture is needed:
+
+\begin{quote}
+We treat search as a contextual bandit with a well‑defined expected
+reward, we will sometimes need to evaluate policies \textbf{offline} via
+importance weights, and there are fundamental limits on how quickly any
+algorithm can learn.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1.8 (Advanced) Preview: Neural Q-Functions and Bellman
+Operators}\label{advanced-preview-neural-q-functions-and-bellman-operators}
+
+How do we represent \(Q(x, a)\) for high-dimensional \(\mathcal{X}\)
+(user embeddings, query text) and continuous \(\mathcal{A}\)? Answer:
+\textbf{neural networks}.
+
+Define a parametric Q-function:
+
+\[
+Q_\theta(x, a): \mathcal{X} \times \mathcal{A} \to \mathbb{R}
+\tag{1.16}
+\label{EQ-1.16}\]
+
+where \(\theta \in \mathbb{R}^p\) are neural network weights. We'll
+learn \(\theta\) to approximate the true \(Q(x, a)\) via
+\textbf{regression}:
+
+\[
+\min_\theta \mathbb{E}_{(x, a, r) \sim \mathcal{D}}\left[(Q_\theta(x, a) - r)^2\right]
+\tag{1.17}
+\label{EQ-1.17}\]
+
+where \(\mathcal{D}\) is a dataset of \((x, a, r)\) triples from past
+search sessions.
+
+If the number of contexts and actions were tiny, we could represent
+\(Q\) as a \textbf{table} \(Q[x,a]\) and fit it directly by regression
+on observed rewards. Chapter 7 begins with such a tabular warm‑up
+example before moving to neural networks that can handle
+high‑dimensional \(\mathcal{X}\) and continuous \(\mathcal{A}\).
+
+\subsubsection{Preview: The Bellman Operator (Chapter
+3)}\label{preview-the-bellman-operator-chapter-3}
+
+We've focused on contextual bandits---single-step decision making where
+each episode terminates after one action. But what if we extended to
+\textbf{multi-step reinforcement learning (MDPs)}? This preview provides
+the vocabulary for Exercise 1.5 and sets up Chapter 3.
+
+In an MDP, actions have consequences that ripple forward: today's
+ranking affects whether the user returns tomorrow, builds a cart over
+multiple sessions, or churns. The value function must account for
+\textbf{future rewards}, not just immediate payoff.
+
+\textbf{The Bellman equation} for an MDP value function is:
+
+\[
+V(x) = \max_a \left\{R(x, a) + \gamma \mathbb{E}_{x' \sim P(\cdot | x, a)}[V(x')]\right\}
+\tag{1.18}
+\label{EQ-1.18}\]
+
+where: - \(P(x' | x, a)\) is the \textbf{transition probability} to next
+state \(x'\) given current state \(x\) and action \(a\) -
+\(\gamma \in [0,1]\) is a \textbf{discount factor} (future rewards are
+worth less than immediate ones) - The expectation is over the stochastic
+next state \(x'\)
+
+\textbf{Compact notation}: We can write this as the \textbf{Bellman
+operator} \(\mathcal{T}\):
+
+\[
+(\mathcal{T}V)(x) := \max_a \left\{R(x, a) + \gamma \mathbb{E}_{x'}[V(x')]\right\}
+\tag{1.19}
+\label{EQ-1.19}\]
+
+The operator \(\mathcal{T}\) takes a value function
+\(V: \mathcal{X} \to \mathbb{R}\) and produces a new value function
+\(\mathcal{T}V\). The optimal value function \(V^*\) is the
+\textbf{fixed point} of \(\mathcal{T}\):
+
+\[
+V^* = \mathcal{T}V^* \quad \Leftrightarrow \quad V^*(x) = \max_a \left\{R(x, a) + \gamma \mathbb{E}_{x'}[V^*(x')]\right\}
+\tag{1.20}
+\label{EQ-1.20}\]
+
+\textbf{How contextual bandits fit}: In our single-step formulation,
+there is \textbf{no next state}---the episode ends after one search.
+Mathematically, this means \(\gamma = 0\) (no future) or equivalently
+\(P(x' | x, a) = \delta_{\text{terminal}}\) (deterministic transition to
+a terminal state with zero value). Then:
+
+\[
+V(x) = \max_a \left\{R(x, a) + 0 \cdot \mathbb{E}[V(x')]\right\} = \max_a Q(x, a)
+\]
+
+This is exactly equation (1.9)! \textbf{Contextual bandits are the
+\(\gamma=0\) special case of MDPs.}
+
+\textbf{Why the operator formulation matters}: In Chapter 3, we'll prove
+that \(\mathcal{T}\) is a \textbf{contraction mapping} in
+\(\|\cdot\|_\infty\), which guarantees: 1. \textbf{Existence and
+uniqueness} of \(V^*\) (Banach fixed-point theorem) 2.
+\textbf{Convergence} of iterative algorithms:
+\(V_{k+1} = \mathcal{T}V_k\) converges to \(V^*\) geometrically 3.
+\textbf{Robustness}: Small errors in \(R\) or \(P\) lead to small errors
+in \(V^*\)
+
+For now, just absorb the vocabulary: \textbf{Bellman operator},
+\textbf{fixed point}, \textbf{discount factor}. These are the building
+blocks of dynamic programming and RL theory.
+
+\textbf{Looking ahead}: Chapter 11 extends our search problem to
+\textbf{multi-episode MDPs} where user retention and session dynamics
+create genuine state transitions. There, we'll need the full Bellman
+machinery. But for the MVP (Chapters 1-8), contextual bandits suffice.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1.9 Constraints and Safety: Beyond Reward
+Maximization}\label{constraints-and-safety-beyond-reward-maximization}
+
+Real-world RL requires \textbf{constrained optimization}. Maximizing
+\eqref{EQ-1.2} alone can lead to: - \textbf{Negative CM2}: Promoting
+loss-leaders to boost GMV - \textbf{Ignoring strategic products}:
+Optimizing short-term revenue at the expense of long-term goals -
+\textbf{Rank instability}: Reordering the top-10 drastically between
+queries, confusing users
+
+We enforce constraints via \textbf{Lagrangian methods} (formalism in
+Chapter 3 §3.6; convex duality background in Appendix C; implementation
+in Chapter 10) and \textbf{rank stability penalties}.
+
+\subsubsection{Lagrangian Formulation}\label{lagrangian-formulation}
+
+Transform constrained problem: \begin{equation}
+\begin{aligned}
+\max_{\pi} \quad & \mathbb{E}[R(\pi(x))] \\
+\text{s.t.} \quad & \mathbb{E}[\text{CM2}(\pi(x))] \geq \tau_{\text{CM2}} \\
+& \mathbb{E}[\text{STRAT}(\pi(x))] \geq \tau_{\text{STRAT}}
+\end{aligned}
+\tag{1.21}
+\end{equation} \phantomsection\label{EQ-1.21}
+
+into unconstrained:
+
+\[
+\max_{\pi} \min_{\boldsymbol{\lambda} \geq 0} \mathcal{L}(\pi, \boldsymbol{\lambda}) = \mathbb{E}[R(\pi(x))] + \lambda_1(\mathbb{E}[\text{CM2}] - \tau_{\text{CM2}}) + \lambda_2(\mathbb{E}[\text{STRAT}] - \tau_{\text{STRAT}})
+\tag{1.22}
+\label{EQ-1.22}\]
+
+where
+\(\boldsymbol{\lambda} = (\lambda_1, \lambda_2) \in \mathbb{R}_+^2\) are
+Lagrange multipliers. This is a \textbf{saddle-point problem}: maximize
+over \(\pi\), minimize over \(\boldsymbol{\lambda}\).
+
+\textbf{Theorem 1.9.1 (Slater's Condition, informal).}
+\phantomsection\label{THM-1.9.1} If there exists at least one policy
+that strictly satisfies all constraints (e.g., a policy with CM2 and
+exposure above the required floors and acceptable rank stability), then
+the \textbf{Lagrangian saddle-point problem} \[
+\min_{\boldsymbol{\lambda} \ge 0} \max_{\pi} \mathcal{L}(\pi, \boldsymbol{\lambda})
+\] is equivalent to the original constrained optimization problem: they
+have the same optimal value.
+
+\emph{Interpretation.} Under mild convexity assumptions, we can treat
+Lagrange multipliers \(\boldsymbol{\lambda}\) as ``prices'' for
+violating constraints and search for a saddle point instead of solving
+the constrained problem directly. \textbf{Appendix C} proves this
+rigorously (Theorem C.2.1) for the contextual bandit setting using the
+theory of randomized policies and convex duality ((Boyd and Vandenberghe
+2004)). In Chapter 14 we exploit this to implement
+\texttt{primal-\/-dual} constrained RL for search: we update the policy
+parameters to increase reward and constraint satisfaction (primal step)
+while adapting multipliers that penalize violations (dual step). Chapter
+10 focuses instead on the production guardrail viewpoint (monitoring and
+fallback) rather than optimization over multipliers.
+
+\textbf{What this tells us:}
+
+Strong duality means we can solve the constrained problem
+\eqref{EQ-1.21} by solving the unconstrained Lagrangian \eqref{EQ-1.22}
+--- no duality gap. Practically, this justifies \textbf{primal--dual
+algorithms}: alternate between improving the policy (primal) and
+adjusting constraint penalties (dual), confident that convergence to the
+saddle point yields the constrained optimum.
+
+The strict feasibility requirement (\(\exists \tilde{\pi}\) with slack
+in the CM2 constraint) is typically easy to verify: the baseline
+production policy usually satisfies constraints with margin. If no such
+policy exists, the constraints may be infeasible---one is asking for
+profitability floors that no ranking can achieve. \textbf{Appendix C,
+§C.4.3} discusses diagnosing infeasible constraint configurations:
+diverging dual variables, Pareto frontiers below constraint thresholds,
+and \(\varepsilon\)-relaxation remedies.
+
+\textbf{Implementation preview}: In \textbf{Chapter 14}, we implement
+constraint-aware RL using \texttt{primal-\/-dual} optimization (theory
+in \textbf{Appendix C, §C.5}): 1. \textbf{Primal step}:
+\(\theta \leftarrow \theta + \eta \nabla_\theta \mathcal{L}(\theta, \boldsymbol{\lambda})\)
+(improve policy toward higher reward and constraint satisfaction) 2.
+\textbf{Dual step}:
+\(\boldsymbol{\lambda} \leftarrow \max(0, \boldsymbol{\lambda} - \eta' \nabla_{\boldsymbol{\lambda}} \mathcal{L}(\theta, \boldsymbol{\lambda}))\)
+(tighten constraints if violated, relax if satisfied)
+
+The saddle-point \((\theta^*, \boldsymbol{\lambda}^*)\) satisfies the
+Karush-Kuhn-Tucker (KKT) conditions for the constrained problem
+\eqref{EQ-1.21}. For now, just note that \textbf{constraints require
+dual variables} \(\boldsymbol{\lambda}\)---we're not just learning a
+policy, but also learning how to trade off GMV, CM2, and strategic
+exposure dynamically.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1.10 Summary and Looking
+Ahead}\label{summary-and-looking-ahead}
+
+We've established the foundation:
+
+\textbf{What we have}: - \textbf{Business problem}: Multi-objective
+search ranking with constraints - \textbf{Mathematical formulation}:
+Contextual bandit with \(Q(x, a)\) to learn - \textbf{Action space}:
+Continuous bounded \(\mathcal{A} = [-a_{\max}, +a_{\max}]^K\) -
+\textbf{Objective}: Maximize \(\mathbb{E}[R]\) subject to
+CM2/exposure/stability constraints - \textbf{Regret limits (preview)}:
+Bandit algorithms incur a \(\tilde{\Omega}(\sqrt{KT})\) exploration
+cost; later bandit chapters formalize this lower bound and show
+algorithms that match it up to logs - \textbf{Implementation}: Tabular
+Q-table (baseline), preview of neural Q-function - \textbf{OPE
+foundations (conceptual)}: Why absolute continuity and importance
+sampling matter for safe policy evaluation (full measure-theoretic
+treatment in Chapters 2 and 9)
+
+\textbf{What we need}: - \textbf{Probability foundations} (Chapter 2):
+Measure theory for OPE reweighting; position bias models (PBM/DBN) for
+realistic user simulation; counterfactual reasoning to test ``what if?''
+scenarios safely - \textbf{Convergence theory} (Chapter 3): Bellman
+operators, contraction mappings, fixed-point theorems for proving
+algorithm correctness - \textbf{Simulator} (Chapters 4-5): Realistic
+catalog/user/query/behavior models that mirror production search
+environments - \textbf{Algorithms} (Chapters 6-8): LinUCB, neural
+bandits, Lagrangian constraints for safe exploration and constrained
+optimization - \textbf{Evaluation} (Chapter 9): Off-policy evaluation
+(IPS, SNIPS, DR) for testing policies before deployment -
+\textbf{Deployment} (Chapters 10-11): Robustness, A/B testing,
+production ops for real-world systems
+
+\begin{quote}
+\textbf{For Readers with Control Theory Background.} Readers familiar
+with LQR, HJB equations, or optimal control will find \textbf{Appendix
+B} provides a detailed bridge to RL: we show how the discrete Bellman
+equation arises as a discretization of HJB, how policy gradients relate
+to Riccati solutions, and how Lyapunov analysis informs convergence
+proofs. That appendix also traces the lineage from classical control to
+modern deep RL algorithms (DDPG, PPO, SAC). Readers new to control
+theory may skip it for now and return when these connections appear in
+Chapters 8, 10, and 11.
+\end{quote}
+
+\subsubsection{Why Chapter 2 Comes Next}\label{why-chapter-2-comes-next}
+
+We've formulated search ranking as contextual bandits, but left two
+critical gaps unresolved:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{User behavior is a black box.} Section 1.3's illustrative
+  click model (position bias = 1/k) was helpful pedagogically, but
+  production search requires \textbf{rigorous click models} that capture
+  examination, clicks, purchases, and abandonment. We need to formalize
+  ``How do users interact with rankings?'' at the level of
+  \textbf{probability measures and stopping times}, not heuristics.
+  Without this, our simulator won't reflect real user behavior, and
+  algorithms trained in simulation will fail in production.
+\item
+  \textbf{We can't afford online-only learning.} Evaluating each policy
+  candidate with real users (Section 1.5's ``sample complexity
+  bottleneck'') is too expensive and risky. We need \textbf{off-policy
+  evaluation (OPE)} to test policies on historical data logged under old
+  policies. But OPE requires reweighting probabilities across different
+  policies (importance sampling)---the weights
+  \(w(x,a) = \pi_{\text{eval}}(a|x) / \pi_{\text{log}}(a|x)\) are only
+  well-defined when both policies are absolutely continuous w.r.t. a
+  common measure (the \textbf{coverage condition} in \textbf{Assumption
+  2.6.1} of Chapter 2, §2.6). This is \textbf{measure theory}, and it's
+  not optional.
+\end{enumerate}
+
+\textbf{Chapter 2 addresses both gaps}: We'll build
+\textbf{position-biased click models (PBM/DBN)} that mirror real user
+behavior with examination, relevance-dependent clicks, and session
+abandonment. Then we'll develop the \textbf{measure-theoretic
+foundations} (Radon-Nikodym derivatives, change of measure, importance
+sampling) that make OPE sound. This is not abstract mathematics for its
+own sake---it's the \textbf{foundation of safe RL deployment}.
+
+By the end of Chapter 2, we will be able to: - Simulate realistic user
+sessions with position bias and abandonment - Formalize ``what would
+have happened if we'd shown a different ranking?'' (counterfactuals) -
+Understand why naive off-policy estimates are biased and how to correct
+them
+
+Let's build.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Exercises}\label{exercises}
+
+Note. Readers who completed Chapter 0's toy bandit experiment should:
+(i) compare the regret curves from Exercise 0.3 to the
+\(\tilde{\Omega}(\sqrt{KT})\) lower bound discussed in \S1.7.6 (and
+revisited in Chapter 6); (ii) restate the Chapter 0 environment in this
+chapter's notation by identifying
+\((\mathcal{X}, \mathcal{A}, \rho, R)\).
+
+Companion files for Chapter 1: - Labs and tasks:
+\texttt{docs/book/ch01/exercises\_labs.md} - Written solutions:
+\texttt{docs/book/ch01/ch01\_lab\_solutions.md} - Runnable reference
+implementation: \texttt{scripts/ch01/lab\_solutions.py} - Regression
+tests for chapter snippets:
+\texttt{tests/ch01/test\_reward\_examples.py}
+
+\begin{TipBox}{Production Checklist (Chapter 1)}
+
+- \textbf{Seed deterministically}: \texttt{SimulatorConfig.seed} in
+\texttt{zoosim/core/config.py:252} and module-level RNGs. -
+\textbf{Align action bounds}: \texttt{SimulatorConfig.action.a\_max} in
+\texttt{zoosim/core/config.py:229}; examples should respect the same
+value. - \textbf{Use config-driven weights}: \texttt{RewardConfig} for
+\((\alpha,\beta,\gamma,\delta)\); avoid hard-coded numbers. -
+\textbf{Validate engagement weight}: Assert
+\(\delta/\alpha \in [0.01, 0.10]\) in
+\texttt{zoosim/dynamics/reward.py:56} (see Section 1.2.1). -
+\textbf{Monitor RPC}: Log
+\(\text{RPC}_t = \sum \text{GMV}_i / \sum \text{CLICKS}_i\); alert if
+drops \(>10\%\) (clickbait detection). - \textbf{Enforce constraints
+early}: Use hard feasibility filters for CM2 and exposure floors
+(Chapter 10, Exercise 10.3), or use Lagrange multipliers with
+\texttt{primal-\/-dual} updates when optimizing under constraints
+(Appendix C; Chapter 14). - \textbf{Ensure reproducible ranking}: Enable
+\texttt{ActionConfig.standardize\_features} in
+\texttt{zoosim/core/config.py:231}.
+
+\end{TipBox}
+
+\textbf{Exercise 1.1} (Reward Function Sensitivity). {[}20 min{]} (a)
+Implement equation (1.2) with
+\((\alpha, \beta, \gamma, \delta) = (1, 0, 0, 0)\) (GMV-only) and
+\((0.3, 0.6, 0.1, 0)\) (profit-focused). Generate 1000 random outcomes
+and plot the reward distributions. (b) Compute the correlation between
+GMV and CM2 in the simulated data. Are they aligned or conflicting? (c)
+Find business weights that make the two strategies from Section 1.2
+achieve equal reward.
+
+\textbf{Exercise 1.2} (Action Space Geometry). {[}30 min{]} (a) For
+\(K=2\) and \(a_{\max}=1\), plot the action space \(\mathcal{A}\) as a
+square \([-1,1]^2\). (b) Sample 1000 random actions uniformly. How many
+are within the \(\ell_2\) ball \(\|a\|_2 \leq 1\)? (c) Modify
+\texttt{ActionSpace.sample()} to sample from the \(\ell_\infty\) ball
+(current) vs.~the \(\ell_2\) ball. Does this change the coverage of
+boost strategies?
+
+\textbf{Exercise 1.3} (Regret Bounds). {[}extended: 45 min{]} (a)
+Implement a naive \textbf{uniform exploration} policy that samples
+\(a_t \sim \text{Uniform}(\mathcal{A})\) for \(T\) rounds. (b) Assume
+true \(Q(x, a) = \mathbf{1}^\top x + \mathbf{1}^\top a + \epsilon\)
+where \(\mathbf{1}^\top v := \sum_i v_i\) denotes the sum of components
+of vector \(v\), and \(\epsilon \sim \mathcal{N}(0, 0.1)\). Compute
+empirical regret \(\text{Regret}_T\) for \(T = 100, 1000, 10000\). (c)
+Verify that \(\text{Regret}_T / T \to \Delta\) where
+\(\Delta = \max_a Q(x, a) - \mathbb{E}_a[Q(x, a)]\) (constant regret
+rate---suboptimal!). (d) \textbf{Challenge}: Implement
+\(\varepsilon\)-greedy (with \(\varepsilon = 0.1\)) and compare regret
+curves. Does it achieve sublinear regret?
+
+\textbf{Exercise 1.4} (Constraint Feasibility). {[}30 min{]} (a)
+Generate synthetic outcomes where CM2 is correlated with GMV:
+\(\text{CM2} = 0.25 \cdot \text{GMV} + \text{noise}\). (b) Find the
+minimum CM2 floor \(\tau_{\text{CM2}}\) such that \(\geq 90\%\) of
+sampled actions satisfy the constraint. (c) Plot the \textbf{Pareto
+frontier}: GMV vs.~CM2 for different action distributions. Is it convex?
+
+\textbf{Exercise 1.5} (Bellman Equation for Bandits). {[}20 min{]} Show
+that the contextual bandit value function (equation 1.9) satisfies:
+
+\[
+V(x) = \max_a Q(x, a) = \max_a \mathbb{E}_{\omega}[R(x, a, \omega)]
+\]
+
+Prove this is a special case of the Bellman optimality equation:
+
+\[
+V(x) = \max_a \left\{R(x, a) + \gamma \mathbb{E}_{x'}[V(x')]\right\}
+\]
+
+when \(\gamma = 0\) (no future states). What happens if \(\gamma > 0\)?
+
+\textbf{Hint for MDP extension:} In the MDP Bellman equation, the term
+\(\gamma \mathbb{E}_{x'}[V(x')]\) represents expected future value
+starting from next state \(x'\) (sampled from transition dynamics
+\(P(x' \mid x, a)\)). For contextual bandits, there is no next
+state---the episode terminates after one action. Setting \(\gamma = 0\)
+eliminates future rewards, reducing to the bandit case. When
+\(\gamma > 0\), we get multi-step RL with inter-session dynamics
+(Chapter 11).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\textbf{Next Chapter}: We'll develop the \textbf{measure-theoretic
+foundations} needed for off-policy evaluation, position bias models, and
+counterfactual reasoning.
+
+\protect\phantomsection\label{refs}
+\begin{CSLReferences}{1}{1}
+\bibitem[\citeproctext]{ref-boyd:convex_optimization:2004}
+Boyd, Stephen, and Lieven Vandenberghe. 2004. \emph{Convex
+Optimization}. Cambridge University Press.
+
+\end{CSLReferences}
+
+\end{document}

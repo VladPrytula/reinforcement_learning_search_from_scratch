@@ -59,13 +59,13 @@ class LinearThompsonSampling:
 
     Mathematical correspondence: Implements [ALG-6.1]
 
-    The posterior updates follow Bayesian linear regression with Gaussian
+    The posterior updates follow Bayesian linear regression with a Gaussian
     conjugate prior. Posterior mean θ̂_a matches the ridge regression
-    solution (see [EQ-6.11]–[EQ-6.13] and [EQ-6.8]).
+    solution (see [EQ-6.8], [EQ-6.9], and [PROP-6.1]).
 
     Attributes:
         config: ThompsonSamplingConfig with hyperparameters
-        templates: List of M boost templates ([DEF-6.1])
+        templates: List of M boost templates ([DEF-6.1.1])
         M: Number of templates (action space size)
         d: Feature dimension
         theta_hat: Posterior means, shape (M, d)
@@ -179,7 +179,7 @@ class LinearThompsonSampling:
         Implements [ALG-6.1] step 6: Bayesian update via [EQ-6.7]–[EQ-6.8].
 
         Update equations (Gaussian conjugate prior):
-        - Σ_a^{-1} ← Σ_a^{-1} + σ^{-2} φφ^T          [EQ-6.7]
+        - Σ_a^{-1} ← Σ_a^{-1} + σ^{-2} φφ^T          [EQ-6.8]
         - b_a ← b_a + σ^{-2} rφ
         - θ̂_a ← Σ_a b_a with Σ_a = (Σ_a^{-1})^{-1}  [EQ-6.8]
 
@@ -196,7 +196,7 @@ class LinearThompsonSampling:
 
         sigma_sq = self.config.sigma_noise**2
 
-        # Precision update: Σ_a^{-1} ← Σ_a^{-1} + σ^{-2} φφ^T  [EQ-6.7]
+        # Precision update: Σ_a^{-1} ← Σ_a^{-1} + σ^{-2} φφ^T  [EQ-6.8]
         self.Sigma_inv[a] += (1.0 / sigma_sq) * (phi @ phi.T)
 
         # Moment update: b_a ← b_a + σ^{-2} rφ

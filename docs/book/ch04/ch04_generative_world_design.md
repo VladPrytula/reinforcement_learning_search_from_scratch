@@ -1,8 +1,8 @@
 # Chapter 4 — Catalog, Users, Queries: Generative World Design
 
-## Why We Can't Experiment on Production Search
+## Why We Cannot Experiment on Production Search
 
-In Chapters 1-3, we built the mathematical foundations for reinforcement learning in search: MDPs, Bellman operators, convergence guarantees. Now we face a practical problem: **we can't run RL exploration on a live e-commerce search engine**.
+In Chapters 1-3, we built the mathematical foundations for reinforcement learning in search: MDPs, Bellman operators, convergence guarantees. Now we face a practical problem: we cannot run RL exploration on a live e-commerce search engine.
 
 The challenge is stark. Imagine deploying a policy gradient algorithm with ε-greedy exploration directly to production:
 
@@ -10,7 +10,7 @@ The challenge is stark. Imagine deploying a policy gradient algorithm with ε-gr
 - **Revenue loss**: Random exploration shows irrelevant products, users abandon, GMV drops 20%
 - **Compliance violations**: Strategic products (e.g., litter with negative margins) fall below CM2 floor
 - **Brand damage**: Premium users see low-quality results, trust erodes
-- **Irreversible harm**: Can't "undo" a bad ranking after the user left
+- **Irreversible harm**: Cannot "undo" a bad ranking after the user left
 
 **The counterfactual problem:**
 
@@ -39,7 +39,7 @@ This world must be:
 3. **Configurable**: Adjust parameters to test robustness
 4. **Fast**: Generate millions of episodes for training
 
-Let's build it, starting with the catalog.
+Let us build it, starting with the catalog.
 
 ---
 
@@ -111,7 +111,7 @@ Prices follow **lognormal distributions** by category, chosen because:
 Given category $c$, price is sampled as:
 $$
 \text{price} \sim \text{LogNormal}(\mu_c, \sigma_c)
-\quad \Leftrightarrow \quad \log(\text{price}) \sim \mathcal{N}(\mu_c, \sigma_c)
+\quad \Leftrightarrow \quad \log(\text{price}) \sim \mathcal{N}(\mu_c, \sigma_c^2)
 \tag{4.2}
 $$
 {#EQ-4.2}
@@ -128,7 +128,7 @@ $$
 - Litter: $\mu = 2.2, \sigma = 0.35$ → median $\approx \$9.0$
 - Toys: $\mu = 1.8, \sigma = 0.6$ → median $\approx \$6.0$, high variance (cheap squeaky toys to expensive puzzles)
 
-Let's implement and verify:
+Let us implement and verify:
 
 ```python
 import numpy as np
@@ -163,11 +163,11 @@ print(f"Dog food: median=${np.median(prices_dog_food):.2f}, mean=${np.mean(price
 print(f"Toys:     median=${np.median(prices_toys):.2f}, mean=${np.mean(prices_toys):.2f}")
 
 # Output:
-# Dog food: median=$13.46, mean=$14.29
-# Toys:     median=$6.05, mean=$7.83
+# Dog food: median=$13.39, mean=$14.54
+# Toys:     median=$6.08, mean=$7.34
 ```
 
-The median matches $e^{\mu}$ as expected for lognormal distributions. Mean is higher due to right skew.
+The sample median is close to $e^{\mu}$ as expected for lognormal distributions. Mean is higher due to right skew.
 
 !!! note "Code ↔ Config (price distributions)"
     The lognormal parameters from [EQ-4.2] map to:
@@ -233,19 +233,19 @@ print(f"Expected slope: β={cfg.margin_slope['litter']:.3f}")
 print(f"Empirical correlation: ρ={np.corrcoef(litter_prices, litter_margins)[0,1]:.3f}")
 
 # Output:
-# Litter CM2: mean=$-0.269, std=$0.330
+# Litter CM2: mean=$-0.292, std=$0.315
 # Expected slope: β=-0.030
-# Empirical correlation: ρ=-0.615
+# Empirical correlation: ρ=-0.274
 ```
 
-Mean CM2 is negative (loss-leader), and correlation is negative (higher-priced litter = slightly better margins, but still negative on average). This matches [EQ-4.3] with $\beta = -0.03$.
+Mean CM2 is negative (loss-leader). Correlation is negative: higher-priced litter tends to have more negative margins on average. This matches [EQ-4.3] with $\beta = -0.03$.
 
 !!! note "Code ↔ Config (margin structure)"
     The margin model [EQ-4.3] maps to:
     - Slope parameter: `CatalogConfig.margin_slope` in `zoosim/core/config.py:30-37`
     - Noise level: `CatalogConfig.margin_noise` in `zoosim/core/config.py:38`
     - Implementation: `_sample_cm2()` in `zoosim/world/catalog.py:34-37`
-    - Validation: `test_catalog_price_and_margin_stats()` in `tests/test_catalog_stats.py:7-20`
+    - Validation: `test_catalog_price_and_margin_stats()` in `tests/test_catalog_stats.py:10`
 
 ### Private Label and Discount
 
@@ -347,120 +347,47 @@ centers = sample_embedding_centers(cfg, rng)
 embeddings_dog = [sample_embedding(cfg, "dog_food", rng, centers) for _ in range(100)]
 embeddings_toys = [sample_embedding(cfg, "toys", rng, centers) for _ in range(100)]
 
-# Compute pairwise similarities within categories
-def mean_cosine_sim(embeds):
-    embeds_tensor = torch.stack(embeds)
-    embeds_norm = torch.nn.functional.normalize(embeds_tensor, dim=1)
-    sim_matrix = embeds_norm @ embeds_norm.T
-    return sim_matrix[torch.triu(torch.ones_like(sim_matrix), diagonal=1) > 0].mean().item()
+# Verify dispersion against theory: E||e - μ_c||_2^2 = d·σ_c^2
+def mean_sq_radius(embeds: list[torch.Tensor], center: torch.Tensor) -> float:
+    diffs = torch.stack(embeds) - center
+    return diffs.pow(2).sum(dim=1).mean().item()
 
-print(f"Dog food intra-category similarity: {mean_cosine_sim(embeddings_dog):.3f}")
-print(f"Toys intra-category similarity:     {mean_cosine_sim(embeddings_toys):.3f}")
+d = cfg.embedding_dim
+dog_mean = mean_sq_radius(embeddings_dog, centers["dog_food"])
+toys_mean = mean_sq_radius(embeddings_toys, centers["toys"])
 
-# Output (representative):
-# Dog food intra-category similarity: 0.60
-# Toys intra-category similarity:     0.40
+dog_theory = d * cfg.emb_cluster_std["dog_food"] ** 2
+toys_theory = d * cfg.emb_cluster_std["toys"] ** 2
+
+print(f"Dog food: mean ||e - mu||^2 = {dog_mean:.2f} (theory {dog_theory:.2f})")
+print(f"Toys:     mean ||e - mu||^2 = {toys_mean:.2f} (theory {toys_theory:.2f})")
+
+# Output:
+# Dog food: mean ||e - mu||^2 = 7.98 (theory 7.84)
+# Toys:     mean ||e - mu||^2 = 13.11 (theory 12.96)
 ```
 
-Dog food has higher intra-category similarity (tighter cluster) than toys, matching [EQ-4.6] with $\sigma_{\text{dog}} = 0.7 < \sigma_{\text{toys}} = 0.9$ and shared centroids $\boldsymbol{\mu}_c$ per category.
+Dog food has smaller within-category dispersion than toys (tighter cluster), matching [EQ-4.6] with $\sigma_{\text{dog}} = 0.7 < \sigma_{\text{toys}} = 0.9$ and shared centroids $\boldsymbol{\mu}_c$ per category.
 
 !!! note "Code ↔ Config (embeddings)"
     The cluster model [EQ-4.6] maps to:
     - Dimension: `CatalogConfig.embedding_dim` in `zoosim/core/config.py:21` (default 16)
     - Cluster tightness: `CatalogConfig.emb_cluster_std` in `zoosim/core/config.py:66-73`
-    - Implementation: `_sample_embedding()` in `zoosim/world/catalog.py` (shared μ_c per category)
+    - Implementation: `_sample_embedding()` in `zoosim/world/catalog.py:51-63` (shared μ_c per category)
     - Cross-platform: Uses both NumPy and PyTorch RNGs with explicit seed conversion
 
 ### Complete Catalog Generation
 
-Now we assemble all components into the full catalog generator:
+We now assemble all components via the production catalog generator:
 
 ```python
-from dataclasses import dataclass
-from typing import List
-
-@dataclass
-class Product:
-    """Single product in catalog.
-
-    Corresponds to [EQ-4.1].
-    """
-    product_id: int
-    category: str
-    price: float
-    cm2: float
-    is_pl: bool
-    discount: float
-    bestseller: float
-    embedding: torch.Tensor
-    strategic_flag: bool
-
-
-def generate_catalog(cfg: CatalogConfig, rng: np.random.Generator) -> List[Product]:
-    """Generate complete product catalog deterministically.
-
-    Mathematical basis: [DEF-4.1], [EQ-4.1]-[EQ-4.6]
-
-    Implements the generative model μ_C for catalog generation:
-    - Samples categories from multinomial distribution
-    - Generates prices from lognormal by category
-    - Constructs margins with linear dependence on price
-    - Assigns PL flags, discounts, bestseller scores
-    - Creates semantic embeddings clustered by category
-
-    Args:
-        cfg: Catalog configuration (n_products, categories, distributions)
-        rng: NumPy random generator (deterministic if seed is fixed)
-
-    Returns:
-        products: List of N_prod products, each satisfying [EQ-4.1]
-
-    Properties (verified in tests/test_catalog_stats.py):
-    - Deterministic: Same seed → identical products
-    - Price distributions: Match lognormal parameters [EQ-4.2]
-    - Margin structure: Linear in price with category-specific slopes [EQ-4.3]
-    - Strategic categories: Litter has mean(cm2) < 0
-    """
-    products: List[Product] = []
-    category_choices = cfg.categories
-    category_probs = cfg.category_mix
-
-    for pid in range(cfg.n_products):
-        # Sample category
-        category = rng.choice(category_choices, p=category_probs)
-
-        # Generate attributes
-        price = sample_price(cfg, category, rng)
-        cm2 = sample_cm2(cfg, category, price, rng)
-        is_pl = bool(rng.random() < cfg.pl_prob[category])
-        discount = sample_discount(cfg, rng)
-        bestseller = max(0.0, rng.normal(cfg.bestseller_mean[category],
-                                         cfg.bestseller_std[category]))
-        embedding = sample_embedding(cfg, category, rng)
-        strategic = category in cfg.strategic_categories
-
-        products.append(
-            Product(
-                product_id=pid,
-                category=category,
-                price=price,
-                cm2=cm2,
-                is_pl=is_pl,
-                discount=discount,
-                bestseller=bestseller,
-                embedding=embedding,
-                strategic_flag=strategic,
-            )
-        )
-
-    return products
-
-
 # Generate and validate catalog
-cfg = CatalogConfig(n_products=10_000)
-rng = np.random.default_rng(2025_1108)
+from zoosim.core.config import SimulatorConfig
+from zoosim.world.catalog import generate_catalog
 
-catalog = generate_catalog(cfg, rng)
+cfg = SimulatorConfig(seed=2025_1108)
+rng = np.random.default_rng(cfg.seed)
+catalog = generate_catalog(cfg.catalog, rng)
 
 # Verify category distribution
 category_counts = {}
@@ -468,31 +395,27 @@ for p in catalog:
     category_counts[p.category] = category_counts.get(p.category, 0) + 1
 
 print("Category distribution (n=10,000):")
-for cat, expected_prob in zip(cfg.categories, cfg.category_mix):
+for cat, expected_prob in zip(cfg.catalog.categories, cfg.catalog.category_mix):
     observed_prob = category_counts[cat] / len(catalog)
     print(f"  {cat:12s}: {observed_prob:.3f} (expected {expected_prob:.3f})")
 
 # Output:
 # Category distribution (n=10,000):
-#   dog_food    : 0.351 (expected 0.350)
-#   cat_food    : 0.349 (expected 0.350)
-#   litter      : 0.151 (expected 0.150)
-#   toys        : 0.149 (expected 0.150)
-```
+#   dog_food    : 0.353 (expected 0.350)
+#   cat_food    : 0.345 (expected 0.350)
+#   litter      : 0.150 (expected 0.150)
+#   toys        : 0.152 (expected 0.150)
 
-Perfect match to specified distribution. Let's verify strategic category margins:
-
-```python
 litter_products = [p for p in catalog if p.category == "litter"]
 litter_cm2_mean = np.mean([p.cm2 for p in litter_products])
 
-print(f"\nStrategic category validation:")
+print("\nStrategic category validation:")
 print(f"  Litter mean CM2: ${litter_cm2_mean:.3f}")
 print(f"  Strategic flag set: {all(p.strategic_flag for p in litter_products)}")
 
 # Output:
 # Strategic category validation:
-#   Litter mean CM2: $-0.262
+#   Litter mean CM2: $-0.273
 #   Strategic flag set: True
 ```
 
@@ -500,11 +423,10 @@ Litter has negative average margin (loss-leader) and all litter products are fla
 
 !!! note "Code ↔ Config (catalog generation)"
     The full catalog generator [DEF-4.1] maps to:
-    - Main function: `generate_catalog()` in `zoosim/world/catalog.py:61-90`
+    - Main function: `generate_catalog()` in `zoosim/world/catalog.py:66-103`
     - Product dataclass: `Product` in `zoosim/world/catalog.py:15-26`
     - Configuration: `CatalogConfig` in `zoosim/core/config.py:14-75`
-    - Validation tests: `tests/test_catalog_stats.py:7-33`
-    - File:line: `zoosim/world/catalog.py:61-90`
+    - Validation tests: `tests/test_catalog_stats.py:10`
 
 ---
 
@@ -529,43 +451,43 @@ where:
 - $\boldsymbol{\theta}_{\text{cat}} \in \Delta^{K-1}$: Category affinity, where the simplex
   $\Delta^{K-1} = \{\boldsymbol{\theta} \in \mathbb{R}^K : \boldsymbol{\theta} \geq 0, \|\boldsymbol{\theta}\|_1 = 1\}$;
   here $K = 4$ categories
-- $\boldsymbol{\theta}_{\text{emb}} \in \mathbb{R}^d$: Embedding preference vector (dot product with product embeddings)
+- $\boldsymbol{\theta}_{\text{emb}} \in \mathbb{R}^d$: Embedding preference vector (used to construct query embeddings)
 
-These parameters will appear in the **utility function** (Chapter 5):
+These parameters enter the production click model (Utility-Based Cascade, [DEF-2.5.3]) through the latent utility. For convenience, we restate it here:
 
 $$
-U(u, p) = \alpha_{\text{rel}} \cdot \text{rel}(q, p) + \theta_{\text{price}} \cdot \log(\text{price}) + \theta_{\text{pl}} \cdot \mathbb{1}[\text{is\_pl}] + \langle \boldsymbol{\theta}_{\text{emb}}, \mathbf{e}_p \rangle + \epsilon
+U(u, q, p) = \alpha_{\text{rel}} \cdot \text{match}(q, p) + \alpha_{\text{price}} \cdot \theta_{\text{price}} \cdot \log(1 + \text{price}_p) + \alpha_{\text{pl}} \cdot \theta_{\text{pl}} \cdot \mathbf{1}_{\text{is\_pl}(p)} + \alpha_{\text{cat}} \cdot \theta_{\text{cat}}(\text{cat}(p)) + \varepsilon
 \tag{4.8}
 $$
 {#EQ-4.8}
 
-where $\epsilon \sim \text{Gumbel}(0,1)$ gives logit choice model (multinomial logit).
+where $\text{match}(q,p) = \cos(\boldsymbol{\phi}_{\text{emb}}(q), \mathbf{e}_p)$ is semantic similarity and $\varepsilon \sim \mathcal{N}(0, \sigma_u^2)$ is utility noise, as in [EQ-2.4].
 
 **Segment distributions:**
 
 Each segment has distributional parameters. For example:
 
-**Price Hunter segment** (40% of users):
-- $\theta_{\text{price}} \sim \mathcal{N}(-0.9, 0.2)$ → strong negative (dislikes high prices)
-- $\theta_{\text{pl}} \sim \mathcal{N}(0.0, 0.2)$ → indifferent to PL
-- $\boldsymbol{\theta}_{\text{cat}} \sim \text{Dirichlet}([0.25, 0.25, 0.30, 0.20])$ → balanced with slight litter preference
+**Price Hunter segment** (35% of users):
+- $\theta_{\text{price}} \sim \mathcal{N}(-3.5, 0.3)$ → strong price aversion
+- $\theta_{\text{pl}} \sim \mathcal{N}(-1.0, 0.2)$ → avoids PL (house brands)
+- $\boldsymbol{\theta}_{\text{cat}} \sim \text{Dirichlet}([0.30, 0.30, 0.20, 0.20])$
 
-**Premium segment** (20% of users):
-- $\theta_{\text{price}} \sim \mathcal{N}(-0.2, 0.2)$ → weak negative (less price-sensitive)
-- $\theta_{\text{pl}} \sim \mathcal{N}(-0.4, 0.2)$ → **avoids PL** (prefers brands)
-- $\boldsymbol{\theta}_{\text{cat}} \sim \text{Dirichlet}([0.35, 0.35, 0.10, 0.20])$ → focuses on dog/cat food
+**PL Lover segment** (25% of users):
+- $\theta_{\text{price}} \sim \mathcal{N}(-1.8, 0.2)$ → moderate price sensitivity
+- $\theta_{\text{pl}} \sim \mathcal{N}(3.2, 0.3)$ → strong PL preference
+- $\boldsymbol{\theta}_{\text{cat}} \sim \text{Dirichlet}([0.20, 0.45, 0.20, 0.15])$
 
-**PL Lover segment** (20% of users):
-- $\theta_{\text{price}} \sim \mathcal{N}(-0.6, 0.2)$ → moderate price sensitivity
-- $\theta_{\text{pl}} \sim \mathcal{N}(0.8, 0.3)$ → **strong PL preference**
-- $\boldsymbol{\theta}_{\text{cat}} \sim \text{Dirichlet}([0.30, 0.30, 0.25, 0.15])$ → balanced
+**Premium segment** (15% of users):
+- $\theta_{\text{price}} \sim \mathcal{N}(1.2, 0.25)$ → prefers higher prices (quality proxy)
+- $\theta_{\text{pl}} \sim \mathcal{N}(-2.0, 0.2)$ → strongly avoids PL
+- $\boldsymbol{\theta}_{\text{cat}} \sim \text{Dirichlet}([0.50, 0.25, 0.05, 0.20])$
 
-**Litter Heavy segment** (20% of users):
-- $\theta_{\text{price}} \sim \mathcal{N}(-0.5, 0.2)$ → moderate price sensitivity
-- $\theta_{\text{pl}} \sim \mathcal{N}(0.2, 0.2)$ → slight PL preference
-- $\boldsymbol{\theta}_{\text{cat}} \sim \text{Dirichlet}([0.20, 0.30, 0.40, 0.10])$ → **40% litter** (cross-sell target)
+**Litter Heavy segment** (25% of users):
+- $\theta_{\text{price}} \sim \mathcal{N}(-1.0, 0.2)$ → moderate price sensitivity
+- $\theta_{\text{pl}} \sim \mathcal{N}(1.0, 0.2)$ → prefers PL
+- $\boldsymbol{\theta}_{\text{cat}} \sim \text{Dirichlet}([0.05, 0.05, 0.85, 0.05])$ → strong litter affinity
 
-Let's implement user sampling:
+Let us implement user sampling:
 
 ```python
 from dataclasses import dataclass
@@ -583,7 +505,7 @@ class User:
     theta_emb: torch.Tensor  # Embedding preference
 
 
-def sample_user(config: SimulatorConfig, rng: np.random.Generator) -> User:
+def sample_user(*, config: SimulatorConfig, rng: np.random.Generator) -> User:
     """Sample user from segment mixture.
 
     Mathematical basis: [DEF-4.3], [EQ-4.7]
@@ -633,7 +555,7 @@ from zoosim.core.config import SimulatorConfig
 cfg = SimulatorConfig(seed=2025_1108)
 rng = np.random.default_rng(cfg.seed)
 
-users = [sample_user(cfg, rng) for _ in range(10_000)]
+users = [sample_user(config=cfg, rng=rng) for _ in range(10_000)]
 
 # Segment distribution
 segment_counts = {}
@@ -647,13 +569,13 @@ for seg, expected_prob in zip(cfg.users.segments, cfg.users.segment_mix):
 
 # Output:
 # Segment distribution (n=10,000):
-#   price_hunter   : 0.401 (expected 0.400)
-#   pl_lover       : 0.200 (expected 0.200)
-#   premium        : 0.197 (expected 0.200)
-#   litter_heavy   : 0.202 (expected 0.200)
+#   price_hunter   : 0.344 (expected 0.350)
+#   pl_lover       : 0.260 (expected 0.250)
+#   premium        : 0.149 (expected 0.150)
+#   litter_heavy   : 0.247 (expected 0.250)
 ```
 
-Excellent match. Let's verify preference parameter distributions by segment:
+Excellent match. Let us verify preference parameter distributions by segment:
 
 ```python
 # Analyze preference distributions by segment
@@ -669,11 +591,11 @@ print(f"  PL Lover: mean={np.mean(pl_lover_theta_pl):.2f}, std={np.std(pl_lover_
 
 # Output:
 # PL preference (theta_pl) by segment:
-#   Premium:  mean=-0.40, std=0.20
-#   PL Lover: mean=0.80, std=0.30
+#   Premium:  mean=-2.00, std=0.20
+#   PL Lover: mean=3.20, std=0.31
 ```
 
-Perfect! Premium users have **negative** PL preference (avoid house brands), while PL lovers have **strong positive** preference. This heterogeneity drives the need for personalized ranking.
+Premium users have large negative PL preference (avoid house brands), while PL lovers have strong positive preference. This heterogeneity drives the need for personalized ranking.
 
 **Category affinities:**
 
@@ -690,27 +612,27 @@ for idx, cat in enumerate(cfg.catalog.categories):
 
 # Output:
 # Category affinity for Litter Heavy segment:
-#   dog_food    : 0.199
-#   cat_food    : 0.300
-#   litter      : 0.401
-#   toys        : 0.100
+#   dog_food    : 0.053
+#   cat_food    : 0.047
+#   litter      : 0.851
+#   toys        : 0.049
 ```
 
-Matches the Dirichlet concentration parameters: litter_heavy users have 40% litter affinity (cross-sell opportunity for RL agent to exploit).
+Matches the Dirichlet concentration parameters: litter-heavy users have about 85% litter affinity.
 
 !!! note "Code ↔ Config (user generation)"
     The user model [DEF-4.3] maps to:
     - User dataclass: `User` in `zoosim/world/users.py:15-22`
     - Sampling function: `sample_user()` in `zoosim/world/users.py:29-48`
-    - Segment configuration: `UserConfig` in `zoosim/core/config.py:82-129`
+    - Segment configuration: `UserConfig` in `zoosim/core/config.py:92-129`
     - Segment parameters: `SegmentParams` dataclass in `zoosim/core/config.py:83-89`
-    - Usage: The latent utility [EQ-4.8] is instantiated as the **Utility-Based Cascade Model** (§2.5.4, [DEF-2.5.3]) and implemented in `zoosim/dynamics/behavior.py` (used throughout Chapters 5--8)
+    - Usage: The latent utility [EQ-4.8] matches [EQ-2.4] from [DEF-2.5.3] and is implemented in `zoosim/dynamics/behavior.py:38-56` (used throughout Chapters 5--8)
 
 ---
 
 ## Query Generation: Intent and Embeddings
 
-Users don't browse the entire catalog—they issue **queries** that express search intent.
+Users do not browse the entire catalog—they issue **queries** that express search intent.
 
 **Definition 4.4** (Query) {#DEF-4.4}
 
@@ -755,7 +677,7 @@ Given a user $u$ with category affinity $\boldsymbol{\theta}_{\text{cat}}$ and e
    - E.g., ["dog", "food", "brand", "tok_42", "tok_137"]
    - Used for lexical relevance (bag-of-words matching)
 
-Let's implement:
+Let us implement:
 
 ```python
 @dataclass
@@ -771,7 +693,7 @@ class Query:
     tokens: List[str]  # Query tokens
 
 
-def sample_query(user: User, config: SimulatorConfig, rng: np.random.Generator) -> Query:
+def sample_query(*, user: User, config: SimulatorConfig, rng: np.random.Generator) -> Query:
     """Sample query from user's preferences.
 
     Mathematical basis: [DEF-4.4], [EQ-4.9]
@@ -831,8 +753,8 @@ rng = np.random.default_rng(cfg.seed)
 # Sample users and their queries
 user_query_pairs = []
 for _ in range(10_000):
-    user = sample_user(cfg, rng)
-    query = sample_query(user, cfg, rng)
+    user = sample_user(config=cfg, rng=rng)
+    query = sample_query(user=user, config=cfg, rng=rng)
     user_query_pairs.append((user, query))
 
 # Query type distribution (should be 60/20/20 across all users)
@@ -847,12 +769,12 @@ for qtype, expected_prob in zip(cfg.queries.query_types, cfg.queries.query_type_
 
 # Output:
 # Query type distribution (n=10,000):
-#   category  : 0.599 (expected 0.600)
-#   brand     : 0.202 (expected 0.200)
-#   generic   : 0.199 (expected 0.200)
+#   category  : 0.598 (expected 0.600)
+#   brand     : 0.205 (expected 0.200)
+#   generic   : 0.197 (expected 0.200)
 ```
 
-Perfect match to specification. Now let's verify that **query intent matches user segment**:
+Close match to specification. We now verify that query intent matches user segment:
 
 ```python
 # Verify litter_heavy users issue more litter queries
@@ -861,14 +783,14 @@ litter_queries = [q for _, q in litter_heavy_pairs if q.intent_category == "litt
 
 litter_heavy_litter_rate = len(litter_queries) / len(litter_heavy_pairs)
 print(f"\nLitter-heavy users issue litter queries: {litter_heavy_litter_rate:.3f}")
-print(f"Expected (from Dirichlet concentration): ~0.40")
+print(f"Expected (from Dirichlet concentration): ~0.85")
 
 # Output:
-# Litter-heavy users issue litter queries: 0.401
-# Expected (from Dirichlet concentration): ~0.40
+# Litter-heavy users issue litter queries: 0.851
+# Expected (from Dirichlet concentration): ~0.85
 ```
 
-Excellent! Query intent is correctly coupled to user preferences via $\boldsymbol{\theta}_{\text{cat}}$.
+Query intent is coupled to user preferences via $\boldsymbol{\theta}_{\text{cat}}$.
 
 !!! note "Code ↔ Config (query generation)"
     The query model [DEF-4.4] maps to:
@@ -919,7 +841,7 @@ x = rng.random()
 ```
 
 NumPy's `Generator` class uses PCG64 algorithm (O'Neill 2014), which:
-- Has period $2^{128}$ (won't repeat in any experiment)
+- Has period $2^{128}$ (will not repeat in any experiment)
 - Supports independent streams (parallel experiments without correlation)
 - Is platform-independent (same seed → same sequence on Windows/Linux/Mac)
 
@@ -954,7 +876,7 @@ def test_deterministic_catalog():
 
     Property [EQ-4.10]: Determinism requirement.
 
-    Test from tests/test_catalog_stats.py:22-33.
+    Test from `tests/test_catalog_stats.py:25`.
     """
     cfg = CatalogConfig()
 
@@ -971,19 +893,18 @@ def test_deterministic_catalog():
         # Embeddings are torch.Tensor, need torch.equal()
         assert torch.equal(catalog1[idx].embedding, catalog2[idx].embedding)
 
-    print("✓ Determinism verified: Same seed → identical catalog")
+    # No output is required: determinism is asserted by the test runner.
 ```
 
 Run this test:
 
 ```bash
-pytest tests/test_catalog_stats.py::test_deterministic_catalog -v
+uv run pytest -q tests/test_catalog_stats.py::test_deterministic_catalog
 ```
 
-Output:
+Output (representative):
 ```
-tests/test_catalog_stats.py::test_deterministic_catalog PASSED
-✓ Determinism verified: Same seed → identical catalog
+1 passed
 ```
 
 **Configuration seed management:**
@@ -1005,10 +926,12 @@ All experiments should:
 
 !!! note "Code ↔ Config (reproducibility)"
     Determinism [EQ-4.10] is enforced via:
-    - Global seed: `SimulatorConfig.seed` in `zoosim/core/config.py:250`
+    - Global seed: `SimulatorConfig.seed` in `zoosim/core/config.py:252`
     - RNG creation: `np.random.default_rng(seed)` passed explicitly
     - Cross-library: `_torch_generator()` helper in all world modules
-    - Validation: `test_deterministic_catalog()` in `tests/test_catalog_stats.py:22-33`
+    - Validation: `test_deterministic_catalog()` in `tests/test_catalog_stats.py:25`
+    - Validation: `test_deterministic_user_sampling()` in `tests/test_catalog_stats.py:39`
+    - Validation: `test_deterministic_user_query_sampling()` in `tests/test_catalog_stats.py:55`
     - Convention: Use `YYYY_MMDD` format for date-based seeds (e.g., 2025_1108)
 
 ---
@@ -1024,7 +947,7 @@ We've defined generative models and implemented them. Now: **are the generated w
 3. **Segment realism**: User segments have coherent preferences
 4. **Query-user coupling**: Query intents align with user affinities
 
-Let's validate each systematically.
+Let us validate each systematically.
 
 ### Price and Margin Distributions
 
@@ -1114,10 +1037,10 @@ for cat in cfg.catalog.categories:
 
 # Output:
 # Margin slope validation:
-#   dog_food    : theory=+0.120, empirical=+0.121
-#   cat_food    : theory=+0.110, empirical=+0.109
-#   litter      : theory=-0.030, empirical=-0.031
-#   toys        : theory=+0.200, empirical=+0.198
+#   dog_food    : theory=+0.120, empirical=+0.120
+#   cat_food    : theory=+0.110, empirical=+0.111
+#   litter      : theory=-0.030, empirical=-0.029
+#   toys        : theory=+0.200, empirical=+0.201
 ```
 
 Excellent agreement between theoretical and empirical slopes, validating [EQ-4.3].
@@ -1135,7 +1058,7 @@ In the run above, all categories satisfy $|\hat{\beta}_c - \beta_c| < 0.01$, wel
 ```python
 # Generate 10,000 users and analyze segment preferences
 rng = np.random.default_rng(2025_1108)
-users = [sample_user(cfg, rng) for _ in range(10_000)]
+users = [sample_user(config=cfg, rng=rng) for _ in range(10_000)]
 
 # Collect preferences by segment
 pref_by_segment = {seg: {"price": [], "pl": []} for seg in cfg.users.segments}
@@ -1186,10 +1109,10 @@ for seg in cfg.users.segments:
 ```
 
 Segments cluster in distinct regions of preference space:
-- **Price hunters**: Strong negative price sensitivity, neutral PL
-- **Premium**: Weak price sensitivity, negative PL (avoid house brands)
-- **PL lovers**: Moderate price sensitivity, strong positive PL
-- **Litter heavy**: Moderate price sensitivity, slight positive PL
+- **Price hunters**: Strong negative price sensitivity, negative PL (avoid house brands)
+- **Premium**: Positive price preference, negative PL (avoid house brands)
+- **PL lovers**: Moderate negative price sensitivity, strong positive PL
+- **Litter heavy**: Moderate negative price sensitivity, positive PL
 
 This heterogeneity creates the need for **personalized ranking** policies.
 
@@ -1202,8 +1125,8 @@ rng = np.random.default_rng(2025_1108)
 # Sample users and queries
 user_query_data = []
 for _ in range(5_000):
-    user = sample_user(cfg, rng)
-    query = sample_query(user, cfg, rng)
+    user = sample_user(config=cfg, rng=rng)
+    query = sample_query(user=user, config=cfg, rng=rng)
     user_query_data.append((user, query))
 
 # Compute query intent rates by user segment
@@ -1233,40 +1156,40 @@ for seg in cfg.users.segments:
 # Output:
 # Query intent coupling validation:
 #   price_hunter:
-#     Litter intent rate: expected=0.273, observed=0.275
+#     Litter intent rate: expected=0.200, observed=0.213
 #   pl_lover:
-#     Litter intent rate: expected=0.227, observed=0.229
+#     Litter intent rate: expected=0.200, observed=0.212
 #   premium:
-#     Litter intent rate: expected=0.091, observed=0.089
+#     Litter intent rate: expected=0.050, observed=0.045
 #   litter_heavy:
-#     Litter intent rate: expected=0.400, observed=0.402
+#     Litter intent rate: expected=0.850, observed=0.860
 ```
 
-Perfect coupling! **Litter-heavy users** issue litter queries 40% of the time, while **premium users** only 9% (they focus on dog/cat food).
+Strong coupling: litter-heavy users issue litter queries about 85% of the time, while premium users do so about 5% of the time.
 
 This validates that our generative model produces **coherent user-query pairs** for realistic simulations.
 
 !!! note "Code ↔ Config (validation)"
     Statistical validation implemented via:
-    - Price distributions: Verified in `tests/test_catalog_stats.py:7-20`
+    - Price distributions: Verified in `tests/test_catalog_stats.py:10`
     - Margin structure: Linear regression in validation script above
     - Segment preferences: Plotted and verified against `UserConfig.segment_params`
     - Query coupling: Aligned with Dirichlet concentrations in `SegmentParams.cat_conc`
-    - All tests: Run with `pytest tests/test_catalog_stats.py -v`
+    - All tests: Run with `uv run pytest -q tests/test_catalog_stats.py`
 
 ---
 
 ## Theory-Practice Gap: Sim-to-Real Transfer
 
-Our simulator is **deterministic and realistic**, but it's still a **model**. The critical question:
+Our simulator is **deterministic and realistic**, but it is still a **model**. The critical question:
 
 > **Will policies learned in simulation transfer to production?**
 
 This is the **sim-to-real problem**, pervasive in RL for robotics, games, and recommendation systems.
 
-### What's Missing from Our Simulator?
+### What Is Missing from Our Simulator?
 
-If you have ever worked on a real e‑commerce search engine, you will recognize how idealized our world still is. We have clean product attributes, stable user segments, and queries that politely follow our generative story. Production systems are messier: promotions fire at the last minute, catalogs churn daily, and user intent shifts faster than dashboards can be updated. It is important to see our simulator as a *controlled thought experiment* rather than a faithful mirror of production.
+Production search engines are messier than any clean generative story: promotions fire at the last minute, catalogs churn daily, and user intent shifts faster than dashboards can be updated. We should view our simulator as a controlled thought experiment rather than a faithful mirror of production.
 
 With that in mind, here are some of the main gaps between our Chapter 4 world and a live ranking system:
 
@@ -1365,11 +1288,11 @@ For this textbook, we use hand-crafted models to **teach the principles** transp
 
 ## Production Checklist
 
-Before you treat the simulator as a production‑grade world model, it is worth pausing and running through a short checklist. The goal is not paperwork; it is to make sure that the mathematics you just read truly compiles into the code you are about to run.
+Before treating the simulator as a production‑grade world model, it is worth pausing and running through a short checklist. The goal is not paperwork; it is to make sure that the mathematics we just read truly compiles into the code we are about to run.
 
 !!! tip "Production Checklist (Chapter 4)"
     **Configuration — does the world exist on purpose?**
-    - [ ] Global seed set: `SimulatorConfig.seed` in `zoosim/core/config.py:250`
+    - [ ] Global seed set: `SimulatorConfig.seed` in `zoosim/core/config.py:252`
     - [ ] All distribution parameters documented in `CatalogConfig`, `UserConfig`, `QueryConfig`
     - [ ] Strategic categories configured: `CatalogConfig.strategic_categories`
 
@@ -1379,12 +1302,12 @@ Before you treat the simulator as a production‑grade world model, it is worth 
     - [ ] Cross-library consistency: `_torch_generator()` used for PyTorch operations
 
     **Validation — have we actually looked at the data?**
-    - [ ] Tests pass: `pytest tests/test_catalog_stats.py -v`
+    - [ ] Tests pass: `uv run pytest -q tests/test_catalog_stats.py`
     - [ ] Determinism verified: Same seed → identical world
     - [ ] Distributions match specifications: price medians, margin slopes, segment rates
 
     **Code–theory mapping — can we point from equations to files?**
-    - [ ] Catalog generation: [DEF-4.1], [EQ-4.1]–[EQ-4.6] → `zoosim/world/catalog.py:61-90`
+    - [ ] Catalog generation: [DEF-4.1], [EQ-4.1]–[EQ-4.6] → `zoosim/world/catalog.py:66-103`
     - [ ] User sampling: [DEF-4.3], [EQ-4.7] → `zoosim/world/users.py:29-48`
     - [ ] Query sampling: [DEF-4.4], [EQ-4.9] → `zoosim/world/queries.py:42-63`
     - [ ] Config dataclasses: `zoosim/core/config.py:14-260`
@@ -1472,7 +1395,7 @@ Then we can define the **search environment** (MDP) and train RL agents!
 **The unified vision:**
 Mathematics (generative models, probability distributions) and code (NumPy/PyTorch implementations) are **inseparable**. Every equation compiles. Every implementation has a theorem. Theory and practice in constant dialogue.
 
-That's Chapter 4. Let's move to Chapter 5: **Relevance, Features, and Counterfactual Ranking**.
+This concludes Chapter 4. We now move to Chapter 5: **Relevance, Features, and Counterfactual Ranking**.
 
 ---
 

@@ -89,7 +89,7 @@ With these metrics established, we now formalize non-stationary MDPs and quantif
 
 ### 10.1.2 Formalization
 
-Recall the stationary MDP $(\mathcal{S}, \mathcal{A}, P, R, \gamma)$ from Chapter 3. The Bellman optimality operator $\mathcal{T}$ from [THM-3.5.2] acts on value functions $V : \mathcal{S} \to \mathbb{R}$ as
+Recall the stationary MDP $(\mathcal{S}, \mathcal{A}, P, R, \gamma)$ from Chapter 3. The Bellman optimality operator $\mathcal{T}$ from [THM-3.5.2-Bellman] acts on value functions $V : \mathcal{S} \to \mathbb{R}$ as
 
 $$
 (\mathcal{T} V)(s) = \max_a \left\{ R(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s') \right\}
@@ -1764,7 +1764,7 @@ For a comprehensive bibliography, see `references.bib`. Key papers for this chap
     - All configurable via dataclasses (no hard-coded magic numbers)
 
     **Cross-references:**
-    - [THM-3.5.2] — Bellman Optimality Equation (Chapter 3)
+    - [THM-3.5.2-Bellman] — Bellman Optimality Equation (Chapter 3)
     - [EQ-6.8] — LinUCB ridge regression (Chapter 6)
     - [THM-8.2] — Policy Gradient Theorem (Chapter 8)
     - [ALG-10.1] — CUSUM algorithm (this chapter)

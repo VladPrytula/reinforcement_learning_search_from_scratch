@@ -140,7 +140,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("docs/book/drafts/ch06/data"),
+        default=Path("docs/book/ch06/data"),
         help="Directory where the aggregated JSON artifact is written.",
     )
     parser.add_argument(

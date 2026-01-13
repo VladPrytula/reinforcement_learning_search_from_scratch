@@ -14,18 +14,18 @@ uplift the template bandits achieve relative to static baselines.
 
 Run with:
 
-    python scripts/ch06/template_bandits_demo.py
-    python scripts/ch06/template_bandits_demo.py --n-episodes 20000
-    python scripts/ch06/template_bandits_demo.py --n-static 4000 --n-bandit 2000
+    uv run python scripts/ch06/template_bandits_demo.py
+    uv run python scripts/ch06/template_bandits_demo.py --n-episodes 20000
+    uv run python scripts/ch06/template_bandits_demo.py --n-static 4000 --n-bandit 2000
 
 CLI parameters:
 - ``--n-episodes``: total episode count used for both static and bandit sections (default 5,000 if neither per‑section flag is set).
 - ``--n-static``: episode count for static template baselines only; overrides ``--n-episodes`` for the static part (Chapter 6 §6.5/§6.7 tables).
 - ``--n-bandit``: episode count for LinUCB / Thompson Sampling runs; overrides ``--n-episodes`` for the bandit part.
 - ``--features``: context feature mode for the bandits:
-    - ``simple`` → 7‑dim signals (segment + query type) plus a bias term (8 total), used in §6.5 to show the failure (−30 % / −10 % GMV vs static).
-    - ``rich`` → 17‑dim signals (segment + query + oracle user latents + base‑top‑K aggregates) plus a bias term (18 total), used in §6.7 to show the rich‑feature fix (+3 % / +27 % GMV).
-    - ``rich_est`` → same structure as ``rich`` but with *estimated* user latents (for labs/experiments beyond the core narrative).
+    - ``simple`` → 7-dim signals (segment + query type) plus a bias term (8 total), used in §6.5 to show the failure mode (bandits underperform the best static template in the reference run).
+    - ``rich`` → 17-dim signals (segment + query + oracle user latents + base-top-K aggregates) plus a bias term (18 total), used in §6.7.4 to show the rich-feature fix (bandits outperform static in the reference run).
+    - ``rich_est`` → same structure as ``rich`` but with *estimated* user latents, used in §6.7.5 to demonstrate robustness differences under feature noise.
 - ``--show-volume``: if set, also prints average order volume per policy and segment, exposing the “GMV vs Orders” trade‑off discussed in §6.7 and the labs.
 
 Notes:
@@ -1466,8 +1466,8 @@ def main() -> None:
         "linear contextual bandits are appropriate."
     )
     print("\nFor theory and detailed diagnostics, see:")
-    print("  - docs/book/drafts/ch06/discrete_template_bandits.md")
-    print("  - docs/book/drafts/ch06/exercises_labs.md")
+    print("  - docs/book/ch06/discrete_template_bandits.md")
+    print("  - docs/book/ch06/exercises_labs.md")
     print("=" * 80 + "\n")
 
 
