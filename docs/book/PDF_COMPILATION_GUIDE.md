@@ -35,7 +35,7 @@ Complete instructions for generating PDFs from markdown chapters.
 
 3. **Required LaTeX Packages**
    - `tcolorbox` - For callout boxes
-   - `newunicodechar` - For Unicode fallback mappings
+   - `amsmath`, `amssymb` - For mathematical typesetting (typically included)
    - Standard packages (geometry, fontspec, etc.) - Usually included
 
 ### Required Project Files
@@ -52,16 +52,18 @@ These must exist before compilation:
 
 ## File Locations
 
+!!! note "Folder structure update"
+    Older documentation referred to `docs/book/final/`. That folder is an artifact of an older layout. The current canonical sources live directly under `docs/book/chXX/` (for example `docs/book/ch02/`).
+
 ```
 rl_search_from_scratch/
 ├── docs/book/
 │   ├── callouts.lua          # Pandoc filter
 │   ├── preamble.tex          # LaTeX preamble
-│   └── final/
-│       ├── ch00/
-│       │   └── ch00_motivation_first_experiment_revised.md
-│       └── ch01/
-│           └── ch01_foundations_revised_math+pedagogy_v3.md
+│   ├── ch00/
+│   │   └── ch00_motivation_first_experiment.md
+│   └── ch01/
+│       └── ch01_foundations.md
 └── ch00.pdf                  # Generated (root directory)
     ch01.pdf                  # Generated (root directory)
 ```
@@ -75,10 +77,13 @@ rl_search_from_scratch/
 **From project root directory** (`/Users/vladyslavp/src_local/rl_search_from_scratch/`):
 
 ```bash
-pandoc docs/book/final/ch00/ch00_motivation_first_experiment_revised.md \
+pandoc docs/book/ch00/ch00_motivation_first_experiment.md \
+  --lua-filter=docs/book/admonitions.lua \
   --lua-filter=docs/book/callouts.lua \
+  --lua-filter=docs/book/crossrefs.lua \
   --include-in-header=docs/book/preamble.tex \
   --pdf-engine=xelatex \
+  --resource-path=.:docs/book:docs/book/ch00 \
   -V geometry:margin=1in \
   -V fontsize=11pt \
   --toc \
@@ -93,10 +98,13 @@ pandoc docs/book/final/ch00/ch00_motivation_first_experiment_revised.md \
 **From project root directory**:
 
 ```bash
-pandoc docs/book/final/ch01/ch01_foundations_revised_math+pedagogy_v3.md \
+pandoc docs/book/ch01/ch01_foundations.md \
+  --lua-filter=docs/book/admonitions.lua \
   --lua-filter=docs/book/callouts.lua \
+  --lua-filter=docs/book/crossrefs.lua \
   --include-in-header=docs/book/preamble.tex \
   --pdf-engine=xelatex \
+  --resource-path=.:docs/book:docs/book/ch01 \
   -V geometry:margin=1in \
   -V fontsize=11pt \
   --toc \
@@ -161,10 +169,13 @@ pandoc docs/book/ch02/ch02_probability_measure_click_models.md \
 # Output to docs/book/pdfs/
 mkdir -p docs/book/pdfs
 
-pandoc docs/book/final/ch00/ch00_motivation_first_experiment_revised.md \
+pandoc docs/book/ch00/ch00_motivation_first_experiment.md \
+  --lua-filter=docs/book/admonitions.lua \
   --lua-filter=docs/book/callouts.lua \
+  --lua-filter=docs/book/crossrefs.lua \
   --include-in-header=docs/book/preamble.tex \
   --pdf-engine=xelatex \
+  --resource-path=.:docs/book:docs/book/ch00 \
   -V geometry:margin=1in \
   -V fontsize=11pt \
   --toc \
@@ -176,11 +187,14 @@ pandoc docs/book/final/ch00/ch00_motivation_first_experiment_revised.md \
 
 ```bash
 pandoc \
-  docs/book/final/ch00/ch00_motivation_first_experiment_revised.md \
-  docs/book/final/ch01/ch01_foundations_revised_math+pedagogy_v3.md \
+  docs/book/ch00/ch00_motivation_first_experiment.md \
+  docs/book/ch01/ch01_foundations.md \
+  --lua-filter=docs/book/admonitions.lua \
   --lua-filter=docs/book/callouts.lua \
+  --lua-filter=docs/book/crossrefs.lua \
   --include-in-header=docs/book/preamble.tex \
   --pdf-engine=xelatex \
+  --resource-path=.:docs/book:docs/book/ch00:docs/book/ch01 \
   -V geometry:margin=1in \
   -V fontsize=11pt \
   --toc \
@@ -192,10 +206,13 @@ pandoc \
 
 ```bash
 # Add metadata, custom title page, and enhanced formatting
-pandoc docs/book/final/ch00/ch00_motivation_first_experiment_revised.md \
+pandoc docs/book/ch00/ch00_motivation_first_experiment.md \
+  --lua-filter=docs/book/admonitions.lua \
   --lua-filter=docs/book/callouts.lua \
+  --lua-filter=docs/book/crossrefs.lua \
   --include-in-header=docs/book/preamble.tex \
   --pdf-engine=xelatex \
+  --resource-path=.:docs/book:docs/book/ch00 \
   -V geometry:margin=1in \
   -V fontsize=11pt \
   -V documentclass=report \
@@ -217,10 +234,13 @@ pandoc docs/book/final/ch00/ch00_motivation_first_experiment_revised.md \
 
 ```bash
 # Compile and check for Unicode warnings
-pandoc docs/book/final/ch00/ch00_motivation_first_experiment_revised.md \
+pandoc docs/book/ch00/ch00_motivation_first_experiment.md \
+  --lua-filter=docs/book/admonitions.lua \
   --lua-filter=docs/book/callouts.lua \
+  --lua-filter=docs/book/crossrefs.lua \
   --include-in-header=docs/book/preamble.tex \
   --pdf-engine=xelatex \
+  --resource-path=.:docs/book:docs/book/ch00 \
   -V geometry:margin=1in \
   -V fontsize=11pt \
   --toc \
@@ -318,9 +338,10 @@ xelatex --version
 **Solution**:
 ```bash
 # Detect Unicode issues
-./scripts/detect_unicode_issues.sh docs/book/final/ch00/file.md
+./scripts/detect_unicode_issues.sh docs/book/ch00/file.md
 
-# Fix according to docs/book/UNICODE_LATEX_CLEANUP_GUIDE.md
+# Fix according to docs/book/UNICODE_CLEANUP_TODO.md or build via:
+./scripts/build_book_ch00_06_with_labs_and_solutions.sh
 ```
 
 ---
@@ -331,13 +352,13 @@ Create `scripts/compile_all_chapters.sh`:
 
 ```bash
 #!/bin/bash
-# Compile all final chapters to PDF
+# Compile chapters to PDF
 
 set -e
 
 CHAPTERS=(
-    "ch00:ch00_motivation_first_experiment_revised"
-    "ch01:ch01_foundations_revised_math+pedagogy_v3"
+    "ch00:ch00_motivation_first_experiment"
+    "ch01:ch01_foundations"
 )
 
 OUTPUT_DIR="docs/book/pdfs"
@@ -348,17 +369,20 @@ for chapter_info in "${CHAPTERS[@]}"; do
 
     echo "Compiling $chapter_num..."
 
-    pandoc "docs/book/final/$chapter_num/$filename.md" \
+    pandoc "docs/book/$chapter_num/$filename.md" \
+        --lua-filter=docs/book/admonitions.lua \
         --lua-filter=docs/book/callouts.lua \
+        --lua-filter=docs/book/crossrefs.lua \
         --include-in-header=docs/book/preamble.tex \
         --pdf-engine=xelatex \
+        --resource-path=.:docs/book:docs/book/"$chapter_num" \
         -V geometry:margin=1in \
         -V fontsize=11pt \
         --toc \
         -N \
         -o "$OUTPUT_DIR/$chapter_num.pdf"
 
-    echo "✓ Generated $OUTPUT_DIR/$chapter_num.pdf"
+    echo "OK Generated $OUTPUT_DIR/$chapter_num.pdf"
 done
 
 echo ""
@@ -392,8 +416,8 @@ PANDOC_OPTS = --lua-filter=$(LUA_FILTER) \
               --toc \
               -N
 
-CH00_SRC = docs/book/final/ch00/ch00_motivation_first_experiment_revised.md
-CH01_SRC = docs/book/final/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+CH00_SRC = docs/book/ch00/ch00_motivation_first_experiment.md
+CH01_SRC = docs/book/ch01/ch01_foundations.md
 
 all: ch00.pdf ch01.pdf
 
@@ -429,10 +453,13 @@ make clean
 
 ```bash
 # Template
-pandoc docs/book/final/chXX/<filename>.md \
+pandoc docs/book/chXX/<filename>.md \
+  --lua-filter=docs/book/admonitions.lua \
   --lua-filter=docs/book/callouts.lua \
+  --lua-filter=docs/book/crossrefs.lua \
   --include-in-header=docs/book/preamble.tex \
   --pdf-engine=xelatex \
+  --resource-path=.:docs/book:docs/book/chXX \
   -V geometry:margin=1in \
   -V fontsize=11pt \
   --toc \
@@ -440,10 +467,13 @@ pandoc docs/book/final/chXX/<filename>.md \
   -o chXX.pdf
 
 # CH00
-pandoc docs/book/final/ch00/ch00_motivation_first_experiment_revised.md \
+pandoc docs/book/ch00/ch00_motivation_first_experiment.md \
+  --lua-filter=docs/book/admonitions.lua \
   --lua-filter=docs/book/callouts.lua \
+  --lua-filter=docs/book/crossrefs.lua \
   --include-in-header=docs/book/preamble.tex \
   --pdf-engine=xelatex \
+  --resource-path=.:docs/book:docs/book/ch00 \
   -V geometry:margin=1in \
   -V fontsize=11pt \
   --toc \
@@ -451,10 +481,13 @@ pandoc docs/book/final/ch00/ch00_motivation_first_experiment_revised.md \
   -o ch00.pdf
 
 # CH01
-pandoc docs/book/final/ch01/ch01_foundations_revised_math+pedagogy_v3.md \
+pandoc docs/book/ch01/ch01_foundations.md \
+  --lua-filter=docs/book/admonitions.lua \
   --lua-filter=docs/book/callouts.lua \
+  --lua-filter=docs/book/crossrefs.lua \
   --include-in-header=docs/book/preamble.tex \
   --pdf-engine=xelatex \
+  --resource-path=.:docs/book:docs/book/ch01 \
   -V geometry:margin=1in \
   -V fontsize=11pt \
   --toc \
@@ -490,28 +523,9 @@ open ch00.pdf ch01.pdf  # macOS
 
 **`docs/book/preamble.tex`**:
 ```latex
-% LaTeX preamble for callout boxes
-\usepackage{tcolorbox}
-\usepackage{newunicodechar}
-
-% Map Unicode special characters to LaTeX commands
-\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
-\newunicodechar{→}{\ensuremath{\rightarrow}}
-\newunicodechar{←}{\ensuremath{\leftarrow}}
-\newunicodechar{≥}{\ensuremath{\geq}}
-\newunicodechar{≤}{\ensuremath{\leq}}
-\newunicodechar{≈}{\ensuremath{\approx}}
-\newunicodechar{π}{\ensuremath{\pi}}
-\newunicodechar{ε}{\ensuremath{\varepsilon}}
-\newunicodechar{α}{\ensuremath{\alpha}}
-
-% Define CalloutNote environment
-\newtcolorbox{CalloutNote}[1]{
-  colback=blue!5!white,
-  colframe=blue!75!black,
-  fonttitle=\bfseries,
-  title=#1
-}
+% Minimal preamble (callouts/admonitions)
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage[most]{tcolorbox}
 ```
 
 ---
@@ -520,10 +534,13 @@ open ch00.pdf ch01.pdf  # macOS
 
 ### Minimal Command (CH00)
 ```bash
-pandoc docs/book/final/ch00/ch00_motivation_first_experiment_revised.md \
+pandoc docs/book/ch00/ch00_motivation_first_experiment.md \
+  --lua-filter=docs/book/admonitions.lua \
   --lua-filter=docs/book/callouts.lua \
+  --lua-filter=docs/book/crossrefs.lua \
   --include-in-header=docs/book/preamble.tex \
   --pdf-engine=xelatex \
+  --resource-path=.:docs/book:docs/book/ch00 \
   -V geometry:margin=1in \
   -V fontsize=11pt \
   --toc \
@@ -533,10 +550,13 @@ pandoc docs/book/final/ch00/ch00_motivation_first_experiment_revised.md \
 
 ### Minimal Command (CH01)
 ```bash
-pandoc docs/book/final/ch01/ch01_foundations_revised_math+pedagogy_v3.md \
+pandoc docs/book/ch01/ch01_foundations.md \
+  --lua-filter=docs/book/admonitions.lua \
   --lua-filter=docs/book/callouts.lua \
+  --lua-filter=docs/book/crossrefs.lua \
   --include-in-header=docs/book/preamble.tex \
   --pdf-engine=xelatex \
+  --resource-path=.:docs/book:docs/book/ch01 \
   -V geometry:margin=1in \
   -V fontsize=11pt \
   --toc \

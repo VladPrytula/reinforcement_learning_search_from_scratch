@@ -159,15 +159,15 @@ degenerate_results = lab_2_1_degenerate_distribution(seed=42, verbose=True)
 Task 2: Degenerate Distribution Detection
 ======================================================================
 
-╔══════════════════════════════════════════════════════════════════════╗
-║  PEDAGOGICAL NOTE: Adversarial Testing                               ║
-║                                                                      ║
-║  In this exercise, we INTENTIONALLY create broken distributions to   ║
-║  see what happens. The "violations" below are NOT bugs in our code—  ║
-║  they demonstrate what the theory predicts when assumptions fail.    ║
-║                                                                      ║
-║  Real production systems must detect these issues before deployment. ║
-╚══════════════════════════════════════════════════════════════════════╝
++======================================================================+
+|  PEDAGOGICAL NOTE: Adversarial Testing                              |
+|                                                                     |
+|  In this exercise, we INTENTIONALLY create broken distributions to  |
+|  see what happens. The "violations" below are NOT bugs in our code--|
+|  they demonstrate what the theory predicts when assumptions fail.   |
+|                                                                     |
+|  Real production systems must detect these issues before deployment.|
++======================================================================+
 
 ──────────────────────────────────────────────────────────────────────
 Test Case A: Near-degenerate distribution (valid but risky)

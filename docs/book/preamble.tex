@@ -1,11 +1,17 @@
 % LaTeX preamble for PDF compilation
 % Minimal configuration - source files use proper LaTeX commands
 
+\usepackage{amsmath,amssymb,amsfonts}
 \usepackage[most]{tcolorbox}
-\usepackage{newunicodechar}
 
-% Unicode used in admonition/callout titles (also appears in PDF bookmarks).
-\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+% Pandoc's default XeLaTeX template loads unicode-math; keep math font selection
+% optional to avoid hard dependencies on system fonts.
+\ifdefined\setmathfont
+  \ifdefined\IfFontExistsTF
+    \IfFontExistsTF{STIX Two Math}{\setmathfont{STIX Two Math}}{}
+    \IfFontExistsTF{Latin Modern Math}{\setmathfont{Latin Modern Math}}{}
+  \fi
+\fi
 
 % =============================================================================
 % CALLOUT / ADMONITION BOXES (tcolorbox)

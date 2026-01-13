@@ -28,7 +28,7 @@ This plan captures concrete fixes for `docs/book/ch03/` and the runnable code it
 ### B. “Code ↔ X” conventions (consistency + traceability)
 
 - Chapter 3 uses `!!! note "Code <-> ..."` instead of the project convention `Code ↔ ...`.
-  - **Why it matters:** other chapters use `Code ↔ ...` consistently; the PDF toolchain explicitly supports the `↔` symbol (see `docs/book/pandoc_header.tex` / `PDF_COMPILATION_GUIDE.md`).
+  - **Why it matters:** other chapters use `Code ↔ ...` consistently; for strict PDF builds we sanitize Unicode titles to ASCII (e.g., `↔` → `<->`) so compilation never relies on Unicode glyph support.
   - **Fix:** Rename titles to `Code ↔ ...` and update module labels to match actual code layout (e.g., `zoosim.dynamics.reward`, `zoosim.multi_episode.session_env`).
 
 ### C. Lab outputs are not reproducible as written (docs vs code mismatch)

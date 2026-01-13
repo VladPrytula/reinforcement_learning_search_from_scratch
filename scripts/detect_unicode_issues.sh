@@ -1,13 +1,13 @@
 #!/bin/bash
 # Detect Unicode characters that should be LaTeX in markdown files
-# Usage: ./scripts/detect_unicode_issues.sh docs/book/final/ch01/file.md
+# Usage: ./scripts/detect_unicode_issues.sh docs/book/ch01/file.md
 
 set -e
 
 if [ $# -eq 0 ]; then
-    echo "Usage: $0 <markdown-file>"
-    echo "Example: $0 docs/book/final/ch01/ch01_foundations.md"
-    exit 1
+	    echo "Usage: $0 <markdown-file>"
+	    echo "Example: $0 docs/book/ch01/ch01_foundations.md"
+	    exit 1
 fi
 
 FILE="$1"
@@ -37,8 +37,8 @@ echo "Total potentially problematic: $TOTAL occurrences"
 echo ""
 
 if [ $TOTAL -eq 0 ]; then
-    echo "✅ No Unicode issues detected!"
-    exit 0
+	    echo "OK No Unicode issues detected!"
+	    exit 0
 fi
 
 echo "--------------------------------------"
@@ -66,5 +66,5 @@ echo "--------------------------------------"
 echo "1. Review examples above"
 echo "2. Use Read tool to examine context"
 echo "3. Apply Edit tool for systematic replacements"
-echo "4. See docs/book/UNICODE_LATEX_CLEANUP_GUIDE.md for details"
+echo "4. See docs/book/UNICODE_CLEANUP_TODO.md or use scripts/sanitize_markdown_for_latex.py"
 echo ""

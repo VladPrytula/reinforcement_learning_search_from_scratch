@@ -14,8 +14,10 @@ SHELL := /bin/bash
 
 PANDOC ?= pandoc
 PDF_ENGINE ?= xelatex
-PANDOC_HEADER ?= docs/book/pandoc_header.tex
+PANDOC_HEADER ?= docs/book/preamble.tex
 CALLOUT_FILTER := docs/book/callouts.lua
+ADMONITION_FILTER := docs/book/admonitions.lua
+CROSSREF_FILTER := docs/book/crossrefs.lua
 
 # Font overrides (optional). Leave blank to use engine defaults.
 # You can override via: make MAIN_FONT="TeX Gyre Pagella" MONO_FONT="DejaVu Sans Mono"
@@ -48,9 +50,15 @@ PANDOC_COMMON_FLAGS := \
 ifneq ($(wildcard $(CALLOUT_FILTER)),)
 PANDOC_COMMON_FLAGS += --lua-filter=$(CALLOUT_FILTER)
 endif
+ifneq ($(wildcard $(ADMONITION_FILTER)),)
+PANDOC_COMMON_FLAGS += --lua-filter=$(ADMONITION_FILTER)
+endif
+ifneq ($(wildcard $(CROSSREF_FILTER)),)
+PANDOC_COMMON_FLAGS += --lua-filter=$(CROSSREF_FILTER)
+endif
 
 # Book directories to process (can be extended to other doc trees if desired).
-BOOK_DIRS := $(wildcard docs/book/drafts docs/book/reviews docs/book/revisions docs/book/final)
+BOOK_DIRS := $(wildcard docs/book/ch?? docs/book/drafts docs/book/reviews docs/book/revisions)
 
 # Discover Markdown sources; exclude backups.
 MD_FILES := $(shell find $(BOOK_DIRS) -type f -name '*.md' \( -not -name '*.bak.md' \) \( -not -name '*.bak.*' \))
@@ -89,7 +97,7 @@ pdf-drafts: check-tools $(DRAFT_PDFS)
 # Pattern rule: .md → .pdf (next to source)
 %.pdf: %.md
 	@echo "[pandoc] $< → $@"
-	@$(PANDOC) $(PANDOC_COMMON_FLAGS) -o "$@" "$<"
+	@$(PANDOC) $(PANDOC_COMMON_FLAGS) --resource-path=.:docs/book:$(dir $<) -o "$@" "$<"
 
 clean-pdf:
 	@echo "Removing generated PDFs in: $(BOOK_DIRS)"
@@ -134,12 +142,10 @@ audit-ch00-ch03:
 
 TEX_OUTPUT_DIR ?= docs/book/latex
 LATEX_TEMPLATE := docs/book/latex_template.tex
-CROSSREF_FILTER := docs/book/crossrefs.lua
-ADMONITION_FILTER := docs/book/admonitions.lua
 PREPROCESS_SCRIPT := scripts/md2tex_preprocess.py
 
 # Chapter source files (main content files only)
-CH01_SRC := docs/book/ch01/ch01_foundations_revised_math+pedagogy_v3.md
+CH01_SRC := docs/book/ch01/ch01_foundations.md
 
 # Pandoc flags for LaTeX generation
 PANDOC_TEX_FLAGS := \
