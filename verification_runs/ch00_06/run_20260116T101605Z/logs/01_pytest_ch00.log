@@ -1,0 +1,15 @@
+STEP 1/20: Pytest: Chapter 0
+CMD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3 -m pytest tests/ch00 -v --tb=short --junitxml verification_runs/ch00_06/run_20260116T101605Z/artifacts/pytest/pytest_ch00.xml --basetemp verification_runs/ch00_06/run_20260116T101605Z/artifacts/pytest/tmp/pytest_ch00 -m not slow
+CWD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+START: 2026-01-16T10:16:05Z
+============================= test session starts ==============================
+platform darwin -- Python 3.12.12, pytest-9.0.0, pluggy-1.6.0 -- /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+configfile: pyproject.toml
+collecting ... collected 1 item
+
+tests/ch00/test_toy_example.py::test_chapter0_reproducible_policy_and_summary PASSED [100%]
+
+- generated xml file: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/verification_runs/ch00_06/run_20260116T101605Z/artifacts/pytest/pytest_ch00.xml -
+============================== 1 passed in 8.26s ===============================

@@ -1,0 +1,110 @@
+STEP 12/20: Ch02: Lab 2.2
+CMD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/pre-submit/code/chapters0-6/.venv/bin/python scripts/ch02/lab_solutions.py --lab 2.2
+CWD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/pre-submit/code/chapters0-6
+START: 2026-01-16T12:39:48Z
+======================================================================
+Lab 2.2: Query Measure and Base Score Integration
+======================================================================
+
+Generating catalog and sampling users/queries (seed=3)...
+
+Catalog statistics:
+  Products: 10,000 (simulated)
+  Categories: ['dog_food', 'cat_food', 'litter', 'toys']
+  Embedding dimension: 16
+
+User/Query samples (n=100):
+
+Sample 1:
+  User segment: litter_heavy
+  Query type: brand
+  Query intent: litter
+
+Sample 2:
+  User segment: price_hunter
+  Query type: category
+  Query intent: litter
+
+...
+
+Base score statistics across 100 queries × 100 products each:
+
+  Score mean:  0.098
+  Score std:   0.221
+  Score min:   -0.558
+  Score max:   0.933
+
+Score percentiles:
+  5th: -0.258
+  25th: -0.057
+  50th: 0.095
+  75th: 0.248
+  95th: 0.466
+
+✓ Scores are square-integrable (finite variance) as required by Proposition 2.8.1
+✓ Score std ≈ 0.22 (finite second moment)
+⚠ Scores NOT bounded to [0,1]---Gaussian noise makes them unbounded
+======================================================================
+Task 1: User Sampling and Score Verification
+======================================================================
+
+Sampling 500 users and checking base-score integrability...
+
+User segment distribution:
+  price_hunter   :  31.2%  (expected: 35.0%)
+  pl_lover       :  23.8%  (expected: 25.0%)
+  premium        :  16.8%  (expected: 15.0%)
+  litter_heavy   :  28.2%  (expected: 25.0%)
+
+Score statistics by segment:
+
+Segment        |    n | Score Mean | Score Std |    Min |    Max
+-----------------------------------------------------------------
+price_hunter   |  156 |    0.140   |   0.232   | -0.597  | 0.925
+pl_lover       |  119 |    0.143   |   0.234   | -0.653  | 0.886
+premium        |   84 |    0.142   |   0.225   | -0.520  | 0.761
+litter_heavy   |  141 |    0.064   |   0.200   | -0.514  | 0.774
+
+Cross-segment mean shift (descriptive):
+  Overall mean: 0.120
+  Max |mean(seg) - overall|: 0.056
+  Effect (max/overall std): 0.25
+
+Proposition 2.8.1 verification:
+  ✓ Finite variance (std ≈ 0.23) across all segments
+  ✓ No infinite or NaN values
+  ✓ Score square-integrability confirmed
+  ⚠ Scores NOT bounded to [0,1]---Gaussian noise yields unbounded support
+======================================================================
+Task 2: Score Distribution Histogram
+======================================================================
+
+Computing base scores for a representative query (seed=42)...
+  User segment: litter_heavy
+  Query type: category
+  Query intent: litter
+
+Score distribution summary:
+  Mean: 0.077
+  Std:  0.218
+  Min:  -0.627
+  Max:  0.616
+  P(score < 0): 33.7%
+  P(score > 1): 0.0%
+
+Histogram (10 bins):
+  [ -0.70,  -0.56):     4 
+  [ -0.56,  -0.42):    86 #
+  [ -0.42,  -0.28):   651 ######
+  [ -0.28,  -0.14):  1365 #############
+  [ -0.14,   0.00):  1260 ############
+  [  0.00,   0.14):  1796 ##################
+  [  0.14,   0.28):  3072 ##############################
+  [  0.28,   0.42):  1595 ################
+  [  0.42,   0.56):   167 ##
+  [  0.56,   0.70):     4 
+
+Radon-Nikodym interpretation:
+  The empirical score histogram is a concrete proxy for a dominating measure mu.
+  Policies induce different measures by reweighting which items are shown/clicked.
+  Importance sampling weights are Radon-Nikodym derivatives (Chapter 9).

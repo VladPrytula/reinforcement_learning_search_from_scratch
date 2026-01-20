@@ -1,0 +1,16 @@
+STEP 3/20: Pytest: Chapter 2
+CMD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3 -m pytest tests/ch02 -v --tb=short --junitxml verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/pytest_ch02.xml --basetemp verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/tmp/pytest_ch02 -m not slow
+CWD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+START: 2026-01-16T10:52:57Z
+============================= test session starts ==============================
+platform darwin -- Python 3.12.12, pytest-9.0.0, pluggy-1.6.0 -- /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+configfile: pyproject.toml
+collecting ... collected 2 items
+
+tests/ch02/test_behavior.py::test_click_rate_decays_with_position PASSED [ 50%]
+tests/ch02/test_segment_sampling.py::test_segment_mix_matches_config PASSED [100%]
+
+- generated xml file: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/pytest_ch02.xml -
+============================== 2 passed in 1.21s ===============================

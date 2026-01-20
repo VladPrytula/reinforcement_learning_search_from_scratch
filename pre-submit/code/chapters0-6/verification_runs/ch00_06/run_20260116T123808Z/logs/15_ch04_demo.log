@@ -1,0 +1,100 @@
+STEP 15/20: Ch04: Generative World Demo
+CMD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/pre-submit/code/chapters0-6/.venv/bin/python scripts/ch04/ch04_demo.py
+CWD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/pre-submit/code/chapters0-6
+START: 2026-01-16T12:39:50Z
+
+============================================================
+CHAPTER 4 — GENERATIVE WORLD MODEL DEMONSTRATION
+============================================================
+============================================================
+CATALOG GENERATION
+============================================================
+
+Generating 10,000 products...
+
+Category distribution:
+  dog_food    : 3,531 products (0.353)
+  cat_food    : 3,452 products (0.345)
+  litter      : 1,497 products (0.150)
+  toys        : 1,520 products (0.152)
+
+Price statistics by category:
+  dog_food    : median=$ 13.52 (theory: $ 13.46)
+  cat_food    : median=$ 12.19 (theory: $ 12.18)
+  litter      : median=$  8.95 (theory: $  9.03)
+  toys        : median=$  6.24 (theory: $  6.05)
+
+Margin (CM2) statistics:
+  dog_food    : mean CM2=$ 1.734 (slope β=+0.120)
+  cat_food    : mean CM2=$ 1.446 (slope β=+0.110)
+  litter      : mean CM2=$-0.273 (slope β=-0.030)
+  toys        : mean CM2=$ 1.440 (slope β=+0.200)
+
+Strategic category (litter): 1497/1497 flagged
+
+============================================================
+USER SEGMENT SAMPLING
+============================================================
+
+Sampling 10,000 users...
+
+Segment distribution:
+  price_hunter   : 3,445 (0.344, expected 0.350)
+  pl_lover       : 2,596 (0.260, expected 0.250)
+  premium        : 1,488 (0.149, expected 0.150)
+  litter_heavy   : 2,471 (0.247, expected 0.250)
+
+Preference parameters by segment:
+  price_hunter   : θ_price=-3.50 (theory: -3.50), θ_pl=-1.00 (theory: -1.00)
+  pl_lover       : θ_price=-1.80 (theory: -1.80), θ_pl=+3.20 (theory: +3.20)
+  premium        : θ_price=+1.20 (theory: +1.20), θ_pl=-2.00 (theory: -2.00)
+  litter_heavy   : θ_price=-1.00 (theory: -1.00), θ_pl=+1.00 (theory: +1.00)
+
+============================================================
+QUERY INTENT COUPLING
+============================================================
+
+Sampling 5,000 (user, query) pairs...
+
+Query type distribution:
+  category  : 3,003 (0.601, expected 0.600)
+  brand     : 1,002 (0.200, expected 0.200)
+  generic   :   995 (0.199, expected 0.200)
+
+Litter query rate by user segment:
+  price_hunter   : 0.213 (expected 0.200)
+  pl_lover       : 0.212 (expected 0.200)
+  premium        : 0.045 (expected 0.050)
+  litter_heavy   : 0.860 (expected 0.850)
+
+============================================================
+DETERMINISM VERIFICATION
+============================================================
+
+Generating two catalogs with seed 42...
+
+Verifying products are identical:
+  Product    0: price=True, cm2=True, category=True
+  Product   10: price=True, cm2=True, category=True
+  Product  100: price=True, cm2=True, category=True
+  Product  999: price=True, cm2=True, category=True
+
+✓ Same seed → identical catalog (reproducible)
+
+Generating two catalogs with different seeds (42 vs 123)...
+  Catalog A [seed=42]:  Product 0 price=$10.64, category=toys
+  Catalog B [seed=123]: Product 0 price=$14.55, category=dog_food
+  Different: True
+
+============================================================
+DEMONSTRATION COMPLETE
+============================================================
+
+Key takeaways:
+  ✓ Catalog: Lognormal prices, linear margins, strategic categories
+  ✓ Users: Segment-specific preferences (price, PL, category affinity)
+  ✓ Queries: Intent coupled to user affinities
+  ✓ Determinism: Same seed → identical world (reproducible RL)
+
+See Chapter 4 for mathematical foundations and theory-practice analysis.
+

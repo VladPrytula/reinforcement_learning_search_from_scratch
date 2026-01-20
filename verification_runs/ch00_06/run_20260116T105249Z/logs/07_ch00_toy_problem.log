@@ -1,0 +1,12 @@
+STEP 7/20: Ch00: Toy Problem (book figure)
+CMD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3 scripts/ch00/toy_problem_solution.py --chapter0 --seed 42 --plot-path verification_runs/ch00_06/run_20260116T105249Z/artifacts/ch00/learning_curves.png
+CWD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+START: 2026-01-16T10:54:13Z
+Final average reward (last 100 episodes): 1.640
+
+Learned policy:
+  price_hunter    -> action (4, 1) (Q = 1.948)
+  premium         -> action (1, 4) (Q = 2.289)
+  bulk_buyer      -> action (2, 2) (Q = 0.942)
+
+Saved learning curve to verification_runs/ch00_06/run_20260116T105249Z/artifacts/ch00/learning_curves.png

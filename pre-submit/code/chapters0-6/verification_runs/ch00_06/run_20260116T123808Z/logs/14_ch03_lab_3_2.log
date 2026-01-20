@@ -1,0 +1,57 @@
+STEP 14/20: Ch03: Lab 3.2
+CMD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/pre-submit/code/chapters0-6/.venv/bin/python scripts/ch03/lab_solutions.py --lab 3.2
+CWD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/pre-submit/code/chapters0-6
+START: 2026-01-16T12:39:50Z
+======================================================================
+Lab 3.2: Value Iteration Wall-Clock Profiling
+======================================================================
+
+MDP Configuration:
+  States: 3, Actions: 2
+  Convergence tolerance: 1e-06
+
+Running value iteration for gamma in [0.5, 0.7, 0.9, 0.95, 0.99]...
+
+gamma    Iters    1/(1-gamma)  Ratio     
+----------------------------------------
+0.50     21       2.0        10.50     
+0.70     39       3.3        11.70     
+0.90     128      10.0       12.80     
+0.95     261      20.0       13.05     
+0.99     1327     100.0      13.27     
+
+==================================================
+ANALYSIS: Iteration Count vs 1/(1-gamma)
+==================================================
+
+Linear fit: Iters ~ 13.32 * 1/(1-gamma) + -5.5
+
+Theory predicts: Iters ~ C * 1/(1-gamma) * log(1/eps)
+  With eps = 1e-06, log(1/eps) ~ 13.8
+  Expected slope ~ log(1/eps) ~ 13.8
+  Observed slope: 13.32
+
+==================================================
+TASK 1: The O(1/(1-gamma)) Relationship
+==================================================
+
+The iteration count scales approximately as 1/(1-gamma) because:
+
+From [THM-3.6.2-Banach] (Banach fixed-point), after k iterations:
+    ||V_k - V*||_inf <= gamma^k ||V_0 - V*||_inf
+
+To achieve tolerance eps, we need gamma^k ||V_0 - V*||_inf < eps:
+    k > log(||V_0 - V*||_inf / eps) / log(1/gamma)
+    k ~ log(1/eps) / (1-gamma)    [since log(1/gamma) ~ 1-gamma for gamma close to 1]
+
+Key insight: The complexity diverges as gamma -> 1 (infinite horizon).
+This explains why long-horizon RL is fundamentally harder:
+For a fixed tolerance, moving from gamma = 0.9 to gamma = 0.99 typically costs
+about 10x more Bellman backups. This scaling, not the exact constant, is the
+main lesson: the effective horizon 1/(1-gamma) controls computational effort.
+
+In practice, this motivates:
+1. Using moderate gamma when it captures the planning horizon
+2. Using function approximation to avoid per-state iteration in large MDPs
+3. Using Monte Carlo methods when exact dynamic programming is infeasible
+

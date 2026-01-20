@@ -1,0 +1,155 @@
+STEP 11/20: Ch02: Lab 2.1
+CMD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3 scripts/ch02/lab_solutions.py --lab 2.1
+CWD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+START: 2026-01-16T10:17:32Z
+======================================================================
+Lab 2.1: Segment Mix Sanity Check
+======================================================================
+
+Sampling 10,000 users from segment distribution (seed=21)...
+
+Theoretical segment mix (from config):
+  price_hunter   : p_seg = 0.350
+  pl_lover       : p_seg = 0.250
+  premium        : p_seg = 0.150
+  litter_heavy   : p_seg = 0.250
+
+Empirical segment frequencies (n=10,000):
+  price_hunter   : p_hat_seg = 0.335  (Δ = -0.015)
+  pl_lover       : p_hat_seg = 0.254  (Δ = +0.004)
+  premium        : p_hat_seg = 0.153  (Δ = +0.003)
+  litter_heavy   : p_hat_seg = 0.258  (Δ = +0.008)
+
+Deviation metrics:
+  L∞ (max deviation): 0.015
+  L1 (total variation): 0.030
+  L2 (Euclidean):       0.018
+
+⚠ L∞ deviation (0.015) exceeds 3σ (0.014)
+======================================================================
+Task 1: L∞ Deviation Across Seeds and Sample Sizes
+======================================================================
+
+Running 5 seeds × 4 sample sizes experiments...
+
+Results (L∞ = max|p_hat_seg_i - p_seg_i|):
+
+Sample Size |  Seed   21  |  Seed   42  |  Seed  137  |  Seed  314  |  Seed 2718  |   Mean   |   Std
+----------------------------------------------------------------------------------------------------
+        100 |   0.070   |   0.060   |   0.060   |   0.070   |   0.040   |  0.060   |  0.011
+      1,000 |   0.026   |   0.015   |   0.020   |   0.017   |   0.021   |  0.020   |  0.004
+     10,000 |   0.015   |   0.004   |   0.004   |   0.004   |   0.004   |  0.006   |  0.004
+    100,000 |   0.002   |   0.004   |   0.001   |   0.002   |   0.002   |  0.002   |  0.001
+
+Theoretical scaling (from CLT): L∞ ~ O(1/√n)
+  - n=   100: expected ~0.050, observed mean=0.060
+  - n=  1000: expected ~0.016, observed mean=0.020
+  - n= 10000: expected ~0.005, observed mean=0.006
+  - n=100000: expected ~0.002, observed mean=0.002
+
+Law of Large Numbers interpretation:
+  As n → ∞, L∞ → 0 (a.s.). The 1/√n scaling matches CLT predictions.
+  Deviations at finite n are bounded by √(p_seg_i(1-p_seg_i)/n) per coordinate.
+======================================================================
+Task 2: Degenerate Distribution Detection
+======================================================================
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  PEDAGOGICAL NOTE: Adversarial Testing                               ║
+║                                                                      ║
+║  In this exercise, we INTENTIONALLY create broken distributions to   ║
+║  see what happens. The "violations" below are NOT bugs in our code—  ║
+║  they demonstrate what the theory predicts when assumptions fail.    ║
+║                                                                      ║
+║  Real production systems must detect these issues before deployment. ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+──────────────────────────────────────────────────────────────────────
+Test Case A: Near-degenerate distribution (valid but risky)
+──────────────────────────────────────────────────────────────────────
+  Goal: Show that extreme concentration causes OPE variance issues
+  Config: [0.99, 0.005, 0.003, 0.002]
+
+  Sampling 5,000 users...
+  Empirical: {price_hunter: 0.989, pl_lover: 0.006, premium: 0.003, litter_heavy: 0.001}
+
+  ✓ Mathematically valid (sums to 1.0)
+  ✓ Code executes correctly
+
+  ⚠ Practical concern: 3 segments have p_seg < 0.01
+    - 'pl_lover' appears in only ~0.5% of data
+    - 'premium' appears in only ~0.3% of data
+    - 'litter_heavy' appears in only ~0.2% of data
+
+  → OPE implication: If target policy π₁ upweights rare segments,
+    importance weights w = π₁/π₀ become very large (e.g., w > 100).
+    This causes IPS variance to explode (curse of importance sampling).
+  → Remedy: Use SNIPS, clipped IPS, or doubly robust estimators (Ch. 9)
+
+──────────────────────────────────────────────────────────────────────
+Test Case B: Zero-probability segment (positivity violation)
+──────────────────────────────────────────────────────────────────────
+  Goal: Demonstrate what happens when p_seg(segment) = 0
+  Config: [0.40, 0.35, 0.25, 0.00]  ← litter_heavy has p_seg = 0
+
+  Sampling 5,000 users...
+  Empirical: {price_hunter: 0.398, pl_lover: 0.362, premium: 0.240, litter_heavy: 0.000}
+
+  ✓ Sampling completed successfully (code works correctly)
+  ✓ As expected: 'litter_heavy' never appears (p_seg = 0)
+
+  ⚠ DETECTED: Positivity assumption [THM-2.6.1] violated!
+    This is not a bug—it's what we're testing for.
+
+  → Mathematical consequence:
+    If target policy π₁ wants to evaluate litter_heavy users,
+    but logging policy π₀ assigns p_seg = 0, then:
+      w = π₁(litter_heavy) / π₀(litter_heavy) = π₁ / 0 = undefined
+    The Radon-Nikodym derivative dπ₁/dπ₀ does not exist.
+
+  → Practical consequence:
+    IPS estimator fails with division-by-zero or NaN.
+    Cannot evaluate ANY policy that requires litter_heavy data.
+    This is 'support deficiency'—a real production failure mode.
+
+──────────────────────────────────────────────────────────────────────
+Test Case C: Unnormalized distribution (axiom violation)
+──────────────────────────────────────────────────────────────────────
+  Goal: Show what [DEF-2.2.2] prevents
+  Config: [0.40, 0.35, 0.25, 0.10]  ← sum = 1.10 ≠ 1
+
+  ⚠ DETECTED: Probabilities sum to 1.10 ≠ 1.0
+    This violates [DEF-2.2.2]: P(Ω) = 1 (normalization axiom).
+
+  ✓ We intentionally skip sampling here because:
+    - numpy.random.choice would silently renormalize (hiding the bug)
+    - A proper validator should reject this BEFORE sampling
+
+  → Why this matters:
+    If we accidentally deploy unnormalized probabilities:
+    - Some segments get wrong sampling rates
+    - All downstream estimates become biased
+    - The bias is silent and hard to detect post-hoc
+
+  → Remedy: Always validate sum(p_seg) = 1 before sampling
+    (with tolerance for floating-point: |sum(p_seg) - 1| < 1e-9)
+
+======================================================================
+SUMMARY: All Tests Completed Successfully
+======================================================================
+
+  The code worked correctly in all cases:
+
+  Case A: Sampled from near-degenerate distribution ✓
+          (Identified OPE variance risk)
+
+  Case B: Sampled from zero-probability distribution ✓
+          (Identified positivity violation)
+
+  Case C: Detected unnormalized distribution without sampling ✓
+          (Prevented downstream bias)
+
+  Key insight: These are not bugs—they're demonstrations of what
+  measure theory [DEF-2.2.2] and the positivity assumption [THM-2.6.1]
+  protect us from in production OPE systems.
+

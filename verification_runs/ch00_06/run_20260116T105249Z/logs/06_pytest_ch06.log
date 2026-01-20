@@ -1,0 +1,42 @@
+STEP 6/20: Pytest: Chapter 6
+CMD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3 -m pytest tests/ch06 -v --tb=short --junitxml verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/pytest_ch06.xml --basetemp verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/tmp/pytest_ch06 -m not slow
+CWD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+START: 2026-01-16T10:53:00Z
+============================= test session starts ==============================
+platform darwin -- Python 3.12.12, pytest-9.0.0, pluggy-1.6.0 -- /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+configfile: pyproject.toml
+collecting ... collected 29 items / 1 deselected / 28 selected
+
+tests/ch06/test_feature_modes_integration.py::test_template_selection_tracking PASSED [  3%]
+tests/ch06/test_integration.py::test_linucb_training_loop PASSED         [  7%]
+tests/ch06/test_integration.py::test_thompson_sampling_training_loop PASSED [ 10%]
+tests/ch06/test_integration.py::test_linucb_reproducibility PASSED       [ 14%]
+tests/ch06/test_integration.py::test_exploration_decay PASSED            [ 17%]
+tests/ch06/test_linucb.py::test_initialization PASSED                    [ 21%]
+tests/ch06/test_linucb.py::test_select_action_deterministic PASSED       [ 25%]
+tests/ch06/test_linucb.py::test_select_action_valid_range PASSED         [ 28%]
+tests/ch06/test_linucb.py::test_ucb_exploration_bonus PASSED             [ 32%]
+tests/ch06/test_linucb.py::test_posterior_mean_identical_to_thompson_sampling PASSED [ 35%]
+tests/ch06/test_linucb.py::test_adaptive_alpha_decay PASSED              [ 39%]
+tests/ch06/test_linucb.py::test_update_design_matrix PASSED              [ 42%]
+tests/ch06/test_linucb.py::test_diagnostics PASSED                       [ 46%]
+tests/ch06/test_templates.py::test_compute_catalog_stats PASSED          [ 50%]
+tests/ch06/test_templates.py::test_create_standard_templates PASSED      [ 53%]
+tests/ch06/test_templates.py::test_template_application_bounded PASSED   [ 57%]
+tests/ch06/test_templates.py::test_neutral_template_zero_boost PASSED    [ 60%]
+tests/ch06/test_templates.py::test_high_margin_template_semantic_correctness PASSED [ 64%]
+tests/ch06/test_templates.py::test_cm2_boost_template_semantic_correctness PASSED [ 67%]
+tests/ch06/test_templates.py::test_budget_template_semantic_correctness PASSED [ 71%]
+tests/ch06/test_templates.py::test_discount_template_proportional_boost PASSED [ 75%]
+tests/ch06/test_templates.py::test_strategic_template_semantic_correctness PASSED [ 78%]
+tests/ch06/test_thompson_sampling.py::test_initialization PASSED         [ 82%]
+tests/ch06/test_thompson_sampling.py::test_select_action_valid_range PASSED [ 85%]
+tests/ch06/test_thompson_sampling.py::test_update_increases_precision PASSED [ 89%]
+tests/ch06/test_thompson_sampling.py::test_posterior_mean_convergence PASSED [ 92%]
+tests/ch06/test_thompson_sampling.py::test_reproducibility_with_fixed_seed PASSED [ 96%]
+tests/ch06/test_thompson_sampling.py::test_diagnostics PASSED            [100%]
+
+- generated xml file: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/pytest_ch06.xml -
+================= 28 passed, 1 deselected in 72.64s (0:01:12) ==================

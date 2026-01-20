@@ -1,0 +1,63 @@
+STEP 13/20: Ch03: Lab 3.1
+CMD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3 scripts/ch03/lab_solutions.py --lab 3.1
+CWD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+START: 2026-01-16T10:17:38Z
+======================================================================
+Lab 3.1: Contraction Ratio Tracker
+======================================================================
+
+MDP Configuration:
+  States: 3, Actions: 2
+  Discount factor gamma = 0.9
+
+Theoretical bound [THM-3.7.1]: ||T V1 - T V2||_inf <= 0.9 * ||V1 - V2||_inf
+
+Computing contraction ratios across 20 random V pairs...
+
+Seed       Ratio        <= gamma? 
+------------------------------
+8925       0.7763       OK      
+77395      0.7240       OK      
+65457      0.7509       OK      
+43887      0.6131       OK      
+43301      0.7543       OK      
+85859      0.8856       OK      
+8594       0.4745       OK      
+69736      0.7208       OK      
+20146      0.4828       OK      
+9417       0.5208       OK      
+... (10 more seeds)
+
+==================================================
+CONTRACTION RATIO STATISTICS
+==================================================
+  Theoretical bound (gamma): 0.900
+  Empirical mean:        0.624
+  Empirical std:         0.183
+  Empirical min:         0.202
+  Empirical max:         0.886
+  Slack (gamma - max):   0.014
+  All ratios <= gamma?   YES
+
+==================================================
+TASK 1: Why is there slack between gamma and observed ratios?
+==================================================
+
+The observed contraction ratio is often strictly less than gamma because:
+
+1. **The max operator is 1-Lipschitz**: The proof of [THM-3.7.1] uses
+   |max_a f(a) - max_a g(a)| <= max_a |f(a) - g(a)|
+   This is an inequality, not equality. When the argmax differs between
+   V1 and V2, the actual difference is smaller.
+
+2. **Transition probability averaging**: The sum sum_{s'} P(s'|s,a)[V1(s') - V2(s')]
+   averages the value differences. Unless V1 - V2 has constant sign, this
+   is strictly less than ||V1 - V2||_inf.
+
+3. **Structure in P and R**: Real MDPs have structure. Not all (V1, V2)
+   pairs achieve the worst-case. The bound gamma is tight only for adversarial
+   constructions.
+
+Implication: In practice, value iteration often converges faster than the
+worst-case gamma^k rate predicted by Banach fixed-point theory.
+
