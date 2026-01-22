@@ -1,0 +1,50 @@
+STEP 9/20: Ch01: Lab 1.1
+CMD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3 scripts/ch01/lab_solutions.py --lab 1.1
+CWD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+START: 2026-01-16T10:17:32Z
+======================================================================
+Lab 1.1: Reward Aggregation in the Simulator
+======================================================================
+
+Session simulation (seed=11):
+  User segment: price_hunter
+  Query: "cat food"
+
+Outcome breakdown:
+  GMV:    €124.46 (gross merchandise value)
+  CM2:    € 18.67 (contribution margin 2)
+  STRAT:  0 purchases  (strategic purchases in session)
+  CLICKS: 3        (total clicks)
+
+Reward weights (from RewardConfig):
+  alpha (alpha_gmv):     1.00
+  beta (beta_cm2):       0.50
+  gamma (gamma_strat):   0.20
+  delta (delta_clicks):  0.10
+
+Manual computation of R = alpha*GMV + beta*CM2 + gamma*STRAT + delta*CLICKS:
+  = 1.00 x 124.46 + 0.50 x 18.67 + 0.20 x 0 + 0.10 x 3
+  = 124.46 + 9.34 + 0.00 + 0.30
+  = 134.09
+
+Simulator-reported reward: 134.09
+
+Verification: |computed - reported| = 0.00 < 0.01 ✓
+
+The simulator correctly implements [EQ-1.2].
+
+======================================================================
+Lab 1.1 Task 2: Delta/Alpha Bound Violation
+======================================================================
+
+Testing progressively higher delta values...
+Bound from [REM-1.2.1]: delta/alpha in [0.01, 0.10]
+
+delta/alpha = 0.08: ✓ VALID
+delta/alpha = 0.10: ✓ VALID
+delta/alpha = 0.11: ✗ VIOLATION
+delta/alpha = 0.12: ✗ VIOLATION
+delta/alpha = 0.15: ✗ VIOLATION
+delta/alpha = 0.20: ✗ VIOLATION
+
+Smallest violation: delta/alpha = 0.11 (1.10x the bound)

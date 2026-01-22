@@ -684,9 +684,9 @@ def exercise_0_3_regret_analysis(
     Exercise 0.3: Track cumulative regret and understand what it tells us.
 
     Key insights:
-    - Sublinear regret (average regret per episode decreases) confirms learning
+    - Decreasing average regret per episode indicates learning; sublinear regret requires average regret -> 0
     - Empirical power-law fits should NOT be conflated with asymptotic Big-O bounds
-    - Our geometric decay (eps * 0.998^t) is summable, so regret should plateau eventually
+    - Our schedule uses exponential decay down to a nonzero exploration floor; this improves learning early but implies linear regret asymptotically if the floor is nonzero
     """
     if verbose:
         print("=" * 70)
@@ -700,9 +700,10 @@ def exercise_0_3_regret_analysis(
         print("\nComputing oracle policy...")
     oracle = OraclePolicy(actions, n_eval=200, seed=seed)
 
-    # Geometric decay: eps_t = 1.0 * 0.998^t
-    # This is SUMMABLE: sum(0.998^t) = 1/(1-0.998) = 500
-    # So total exploration is bounded -> regret should plateau asymptotically
+    # Exponential decay with floor: eps_t = max(epsilon_min, epsilon_init * 0.998^t).
+    # Because epsilon_min > 0, exploration never fully shuts off; asymptotically this
+    # behaves like constant-epsilon and has linear regret in the classic stochastic
+    # bandit setting. We use it here to keep exploration alive in short runs.
     agent = TabularQLearning(actions, epsilon_init=1.0, epsilon_decay=0.998,
                               epsilon_min=0.02, learning_rate=0.1)
 
@@ -768,10 +769,12 @@ def exercise_0_3_regret_analysis(
         print(f"  The exponent alpha={alpha_power:.2f} describes the learning TRANSIENT,")
         print(f"  not a fundamental asymptotic rate.")
         print(f"\nTheoretical expectations (for reference):")
-        print(f"  Constant epsilon-greedy:  Theta(T) -- LINEAR regret (explores forever)")
-        print(f"  Geometric decay epsilon:  O(1) -- BOUNDED regret (sum of eps_t converges)")
-        print(f"  UCB:                      O(sqrt(KT log T))")
-        print(f"\nOur schedule (eps=0.998^t) is geometric -> regret should plateau eventually.")
+        print(f"  Constant epsilon-greedy:              Theta(T) -- linear regret")
+        print(f"  Epsilon-greedy with epsilon_min>0:    Theta(T) -- still linear (never stops exploring)")
+        print("  Decaying epsilon (GLIE):              sublinear regret is possible (e.g., O(T^(2/3)) gap-independent)")
+        print(f"  UCB / Thompson Sampling:             ~O(sqrt(KT log T)) worst-case (and O(log T) gap-dependent)")
+        print(f"\nOur schedule uses exponential decay down to epsilon_min={agent.epsilon_min:.3f},")
+        print(f"so asymptotically it behaves like constant-epsilon and has linear regret in theory.")
         print(f"The T^{alpha_power:.2f} fit captures the transient, not the asymptote.")
 
     return {

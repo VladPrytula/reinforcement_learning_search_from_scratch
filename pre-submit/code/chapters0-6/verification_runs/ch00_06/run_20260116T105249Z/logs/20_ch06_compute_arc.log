@@ -1,0 +1,767 @@
+STEP 20/20: Ch06: Compute Arc (JSON + figures)
+CMD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3 scripts/ch06/ch06_compute_arc.py --n-static 200 --n-bandit 1000 --out-dir verification_runs/ch00_06/run_20260116T105249Z/artifacts/ch06/data
+CWD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+START: 2026-01-16T11:09:11Z
+================================================================================
+CHAPTER 6 — COMPUTE ARC: SIMPLE → RICH ORACLE → RICH ESTIMATED
+================================================================================
+
+Config:
+  Static episodes:  200
+  Bandit episodes:  1,000
+  World seed:       20250322
+  Bandit seed:      20250349
+  Output dir:       verification_runs/ch00_06/run_20260116T105249Z/artifacts/ch06/data
+
+Generating world...
+  Catalog:  10,000 products
+  Segments: ['price_hunter', 'pl_lover', 'premium', 'litter_heavy']
+  Queries:  ['category', 'brand', 'generic']
+
+================================================================================
+EXPERIMENT 1: SIMPLE FEATURES (Segment + Query Type)
+================================================================================
+Hypothesis: Linear contextual bandits should beat static baselines.
+Context: φ_simple(x) = [segment_onehot, query_onehot, bias] (8 dims)
+Hyperparameters: prior_weight=0, lin_alpha=1.00, ts_sigma=1.00
+
+
+Running static template baselines for 200 episodes...
+  Static templates progress:   0.5% (1/200) | best template ID 4 avg reward 20.70
+  Static templates progress:   2.0% (4/200) | best template ID 1 avg reward 8.13
+  Static templates progress:   4.0% (8/200) | best template ID 4 avg reward 13.05
+  Static templates progress:   6.0% (12/200) | best template ID 4 avg reward 10.11
+  Static templates progress:   8.0% (16/200) | best template ID 4 avg reward 9.23
+  Static templates progress:  10.0% (20/200) | best template ID 4 avg reward 11.48
+  Static templates progress:  12.0% (24/200) | best template ID 4 avg reward 11.95
+  Static templates progress:  14.0% (28/200) | best template ID 4 avg reward 10.25
+  Static templates progress:  16.0% (32/200) | best template ID 4 avg reward 9.56
+  Static templates progress:  18.0% (36/200) | best template ID 4 avg reward 8.98
+  Static templates progress:  20.0% (40/200) | best template ID 4 avg reward 8.55
+  Static templates progress:  22.0% (44/200) | best template ID 4 avg reward 9.14
+  Static templates progress:  24.0% (48/200) | best template ID 4 avg reward 8.38
+  Static templates progress:  26.0% (52/200) | best template ID 4 avg reward 9.74
+  Static templates progress:  28.0% (56/200) | best template ID 4 avg reward 10.24
+  Static templates progress:  30.0% (60/200) | best template ID 4 avg reward 11.21
+  Static templates progress:  32.0% (64/200) | best template ID 4 avg reward 10.97
+  Static templates progress:  34.0% (68/200) | best template ID 4 avg reward 11.07
+  Static templates progress:  36.0% (72/200) | best template ID 4 avg reward 11.51
+  Static templates progress:  38.0% (76/200) | best template ID 4 avg reward 10.91
+  Static templates progress:  40.0% (80/200) | best template ID 4 avg reward 10.36
+  Static templates progress:  42.0% (84/200) | best template ID 4 avg reward 9.87
+  Static templates progress:  44.0% (88/200) | best template ID 4 avg reward 10.42
+  Static templates progress:  46.0% (92/200) | best template ID 4 avg reward 10.88
+  Static templates progress:  48.0% (96/200) | best template ID 4 avg reward 11.06
+  Static templates progress:  50.0% (100/200) | best template ID 4 avg reward 10.96
+  Static templates progress:  52.0% (104/200) | best template ID 4 avg reward 10.75
+  Static templates progress:  54.0% (108/200) | best template ID 4 avg reward 12.17
+  Static templates progress:  56.0% (112/200) | best template ID 4 avg reward 11.89
+  Static templates progress:  58.0% (116/200) | best template ID 4 avg reward 11.48
+  Static templates progress:  60.0% (120/200) | best template ID 4 avg reward 11.91
+  Static templates progress:  62.0% (124/200) | best template ID 4 avg reward 11.71
+  Static templates progress:  64.0% (128/200) | best template ID 4 avg reward 11.34
+  Static templates progress:  66.0% (132/200) | best template ID 4 avg reward 11.00
+  Static templates progress:  68.0% (136/200) | best template ID 4 avg reward 11.32
+  Static templates progress:  70.0% (140/200) | best template ID 4 avg reward 11.13
+  Static templates progress:  72.0% (144/200) | best template ID 4 avg reward 10.96
+  Static templates progress:  74.0% (148/200) | best template ID 4 avg reward 10.66
+  Static templates progress:  76.0% (152/200) | best template ID 4 avg reward 10.50
+  Static templates progress:  78.0% (156/200) | best template ID 4 avg reward 10.23
+  Static templates progress:  80.0% (160/200) | best template ID 4 avg reward 9.97
+  Static templates progress:  82.0% (164/200) | best template ID 4 avg reward 9.83
+  Static templates progress:  84.0% (168/200) | best template ID 4 avg reward 9.79
+  Static templates progress:  86.0% (172/200) | best template ID 4 avg reward 9.56
+  Static templates progress:  88.0% (176/200) | best template ID 4 avg reward 9.35
+  Static templates progress:  90.0% (180/200) | best template ID 4 avg reward 9.39
+  Static templates progress:  92.0% (184/200) | best template ID 4 avg reward 9.19
+  Static templates progress:  94.0% (188/200) | best template ID 4 avg reward 9.10
+  Static templates progress:  96.0% (192/200) | best template ID 4 avg reward 9.47
+  Static templates progress:  98.0% (196/200) | best template ID 4 avg reward 9.60
+  Static templates progress: 100.0% (200/200) | best template ID 4 avg reward 9.41
+
+
+Best static template: ID=4 (Premium) with avg reward=9.41, GMV=8.87, CM2=0.88
+
+Running LinUCB with features=simple for 1000 episodes...
+  LINUCB progress:   0.1% (1/1000) | avg reward 0.00
+  LINUCB progress:   2.0% (20/1000) | avg reward 4.19
+  LINUCB progress:   4.0% (40/1000) | avg reward 3.78
+  LINUCB progress:   6.0% (60/1000) | avg reward 5.36
+  LINUCB progress:   8.0% (80/1000) | avg reward 4.51
+  LINUCB progress:  10.0% (100/1000) | avg reward 5.69
+  LINUCB progress:  12.0% (120/1000) | avg reward 5.28
+  LINUCB progress:  14.0% (140/1000) | avg reward 5.56
+  LINUCB progress:  16.0% (160/1000) | avg reward 5.85
+  LINUCB progress:  18.0% (180/1000) | avg reward 5.63
+  LINUCB progress:  20.0% (200/1000) | avg reward 5.41
+  LINUCB progress:  22.0% (220/1000) | avg reward 5.34
+  LINUCB progress:  24.0% (240/1000) | avg reward 5.05
+  LINUCB progress:  26.0% (260/1000) | avg reward 4.89
+  LINUCB progress:  28.0% (280/1000) | avg reward 5.04
+  LINUCB progress:  30.0% (300/1000) | avg reward 5.03
+  LINUCB progress:  32.0% (320/1000) | avg reward 4.93
+  LINUCB progress:  34.0% (340/1000) | avg reward 4.71
+  LINUCB progress:  36.0% (360/1000) | avg reward 4.82
+  LINUCB progress:  38.0% (380/1000) | avg reward 4.79
+  LINUCB progress:  40.0% (400/1000) | avg reward 4.76
+  LINUCB progress:  42.0% (420/1000) | avg reward 4.75
+  LINUCB progress:  44.0% (440/1000) | avg reward 4.77
+  LINUCB progress:  46.0% (460/1000) | avg reward 4.61
+  LINUCB progress:  48.0% (480/1000) | avg reward 4.54
+  LINUCB progress:  50.0% (500/1000) | avg reward 4.60
+  LINUCB progress:  52.0% (520/1000) | avg reward 4.72
+  LINUCB progress:  54.0% (540/1000) | avg reward 4.62
+  LINUCB progress:  56.0% (560/1000) | avg reward 4.59
+  LINUCB progress:  58.0% (580/1000) | avg reward 4.65
+  LINUCB progress:  60.0% (600/1000) | avg reward 4.61
+  LINUCB progress:  62.0% (620/1000) | avg reward 4.64
+  LINUCB progress:  64.0% (640/1000) | avg reward 4.66
+  LINUCB progress:  66.0% (660/1000) | avg reward 4.74
+  LINUCB progress:  68.0% (680/1000) | avg reward 4.88
+  LINUCB progress:  70.0% (700/1000) | avg reward 4.76
+  LINUCB progress:  72.0% (720/1000) | avg reward 4.81
+  LINUCB progress:  74.0% (740/1000) | avg reward 4.74
+  LINUCB progress:  76.0% (760/1000) | avg reward 4.85
+  LINUCB progress:  78.0% (780/1000) | avg reward 4.90
+  LINUCB progress:  80.0% (800/1000) | avg reward 4.96
+  LINUCB progress:  82.0% (820/1000) | avg reward 4.92
+  LINUCB progress:  84.0% (840/1000) | avg reward 4.90
+  LINUCB progress:  86.0% (860/1000) | avg reward 4.97
+  LINUCB progress:  88.0% (880/1000) | avg reward 5.03
+  LINUCB progress:  90.0% (900/1000) | avg reward 5.02
+  LINUCB progress:  92.0% (920/1000) | avg reward 5.04
+  LINUCB progress:  94.0% (940/1000) | avg reward 5.10
+  LINUCB progress:  96.0% (960/1000) | avg reward 5.06
+  LINUCB progress:  98.0% (980/1000) | avg reward 4.97
+  LINUCB progress: 100.0% (1000/1000) | avg reward 4.98
+
+Running Thompson Sampling with features=simple for 1000 episodes...
+  TS progress:   0.1% (1/1000) | avg reward 0.00
+  TS progress:   2.0% (20/1000) | avg reward 3.59
+  TS progress:   4.0% (40/1000) | avg reward 3.93
+  TS progress:   6.0% (60/1000) | avg reward 4.36
+  TS progress:   8.0% (80/1000) | avg reward 4.67
+  TS progress:  10.0% (100/1000) | avg reward 5.29
+  TS progress:  12.0% (120/1000) | avg reward 5.05
+  TS progress:  14.0% (140/1000) | avg reward 4.91
+  TS progress:  16.0% (160/1000) | avg reward 5.08
+  TS progress:  18.0% (180/1000) | avg reward 5.31
+  TS progress:  20.0% (200/1000) | avg reward 5.48
+  TS progress:  22.0% (220/1000) | avg reward 5.79
+  TS progress:  24.0% (240/1000) | avg reward 5.73
+  TS progress:  26.0% (260/1000) | avg reward 5.52
+  TS progress:  28.0% (280/1000) | avg reward 5.67
+  TS progress:  30.0% (300/1000) | avg reward 5.83
+  TS progress:  32.0% (320/1000) | avg reward 5.93
+  TS progress:  34.0% (340/1000) | avg reward 5.74
+  TS progress:  36.0% (360/1000) | avg reward 5.90
+  TS progress:  38.0% (380/1000) | avg reward 5.85
+  TS progress:  40.0% (400/1000) | avg reward 6.01
+  TS progress:  42.0% (420/1000) | avg reward 6.05
+  TS progress:  44.0% (440/1000) | avg reward 5.92
+  TS progress:  46.0% (460/1000) | avg reward 6.09
+  TS progress:  48.0% (480/1000) | avg reward 6.03
+  TS progress:  50.0% (500/1000) | avg reward 5.97
+  TS progress:  52.0% (520/1000) | avg reward 5.92
+  TS progress:  54.0% (540/1000) | avg reward 5.79
+  TS progress:  56.0% (560/1000) | avg reward 5.80
+  TS progress:  58.0% (580/1000) | avg reward 5.78
+  TS progress:  60.0% (600/1000) | avg reward 5.73
+  TS progress:  62.0% (620/1000) | avg reward 5.75
+  TS progress:  64.0% (640/1000) | avg reward 5.81
+  TS progress:  66.0% (660/1000) | avg reward 5.88
+  TS progress:  68.0% (680/1000) | avg reward 5.80
+  TS progress:  70.0% (700/1000) | avg reward 5.73
+  TS progress:  72.0% (720/1000) | avg reward 5.78
+  TS progress:  74.0% (740/1000) | avg reward 5.79
+  TS progress:  76.0% (760/1000) | avg reward 5.78
+  TS progress:  78.0% (780/1000) | avg reward 5.71
+  TS progress:  80.0% (800/1000) | avg reward 5.68
+  TS progress:  82.0% (820/1000) | avg reward 5.68
+  TS progress:  84.0% (840/1000) | avg reward 5.72
+  TS progress:  86.0% (860/1000) | avg reward 5.66
+  TS progress:  88.0% (880/1000) | avg reward 5.62
+  TS progress:  90.0% (900/1000) | avg reward 5.57
+  TS progress:  92.0% (920/1000) | avg reward 5.52
+  TS progress:  94.0% (940/1000) | avg reward 5.47
+  TS progress:  96.0% (960/1000) | avg reward 5.40
+  TS progress:  98.0% (980/1000) | avg reward 5.32
+  TS progress: 100.0% (1000/1000) | avg reward 5.26
+
+  Static (best) segment stats:   0.1% (1/1000) | avg reward 0.00
+  Static (best) segment stats:   2.0% (20/1000) | avg reward 10.89
+  Static (best) segment stats:   4.0% (40/1000) | avg reward 7.47
+  Static (best) segment stats:   6.0% (60/1000) | avg reward 8.73
+  Static (best) segment stats:   8.0% (80/1000) | avg reward 8.74
+  Static (best) segment stats:  10.0% (100/1000) | avg reward 8.12
+  Static (best) segment stats:  12.0% (120/1000) | avg reward 7.60
+  Static (best) segment stats:  14.0% (140/1000) | avg reward 8.79
+  Static (best) segment stats:  16.0% (160/1000) | avg reward 8.74
+  Static (best) segment stats:  18.0% (180/1000) | avg reward 8.59
+  Static (best) segment stats:  20.0% (200/1000) | avg reward 8.63
+  Static (best) segment stats:  22.0% (220/1000) | avg reward 8.28
+  Static (best) segment stats:  24.0% (240/1000) | avg reward 8.07
+  Static (best) segment stats:  26.0% (260/1000) | avg reward 8.13
+  Static (best) segment stats:  28.0% (280/1000) | avg reward 7.93
+  Static (best) segment stats:  30.0% (300/1000) | avg reward 7.75
+  Static (best) segment stats:  32.0% (320/1000) | avg reward 8.15
+  Static (best) segment stats:  34.0% (340/1000) | avg reward 8.20
+  Static (best) segment stats:  36.0% (360/1000) | avg reward 7.86
+  Static (best) segment stats:  38.0% (380/1000) | avg reward 7.59
+  Static (best) segment stats:  40.0% (400/1000) | avg reward 7.84
+  Static (best) segment stats:  42.0% (420/1000) | avg reward 7.69
+  Static (best) segment stats:  44.0% (440/1000) | avg reward 7.59
+  Static (best) segment stats:  46.0% (460/1000) | avg reward 7.48
+  Static (best) segment stats:  48.0% (480/1000) | avg reward 7.56
+  Static (best) segment stats:  50.0% (500/1000) | avg reward 7.51
+  Static (best) segment stats:  52.0% (520/1000) | avg reward 7.76
+  Static (best) segment stats:  54.0% (540/1000) | avg reward 7.73
+  Static (best) segment stats:  56.0% (560/1000) | avg reward 7.68
+  Static (best) segment stats:  58.0% (580/1000) | avg reward 7.76
+  Static (best) segment stats:  60.0% (600/1000) | avg reward 7.79
+  Static (best) segment stats:  62.0% (620/1000) | avg reward 7.66
+  Static (best) segment stats:  64.0% (640/1000) | avg reward 7.64
+  Static (best) segment stats:  66.0% (660/1000) | avg reward 7.65
+  Static (best) segment stats:  68.0% (680/1000) | avg reward 7.55
+  Static (best) segment stats:  70.0% (700/1000) | avg reward 7.51
+  Static (best) segment stats:  72.0% (720/1000) | avg reward 7.47
+  Static (best) segment stats:  74.0% (740/1000) | avg reward 7.47
+  Static (best) segment stats:  76.0% (760/1000) | avg reward 7.54
+  Static (best) segment stats:  78.0% (780/1000) | avg reward 7.39
+  Static (best) segment stats:  80.0% (800/1000) | avg reward 7.25
+  Static (best) segment stats:  82.0% (820/1000) | avg reward 7.19
+  Static (best) segment stats:  84.0% (840/1000) | avg reward 7.06
+  Static (best) segment stats:  86.0% (860/1000) | avg reward 6.99
+  Static (best) segment stats:  88.0% (880/1000) | avg reward 7.07
+  Static (best) segment stats:  90.0% (900/1000) | avg reward 7.05
+  Static (best) segment stats:  92.0% (920/1000) | avg reward 7.25
+  Static (best) segment stats:  94.0% (940/1000) | avg reward 7.34
+  Static (best) segment stats:  96.0% (960/1000) | avg reward 7.36
+  Static (best) segment stats:  98.0% (980/1000) | avg reward 7.47
+  Static (best) segment stats: 100.0% (1000/1000) | avg reward 7.47
+
+
+✓ Saved: verification_runs/ch00_06/run_20260116T105249Z/artifacts/ch06/data/template_bandits_simple_summary.json
+
+RESULTS (Simple Features):
+  Static (best):  GMV = 8.87
+  LinUCB:         GMV = 4.57  (-48.4%)
+  TS:             GMV = 4.83  (-45.5%)
+
+[WARN] Bandits underperform static (expected for pedagogical arc).
+
+================================================================================
+EXPERIMENT 2: RICH FEATURES — ORACLE LATENTS (LinUCB wins)
+================================================================================
+Hypothesis: With clean/oracle features, LinUCB's precise exploitation wins.
+Context: φ_rich(x) = [segment, query, TRUE user latents, aggregates] (18 dims)
+Hyperparameters: prior_weight=6, lin_alpha=1.00, ts_sigma=1.00
+
+
+Running static template baselines for 200 episodes...
+  Static templates progress:   0.5% (1/200) | best template ID 4 avg reward 20.70
+  Static templates progress:   2.0% (4/200) | best template ID 1 avg reward 8.13
+  Static templates progress:   4.0% (8/200) | best template ID 4 avg reward 13.05
+  Static templates progress:   6.0% (12/200) | best template ID 4 avg reward 10.11
+  Static templates progress:   8.0% (16/200) | best template ID 4 avg reward 9.23
+  Static templates progress:  10.0% (20/200) | best template ID 4 avg reward 11.48
+  Static templates progress:  12.0% (24/200) | best template ID 4 avg reward 11.95
+  Static templates progress:  14.0% (28/200) | best template ID 4 avg reward 10.25
+  Static templates progress:  16.0% (32/200) | best template ID 4 avg reward 9.56
+  Static templates progress:  18.0% (36/200) | best template ID 4 avg reward 8.98
+  Static templates progress:  20.0% (40/200) | best template ID 4 avg reward 8.55
+  Static templates progress:  22.0% (44/200) | best template ID 4 avg reward 9.14
+  Static templates progress:  24.0% (48/200) | best template ID 4 avg reward 8.38
+  Static templates progress:  26.0% (52/200) | best template ID 4 avg reward 9.74
+  Static templates progress:  28.0% (56/200) | best template ID 4 avg reward 10.24
+  Static templates progress:  30.0% (60/200) | best template ID 4 avg reward 11.21
+  Static templates progress:  32.0% (64/200) | best template ID 4 avg reward 10.97
+  Static templates progress:  34.0% (68/200) | best template ID 4 avg reward 11.07
+  Static templates progress:  36.0% (72/200) | best template ID 4 avg reward 11.51
+  Static templates progress:  38.0% (76/200) | best template ID 4 avg reward 10.91
+  Static templates progress:  40.0% (80/200) | best template ID 4 avg reward 10.36
+  Static templates progress:  42.0% (84/200) | best template ID 4 avg reward 9.87
+  Static templates progress:  44.0% (88/200) | best template ID 4 avg reward 10.42
+  Static templates progress:  46.0% (92/200) | best template ID 4 avg reward 10.88
+  Static templates progress:  48.0% (96/200) | best template ID 4 avg reward 11.06
+  Static templates progress:  50.0% (100/200) | best template ID 4 avg reward 10.96
+  Static templates progress:  52.0% (104/200) | best template ID 4 avg reward 10.75
+  Static templates progress:  54.0% (108/200) | best template ID 4 avg reward 12.17
+  Static templates progress:  56.0% (112/200) | best template ID 4 avg reward 11.89
+  Static templates progress:  58.0% (116/200) | best template ID 4 avg reward 11.48
+  Static templates progress:  60.0% (120/200) | best template ID 4 avg reward 11.91
+  Static templates progress:  62.0% (124/200) | best template ID 4 avg reward 11.71
+  Static templates progress:  64.0% (128/200) | best template ID 4 avg reward 11.34
+  Static templates progress:  66.0% (132/200) | best template ID 4 avg reward 11.00
+  Static templates progress:  68.0% (136/200) | best template ID 4 avg reward 11.32
+  Static templates progress:  70.0% (140/200) | best template ID 4 avg reward 11.13
+  Static templates progress:  72.0% (144/200) | best template ID 4 avg reward 10.96
+  Static templates progress:  74.0% (148/200) | best template ID 4 avg reward 10.66
+  Static templates progress:  76.0% (152/200) | best template ID 4 avg reward 10.50
+  Static templates progress:  78.0% (156/200) | best template ID 4 avg reward 10.23
+  Static templates progress:  80.0% (160/200) | best template ID 4 avg reward 9.97
+  Static templates progress:  82.0% (164/200) | best template ID 4 avg reward 9.83
+  Static templates progress:  84.0% (168/200) | best template ID 4 avg reward 9.79
+  Static templates progress:  86.0% (172/200) | best template ID 4 avg reward 9.56
+  Static templates progress:  88.0% (176/200) | best template ID 4 avg reward 9.35
+  Static templates progress:  90.0% (180/200) | best template ID 4 avg reward 9.39
+  Static templates progress:  92.0% (184/200) | best template ID 4 avg reward 9.19
+  Static templates progress:  94.0% (188/200) | best template ID 4 avg reward 9.10
+  Static templates progress:  96.0% (192/200) | best template ID 4 avg reward 9.47
+  Static templates progress:  98.0% (196/200) | best template ID 4 avg reward 9.60
+  Static templates progress: 100.0% (200/200) | best template ID 4 avg reward 9.41
+
+
+Best static template: ID=4 (Premium) with avg reward=9.41, GMV=8.87, CM2=0.88
+
+Running LinUCB with features=rich for 1000 episodes...
+  LINUCB progress:   0.1% (1/1000) | avg reward 0.00
+  LINUCB progress:   2.0% (20/1000) | avg reward 5.75
+  LINUCB progress:   4.0% (40/1000) | avg reward 6.39
+  LINUCB progress:   6.0% (60/1000) | avg reward 6.54
+  LINUCB progress:   8.0% (80/1000) | avg reward 6.66
+  LINUCB progress:  10.0% (100/1000) | avg reward 6.70
+  LINUCB progress:  12.0% (120/1000) | avg reward 8.34
+  LINUCB progress:  14.0% (140/1000) | avg reward 9.04
+  LINUCB progress:  16.0% (160/1000) | avg reward 8.62
+  LINUCB progress:  18.0% (180/1000) | avg reward 8.65
+  LINUCB progress:  20.0% (200/1000) | avg reward 8.29
+  LINUCB progress:  22.0% (220/1000) | avg reward 8.31
+  LINUCB progress:  24.0% (240/1000) | avg reward 8.80
+  LINUCB progress:  26.0% (260/1000) | avg reward 8.72
+  LINUCB progress:  28.0% (280/1000) | avg reward 8.64
+  LINUCB progress:  30.0% (300/1000) | avg reward 8.75
+  LINUCB progress:  32.0% (320/1000) | avg reward 8.87
+  LINUCB progress:  34.0% (340/1000) | avg reward 8.50
+  LINUCB progress:  36.0% (360/1000) | avg reward 8.48
+  LINUCB progress:  38.0% (380/1000) | avg reward 8.94
+  LINUCB progress:  40.0% (400/1000) | avg reward 9.04
+  LINUCB progress:  42.0% (420/1000) | avg reward 9.01
+  LINUCB progress:  44.0% (440/1000) | avg reward 8.80
+  LINUCB progress:  46.0% (460/1000) | avg reward 8.82
+  LINUCB progress:  48.0% (480/1000) | avg reward 9.04
+  LINUCB progress:  50.0% (500/1000) | avg reward 8.84
+  LINUCB progress:  52.0% (520/1000) | avg reward 8.54
+  LINUCB progress:  54.0% (540/1000) | avg reward 8.47
+  LINUCB progress:  56.0% (560/1000) | avg reward 8.50
+  LINUCB progress:  58.0% (580/1000) | avg reward 8.52
+  LINUCB progress:  60.0% (600/1000) | avg reward 8.57
+  LINUCB progress:  62.0% (620/1000) | avg reward 8.46
+  LINUCB progress:  64.0% (640/1000) | avg reward 8.44
+  LINUCB progress:  66.0% (660/1000) | avg reward 8.84
+  LINUCB progress:  68.0% (680/1000) | avg reward 9.04
+  LINUCB progress:  70.0% (700/1000) | avg reward 9.05
+  LINUCB progress:  72.0% (720/1000) | avg reward 9.18
+  LINUCB progress:  74.0% (740/1000) | avg reward 9.33
+  LINUCB progress:  76.0% (760/1000) | avg reward 9.34
+  LINUCB progress:  78.0% (780/1000) | avg reward 9.24
+  LINUCB progress:  80.0% (800/1000) | avg reward 9.42
+  LINUCB progress:  82.0% (820/1000) | avg reward 9.31
+  LINUCB progress:  84.0% (840/1000) | avg reward 9.35
+  LINUCB progress:  86.0% (860/1000) | avg reward 9.33
+  LINUCB progress:  88.0% (880/1000) | avg reward 9.33
+  LINUCB progress:  90.0% (900/1000) | avg reward 9.25
+  LINUCB progress:  92.0% (920/1000) | avg reward 9.26
+  LINUCB progress:  94.0% (940/1000) | avg reward 9.36
+  LINUCB progress:  96.0% (960/1000) | avg reward 9.45
+  LINUCB progress:  98.0% (980/1000) | avg reward 9.57
+  LINUCB progress: 100.0% (1000/1000) | avg reward 9.59
+
+Running Thompson Sampling with features=rich for 1000 episodes...
+  TS progress:   0.1% (1/1000) | avg reward 0.00
+  TS progress:   2.0% (20/1000) | avg reward 5.65
+  TS progress:   4.0% (40/1000) | avg reward 6.76
+  TS progress:   6.0% (60/1000) | avg reward 6.14
+  TS progress:   8.0% (80/1000) | avg reward 6.80
+  TS progress:  10.0% (100/1000) | avg reward 6.66
+  TS progress:  12.0% (120/1000) | avg reward 5.81
+  TS progress:  14.0% (140/1000) | avg reward 6.24
+  TS progress:  16.0% (160/1000) | avg reward 6.84
+  TS progress:  18.0% (180/1000) | avg reward 6.78
+  TS progress:  20.0% (200/1000) | avg reward 6.28
+  TS progress:  22.0% (220/1000) | avg reward 6.28
+  TS progress:  24.0% (240/1000) | avg reward 6.56
+  TS progress:  26.0% (260/1000) | avg reward 7.08
+  TS progress:  28.0% (280/1000) | avg reward 6.88
+  TS progress:  30.0% (300/1000) | avg reward 7.03
+  TS progress:  32.0% (320/1000) | avg reward 7.12
+  TS progress:  34.0% (340/1000) | avg reward 7.72
+  TS progress:  36.0% (360/1000) | avg reward 7.91
+  TS progress:  38.0% (380/1000) | avg reward 7.98
+  TS progress:  40.0% (400/1000) | avg reward 8.10
+  TS progress:  42.0% (420/1000) | avg reward 8.20
+  TS progress:  44.0% (440/1000) | avg reward 8.33
+  TS progress:  46.0% (460/1000) | avg reward 8.26
+  TS progress:  48.0% (480/1000) | avg reward 8.24
+  TS progress:  50.0% (500/1000) | avg reward 8.27
+  TS progress:  52.0% (520/1000) | avg reward 8.28
+  TS progress:  54.0% (540/1000) | avg reward 8.48
+  TS progress:  56.0% (560/1000) | avg reward 8.37
+  TS progress:  58.0% (580/1000) | avg reward 8.20
+  TS progress:  60.0% (600/1000) | avg reward 8.49
+  TS progress:  62.0% (620/1000) | avg reward 8.66
+  TS progress:  64.0% (640/1000) | avg reward 8.51
+  TS progress:  66.0% (660/1000) | avg reward 8.58
+  TS progress:  68.0% (680/1000) | avg reward 8.41
+  TS progress:  70.0% (700/1000) | avg reward 8.48
+  TS progress:  72.0% (720/1000) | avg reward 8.57
+  TS progress:  74.0% (740/1000) | avg reward 8.52
+  TS progress:  76.0% (760/1000) | avg reward 8.60
+  TS progress:  78.0% (780/1000) | avg reward 8.56
+  TS progress:  80.0% (800/1000) | avg reward 8.47
+  TS progress:  82.0% (820/1000) | avg reward 8.38
+  TS progress:  84.0% (840/1000) | avg reward 8.38
+  TS progress:  86.0% (860/1000) | avg reward 8.41
+  TS progress:  88.0% (880/1000) | avg reward 8.34
+  TS progress:  90.0% (900/1000) | avg reward 8.39
+  TS progress:  92.0% (920/1000) | avg reward 8.38
+  TS progress:  94.0% (940/1000) | avg reward 8.40
+  TS progress:  96.0% (960/1000) | avg reward 8.33
+  TS progress:  98.0% (980/1000) | avg reward 8.33
+  TS progress: 100.0% (1000/1000) | avg reward 8.29
+
+  Static (best) segment stats:   0.1% (1/1000) | avg reward 0.00
+  Static (best) segment stats:   2.0% (20/1000) | avg reward 10.89
+  Static (best) segment stats:   4.0% (40/1000) | avg reward 7.47
+  Static (best) segment stats:   6.0% (60/1000) | avg reward 8.73
+  Static (best) segment stats:   8.0% (80/1000) | avg reward 8.74
+  Static (best) segment stats:  10.0% (100/1000) | avg reward 8.12
+  Static (best) segment stats:  12.0% (120/1000) | avg reward 7.60
+  Static (best) segment stats:  14.0% (140/1000) | avg reward 8.79
+  Static (best) segment stats:  16.0% (160/1000) | avg reward 8.74
+  Static (best) segment stats:  18.0% (180/1000) | avg reward 8.59
+  Static (best) segment stats:  20.0% (200/1000) | avg reward 8.63
+  Static (best) segment stats:  22.0% (220/1000) | avg reward 8.28
+  Static (best) segment stats:  24.0% (240/1000) | avg reward 8.07
+  Static (best) segment stats:  26.0% (260/1000) | avg reward 8.13
+  Static (best) segment stats:  28.0% (280/1000) | avg reward 7.93
+  Static (best) segment stats:  30.0% (300/1000) | avg reward 7.75
+  Static (best) segment stats:  32.0% (320/1000) | avg reward 8.15
+  Static (best) segment stats:  34.0% (340/1000) | avg reward 8.20
+  Static (best) segment stats:  36.0% (360/1000) | avg reward 7.86
+  Static (best) segment stats:  38.0% (380/1000) | avg reward 7.59
+  Static (best) segment stats:  40.0% (400/1000) | avg reward 7.84
+  Static (best) segment stats:  42.0% (420/1000) | avg reward 7.69
+  Static (best) segment stats:  44.0% (440/1000) | avg reward 7.59
+  Static (best) segment stats:  46.0% (460/1000) | avg reward 7.48
+  Static (best) segment stats:  48.0% (480/1000) | avg reward 7.56
+  Static (best) segment stats:  50.0% (500/1000) | avg reward 7.51
+  Static (best) segment stats:  52.0% (520/1000) | avg reward 7.76
+  Static (best) segment stats:  54.0% (540/1000) | avg reward 7.73
+  Static (best) segment stats:  56.0% (560/1000) | avg reward 7.68
+  Static (best) segment stats:  58.0% (580/1000) | avg reward 7.76
+  Static (best) segment stats:  60.0% (600/1000) | avg reward 7.79
+  Static (best) segment stats:  62.0% (620/1000) | avg reward 7.66
+  Static (best) segment stats:  64.0% (640/1000) | avg reward 7.64
+  Static (best) segment stats:  66.0% (660/1000) | avg reward 7.65
+  Static (best) segment stats:  68.0% (680/1000) | avg reward 7.55
+  Static (best) segment stats:  70.0% (700/1000) | avg reward 7.51
+  Static (best) segment stats:  72.0% (720/1000) | avg reward 7.47
+  Static (best) segment stats:  74.0% (740/1000) | avg reward 7.47
+  Static (best) segment stats:  76.0% (760/1000) | avg reward 7.54
+  Static (best) segment stats:  78.0% (780/1000) | avg reward 7.39
+  Static (best) segment stats:  80.0% (800/1000) | avg reward 7.25
+  Static (best) segment stats:  82.0% (820/1000) | avg reward 7.19
+  Static (best) segment stats:  84.0% (840/1000) | avg reward 7.06
+  Static (best) segment stats:  86.0% (860/1000) | avg reward 6.99
+  Static (best) segment stats:  88.0% (880/1000) | avg reward 7.07
+  Static (best) segment stats:  90.0% (900/1000) | avg reward 7.05
+  Static (best) segment stats:  92.0% (920/1000) | avg reward 7.25
+  Static (best) segment stats:  94.0% (940/1000) | avg reward 7.34
+  Static (best) segment stats:  96.0% (960/1000) | avg reward 7.36
+  Static (best) segment stats:  98.0% (980/1000) | avg reward 7.47
+  Static (best) segment stats: 100.0% (1000/1000) | avg reward 7.47
+
+
+✓ Saved: verification_runs/ch00_06/run_20260116T105249Z/artifacts/ch06/data/template_bandits_rich_oracle_summary.json
+
+RESULTS (Rich Features — Oracle Latents):
+  Static (best):  GMV = 8.87
+  LinUCB:         GMV = 8.89  (+0.3%)
+  TS:             GMV = 7.60  (-14.3%)
+
+✓ LINUCB WINS WITH ORACLE FEATURES (precise exploitation)
+
+================================================================================
+EXPERIMENT 3: RICH FEATURES — ESTIMATED LATENTS (TS wins)
+================================================================================
+Hypothesis: With noisy/estimated features, TS's robust exploration wins.
+Context: φ_rich_est(x) = [segment, query, ESTIMATED user latents, aggregates] (18 dims)
+Hyperparameters: prior_weight=12, lin_alpha=0.85, ts_sigma=0.70
+
+
+Running static template baselines for 200 episodes...
+  Static templates progress:   0.5% (1/200) | best template ID 4 avg reward 20.70
+  Static templates progress:   2.0% (4/200) | best template ID 1 avg reward 8.13
+  Static templates progress:   4.0% (8/200) | best template ID 4 avg reward 13.05
+  Static templates progress:   6.0% (12/200) | best template ID 4 avg reward 10.11
+  Static templates progress:   8.0% (16/200) | best template ID 4 avg reward 9.23
+  Static templates progress:  10.0% (20/200) | best template ID 4 avg reward 11.48
+  Static templates progress:  12.0% (24/200) | best template ID 4 avg reward 11.95
+  Static templates progress:  14.0% (28/200) | best template ID 4 avg reward 10.25
+  Static templates progress:  16.0% (32/200) | best template ID 4 avg reward 9.56
+  Static templates progress:  18.0% (36/200) | best template ID 4 avg reward 8.98
+  Static templates progress:  20.0% (40/200) | best template ID 4 avg reward 8.55
+  Static templates progress:  22.0% (44/200) | best template ID 4 avg reward 9.14
+  Static templates progress:  24.0% (48/200) | best template ID 4 avg reward 8.38
+  Static templates progress:  26.0% (52/200) | best template ID 4 avg reward 9.74
+  Static templates progress:  28.0% (56/200) | best template ID 4 avg reward 10.24
+  Static templates progress:  30.0% (60/200) | best template ID 4 avg reward 11.21
+  Static templates progress:  32.0% (64/200) | best template ID 4 avg reward 10.97
+  Static templates progress:  34.0% (68/200) | best template ID 4 avg reward 11.07
+  Static templates progress:  36.0% (72/200) | best template ID 4 avg reward 11.51
+  Static templates progress:  38.0% (76/200) | best template ID 4 avg reward 10.91
+  Static templates progress:  40.0% (80/200) | best template ID 4 avg reward 10.36
+  Static templates progress:  42.0% (84/200) | best template ID 4 avg reward 9.87
+  Static templates progress:  44.0% (88/200) | best template ID 4 avg reward 10.42
+  Static templates progress:  46.0% (92/200) | best template ID 4 avg reward 10.88
+  Static templates progress:  48.0% (96/200) | best template ID 4 avg reward 11.06
+  Static templates progress:  50.0% (100/200) | best template ID 4 avg reward 10.96
+  Static templates progress:  52.0% (104/200) | best template ID 4 avg reward 10.75
+  Static templates progress:  54.0% (108/200) | best template ID 4 avg reward 12.17
+  Static templates progress:  56.0% (112/200) | best template ID 4 avg reward 11.89
+  Static templates progress:  58.0% (116/200) | best template ID 4 avg reward 11.48
+  Static templates progress:  60.0% (120/200) | best template ID 4 avg reward 11.91
+  Static templates progress:  62.0% (124/200) | best template ID 4 avg reward 11.71
+  Static templates progress:  64.0% (128/200) | best template ID 4 avg reward 11.34
+  Static templates progress:  66.0% (132/200) | best template ID 4 avg reward 11.00
+  Static templates progress:  68.0% (136/200) | best template ID 4 avg reward 11.32
+  Static templates progress:  70.0% (140/200) | best template ID 4 avg reward 11.13
+  Static templates progress:  72.0% (144/200) | best template ID 4 avg reward 10.96
+  Static templates progress:  74.0% (148/200) | best template ID 4 avg reward 10.66
+  Static templates progress:  76.0% (152/200) | best template ID 4 avg reward 10.50
+  Static templates progress:  78.0% (156/200) | best template ID 4 avg reward 10.23
+  Static templates progress:  80.0% (160/200) | best template ID 4 avg reward 9.97
+  Static templates progress:  82.0% (164/200) | best template ID 4 avg reward 9.83
+  Static templates progress:  84.0% (168/200) | best template ID 4 avg reward 9.79
+  Static templates progress:  86.0% (172/200) | best template ID 4 avg reward 9.56
+  Static templates progress:  88.0% (176/200) | best template ID 4 avg reward 9.35
+  Static templates progress:  90.0% (180/200) | best template ID 4 avg reward 9.39
+  Static templates progress:  92.0% (184/200) | best template ID 4 avg reward 9.19
+  Static templates progress:  94.0% (188/200) | best template ID 4 avg reward 9.10
+  Static templates progress:  96.0% (192/200) | best template ID 4 avg reward 9.47
+  Static templates progress:  98.0% (196/200) | best template ID 4 avg reward 9.60
+  Static templates progress: 100.0% (200/200) | best template ID 4 avg reward 9.41
+
+
+Best static template: ID=4 (Premium) with avg reward=9.41, GMV=8.87, CM2=0.88
+
+Running LinUCB with features=rich_est for 1000 episodes...
+  LINUCB progress:   0.1% (1/1000) | avg reward 0.00
+  LINUCB progress:   2.0% (20/1000) | avg reward 5.75
+  LINUCB progress:   4.0% (40/1000) | avg reward 5.95
+  LINUCB progress:   6.0% (60/1000) | avg reward 5.70
+  LINUCB progress:   8.0% (80/1000) | avg reward 5.44
+  LINUCB progress:  10.0% (100/1000) | avg reward 6.29
+  LINUCB progress:  12.0% (120/1000) | avg reward 7.30
+  LINUCB progress:  14.0% (140/1000) | avg reward 7.43
+  LINUCB progress:  16.0% (160/1000) | avg reward 7.51
+  LINUCB progress:  18.0% (180/1000) | avg reward 7.45
+  LINUCB progress:  20.0% (200/1000) | avg reward 7.29
+  LINUCB progress:  22.0% (220/1000) | avg reward 7.53
+  LINUCB progress:  24.0% (240/1000) | avg reward 7.36
+  LINUCB progress:  26.0% (260/1000) | avg reward 7.18
+  LINUCB progress:  28.0% (280/1000) | avg reward 7.18
+  LINUCB progress:  30.0% (300/1000) | avg reward 6.84
+  LINUCB progress:  32.0% (320/1000) | avg reward 7.07
+  LINUCB progress:  34.0% (340/1000) | avg reward 7.10
+  LINUCB progress:  36.0% (360/1000) | avg reward 7.14
+  LINUCB progress:  38.0% (380/1000) | avg reward 7.21
+  LINUCB progress:  40.0% (400/1000) | avg reward 7.57
+  LINUCB progress:  42.0% (420/1000) | avg reward 7.59
+  LINUCB progress:  44.0% (440/1000) | avg reward 7.52
+  LINUCB progress:  46.0% (460/1000) | avg reward 7.70
+  LINUCB progress:  48.0% (480/1000) | avg reward 7.76
+  LINUCB progress:  50.0% (500/1000) | avg reward 7.69
+  LINUCB progress:  52.0% (520/1000) | avg reward 7.65
+  LINUCB progress:  54.0% (540/1000) | avg reward 7.86
+  LINUCB progress:  56.0% (560/1000) | avg reward 7.90
+  LINUCB progress:  58.0% (580/1000) | avg reward 7.71
+  LINUCB progress:  60.0% (600/1000) | avg reward 7.83
+  LINUCB progress:  62.0% (620/1000) | avg reward 7.77
+  LINUCB progress:  64.0% (640/1000) | avg reward 7.85
+  LINUCB progress:  66.0% (660/1000) | avg reward 7.86
+  LINUCB progress:  68.0% (680/1000) | avg reward 7.82
+  LINUCB progress:  70.0% (700/1000) | avg reward 7.78
+  LINUCB progress:  72.0% (720/1000) | avg reward 7.70
+  LINUCB progress:  74.0% (740/1000) | avg reward 7.60
+  LINUCB progress:  76.0% (760/1000) | avg reward 7.80
+  LINUCB progress:  78.0% (780/1000) | avg reward 7.99
+  LINUCB progress:  80.0% (800/1000) | avg reward 7.89
+  LINUCB progress:  82.0% (820/1000) | avg reward 8.00
+  LINUCB progress:  84.0% (840/1000) | avg reward 8.01
+  LINUCB progress:  86.0% (860/1000) | avg reward 8.18
+  LINUCB progress:  88.0% (880/1000) | avg reward 8.19
+  LINUCB progress:  90.0% (900/1000) | avg reward 8.13
+  LINUCB progress:  92.0% (920/1000) | avg reward 8.05
+  LINUCB progress:  94.0% (940/1000) | avg reward 8.03
+  LINUCB progress:  96.0% (960/1000) | avg reward 8.15
+  LINUCB progress:  98.0% (980/1000) | avg reward 8.10
+  LINUCB progress: 100.0% (1000/1000) | avg reward 8.05
+
+Running Thompson Sampling with features=rich_est for 1000 episodes...
+  TS progress:   0.1% (1/1000) | avg reward 0.00
+  TS progress:   2.0% (20/1000) | avg reward 2.57
+  TS progress:   4.0% (40/1000) | avg reward 3.48
+  TS progress:   6.0% (60/1000) | avg reward 3.85
+  TS progress:   8.0% (80/1000) | avg reward 3.82
+  TS progress:  10.0% (100/1000) | avg reward 3.69
+  TS progress:  12.0% (120/1000) | avg reward 3.94
+  TS progress:  14.0% (140/1000) | avg reward 3.81
+  TS progress:  16.0% (160/1000) | avg reward 3.85
+  TS progress:  18.0% (180/1000) | avg reward 4.22
+  TS progress:  20.0% (200/1000) | avg reward 4.39
+  TS progress:  22.0% (220/1000) | avg reward 4.21
+  TS progress:  24.0% (240/1000) | avg reward 4.45
+  TS progress:  26.0% (260/1000) | avg reward 4.37
+  TS progress:  28.0% (280/1000) | avg reward 4.46
+  TS progress:  30.0% (300/1000) | avg reward 5.01
+  TS progress:  32.0% (320/1000) | avg reward 5.13
+  TS progress:  34.0% (340/1000) | avg reward 5.20
+  TS progress:  36.0% (360/1000) | avg reward 5.21
+  TS progress:  38.0% (380/1000) | avg reward 5.37
+  TS progress:  40.0% (400/1000) | avg reward 5.28
+  TS progress:  42.0% (420/1000) | avg reward 5.40
+  TS progress:  44.0% (440/1000) | avg reward 5.31
+  TS progress:  46.0% (460/1000) | avg reward 5.44
+  TS progress:  48.0% (480/1000) | avg reward 5.40
+  TS progress:  50.0% (500/1000) | avg reward 5.38
+  TS progress:  52.0% (520/1000) | avg reward 5.43
+  TS progress:  54.0% (540/1000) | avg reward 5.44
+  TS progress:  56.0% (560/1000) | avg reward 5.64
+  TS progress:  58.0% (580/1000) | avg reward 5.58
+  TS progress:  60.0% (600/1000) | avg reward 5.50
+  TS progress:  62.0% (620/1000) | avg reward 5.54
+  TS progress:  64.0% (640/1000) | avg reward 5.46
+  TS progress:  66.0% (660/1000) | avg reward 5.36
+  TS progress:  68.0% (680/1000) | avg reward 5.34
+  TS progress:  70.0% (700/1000) | avg reward 5.49
+  TS progress:  72.0% (720/1000) | avg reward 5.52
+  TS progress:  74.0% (740/1000) | avg reward 5.65
+  TS progress:  76.0% (760/1000) | avg reward 5.59
+  TS progress:  78.0% (780/1000) | avg reward 5.60
+  TS progress:  80.0% (800/1000) | avg reward 5.54
+  TS progress:  82.0% (820/1000) | avg reward 5.61
+  TS progress:  84.0% (840/1000) | avg reward 5.69
+  TS progress:  86.0% (860/1000) | avg reward 5.62
+  TS progress:  88.0% (880/1000) | avg reward 5.63
+  TS progress:  90.0% (900/1000) | avg reward 5.60
+  TS progress:  92.0% (920/1000) | avg reward 5.75
+  TS progress:  94.0% (940/1000) | avg reward 5.81
+  TS progress:  96.0% (960/1000) | avg reward 5.87
+  TS progress:  98.0% (980/1000) | avg reward 5.91
+  TS progress: 100.0% (1000/1000) | avg reward 5.93
+
+  Static (best) segment stats:   0.1% (1/1000) | avg reward 0.00
+  Static (best) segment stats:   2.0% (20/1000) | avg reward 10.89
+  Static (best) segment stats:   4.0% (40/1000) | avg reward 7.47
+  Static (best) segment stats:   6.0% (60/1000) | avg reward 8.73
+  Static (best) segment stats:   8.0% (80/1000) | avg reward 8.74
+  Static (best) segment stats:  10.0% (100/1000) | avg reward 8.12
+  Static (best) segment stats:  12.0% (120/1000) | avg reward 7.60
+  Static (best) segment stats:  14.0% (140/1000) | avg reward 8.79
+  Static (best) segment stats:  16.0% (160/1000) | avg reward 8.74
+  Static (best) segment stats:  18.0% (180/1000) | avg reward 8.59
+  Static (best) segment stats:  20.0% (200/1000) | avg reward 8.63
+  Static (best) segment stats:  22.0% (220/1000) | avg reward 8.28
+  Static (best) segment stats:  24.0% (240/1000) | avg reward 8.07
+  Static (best) segment stats:  26.0% (260/1000) | avg reward 8.13
+  Static (best) segment stats:  28.0% (280/1000) | avg reward 7.93
+  Static (best) segment stats:  30.0% (300/1000) | avg reward 7.75
+  Static (best) segment stats:  32.0% (320/1000) | avg reward 8.15
+  Static (best) segment stats:  34.0% (340/1000) | avg reward 8.20
+  Static (best) segment stats:  36.0% (360/1000) | avg reward 7.86
+  Static (best) segment stats:  38.0% (380/1000) | avg reward 7.59
+  Static (best) segment stats:  40.0% (400/1000) | avg reward 7.84
+  Static (best) segment stats:  42.0% (420/1000) | avg reward 7.69
+  Static (best) segment stats:  44.0% (440/1000) | avg reward 7.59
+  Static (best) segment stats:  46.0% (460/1000) | avg reward 7.48
+  Static (best) segment stats:  48.0% (480/1000) | avg reward 7.56
+  Static (best) segment stats:  50.0% (500/1000) | avg reward 7.51
+  Static (best) segment stats:  52.0% (520/1000) | avg reward 7.76
+  Static (best) segment stats:  54.0% (540/1000) | avg reward 7.73
+  Static (best) segment stats:  56.0% (560/1000) | avg reward 7.68
+  Static (best) segment stats:  58.0% (580/1000) | avg reward 7.76
+  Static (best) segment stats:  60.0% (600/1000) | avg reward 7.79
+  Static (best) segment stats:  62.0% (620/1000) | avg reward 7.66
+  Static (best) segment stats:  64.0% (640/1000) | avg reward 7.64
+  Static (best) segment stats:  66.0% (660/1000) | avg reward 7.65
+  Static (best) segment stats:  68.0% (680/1000) | avg reward 7.55
+  Static (best) segment stats:  70.0% (700/1000) | avg reward 7.51
+  Static (best) segment stats:  72.0% (720/1000) | avg reward 7.47
+  Static (best) segment stats:  74.0% (740/1000) | avg reward 7.47
+  Static (best) segment stats:  76.0% (760/1000) | avg reward 7.54
+  Static (best) segment stats:  78.0% (780/1000) | avg reward 7.39
+  Static (best) segment stats:  80.0% (800/1000) | avg reward 7.25
+  Static (best) segment stats:  82.0% (820/1000) | avg reward 7.19
+  Static (best) segment stats:  84.0% (840/1000) | avg reward 7.06
+  Static (best) segment stats:  86.0% (860/1000) | avg reward 6.99
+  Static (best) segment stats:  88.0% (880/1000) | avg reward 7.07
+  Static (best) segment stats:  90.0% (900/1000) | avg reward 7.05
+  Static (best) segment stats:  92.0% (920/1000) | avg reward 7.25
+  Static (best) segment stats:  94.0% (940/1000) | avg reward 7.34
+  Static (best) segment stats:  96.0% (960/1000) | avg reward 7.36
+  Static (best) segment stats:  98.0% (980/1000) | avg reward 7.47
+  Static (best) segment stats: 100.0% (1000/1000) | avg reward 7.47
+
+
+✓ Saved: verification_runs/ch00_06/run_20260116T105249Z/artifacts/ch06/data/template_bandits_rich_estimated_summary.json
+
+RESULTS (Rich Features — Estimated Latents):
+  Static (best):  GMV = 8.87
+  LinUCB:         GMV = 7.37  (-16.9%)
+  TS:             GMV = 5.44  (-38.6%)
+
+[WARN] LinUCB wins with estimated features (unexpected; check hyperparameters).
+
+================================================================================
+GENERATING FIGURES
+================================================================================
+
+Plot 1: Segment GMV comparison (three-way)...
+  Saved: verification_runs/ch00_06/run_20260116T105249Z/artifacts/ch06/figures/segment_gmv_comparison_threeway.png
+Plot 2: Template selection frequencies (simple features)...
+Plot 3: Template selection frequencies (rich oracle)...
+Plot 4: Template selection frequencies (rich estimated)...
+
+================================================================================
+SUMMARY: THE ALGORITHM SELECTION PRINCIPLE
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                   THREE-STAGE COMPUTE ARC RESULTS                   │
+├─────────────────────────────────────────────────────────────────────┤
+│ Stage 1 (Simple Features):                                          │
+│   Static (best):  8.87 GMV                                       │
+│   LinUCB:         4.57 GMV ( -48.4%)  ← FAILS                   │
+│   TS:             4.83 GMV ( -45.5%)  ← FAILS                   │
+├─────────────────────────────────────────────────────────────────────┤
+│ Stage 2 (Rich Oracle):                                              │
+│   LinUCB:         8.89 GMV (  +0.3%)  ← LINUCB WINS            │
+│   TS:             7.60 GMV ( -14.3%)                          │
+├─────────────────────────────────────────────────────────────────────┤
+│ Stage 3 (Rich Estimated):                                           │
+│   LinUCB:         7.37 GMV ( -16.9%)                          │
+│   TS:             5.44 GMV ( -38.6%)  ← TS WINS                │
+└─────────────────────────────────────────────────────────────────────┘
+
+╔═════════════════════════════════════════════════════════════════════╗
+║  ALGORITHM SELECTION DEPENDS ON FEATURE QUALITY                     ║
+╠═════════════════════════════════════════════════════════════════════╣
+║  Clean/Oracle features  →  LinUCB   (precise exploitation)          ║
+║  Noisy/Estimated feat.  →  TS       (robust exploration)            ║
+╠═════════════════════════════════════════════════════════════════════╣
+║  Production systems have noisy features. Default to TS.             ║
+╚═════════════════════════════════════════════════════════════════════╝
+
+All artifacts saved to:
+  Data:    verification_runs/ch00_06/run_20260116T105249Z/artifacts/ch06/data
+  Figures: verification_runs/ch00_06/run_20260116T105249Z/artifacts/ch06/figures
+
+Regenerate with:
+  python scripts/ch06/ch06_compute_arc.py \
+      --n-static 200 \
+      --n-bandit 1000 \
+      --base-seed 20250322
+================================================================================
+

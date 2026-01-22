@@ -1501,12 +1501,14 @@ def lab_2_4_nesting_verification(seed: int = 42, verbose: bool = True) -> dict:
     """
     Lab 2.4 Solution: Nesting Verification ([PROP-2.5.4]).
 
-    Demonstrates that the Utility-Based Cascade Model (Section 2.5.4) reduces to PBM
-    when utility weights are zeroed, verifying the nesting property from [PROP-2.5.4].
+    Demonstrates that the Utility-Based Cascade Model (Section 2.5.4) reproduces the
+    PBM per-position marginal factorization under the parameter specialization in
+    [PROP-2.5.4].
 
     Mathematical correspondence:
         - [PROP-2.5.4]: Setting alpha_price = alpha_pl = alpha_cat = 0, sigma_u = 0,
-          and disabling satisfaction dynamics recovers PBM structure.
+          and disabling satisfaction dynamics yields PBM-style marginals:
+              P(C_k=1) = theta_k * rel(p_k).
 
     Args:
         seed: Random seed
@@ -1519,8 +1521,8 @@ def lab_2_4_nesting_verification(seed: int = 42, verbose: bool = True) -> dict:
         print("=" * 70)
         print("Lab 2.4: Nesting Verification ([PROP-2.5.4])")
         print("=" * 70)
-        print("\nGoal: Show that Utility-Based Cascade reduces to PBM when utility")
-        print("weights are zeroed, verifying the nesting property from [PROP-2.5.4].")
+        print("\nGoal: Verify [PROP-2.5.4](a): under the parameter specialization,")
+        print("the Utility-Based Cascade reproduces PBM's per-position marginal factorization.")
 
     rng = np.random.default_rng(seed)
     n_sessions = 5_000
@@ -1588,9 +1590,16 @@ def lab_2_4_nesting_verification(seed: int = 42, verbose: bool = True) -> dict:
     full_ctr = full_clicks.mean(axis=0)
     pbm_ctr = pbm_clicks.mean(axis=0)
 
-    # Compute CTR variance across products with different attributes
-    # In PBM-like mode, CTR should depend only on position, not product attributes
-    # In full mode, CTR should vary with product attributes
+    # PBM factorization check for the PBM-like configuration:
+    # Under [PROP-2.5.4](a), CTR_k should match theta_k * rel(p_k), where
+    # theta_k is the induced marginal examination probability (depends only on pos_bias)
+    # and rel(p_k) is the relevance term (depends only on match via alpha_rel).
+    pos_bias_vec = pbm_like_config.pos_bias.get("category", pbm_like_config.pos_bias["generic"])
+    g = np.array([_sigmoid(pos_bias_vec[k] if k < len(pos_bias_vec) else 0.1) for k in range(n_positions)])
+    theta_marg = np.cumprod(g)  # theta_k = P(E_k=1) under the stopped process
+    rel = _sigmoid(pbm_like_config.alpha_rel * relevances)
+    pbm_pred_ctr = theta_marg * rel
+    pbm_max_abs_err = float(np.max(np.abs(pbm_ctr - pbm_pred_ctr)))
 
     if verbose:
         print("\n--- Results ---")
@@ -1614,16 +1623,19 @@ def lab_2_4_nesting_verification(seed: int = 42, verbose: bool = True) -> dict:
 
         print("\n--- Interpretation ---")
         print("\nKey observations:")
-        print("  1. PBM-like config has NO abandonment (threshold = -100)")
-        print("  2. PBM-like config has NO purchase limit stopping")
-        print("  3. PBM-like CTR depends only on position (via pos_bias)")
+        print("  1. PBM-like config has no satisfaction-based abandonment (threshold = -100)")
+        print("  2. PBM-like config has no purchase-limit stopping")
+        print("  3. PBM-like CTR matches PBM marginal factorization: CTR_k ≈ theta_k × rel(p_k)")
+        print(f"     max |CTR_empirical - theta_k×rel(p_k)| = {pbm_max_abs_err:.4f}")
         print("  4. Full config CTR varies with utility (price, PL, noise)")
-        print("\nThis verifies [PROP-2.5.4]: Utility-Based Cascade nests PBM")
-        print("as a special case when utility dependence is disabled.")
+        print("\nThis verifies [PROP-2.5.4](a): under the specialization,")
+        print("the Utility-Based Cascade reproduces PBM's per-position marginal factorization.")
 
     return {
         "full_ctr": full_ctr,
         "pbm_ctr": pbm_ctr,
+        "pbm_pred_ctr": pbm_pred_ctr,
+        "pbm_max_abs_err": pbm_max_abs_err,
         "full_stop_reasons": dict(Counter(full_stop_reasons)),
         "pbm_stop_reasons": dict(Counter(pbm_stop_reasons)),
         "n_sessions": n_sessions,

@@ -164,9 +164,9 @@ def create_standard_templates(
         BoostTemplate(
             id=3,
             name="Popular",
-            description="Boost by log-popularity (bestseller score)",
+            description="Boost by normalized log-popularity (bestseller score)",
             boost_fn=lambda p: (
-                3.0 * np.log(1 + p.bestseller) / np.log(1 + pop_max)
+                a_max * np.log(1 + p.bestseller) / np.log(1 + pop_max)
                 if pop_max > 0
                 else 0.0
             ),

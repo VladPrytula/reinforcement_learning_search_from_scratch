@@ -1,0 +1,353 @@
+{
+  "metadata": {
+    "mode": "fast",
+    "run_dir": "verification_runs/ch00_06/run_20260116T105249Z",
+    "python": "3.12.12 (main, Oct 28 2025, 11:52:25) [Clang 20.1.4 ]",
+    "platform": "macOS-26.2-arm64-arm-64bit",
+    "git_commit": "fe012ac177599b1d1e1ac6691eb4d635a0453338",
+    "ch06_n_static": 200,
+    "ch06_n_bandit": 1000,
+    "created_at": "2026-01-16T10:52:49Z"
+  },
+  "results": [
+    {
+      "step_id": "pytest_ch00",
+      "name": "Pytest: Chapter 0",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "tests/ch00",
+        "-v",
+        "--tb=short",
+        "--junitxml",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/pytest_ch00.xml",
+        "--basetemp",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/tmp/pytest_ch00",
+        "-m",
+        "not slow"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/01_pytest_ch00.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 7.75
+    },
+    {
+      "step_id": "pytest_ch01",
+      "name": "Pytest: Chapter 1",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "tests/ch01",
+        "-v",
+        "--tb=short",
+        "--junitxml",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/pytest_ch01.xml",
+        "--basetemp",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/tmp/pytest_ch01",
+        "-m",
+        "not slow"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/02_pytest_ch01.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 0.12
+    },
+    {
+      "step_id": "pytest_ch02",
+      "name": "Pytest: Chapter 2",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "tests/ch02",
+        "-v",
+        "--tb=short",
+        "--junitxml",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/pytest_ch02.xml",
+        "--basetemp",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/tmp/pytest_ch02",
+        "-m",
+        "not slow"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/03_pytest_ch02.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 1.55
+    },
+    {
+      "step_id": "pytest_ch03",
+      "name": "Pytest: Chapter 3",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "tests/ch03",
+        "-v",
+        "--tb=short",
+        "--junitxml",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/pytest_ch03.xml",
+        "--basetemp",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/tmp/pytest_ch03",
+        "-m",
+        "not slow"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/04_pytest_ch03.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 0.13
+    },
+    {
+      "step_id": "pytest_ch05",
+      "name": "Pytest: Chapter 5",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "tests/ch05",
+        "-v",
+        "--tb=short",
+        "--junitxml",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/pytest_ch05.xml",
+        "--basetemp",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/tmp/pytest_ch05",
+        "-m",
+        "not slow"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/05_pytest_ch05.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 0.99
+    },
+    {
+      "step_id": "pytest_ch06",
+      "name": "Pytest: Chapter 6",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "tests/ch06",
+        "-v",
+        "--tb=short",
+        "--junitxml",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/pytest_ch06.xml",
+        "--basetemp",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/pytest/tmp/pytest_ch06",
+        "-m",
+        "not slow"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/06_pytest_ch06.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 72.9
+    },
+    {
+      "step_id": "ch00_toy_problem",
+      "name": "Ch00: Toy Problem (book figure)",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/ch00/toy_problem_solution.py",
+        "--chapter0",
+        "--seed",
+        "42",
+        "--plot-path",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/ch00/learning_curves.png"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/07_ch00_toy_problem.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 0.4
+    },
+    {
+      "step_id": "ch00_lab_0_1",
+      "name": "Ch00: Lab 0.1 (tabular boost search)",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/ch00/lab_solutions.py",
+        "--exercise",
+        "lab0.1"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/08_ch00_lab_0_1.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 0.35
+    },
+    {
+      "step_id": "ch01_lab_1_1",
+      "name": "Ch01: Lab 1.1",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/ch01/lab_solutions.py",
+        "--lab",
+        "1.1"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/09_ch01_lab_1_1.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 0.08
+    },
+    {
+      "step_id": "ch01_lab_1_2",
+      "name": "Ch01: Lab 1.2",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/ch01/lab_solutions.py",
+        "--lab",
+        "1.2"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/10_ch01_lab_1_2.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 0.08
+    },
+    {
+      "step_id": "ch02_lab_2_1",
+      "name": "Ch02: Lab 2.1",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/ch02/lab_solutions.py",
+        "--lab",
+        "2.1"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/11_ch02_lab_2_1.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 4.85
+    },
+    {
+      "step_id": "ch02_lab_2_2",
+      "name": "Ch02: Lab 2.2",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/ch02/lab_solutions.py",
+        "--lab",
+        "2.2"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/12_ch02_lab_2_2.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 1.26
+    },
+    {
+      "step_id": "ch03_lab_3_1",
+      "name": "Ch03: Lab 3.1",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/ch03/lab_solutions.py",
+        "--lab",
+        "3.1"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/13_ch03_lab_3_1.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 0.08
+    },
+    {
+      "step_id": "ch03_lab_3_2",
+      "name": "Ch03: Lab 3.2",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/ch03/lab_solutions.py",
+        "--lab",
+        "3.2"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/14_ch03_lab_3_2.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 0.08
+    },
+    {
+      "step_id": "ch04_demo",
+      "name": "Ch04: Generative World Demo",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/ch04/ch04_demo.py"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/15_ch04_demo.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 1.43
+    },
+    {
+      "step_id": "ch05_demo",
+      "name": "Ch05: Relevance/Features/Reward Demo",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/ch05/ch05_demo.py"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/16_ch05_demo.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 1.16
+    },
+    {
+      "step_id": "ch05_validate",
+      "name": "Ch05: Validation Script",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/validate_ch05.py"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/17_ch05_validate.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 0.89
+    },
+    {
+      "step_id": "ch06_template_demo_simple",
+      "name": "Ch06: Template Bandits Demo (simple features)",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/ch06/template_bandits_demo.py",
+        "--n-static",
+        "200",
+        "--n-bandit",
+        "1000",
+        "--features",
+        "simple"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/18_ch06_template_demo_simple.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 145.41
+    },
+    {
+      "step_id": "ch06_bandit_matrix",
+      "name": "Ch06: Bandit Matrix (JSON artifact)",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/ch06/run_bandit_matrix.py",
+        "--n-static",
+        "200",
+        "--n-bandit",
+        "1000",
+        "--output-dir",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/ch06/data",
+        "--sequential"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/19_ch06_bandit_matrix.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 741.95
+    },
+    {
+      "step_id": "ch06_compute_arc",
+      "name": "Ch06: Compute Arc (JSON + figures)",
+      "cmd": [
+        "/Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3",
+        "scripts/ch06/ch06_compute_arc.py",
+        "--n-static",
+        "200",
+        "--n-bandit",
+        "1000",
+        "--out-dir",
+        "verification_runs/ch00_06/run_20260116T105249Z/artifacts/ch06/data"
+      ],
+      "log": "verification_runs/ch00_06/run_20260116T105249Z/logs/20_ch06_compute_arc.log",
+      "returncode": 0,
+      "timed_out": false,
+      "duration_s": 436.84
+    }
+  ],
+  "ok": true
+}

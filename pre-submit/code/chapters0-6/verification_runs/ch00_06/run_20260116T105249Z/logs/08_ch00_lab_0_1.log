@@ -1,0 +1,25 @@
+STEP 8/20: Ch00: Lab 0.1 (tabular boost search)
+CMD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3 scripts/ch00/lab_solutions.py --exercise lab0.1
+CWD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+START: 2026-01-16T10:54:13Z
+======================================================================
+Lab 0.1: Tabular Boost Search (Toy World)
+======================================================================
+Action space: 25 discrete templates (5x5 grid)
+Oracle: Computing optimal actions via grid search...
+  price_hunter: w*=(np.float64(0.5), np.float64(0.0)), Q*=17.80
+  premium: w*=(np.float64(-1.0), np.float64(1.0)), Q*=19.02
+  bulk_buyer: w*=(np.float64(0.5), np.float64(0.5)), Q*=15.41
+
+Final mean reward: 16.28
+Per-user reward: {'price_hunter': np.float64(14.61835990576906), 'premium': np.float64(22.650731253493714), 'bulk_buyer': np.float64(11.497093236215628)}
+
+Oracle mean: 17.84
+Percentage of oracle: 91.3%
+
+SUCCESS: Q-learning achieves >=90% of oracle!
+
+Learned policy:
+  price_hunter   : (+0.5, +0.5)
+  premium        : (-1.0, +0.0)
+  bulk_buyer     : (-0.5, +1.0)

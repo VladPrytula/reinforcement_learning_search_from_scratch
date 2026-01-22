@@ -371,7 +371,8 @@ class OraclePolicy(Policy):
                     best_action = action
 
             self.optimal_actions[user_name] = best_action
-            print(f"  {user_name}: w*={best_action}, Q*={best_q:.2f}")
+            best_action_display = (float(best_action[0]), float(best_action[1]))
+            print(f"  {user_name}: w*={best_action_display}, Q*={best_q:.2f}")
 
     def select_action(self, user_name: str, rng: np.random.Generator) -> tuple[float, float]:
         return self.optimal_actions[user_name]

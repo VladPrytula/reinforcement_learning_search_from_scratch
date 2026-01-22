@@ -1,0 +1,35 @@
+STEP 10/20: Ch01: Lab 1.2
+CMD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch/.venv/bin/python3 scripts/ch01/lab_solutions.py --lab 1.2
+CWD: /Volumes/Lexar2T/src/reinforcement_learning_search_from_scratch
+START: 2026-01-16T10:17:32Z
+======================================================================
+Lab 1.2: Delta/Alpha Bound Regression Test
+======================================================================
+
+Test 1: Basic reward comparison
+  Strategy A: R = 128.00 (expected: 128.00)
+  Strategy B: R = 118.50 (expected: 118.50)
+  Result: ✓ PASSED
+
+Test 2: Profitability weighting
+  Strategy A: R = 75.80 (expected: 75.80)
+  Strategy B: R = 86.90 (expected: 86.90)
+  Result: ✓ PASSED
+
+Test 3: RPC diagnostic
+  Strategy A: RPC = 40.00 (expected: 40.00)
+  Strategy B: RPC = 25.00 (expected: 25.00)
+  Result: ✓ PASSED
+
+Test 4: Delta/alpha bounds [REM-1.2.1]
+  Valid configs pass: True
+  Invalid configs fail: True
+  Result: ✓ PASSED
+
+Test 5: Zero clicks edge case
+  RPC with zero clicks: 0.0 (expected: 0.0)
+  Result: ✓ PASSED
+
+======================================================================
+All regression tests PASSED ✓
+======================================================================
