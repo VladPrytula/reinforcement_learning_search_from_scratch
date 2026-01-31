@@ -341,7 +341,7 @@ Before deploying template bandits in production, verify:
     - [ ] Exploration parameter $\alpha \in [0.5, 2.0]$ (LinUCB) or $\sigma \in [0.5, 2.0]$ (TS)
 
     **Guardrails:**
-    - [ ] CM2 floor $\geq 60\%$ enforced (Chapter 10 adds hard constraints)
+    - [ ] Profitability floor enforced (e.g., $\mathbb{E}[\text{CM2}] \ge \tau_{\text{cm2}}$ in currency units, or a margin-rate floor; Chapter 10 adds hard constraints)
     - [ ] Rank stability: $\Delta \text{rank}@k < 3$ positions per episode
     - [ ] Fallback to best static template if bandit diverges (monitoring in Chapter 10)
 

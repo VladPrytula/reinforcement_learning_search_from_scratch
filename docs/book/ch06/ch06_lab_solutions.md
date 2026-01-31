@@ -418,12 +418,12 @@ Template Selection Frequencies (20,000 episodes):
   Template ID | Name               | Selection % | Avg Reward
   ------------|--------------------|-------------|-----------
             0 | No Boost           |        1.1% |       1.18
-            1 | High Margin        |        1.1% |       1.17
+            1 | Positive CM2       |        1.1% |       1.17
             2 | Popular            |       19.4% |       1.29
             3 | Discount           |        0.6% |       1.05
             4 | Premium            |       48.2% |       1.31
             5 | Private Label      |       28.3% |       1.30
-            6 | CM2 Boost          |        0.3% |       0.89
+            6 | Budget             |        0.3% |       0.89
             7 | Strategic          |        0.8% |       1.05
             8 | Category Diversity |        0.2% |       0.74
 
@@ -889,11 +889,11 @@ results = exercise_6_7_hierarchical_templates(
 Exercise 6.7: Hierarchical Templates
 ======================================================================
 
-Hierarchical structure:
-  Level 1 (Meta): 3 objectives
-    - Objective A: Maximize margin (templates: HiMargin, Premium, CM2)
-    - Objective B: Maximize volume (templates: Popular, Discount, Budget)
-    - Objective C: Strategic goals (templates: Strategic, Diversity)
+	Hierarchical structure:
+	  Level 1 (Meta): 3 objectives
+	    - Objective A: Maximize margin (templates: Positive CM2, Premium, Private Label)
+	    - Objective B: Maximize volume (templates: Popular, Discount, Budget)
+	    - Objective C: Strategic goals (templates: Strategic, Category Diversity)
 
   Level 2 (Sub): 2-3 templates per objective
 
@@ -910,19 +910,19 @@ Meta-Level Selection Distribution:
 
 Sub-Level Selection (within objectives):
 
-  Margin (A):
-    HiMargin     |        4.6%
-    Premium      |        0.5%
-    CM2Boost     |       94.9%
+	  Margin (A):
+	    Positive CM2        |        4.6%
+	    Premium             |        0.5%
+	    Private Label       |       94.9%
 
   Volume (B):
     Popular      |       88.5%
     Discount     |        0.9%
     Budget       |       10.6%
 
-  Strategic(C):
-    Strategic    |       46.6%
-    Diversity    |       53.4%
+	  Strategic(C):
+	    Strategic           |       46.6%
+	    Category Diversity  |       53.4%
 
 Comparison to Flat LinUCB:
 
@@ -944,9 +944,9 @@ Hierarchical templates offer two advantages:
 2. **Better interpretability:** Business can understand "we shifted toward strategic optimization" rather than opaque template IDs
 
 The learned hierarchy reveals interesting patterns:
-- **CM2Boost dominates within Margin** (94.9%): Clear winner for margin optimization
+- **Private Label dominates within Margin** (94.9%): Clear winner for margin optimization
 - **Popular dominates within Volume** (88.5%): Popularity drives clicks/purchases
-- **Diversity edges out Strategic** (53.4% vs 46.6%): Close competition in strategic tier
+- **Category Diversity edges out Strategic** (53.4% vs 46.6%): Close competition in strategic tier
 
 ---
 

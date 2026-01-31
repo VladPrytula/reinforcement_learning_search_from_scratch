@@ -492,7 +492,7 @@ nodes:
     status: complete
     file: docs/book/ch06/discrete_template_bandits.md
     summary: Linear contextual bandits (Thompson Sampling, LinUCB) for discrete boost template selection; complete regret analysis and production implementations.
-    defines: [DEF-6.1.1, DEF-6.2, DEF-6.3, DEF-6.4, ALG-6.1, ALG-6.2, THM-6.1, THM-6.2, PROP-6.1, PROP-6.2, EQ-6.1, EQ-6.2, EQ-6.3, EQ-6.4, EQ-6.5, EQ-6.6, EQ-6.7, EQ-6.8, EQ-6.9, EQ-6.10, EQ-6.11, EQ-6.12, EQ-6.13, EQ-6.14, EQ-6.15, EQ-6.16, EQ-6.17]
+    defines: [DEF-6.1.1, DEF-6.2, DEF-6.3, DEF-6.4, ALG-6.1, ALG-6.2, THM-6.0, THM-6.1, LEM-6.1.1, LEM-6.1.1b, COR-6.1.1, LEM-6.1.2, THM-6.2, PROP-6.1, PROP-6.2, EQ-6.1, EQ-6.2, EQ-6.3, EQ-6.4, EQ-6.5, EQ-6.6, EQ-6.7, EQ-6.8, EQ-6.9, EQ-6.10, EQ-6.11, EQ-6.12, EQ-6.13, EQ-6.14, EQ-6.15, EQ-6.16, EQ-6.17]
     depends_on: [CH-5, EQ-5.5, DEF-5.5, MOD-zoosim.features]
     forward_refs: [CH-7, CH-8]
 
@@ -819,6 +819,15 @@ nodes:
     summary: Frequentist UCB; maintains ridge regression estimates θ̂_a, selects argmax_a {θ̂_a^T φ + α√(φ^T A_a^{-1} φ)}.
     depends_on: [DEF-6.2, DEF-6.3]
 
+  - id: THM-6.0
+    kind: theorem
+    title: Minimax Lower Bound for Stochastic Bandits
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#THM-6.0}"
+    summary: "Information-theoretic lower bound: for some M-armed Bernoulli bandit instance, any algorithm incurs expected regret E[Regret(T)] ≥ c·√(MT)."
+    depends_on: [EQ-6.4]
+
   - id: THM-6.1
     kind: theorem
     title: Thompson Sampling Regret Bound
@@ -827,6 +836,42 @@ nodes:
     anchor: "{#THM-6.1}"
     summary: For linear contextual bandits with d-dimensional features, M actions, and horizon T, Thompson Sampling achieves expected regret E[Regret(T)] ≤ C·d√(MT log T) under standard boundedness and sub-Gaussian assumptions.
     depends_on: [ALG-6.1, DEF-6.4]
+
+  - id: LEM-6.1.1
+    kind: lemma
+    title: Gaussian Concentration Around the Mean Estimate
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#LEM-6.1.1}"
+    summary: "For θ̃_a ~ N(θ̂_a, Σ_a), the projection (θ̃_a-θ̂_a)^T φ(x) is Gaussian; yields |θ̃_a^T φ - θ̂_a^T φ| ≤ α_t ||φ||_{Σ_a} with high probability."
+    depends_on: [THM-6.1, EQ-6.6]
+
+  - id: LEM-6.1.1b
+    kind: lemma
+    title: Self-Normalized Estimator Concentration
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#LEM-6.1.1b}"
+    summary: "Self-normalized bound for ridge regression: |(θ̂_{a,t}-θ_a^*)^T φ(x_t)| ≤ β_{a,t} ||φ(x_t)||_{A_{a,t}^{-1}} uniformly over t,a with high probability."
+    depends_on: [THM-6.1, EQ-6.8]
+
+  - id: COR-6.1.1
+    kind: corollary
+    title: Concentration of Thompson Sample Around Truth
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#COR-6.1.1}"
+    summary: "Combines Lemma 6.1.1 and Lemma 6.1.1b (plus Σ_a = σ^2 A_a^{-1} in the Gaussian model) to bound |(θ̃_a-θ_a^*)^T φ(x_t)| by a single radius times ||φ||_{A^{-1}}."
+    depends_on: [LEM-6.1.1, LEM-6.1.1b]
+
+  - id: LEM-6.1.2
+    kind: lemma
+    title: Elliptical Potential Lemma
+    status: complete
+    file: docs/book/ch06/discrete_template_bandits.md
+    anchor: "{#LEM-6.1.2}"
+    summary: "Elliptical potential identity: Σ_t min{1, ||v_t||_{A_{t-1}^{-1}}^2} ≤ 2 log det(A_T A_0^{-1}); controls cumulative uncertainty under ridge updates."
+    depends_on: [THM-6.1]
 
   - id: THM-6.2
     kind: theorem
@@ -1749,7 +1794,7 @@ nodes:
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     summary: Measure-theoretic foundations for click models and OPE; PBM/DBN, conditional expectation, filtrations, IPS.
-    defines: [DEF-2.2.1, DEF-2.2.2, DEF-2.2.3, DEF-2.2.4, DEF-2.2.5, DEF-2.2.6, PROP-2.2.1, THM-2.2.2, THM-2.2.3, DEF-2.3.1, THM-2.3.1, DEF-2.3.2, THM-2.3.2, THM-2.3.3, THM-2.3.4-RN, REM-2.3.5, DEF-2.4.1, DEF-2.4.2, DEF-2.4.3, THM-2.4.1, DEF-2.5.1, EQ-2.1, DEF-2.5.2, EQ-2.2, EQ-2.3, PROP-2.5.1, DEF-2.5.3, PROP-2.5.4, PROP-2.5.5, EQ-2.4, EQ-2.5, EQ-2.6, EQ-2.7, EQ-2.8, ASSUMP-2.6.1, DEF-2.6.1, DEF-2.6.2, EQ-2.9, THM-2.6.1, DEF-2.6.3, EQ-2.10, DEF-2.6.4, EQ-2.11, EQ-2.12, EQ-2.13, PROP-2.8.1, PROP-2.8.2, EQ-2.14, REM-2.8.2, THM-2.8.3]
+    defines: [DEF-2.2.1, DEF-2.2.2, DEF-2.2.3, DEF-2.2.4, DEF-2.2.5, DEF-2.2.6, DEF-2.2.7, PROP-2.2.1, THM-2.2.2, THM-2.2.3, THM-2.2.4, DEF-2.3.1, THM-2.3.1, DEF-2.3.2, THM-2.3.2, THM-2.3.3, THM-2.3.4-RN, REM-2.3.5, DEF-2.4.1, DEF-2.4.2, DEF-2.4.3, THM-2.4.1, DEF-2.5.1, EQ-2.1, DEF-2.5.2, EQ-2.2, EQ-2.3, PROP-2.5.1, DEF-2.5.3, PROP-2.5.4, PROP-2.5.5, EQ-2.4, EQ-2.5, EQ-2.6, EQ-2.7, EQ-2.8, ASSUMP-2.6.1, DEF-2.6.1, DEF-2.6.2, EQ-2.9, THM-2.6.1, DEF-2.6.3, EQ-2.10, DEF-2.6.4, EQ-2.11, EQ-2.12, EQ-2.13, PROP-2.8.1, PROP-2.8.2, EQ-2.14, REM-2.8.2, THM-2.8.3]
 
   - id: DEF-2.2.1
     kind: definition
@@ -1799,6 +1844,14 @@ nodes:
     anchor: "{#DEF-2.2.6}"
     summary: Probability measure on a finite segment set S_seg; equivalently a probability vector p_seg ∈ Δ_K.
 
+  - id: DEF-2.2.7
+    kind: definition
+    title: Stochastic kernel / Markov kernel
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#DEF-2.2.7}"
+    summary: Kernel K(B|x) measurable in x and a probability measure in B; formalizes transitions P(·|s,a) and policies π(·|s).
+
   - id: THM-2.2.2
     kind: theorem
     title: Linearity of Expectation
@@ -1814,6 +1867,14 @@ nodes:
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     anchor: "{#THM-2.2.3}"
     summary: For X_n↑X≥0, 𝔼[X] = lim 𝔼[X_n].
+
+  - id: THM-2.2.4
+    kind: theorem
+    title: Dominated Convergence Theorem
+    status: in_progress
+    file: docs/book/ch02/ch02_probability_measure_click_models.md
+    anchor: "{#THM-2.2.4}"
+    summary: If X_n→X a.s. and |X_n|≤Y with Y integrable, then 𝔼[X_n]→𝔼[X].
 
   - id: DEF-2.3.1
     kind: definition
@@ -2135,7 +2196,7 @@ nodes:
     status: in_progress
     file: docs/book/ch02/ch02_probability_measure_click_models.md
     anchor: "{#EQ-2.6}"
-    summary: P(E_k=1 | F_{k-1}) = sigmoid(pos_bias_k + beta_exam * S_{k-1}); examination depends on position bias and running satisfaction.
+    summary: P(E_k=1 | F_{k-1}) = sigmoid(pos_bias_k + exam_sensitivity * H_{k-1}); examination depends on position bias and running engagement state.
     depends_on: [DEF-2.5.3, DEF-2.5.1]
 
   - id: EQ-2.7
@@ -2180,7 +2241,7 @@ nodes:
     status: in_progress
     file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
     summary: Stochastic processes, MDPs, Bellman operators, contractions; bridges to CMDP and OPE.
-    defines: [DEF-3.2.1, DEF-3.2.2, DEF-3.2.3, DEF-3.2.4, DEF-3.3.1, DEF-3.3.2, DEF-3.4.1, DEF-3.4.2, DEF-3.4.3, DEF-3.4.4, DEF-3.4.5, DEF-3.6.1, DEF-3.6.2, DEF-3.6.3, DEF-3.8.1, PROP-3.2.1, PROP-3.6.1, PROP-3.7.4, PROP-3.8.1, ASM-3.4.1, THM-3.5.1-Bellman, THM-3.5.2-Bellman, THM-3.6.2-Banach, THM-3.7.1, COR-3.7.2, COR-3.7.3, EQ-3.1, EQ-3.2, EQ-3.3, EQ-3.4, EQ-3.5, EQ-3.6, EQ-3.7, EQ-3.8, EQ-3.9, EQ-3.10, EQ-3.11, EQ-3.12, EQ-3.13, EQ-3.14, EQ-3.15, EQ-3.16, EQ-3.17, EQ-3.18, EQ-3.19, EQ-3.20, EQ-3.22]
+    defines: [DEF-3.2.1, DEF-3.2.2, DEF-3.2.3, DEF-3.2.4, DEF-3.3.1, DEF-3.3.2, DEF-3.4.1, DEF-3.4.2, DEF-3.4.3, DEF-3.4.4, DEF-3.4.5, DEF-3.6.1, DEF-3.6.2, DEF-3.6.3, DEF-3.8.1, PROP-3.2.1, PROP-3.6.1, PROP-3.7.4, PROP-3.8.1, ASM-3.4.1, THM-3.5.1-Bellman, THM-3.5.2-Bellman, THM-3.6.2-Banach, LEM-3.7.0, THM-3.7.1, COR-3.7.2, COR-3.7.3, EQ-3.1, EQ-3.2, EQ-3.3, EQ-3.4, EQ-3.5, EQ-3.6, EQ-3.7, EQ-3.8, EQ-3.9, EQ-3.10, EQ-3.11, EQ-3.12, EQ-3.13, EQ-3.14, EQ-3.15, EQ-3.16, EQ-3.17, EQ-3.18, EQ-3.19, EQ-3.20, EQ-3.21]
     forward_refs: [CH-9, CH-11]
     uses: [MOD-zoosim.reward, MOD-zoosim.session_env, MOD-zoosim.retention, MOD-zoosim.config]
 
@@ -2316,8 +2377,8 @@ nodes:
     status: complete
     file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
     anchor: "{#DEF-3.8.1}"
-    summary: "(T_bandit Q)(a) = E[R(a)]; γ=0 bandit special case where optimal Q* = E[R(a)], found in one iteration."
-    see_also: [EQ-3.19, PROP-3.8.1]
+    summary: "(T_bandit V)(x) := sup_a Q(x,a); γ=0 specialization of the control Bellman operator (no bootstrapping term)."
+    see_also: [EQ-3.20, PROP-3.8.1]
 
   # Chapter 3 Assumptions
 
@@ -2329,6 +2390,17 @@ nodes:
     anchor: "{#ASM-3.4.1}"
     summary: "P(S_{t+1}|S_0,...,S_t,A_0,...,A_t) = P(S_{t+1}|S_t,A_t); future depends only on current state-action, not history."
     see_also: [DEF-3.4.1, THM-3.5.1-Bellman]
+
+  # Chapter 3 Lemmas
+
+  - id: LEM-3.7.0
+    kind: lemma
+    title: 1-Lipschitz of max/sup
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#LEM-3.7.0}"
+    summary: "Supremum (or finite maximum) is 1-Lipschitz: |sup_a f(a) - sup_a g(a)| ≤ sup_a |f(a)-g(a)|."
+    see_also: [THM-3.7.1]
 
   # Chapter 3 Propositions
 
@@ -2365,8 +2437,8 @@ nodes:
     status: complete
     file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
     anchor: "{#PROP-3.8.1}"
-    summary: "For bandits (γ=0), Q* = T_bandit Q_0 for any initial Q_0; single iteration suffices since T_bandit Q = E[R(a)]."
-    see_also: [DEF-3.8.1, EQ-3.20]
+    summary: "For bandits (γ=0), the optimal value is V*(x) = sup_a Q(x,a), and V_1 = T_bandit V_0 = V* for any initial V_0."
+    see_also: [DEF-3.8.1, EQ-3.20, EQ-3.21]
 
   # Chapter 3 Theorems
 
@@ -2407,6 +2479,7 @@ nodes:
     anchor: "{#THM-3.7.1}"
     summary: "The Bellman optimality operator T is a γ-contraction in ||·||_∞ norm: ||TV - TW||_∞ ≤ γ||V - W||_∞. Same for policy operator T^π."
     see_also: [EQ-3.16, THM-3.6.2-Banach, DEF-3.6.3, COR-3.7.2, COR-3.7.3]
+    tested_by: [TEST-tests.ch03.test_value_iteration]
 
   - id: COR-3.7.2
     kind: corollary
@@ -2578,33 +2651,30 @@ nodes:
 
   - id: EQ-3.19
     kind: equation
-    title: Bandit Bellman Operator
-    status: complete
-    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
-    anchor: "{#EQ-3.19}"
-    summary: "(T_bandit Q)(a) = E[R(a)]; degenerate γ=0 case where one iteration finds Q*."
-    see_also: [DEF-3.8.1]
-
-  - id: EQ-3.20
-    kind: equation
-    title: Bandit Optimal Q
-    status: complete
-    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
-    anchor: "{#EQ-3.20}"
-    summary: "Q*(a) = E[R(a)]; optimal action value equals expected reward (γ=0 case)."
-    see_also: [PROP-3.8.1]
-
-  # EQ-3.21 removed: CMDP Lagrangian concept covered by EQ-C.2 in Appendix C
-  # Original: Lagrangian relaxation L(π,λ) = E[Σ γ^t (R_t - λ c_t)]
-  # See EQ-C.2 for the generalized form: L(π,λ) = J(π) + Σ λᵢ gᵢ(π)
-
-  - id: EQ-3.22
-    kind: equation
     title: Direct Method value via model Bellman operator
     status: complete
     file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
-    anchor: "{#EQ-3.22}"
-    summary: DM computes V^π by iterating policy Bellman operator under (\hat P, \hat r).
+    anchor: "{#EQ-3.19}"
+    summary: "V̂^π := lim_{k→∞} (T̂^π)^k V_0; direct-method OPE via model Bellman iteration under (P̂, r̂)."
+    see_also: [CH-9, MOD-evaluation.ope]
+
+  - id: EQ-3.20
+    kind: equation
+    title: Bandit Bellman Operator
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.20}"
+    summary: "(T_bandit V)(x) := sup_a Q(x,a); γ=0 Bellman operator with no bootstrap term."
+    see_also: [DEF-3.8.1]
+
+  - id: EQ-3.21
+    kind: equation
+    title: Bandit optimal value
+    status: complete
+    file: docs/book/ch03/ch03_stochastic_processes_bellman_foundations.md
+    anchor: "{#EQ-3.21}"
+    summary: "V*(x) = sup_a Q(x,a); optimal bandit value equals the maximal expected immediate reward."
+    see_also: [EQ-3.20, EQ-1.9, PROP-3.8.1]
 
   - id: EQ-3.18
     kind: equation
@@ -3919,8 +3989,7 @@ edges:
   - {src: SEC-CH2-2.7.4, dst: DEF-2.6.4, rel: uses, status: in_progress}
   - {src: SEC-CH2-2.7.4, dst: EQ-2.10, rel: uses, status: in_progress}
   - {src: SEC-CH2-2.7.4, dst: EQ-2.11, rel: uses, status: in_progress}
-  # EQ-3.21 removed from Ch03: CMDP Lagrangian concept covered by EQ-C.2 in Appendix C
-  - {src: CH-3, dst: EQ-3.22, rel: defines, status: complete}
+  - {src: CH-3, dst: EQ-3.19, rel: defines, status: complete}
   - {src: CH-3, dst: CH-11, rel: refers_to_future, status: in_progress}
   - {src: CH-3, dst: CH-9, rel: refers_to_future, status: in_progress}
   - {src: CH-4, dst: DEF-4.1, rel: defines, status: complete}
@@ -3963,7 +4032,7 @@ edges:
   - {src: EQ-4.3, dst: TEST-tests.test_catalog_stats, rel: tested_by, status: complete}
   - {src: EQ-4.10, dst: TEST-tests.test_catalog_stats, rel: tested_by, status: complete}
   - {src: CH-9, dst: MOD-evaluation.ope, rel: refers_to_future, status: in_progress}
-  - {src: MOD-evaluation.ope, dst: EQ-3.22, rel: uses, status: planned}
+  - {src: MOD-evaluation.ope, dst: EQ-3.19, rel: uses, status: planned}
   # Chapter 6 edges
   - {src: CH-6, dst: DEF-6.1.1, rel: defines, status: complete}
   - {src: CH-6, dst: DEF-6.2, rel: defines, status: complete}
@@ -3971,7 +4040,12 @@ edges:
   - {src: CH-6, dst: DEF-6.4, rel: defines, status: complete}
   - {src: CH-6, dst: ALG-6.1, rel: defines, status: complete}
   - {src: CH-6, dst: ALG-6.2, rel: defines, status: complete}
+  - {src: CH-6, dst: THM-6.0, rel: defines, status: complete}
   - {src: CH-6, dst: THM-6.1, rel: defines, status: complete}
+  - {src: CH-6, dst: LEM-6.1.1, rel: defines, status: complete}
+  - {src: CH-6, dst: LEM-6.1.1b, rel: defines, status: complete}
+  - {src: CH-6, dst: COR-6.1.1, rel: defines, status: complete}
+  - {src: CH-6, dst: LEM-6.1.2, rel: defines, status: complete}
   - {src: CH-6, dst: THM-6.2, rel: defines, status: complete}
   - {src: CH-6, dst: PROP-6.1, rel: defines, status: complete}
   - {src: CH-6, dst: PROP-6.2, rel: defines, status: complete}

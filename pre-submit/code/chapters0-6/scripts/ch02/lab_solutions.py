@@ -1187,6 +1187,8 @@ def extended_ips_verification(seed: int = 42, verbose: bool = True) -> dict:
         print(f"  Mean weight:  {np.mean(all_weights):.2f} (expected: 1.0 for valid importance sampling)")
         print(f"  Max weight:   {np.max(all_weights):.2f}")
         print(f"  Weight std:   {np.std(all_weights):.2f}")
+        ess = (np.sum(all_weights) ** 2) / np.sum(all_weights**2)
+        print(f"  Effective sample size (ESS): {ess:.0f} / {len(all_weights)} ({100*ess/len(all_weights):.1f}%)")
 
         high_var_pct = 100 * np.mean(all_weights > 10)
         print(f"\nHigh-variance warning threshold (weight > 10): {high_var_pct:.0f}% of samples")
@@ -1405,6 +1407,7 @@ class FallbackBehaviorConfig:
     alpha_pl: float = 1.2
     alpha_cat: float = 0.6
     sigma_u: float = 0.8
+    exam_sensitivity: float = 0.2
     satisfaction_gain: float = 0.5
     satisfaction_decay: float = 0.2
     abandonment_threshold: float = -2.0
@@ -1454,7 +1457,7 @@ def simulate_utility_cascade(
     for k in range(n_positions):
         # Examination probability [EQ-2.6]
         pos_bias_k = pos_bias_vec[k] if k < len(pos_bias_vec) else 0.1
-        exam_prob = _sigmoid(pos_bias_k + 0.2 * satisfaction)
+        exam_prob = _sigmoid(pos_bias_k + behavior.exam_sensitivity * satisfaction)
 
         if rng.random() > exam_prob:
             stop_reason = "exam_fail"

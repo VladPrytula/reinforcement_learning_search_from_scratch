@@ -9,13 +9,13 @@
 # Expected runtime: ~30-60 or longer :)  minutes depending on hardware
 #
 # Usage:
-#   cd /Volumes/Lexar2T/src/rl_search_from_scratch
+#   cd /path/to/reinforcement_learning_search_from_scratch
 #   chmod +x scripts/ch06/run_full_verification.sh
 #   ./scripts/ch06/run_full_verification.sh 2>&1 | tee ch06_verification.log
 #
 # ==============================================================================
 
-set -e  # Exit on first error
+set -euo pipefail  # Exit on first error (incl. piped commands)
 
 # Force unbuffered output for Python (critical for real-time console output with tee)
 export PYTHONUNBUFFERED=1
@@ -47,6 +47,17 @@ echo "  Output directory: $OUTPUT_DIR"
 echo ""
 echo "Start time: $(date)"
 echo ""
+
+# Basic sanity checks (avoid running from the wrong working directory)
+if [[ ! -f "scripts/ch06/template_bandits_demo.py" ]]; then
+    echo -e "${RED}ERROR:${NC} Expected to run from the repo root (missing scripts/ch06/template_bandits_demo.py)."
+    echo "Current directory: $(pwd)"
+    exit 1
+fi
+if ! command -v uv >/dev/null 2>&1; then
+    echo -e "${RED}ERROR:${NC} 'uv' not found in PATH."
+    exit 1
+fi
 
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
@@ -88,6 +99,7 @@ uv run python scripts/ch06/template_bandits_demo.py \
     --n-bandit $N_BANDIT \
     --world-seed $WORLD_SEED \
     --bandit-base-seed $BANDIT_SEED \
+    --hparam-mode rich_est \
     --prior-weight 50 \
     --lin-alpha 0.2 \
     --ts-sigma 0.5 \

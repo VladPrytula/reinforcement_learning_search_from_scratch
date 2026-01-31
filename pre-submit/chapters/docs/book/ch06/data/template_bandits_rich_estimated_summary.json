@@ -19,12 +19,12 @@
     },
     {
       "id": 1,
-      "name": "High Margin",
-      "description": "Promote products with CM2 > 0.4"
+      "name": "Positive CM2",
+      "description": "Promote products with positive contribution margin (CM2 > 0.4)"
     },
     {
       "id": 2,
-      "name": "CM2 Boost",
+      "name": "Private Label",
       "description": "Promote own-brand (private-label) products"
     },
     {

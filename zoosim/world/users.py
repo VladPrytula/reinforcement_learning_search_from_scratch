@@ -27,6 +27,12 @@ def _torch_generator(rng: np.random.Generator) -> torch.Generator:
 
 
 def sample_user(*, config: SimulatorConfig, rng: np.random.Generator) -> User:
+    """Sample a user with segment-conditioned preference parameters.
+
+    Assumes `config.users.segment_mix` is a valid probability vector over
+    `config.users.segments` (validated by `zoosim.core.config.UserConfig`).
+    """
+
     segments = config.users.segments
     probs = config.users.segment_mix
     segment = rng.choice(segments, p=probs)

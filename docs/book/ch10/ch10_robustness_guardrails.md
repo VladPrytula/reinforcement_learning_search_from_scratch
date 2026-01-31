@@ -163,7 +163,7 @@ For the transition kernel, we fix $d_P(\mu,\nu) = \|\mu - \nu\|_{\text{TV}}$ in 
 
 !!! note "Code ↔ Env (Non-Stationarity)"
     The non-stationary environment is implemented in `scripts/ch10/ch10_drift_demo.py:64-129` as `DriftEnvironment`:
-    - **Phase 1 (episodes 0-1499)**: Template T1 (High Margin) has CVR 12%, best action
+    - **Phase 1 (episodes 0-1499)**: Template T1 (Positive CM2) has CVR 12%, best action
     - **Phase 2 (episodes 1500+)**: Template T1 crashes to CVR 2%, Template T3 (Popular) rises to CVR 15%
     - **Drift magnitude**: $\delta_R \approx 10\%$ (in CVR units), implemented at lines 89-92
     - This models a sudden preference shift (e.g., seasonal change or competitor action)
@@ -1304,7 +1304,7 @@ We now validate the theory with a controlled experiment simulating **abrupt pref
 
 **Environment:** `DriftEnvironment` (`scripts/ch10/ch10_drift_demo.py:64-129`)
 
-- **Phase 1 (episodes 0-1499)**: Template T1 (High Margin) has best CVR (12%). Optimal action: $a^* = 1$.
+- **Phase 1 (episodes 0-1499)**: Template T1 (Positive CM2) has best CVR (12%). Optimal action: $a^* = 1$.
 - **Phase 2 (episodes 1500-2999)**: Template T1 crashes to CVR 2%, Template T3 (Popular) becomes best (CVR 15%). Optimal action: $a^* = 3$.
 - **Drift event**: Occurs at $t_0 = 1500$ (halfway through 3000-episode run).
 

@@ -747,7 +747,7 @@ def _simulate_sessions(
         )
 
         pos_bias = world.pos_bias[query_types, pos]
-        examine_prob = torch.sigmoid(pos_bias + 0.2 * satisfaction)
+        examine_prob = torch.sigmoid(pos_bias + beh.exam_sensitivity * satisfaction)
         examine_draw = torch.rand(total, device=device, generator=generator)
         examine_mask = (examine_draw < examine_prob) & active
 

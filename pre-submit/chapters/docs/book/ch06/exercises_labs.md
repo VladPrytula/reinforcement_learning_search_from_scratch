@@ -658,7 +658,7 @@ The flat template library has no structure. Design a **hierarchical template sys
 - Objective C: Strategic goals
 
 **Level 2 (Sub-template):** Given objective, select tactic
-- If Objective A (margin): {High Margin, Premium, CM2}
+- If Objective A (margin): {Positive CM2, Premium, Private Label}
 - If Objective B (volume): {Popular, Discount, Budget}
 - If Objective C (strategic): {Strategic, Category Diversity}
 

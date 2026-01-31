@@ -50,7 +50,7 @@ Let $(\Omega, \mathcal{F}, \mathbb{P})$ be a probability space, $T \subseteq \ma
 
 **Intuition**: A stochastic process is a **time-indexed family of random variables**. Each $X_t$ represents the state of a system at time $t$. For a fixed $\omega \in \Omega$, the mapping $t \mapsto X_t(\omega)$ is a **sample path** or **trajectory**.
 
-**Example 3.2.1** (User satisfaction process). Let $E = [0, 1]$ represent satisfaction levels. Define $S_t: \Omega \to [0, 1]$ as the user's satisfaction after the $t$-th query in a session. Then $(S_t)_{t=0}^T$ is a stochastic process modeling satisfaction evolution.
+**Example 3.2.1** (User satisfaction process). Let $E = [0, 1]$ represent satisfaction levels. Define $Y_t: \Omega \to [0, 1]$ as the user's satisfaction after the $t$-th query in a session. Then $(Y_t)_{t=0}^T$ is a stochastic process modeling satisfaction evolution. (We reserve $S_t$ for MDP state processes below.)
 
 **Example 3.2.2** (RL trajectory). In a Markov Decision Process, the sequence $(S_0, A_0, R_0, S_1, A_1, R_1, \ldots)$ is a stochastic process where:
 - $S_t \in \mathcal{S}$ (state space)
@@ -111,13 +111,13 @@ $$
 
 **Example 3.2.4** (Session abandonment). Define:
 $$
-\tau := \inf\{t \geq 0 : S_t < \theta\},
+\tau := \inf\{t \geq 0 : Y_t < \theta\},
 $$
-the first time user satisfaction $S_t$ drops below threshold $\theta$. This is a stopping time: to check "$\tau \leq t$" (user has abandoned by time $t$), we only need to observe $(S_0, \ldots, S_t)$. We do not need to know future satisfaction $S_{t+1}, S_{t+2}, \ldots$.
+the first time user satisfaction $Y_t$ drops below threshold $\theta$. This is a stopping time: to check "$\tau \leq t$" (user has abandoned by time $t$), we only need to observe $(Y_0, \ldots, Y_t)$. We do not need to know future satisfaction $Y_{t+1}, Y_{t+2}, \ldots$.
 
 **Example 3.2.5** (Purchase event). Define $\tau$ as the first time the user makes a purchase. This is a stopping time: the event "$\tau = t$" means "user purchased at time $t$, having not purchased before"---determined by history up to $t$.
 
-**Non-Example 3.2.6** (Last time satisfaction peaks). Define $\tau := \sup\{t : S_t = \max_{s \leq T} S_s\}$ (the last time satisfaction reaches its maximum over $[0, T]$). This is **NOT** a stopping time: to determine "$\tau = t$," we need to know future values $S_{t+1}, \ldots, S_T$ to verify satisfaction never exceeds $S_t$ afterward.
+**Non-Example 3.2.6** (Last time satisfaction peaks). Define $\tau := \sup\{t : Y_t = \max_{s \leq T} Y_s\}$ (the last time satisfaction reaches its maximum over $[0, T]$). This is **NOT** a stopping time: to determine "$\tau = t$," we need to know future values $Y_{t+1}, \ldots, Y_T$ to verify satisfaction never exceeds $Y_t$ afterward.
 
 **Proposition 3.2.1** (Measurability of stopped processes) {#PROP-3.2.1}
 
@@ -1035,11 +1035,11 @@ All later algorithms---TD-learning, Q-learning, policy gradients---use Bellman o
 
 **Exercise 3.1** (Stopping times) [15 min]
 
-Let $(S_t)$ be a user satisfaction process with $S_t \in [0, 1]$. Which of the following are stopping times?
+Let $(Y_t)$ be a user satisfaction process with $Y_t \in [0, 1]$. Which of the following are stopping times?
 
-(a) $\tau_1 = \inf\{t : S_t < 0.3\}$ (first time satisfaction drops below 0.3)
-(b) $\tau_2 = \sup\{t \leq T : S_t \geq 0.8\}$ (last time satisfaction exceeds 0.8 before horizon $T$)
-(c) $\tau_3 = \min\{t : S_{t+1} < S_t\}$ (first time satisfaction decreases)
+(a) $\tau_1 = \inf\{t : Y_t < 0.3\}$ (first time satisfaction drops below 0.3)
+(b) $\tau_2 = \sup\{t \leq T : Y_t \geq 0.8\}$ (last time satisfaction exceeds 0.8 before horizon $T$)
+(c) $\tau_3 = \min\{t : Y_{t+1} < Y_t\}$ (first time satisfaction decreases)
 
 Justify the answers using [DEF-3.2.4].
 

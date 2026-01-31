@@ -194,6 +194,8 @@ results = exercise_0_3_regret_analysis(n_train=2000, seed=42)
 
 **Goal:** Add profitability constraint $\mathbb{E}[\text{CM2} \mid x, a] \geq \tau$ and study the GMV-CM2 tradeoff.
 
+In this toy exercise, we treat $\tau$ as an absolute CM2 floor per episode (currency units), not a margin-rate threshold.
+
 ```python
 from scripts.ch00.lab_solutions import exercise_0_4_constrained_qlearning
 

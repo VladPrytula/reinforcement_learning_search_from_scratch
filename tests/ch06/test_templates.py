@@ -4,7 +4,7 @@ Tests:
 1. Template application produces bounded boosts
 2. Catalog statistics computation
 3. Standard template library creation
-4. Template semantic correctness (high margin boosts high-margin products)
+4. Template semantic correctness (positive CM2 boosts profitable products)
 """
 
 import numpy as np
@@ -96,8 +96,8 @@ def test_create_standard_templates(mock_products):
     # Check template names
     expected_names = [
         "Neutral",
-        "High Margin",
-        "CM2 Boost",
+        "Positive CM2",
+        "Private Label",
         "Popular",
         "Premium",
         "Budget",
@@ -139,15 +139,15 @@ def test_neutral_template_zero_boost(mock_products):
     assert np.all(boosts == 0.0), "Neutral template should produce zero boosts"
 
 
-def test_high_margin_template_semantic_correctness(mock_products):
-    """Test that High Margin template boosts high-margin products."""
+def test_positive_cm2_template_semantic_correctness(mock_products):
+    """Test that Positive CM2 template boosts products with CM2 > 0.4."""
     stats = compute_catalog_stats(mock_products)
     templates = create_standard_templates(stats, a_max=5.0)
 
-    high_margin_template = templates[1]  # t1: High Margin
-    assert high_margin_template.name == "High Margin"
+    positive_cm2_template = templates[1]  # t1: Positive CM2
+    assert positive_cm2_template.name == "Positive CM2"
 
-    boosts = high_margin_template.apply(mock_products)
+    boosts = positive_cm2_template.apply(mock_products)
 
     # Product 0 has cm2=0.5 (>0.4) → should get boost
     assert boosts[0] == 5.0, "High-margin product should get max boost"
@@ -157,15 +157,15 @@ def test_high_margin_template_semantic_correctness(mock_products):
     assert boosts[2] == 0.0, "Product with cm2=0.35 should get zero boost"
 
 
-def test_cm2_boost_template_semantic_correctness(mock_products):
-    """Test that CM2 Boost template boosts own-brand products."""
+def test_private_label_template_semantic_correctness(mock_products):
+    """Test that Private Label template boosts own-brand products."""
     stats = compute_catalog_stats(mock_products)
     templates = create_standard_templates(stats, a_max=5.0)
 
-    cm2_template = templates[2]  # t2: CM2 Boost
-    assert cm2_template.name == "CM2 Boost"
+    private_label_template = templates[2]  # t2: Private Label
+    assert private_label_template.name == "Private Label"
 
-    boosts = cm2_template.apply(mock_products)
+    boosts = private_label_template.apply(mock_products)
 
     # Product 0 is own-brand (is_pl=True) → should get boost
     assert boosts[0] == 5.0, "Own-brand product should get max boost"

@@ -677,7 +677,9 @@ def compute_regret(history, contexts, oracle_Q):
 
 Add a simple CM2 floor constraint: reject actions that violate profitability.
 
-**Setup:** Modify `reward()` to return `(r, cm2)`. Define a floor $\tau = 0.3$ (30% margin minimum).
+**Setup:** Modify `reward()` to return `(r, cm2)`. Define a floor $\tau$ in the same units as CM2 (currency per episode); start with $\tau = 2.0$.
+
+We note that production guardrails are often expressed as **margin-rate floors**, e.g. $\text{CM2} \ge 0.15 \cdot \text{GMV}$ (Chapter 10). In this toy exercise we use an **absolute CM2 floor** to keep the implementation minimal.
 
 **Constrained Q-learning:**
 ```python
@@ -694,9 +696,9 @@ def choose_action_constrained(x, eps, tau_cm2):
 
 (a) Implement `expected_cm2(x, a)` (running average like Q).
 
-(b) Train with $\tau = 0.3$. How does performance change vs unconstrained?
+(b) Train with $\tau = 2.0$. How does performance change vs unconstrained?
 
-(c) Plot the Pareto frontier: GMV vs CM2 as $\tau$ varies over $[0.0, 0.5]$.
+(c) Plot the Pareto frontier: GMV vs CM2 as $\tau$ varies over $\{0, 2, 4, 6, 8, 10, 12\}$ (or a dense grid in $[0, 12]$).
 
 **Connection:** This is a **Constrained MDP (CMDP)**. Chapter 3 previews how CMDPs connect to Bellman operators (Remark 3.5.3), Appendix C develops the duality framework, and Chapter 10 implements production guardrails for multi-constraint optimization.
 
@@ -973,6 +975,8 @@ results = exercise_0_3_regret_analysis(n_train=2000, seed=42)
 ## Exercise 0.4 --- Constrained Q-Learning with CM2 Floor
 
 **Goal:** Add profitability constraint $\mathbb{E}[\text{CM2} \mid x, a] \geq \tau$ and study the GMV-CM2 tradeoff.
+
+In this toy exercise, we treat $\tau$ as an absolute CM2 floor per episode (currency units), not a margin-rate threshold.
 
 ```python
 from scripts.ch00.lab_solutions import exercise_0_4_constrained_qlearning
@@ -1576,7 +1580,7 @@ The power-law fit interpolates this transition but doesn't reflect any fundament
 class ConstrainedQLearning:
     """Q-learning with CM2 floor constraint.
 
-    Maintains separate estimates for Q(x,a) (reward) and CM2(x,a) (margin).
+    Maintains separate estimates for Q(x,a) (reward) and CM2(x,a) (contribution margin, currency units).
     Filters actions based on estimated CM2 feasibility.
     """
     def get_feasible_actions(self, user_name):
@@ -2119,7 +2123,7 @@ Let's build up the components incrementally:
 
 **Action $\mathcal{A}$**: "What do we control?"
 - Boost weights $\mathbf{w} \in [-a_{\max}, +a_{\max}]^K$ for $K$ features (discount, margin, private label, bestseller, recency)
-- Bounded to prevent catastrophic behavior: $|w_k| \leq a_{\max}$ (typically $a_{\max} \in [0.3, 1.0]$)
+- Bounded to prevent catastrophic behavior: $|w_k| \leq a_{\max}$ (a scale hyperparameter; in conservative deployments with standardized features, $a_{\max}$ is typically order $0.3$--$1.0$, while in Chapters 6--8 we sometimes use a larger pedagogical default such as $a_{\max}=5.0$ to make learning dynamics visually obvious)
 - Continuous space---not discrete arms like classic bandits
 
 **Reward $R$**: "What do we optimize?"
@@ -2222,7 +2226,7 @@ $$
 $$
 {#EQ-1.11}
 
-Typical range: $a_{\max} \in [0.3, 1.0]$ (determined by domain experts).
+Conservative range (after feature standardization): $a_{\max} \in [0.3, 1.0]$ (determined by domain experts). In our simulator, the default for the Chapter 6--8 training runs is $a_{\max}=5.0$; Section 6.1 calibrates this choice against the base-score scale and explains why this is intentionally aggressive.
 
 ### Implementation: Bounded Action Space
 
@@ -2232,13 +2236,14 @@ The key operation is **clipping** uncalibrated policy outputs to the bounded spa
 import numpy as np
 
 # Project action onto A = [-a_max, +a_max]^K (full class: Lab 1.7)
-def clip_action(a, a_max=0.5):
+def clip_action(a, a_max):
     """Enforce #EQ-1.11 bounds. Critical for safety."""
     return np.clip(a, -a_max, a_max)
 
 # Neural policy might output unbounded values
 a_bad = np.array([1.2, -0.3, 0.8, -1.5, 0.4])
-a_safe = clip_action(a_bad)  # -> [0.5, -0.3, 0.5, -0.5, 0.4]
+# Example for illustration; in the simulator use cfg.action.a_max.
+a_safe = clip_action(a_bad, a_max=0.5)  # -> [0.5, -0.3, 0.5, -0.5, 0.4]
 ```
 
 | Action | Before | After Clipping |
@@ -7000,7 +7005,7 @@ Let $(\Omega, \mathcal{F}, \mathbb{P})$ be a probability space, $T \subseteq \ma
 
 **Intuition**: A stochastic process is a **time-indexed family of random variables**. Each $X_t$ represents the state of a system at time $t$. For a fixed $\omega \in \Omega$, the mapping $t \mapsto X_t(\omega)$ is a **sample path** or **trajectory**.
 
-**Example 3.2.1** (User satisfaction process). Let $E = [0, 1]$ represent satisfaction levels. Define $S_t: \Omega \to [0, 1]$ as the user's satisfaction after the $t$-th query in a session. Then $(S_t)_{t=0}^T$ is a stochastic process modeling satisfaction evolution.
+**Example 3.2.1** (User satisfaction process). Let $E = [0, 1]$ represent satisfaction levels. Define $Y_t: \Omega \to [0, 1]$ as the user's satisfaction after the $t$-th query in a session. Then $(Y_t)_{t=0}^T$ is a stochastic process modeling satisfaction evolution. (We reserve $S_t$ for MDP state processes below.)
 
 **Example 3.2.2** (RL trajectory). In a Markov Decision Process, the sequence $(S_0, A_0, R_0, S_1, A_1, R_1, \ldots)$ is a stochastic process where:
 - $S_t \in \mathcal{S}$ (state space)
@@ -7061,13 +7066,13 @@ $$
 
 **Example 3.2.4** (Session abandonment). Define:
 $$
-\tau := \inf\{t \geq 0 : S_t < \theta\},
+\tau := \inf\{t \geq 0 : Y_t < \theta\},
 $$
-the first time user satisfaction $S_t$ drops below threshold $\theta$. This is a stopping time: to check "$\tau \leq t$" (user has abandoned by time $t$), we only need to observe $(S_0, \ldots, S_t)$. We do not need to know future satisfaction $S_{t+1}, S_{t+2}, \ldots$.
+the first time user satisfaction $Y_t$ drops below threshold $\theta$. This is a stopping time: to check "$\tau \leq t$" (user has abandoned by time $t$), we only need to observe $(Y_0, \ldots, Y_t)$. We do not need to know future satisfaction $Y_{t+1}, Y_{t+2}, \ldots$.
 
 **Example 3.2.5** (Purchase event). Define $\tau$ as the first time the user makes a purchase. This is a stopping time: the event "$\tau = t$" means "user purchased at time $t$, having not purchased before"---determined by history up to $t$.
 
-**Non-Example 3.2.6** (Last time satisfaction peaks). Define $\tau := \sup\{t : S_t = \max_{s \leq T} S_s\}$ (the last time satisfaction reaches its maximum over $[0, T]$). This is **NOT** a stopping time: to determine "$\tau = t$," we need to know future values $S_{t+1}, \ldots, S_T$ to verify satisfaction never exceeds $S_t$ afterward.
+**Non-Example 3.2.6** (Last time satisfaction peaks). Define $\tau := \sup\{t : Y_t = \max_{s \leq T} Y_s\}$ (the last time satisfaction reaches its maximum over $[0, T]$). This is **NOT** a stopping time: to determine "$\tau = t$," we need to know future values $Y_{t+1}, \ldots, Y_T$ to verify satisfaction never exceeds $Y_t$ afterward.
 
 **Proposition 3.2.1** (Measurability of stopped processes) {#PROP-3.2.1}
 
@@ -7985,11 +7990,11 @@ All later algorithms---TD-learning, Q-learning, policy gradients---use Bellman o
 
 **Exercise 3.1** (Stopping times) [15 min]
 
-Let $(S_t)$ be a user satisfaction process with $S_t \in [0, 1]$. Which of the following are stopping times?
+Let $(Y_t)$ be a user satisfaction process with $Y_t \in [0, 1]$. Which of the following are stopping times?
 
-(a) $\tau_1 = \inf\{t : S_t < 0.3\}$ (first time satisfaction drops below 0.3)
-(b) $\tau_2 = \sup\{t \leq T : S_t \geq 0.8\}$ (last time satisfaction exceeds 0.8 before horizon $T$)
-(c) $\tau_3 = \min\{t : S_{t+1} < S_t\}$ (first time satisfaction decreases)
+(a) $\tau_1 = \inf\{t : Y_t < 0.3\}$ (first time satisfaction drops below 0.3)
+(b) $\tau_2 = \sup\{t \leq T : Y_t \geq 0.8\}$ (last time satisfaction exceeds 0.8 before horizon $T$)
+(c) $\tau_3 = \min\{t : Y_{t+1} < Y_t\}$ (first time satisfaction decreases)
 
 Justify the answers using [DEF-3.2.4].
 
@@ -13206,7 +13211,7 @@ In Chapter 5, we built the complete RL interface: base relevance models provide 
 We need a policy $\pi: \mathcal{X} \to \mathcal{A}$ that maps observations (user, query, products) to actions (boost vectors) while:
 
 1. **Maximizing business metrics** (GMV, CM2, strategic KPIs)
-2. **Respecting hard constraints** (CM2 floor >=60%, rank stability, exposure floors)
+2. **Respecting hard constraints** (profitability floor $\mathbb{E}[\text{CM2}] \ge \tau_{\text{cm2}}$, rank stability, exposure floors)
 3. **Exploring safely** (avoid catastrophic rankings during learning)
 4. **Remaining interpretable** (business stakeholders must understand what the agent does)
 5. **Learning quickly** (sample efficiency matters in production)
@@ -13231,7 +13236,7 @@ Search boost optimization is **not** a complex sequential decision problem initi
 
 - Most search sessions are **single-query** (user searches once, clicks/buys, leaves)
 - Inter-session effects (retention, long-term value) are **slow-moving** (timescale of days, not seconds)
-- We already have a **strong base ranker** (Chapter 5); RL learns small perturbations
+- We already have a **strong base ranker** (Chapter 5); RL learns **bounded perturbations** whose authority we control via $a_{\max}$
 
 ---
 
@@ -13281,7 +13286,7 @@ The goal is to practice a transferable diagnostic skill:
 
 **Part I: Theory & Implementation**
 
-Section 6.1 --- **Discrete Template Action Space**: Define 8 interpretable boost strategies (High Margin, CM2 Boost, Premium, Budget, etc.)
+Section 6.1 --- **Discrete Template Action Space**: Define 8 interpretable boost strategies (Positive CM2, Private Label, Premium, Budget, etc.)
 
 Section 6.2 --- **Thompson Sampling**: Bayesian posterior sampling with Gaussian conjugacy and ridge regression
 
@@ -13376,10 +13381,10 @@ The final ranking is obtained by sorting products in descending order of $s'_i$.
 
 **Properties:**
 
-1. **Boundedness**: $|t(p)| \leq a_{\max}$ for all $p \in \mathcal{C}$ (typically $a_{\max} = 5.0$)
+1. **Boundedness**: $|t(p)| \leq a_{\max}$ for all $p \in \mathcal{C}$ (the scale of $a_{\max}$ is a hyperparameter calibrated relative to the typical variation of $s_{\text{base}}$; cf. the unit note below)
 2. **Finite catalog**: $|\mathcal{C}| < \infty$, so all argmax operations over $\mathcal{C}$ are well-defined
 3. **Deterministic**: Given a fixed catalog and template definition, $t$ is a fixed function (no internal randomness)
-4. **Product-only (baseline library)**: In this chapter, templates depend only on product attributes $(p.\text{category}, p.\text{margin}, p.\text{popularity}, \ldots)$, not on query or user---context enters later via the contextual bandit policy.
+4. **Product-only (baseline library)**: In this chapter, templates depend only on product attributes $(p.\text{category}, p.\text{cm2}, p.\text{is\_pl}, p.\text{price}, p.\text{discount}, p.\text{bestseller}, p.\text{strategic\_flag}, \ldots)$, not on query or user---context enters later via the contextual bandit policy.
 
 This formulation aligns with the Bandit Bellman Operator defined in [DEF-3.8.1], where $\gamma = 0$ eliminates the need for temporal credit assignment. Templates become arms in a contextual bandit; the learner's job is to discover which arm maximizes immediate reward given the context.
 
@@ -13387,28 +13392,28 @@ This formulation aligns with the Bandit Bellman Operator defined in [DEF-3.8.1],
 
 Consider a tiny catalog with three products:
 
-| Product | Price | Margin | Category | Base Score |
+| Product | Price | CM2 | Category | Base Score |
 |---------|-------|--------|----------|------------|
-| $p_1$   | 15    | 0.50   | Dog Food | 8.5        |
-| $p_2$   | 40    | 0.30   | Cat Toy  | 7.2        |
-| $p_3$   | 25    | 0.45   | Treats   | 6.8        |
+| $p_1$   | 15    | 1.8    | Dog Food | 0.85       |
+| $p_2$   | 40    | -0.3   | Cat Toy  | 0.72       |
+| $p_3$   | 25    | 0.9    | Treats   | 0.68       |
 
 **Baseline ranking** (by base score): $[p_1, p_2, p_3]$.
 
-Apply template $t_1$ (**High Margin**): boost products with margin $> 0.4$ by $+5.0$.
+Apply template $t_1$ (**Positive CM2**): boost products with $\text{CM2} > 0.4$ by $+5.0$.
 
-- $t_1(p_1) = 5.0$ (margin $0.50 > 0.4$)
-- $t_1(p_2) = 0.0$ (margin $0.30 \leq 0.4$)
-- $t_1(p_3) = 5.0$ (margin $0.45 > 0.4$)
+- $t_1(p_1) = 5.0$ ($\text{CM2}(p_1) = 1.8 > 0.4$)
+- $t_1(p_2) = 0.0$ ($\text{CM2}(p_2) = -0.3 \leq 0.4$)
+- $t_1(p_3) = 5.0$ ($\text{CM2}(p_3) = 0.9 > 0.4$)
 
 **Adjusted scores:**
-- $s'_1 = 8.5 + 5.0 = 13.5$
-- $s'_2 = 7.2 + 0.0 = 7.2$
-- $s'_3 = 6.8 + 5.0 = 11.8$
+- $s'_1 = 0.85 + 5.0 = 5.85$
+- $s'_2 = 0.72 + 0.0 = 0.72$
+- $s'_3 = 0.68 + 5.0 = 5.68$
 
 **New ranking:** $[p_1, p_3, p_2]$ --- product $p_3$ jumps from position 3 to position 2.
 
-This illustrates the pattern of the whole chapter: templates encode **business logic** (high margin) while respecting the base relevance signal. The contextual bandit will decide **which template** to apply for each user--query context.
+This illustrates the pattern of the whole chapter: templates encode **business logic** (profitability via positive CM2) while retaining the base ranker as a relevance prior. The strength of the intervention is controlled by $a_{\max}$: at small $a_{\max}$ the base ordering dominates; at large $a_{\max}$ the template can override it and leave relevance as a tie-breaker. The contextual bandit will decide **which template** to apply for each user--query context.
 
 **Template library design:**
 
@@ -13418,18 +13423,23 @@ We define $M$ templates based on business objectives and product features. Befor
 
 The boost bound $a_{\max}$ determines how aggressively templates can override base relevance. This is a **signal-to-noise calibration**, not a universal constant.
 
-**Base relevance scale in our simulator**: From Section 5.2, lexical and embedding scores produce base relevance values $s_{\text{base}}(q,p) \in [10, 30]$ for relevant products, with typical standard deviation $\sigma \approx 5-8$ within a candidate set. Position bias and click propensities modulate this further (x0.3 to x1.0).
+!!! note "Units and scales (simulator defaults)"
+    - Base relevance $s_{\text{base}}(q,p)$ is a dimensionless score (Chapter 5). In Lab 2.2 we observe mean $\approx 0.10$, std $\approx 0.22$, min $\approx -0.56$, max $\approx 0.93$ over 100 queries \ensuremath{\times} 100 products; in Chapter 5 top-$K$ examples reach roughly $1.2$.
+    - The boost bound $a_{\max}$ lives in the same units as $s_{\text{base}}$ (see [EQ-6.1]). The ratio $a_{\max}/\operatorname{std}(s_{\text{base}})$ is the relevant signal-to-noise calibration.
+    - Price/GMV/CM2 are currency-valued; the margin rate is the dimensionless ratio $\text{CM2}/\text{price}$ (we use absolute CM2 thresholds in this chapter; margin-rate guardrails enter in Chapter 10).
+
+As emphasized in the unit note above, $a_{\max}$ is measured in **the same units as $s_{\text{base}}$**: the ratio $a_{\max} / \operatorname{std}(s_{\text{base}})$ determines how strongly templates can override the base ranker.
 
 **Action magnitude regimes:**
-- $a_{\max} = 0.5$: **Subtle interventions** (+-2-5% of base relevance). Templates nudge rankings by 1-2 positions. Learning signals exist but are weak---agents must discover fine-grained adjustments amidst noise. Suitable for conservative control where we trust the base ranker.
+- $a_{\max} = 0.5$: **Moderate interventions** (on the order of $2$--$3$ score standard deviations). Templates can reorder a few borderline items while keeping the base ranker dominant. Suitable for conservative control where we trust the base ranker.
 
-- $a_{\max} = 5.0$: **Visible interventions** (+-15-50% of base relevance). Templates can promote a product from position 15 to top-3, or demote low-margin items. Learning dynamics become **observable**: we can see agents discovering high-margin products, experimenting with strategic flags, and converging to optimal templates. This is our pedagogical choice for Chapters 6-8.
+- $a_{\max} = 5.0$: **Aggressive interventions** (tens of score standard deviations). Templates can dominate the base ranker and effectively act as a rule-based ranker with relevance as a tie-breaker. This is intentionally **not** a production calibration; we use it in Chapters 6--8 to make learning dynamics visually obvious in short runs.
 
-- $a_{\max} = 10+$: **Dominant interventions** (comparable to base relevance). Templates can invert rankings entirely. Risks destroying relevance signal if templates are poorly designed. Useful when base ranker is low-quality or when exploring counterfactual "what if" scenarios (Exercise 6.11).
+- $a_{\max} = 10+$: **Extreme interventions**. Rankings become almost entirely template-driven. Useful only for stress-testing counterfactuals ("what if we fully prioritize a business objective?") and for illustrating failure modes when actuation authority is too high.
 
 **Our standardized choice**: We use $a_{\max} = 5.0$ throughout Chapters 6-8 for three reasons:
 
-1. **Pedagogical visibility**: At smaller magnitudes (0.5), learning effects are statistically present but visually obscured by base relevance noise and position bias. At 5.0, we can trace how LinUCB/TS policies discover that high-margin templates outperform popularity-based strategies.
+1. **Pedagogical visibility**: At smaller magnitudes (0.5), learning effects are statistically present but visually obscured by base relevance noise and position bias. At 5.0, we can trace how LinUCB/TS policies discover that profitability- and PL-oriented templates can outperform popularity-based strategies.
 
 2. **Fair algorithm comparison**: All RL methods (discrete templates, continuous Q-learning in Ch7, policy gradients in Ch8) use the same $a_{\max}$ by default, enabling ceteris paribus benchmarking. Early experiments with mismatched magnitudes led to spurious conclusions (Appendix 7.A documents this failure mode).
 
@@ -13458,7 +13468,7 @@ We need to balance business objectives with exploration efficiency. Options:
 **Our choice: M=8 (moderate library)**
 
 We choose **8 templates** because:
-1. **Business coverage**: Covers main levers (margin, CM2, price sensitivity, popularity, strategic goals)
+1. **Business coverage**: Covers main levers (profitability/CM2, private label, price sensitivity, popularity, strategic goals)
 2. **Regret budget**: With $T=50k$ episodes, $O(\sqrt{8 \cdot 50k}) \approx 630$ samples for confident selection
 3. **Interpretability**: Small enough for stakeholders to understand entire strategy space
 4. **Extensibility**: Easy to add/remove templates in production via config
@@ -13474,9 +13484,9 @@ With these design choices justified, here is our representative library ($M = 8$
 | ID | Name | Description | Boost Formula |
 |----|------|-------------|---------------|
 | $t_0$ | **Neutral** | No adjustment (base ranker only) | $t_0(p) = 0$ |
-| $t_1$ | **High Margin** | Promote products with $\text{margin} > 0.4$ | $t_1(p) = a_{\max} \cdot \mathbb{1}(\text{margin}(p) > 0.4)$ |
-| $t_2$ | **CM2 Boost** | Promote own-brand products | $t_2(p) = a_{\max} \cdot \mathbb{1}(\text{is\\_pl}(p))$ |
-| $t_3$ | **Popular** | Boost by normalized log-popularity | $t_3(p) = a_{\max} \cdot \log(1 + \text{popularity}(p)) / \log(1 + \text{pop}_{\max})$ |
+| $t_1$ | **Positive CM2** | Promote products with $\text{cm2}(p) > 0.4$ | $t_1(p) = a_{\max} \cdot \mathbb{1}(\text{cm2}(p) > 0.4)$ |
+| $t_2$ | **Private Label** | Promote own-brand products | $t_2(p) = a_{\max} \cdot \mathbb{1}(\text{is\\_pl}(p))$ |
+| $t_3$ | **Popular** | Boost by normalized log-bestseller score | $t_3(p) = a_{\max} \cdot \log(1 + \text{bestseller}(p)) / \log(1 + \text{pop}_{\max})$ |
 | $t_4$ | **Premium** | Promote expensive items | $t_4(p) = a_{\max} \cdot \mathbb{1}(\text{price}(p) > p_{75})$ |
 | $t_5$ | **Budget** | Promote cheap items | $t_5(p) = a_{\max} \cdot \mathbb{1}(\text{price}(p) < p_{25})$ |
 | $t_6$ | **Discount** | Boost discounted products | $t_6(p) = a_{\max} \cdot \min\{\text{discount}(p) / 0.3,\, 1\}$ |
@@ -13484,8 +13494,10 @@ With these design choices justified, here is our representative library ($M = 8$
 
 **Notation:**
 - $\mathbb{1}(\cdot)$ is the indicator function (1 if condition true, 0 otherwise)
+- $\text{cm2}(p)$ denotes contribution margin (CM2) per item in the simulator (a currency-valued quantity; not a percentage margin rate)
 - $p_{25}, p_{75}$ are the 25th and 75th percentiles of catalog prices
-- $\text{pop}_{\max}$ is the maximum popularity in the catalog
+- $\text{bestseller}(p)$ is the simulator's popularity proxy score for product $p$
+- $\text{pop}_{\max} = \max_{p \in \mathcal{C}} \text{bestseller}(p)$ is used to normalize the Popular template
 - $\text{is\_pl}(p)$ indicates whether product $p$ is own-brand (private label) in the simulator
 
 **Implementation:**
@@ -13518,7 +13530,7 @@ class BoostTemplate:
 
     Attributes:
         id: Template identifier (0 to M-1)
-        name: Human-readable name (e.g., "High Margin")
+        name: Human-readable name (e.g., "Positive CM2")
         description: Business objective description
         boost_fn: Function mapping a Product to a boost value
                   Signature: (product: Product) -> float
@@ -13553,13 +13565,13 @@ def create_standard_templates(
 
     Implements the 8-template library from Section 6.1.1.
 
-    Args:
-        catalog_stats: Dictionary with keys:
-                      - 'price_p25': 25th percentile price
-                      - 'price_p75': 75th percentile price
-                      - 'pop_max': Maximum popularity score
-                      - 'own_brand': Name of own-brand label
-        a_max: Maximum absolute boost value for templates (default 5.0)
+	    Args:
+	        catalog_stats: Dictionary with keys:
+	                      - 'price_p25': 25th percentile price
+	                      - 'price_p75': 75th percentile price
+	                      - 'pop_max': Maximum bestseller score (popularity proxy)
+	                      - 'own_brand': Name of own-brand label
+	        a_max: Maximum absolute boost value for templates (default 5.0)
 
     Returns:
         templates: List of M=8 boost templates
@@ -13577,17 +13589,17 @@ def create_standard_templates(
             description="No boost adjustment (base ranker only)",
             boost_fn=lambda p: 0.0,
         ),
-        # t1: High Margin
+        # t1: Positive CM2
         BoostTemplate(
             id=1,
-            name="High Margin",
-            description="Promote products with CM2 > 0.4",
+            name="Positive CM2",
+            description="Promote products with positive contribution margin (CM2 > 0.4)",
             boost_fn=lambda p: a_max if p.cm2 > 0.4 else 0.0,
         ),
-        # t2: CM2 Boost (Own Brand)
+        # t2: Private Label (Own Brand)
         BoostTemplate(
             id=2,
-            name="CM2 Boost",
+            name="Private Label",
             description="Promote own-brand products",
             boost_fn=lambda p: a_max if p.is_pl else 0.0,
         ),
@@ -13664,7 +13676,7 @@ templates = create_standard_templates(catalog_stats, a_max=5.0)
 
 # Synthetic product examples (using the same fields as Product)
 products = [
-    {   # High-margin own-brand product
+    {   # Positive-CM2 private-label product
         "cm2": 0.5, "is_pl": True, "bestseller": 500.0,
         "price": 30.0, "discount": 0.1, "strategic_flag": True,
     },
@@ -13680,7 +13692,7 @@ products = [
 
 # Apply each template (treating dicts as lightweight stand-ins for Product)
 print("Template boosts per product:")
-print("Product:         ", ["High-margin OB", "Budget 3P", "Premium Disc"])
+print("Product:         ", ["Positive-CM2 PL", "Budget 3P", "Premium Disc"])
 for template in templates:
     boosts = template.apply([
         Product(
@@ -13700,10 +13712,10 @@ for template in templates:
 
 # Output (representative):
 # Template boosts per product:
-# Product:          ['High-margin OB', 'Budget 3P', 'Premium Disc']
+# Product:          ['Positive-CM2 PL', 'Budget 3P', 'Premium Disc']
 # Neutral           [0.   0.   0.  ]
-# High Margin       [5.   0.   0.  ]
-# CM2 Boost         [5.   0.   0.  ]
+# Positive CM2      [5.   0.   0.  ]
+# Private Label     [5.   0.   0.  ]
 # Popular           [4.50 3.34 4.84]
 # Premium           [0.   0.   5.  ]
 # Budget            [0.   5.   0.  ]
@@ -13713,7 +13725,7 @@ for template in templates:
 
 **Interpretation:**
 
-- Product 1 (high-margin own-brand): Gets boosted by High Margin, CM2, Popular, Strategic
+- Product 1 (positive-CM2 private label): Gets boosted by Positive CM2, Private Label, Popular, Strategic
 - Product 2 (budget third-party): Only Budget and Popular boost it
 - Product 3 (premium discounted): Premium, Popular, and Discount boost it
 
@@ -14404,6 +14416,10 @@ v^\top A(n)^{-1} v \le \frac{\|v\|_2^2}{\lambda + (c/2)n} \le \frac{L^2}{\lambda
 $$
 Taking square roots gives the claimed bound. $\square$
 
+**Remark 6.2.2** (Random design vs. adaptive selection) {#REM-6.2.2}
+
+Proposition 6.2 assumes an i.i.d. feature sequence $(\phi_s)$ with a population covariance lower bound. In LinUCB, however, contexts and action choices are coupled through the algorithm, so the resulting design is adaptive. The rigorous regret proof underlying [THM-6.2] therefore proceeds via self-normalized martingale inequalities and the elliptical potential lemma (see [@abbasi:improved:2011]) rather than an i.i.d. eigenvalue-growth argument. We include Proposition 6.2 only as geometric intuition: when features are sufficiently informative, $A(n)$ becomes well-conditioned and the uncertainty norm $\|\phi(x)\|_{A(n)^{-1}}$ shrinks on the order of $n^{-1/2}$ along bounded directions.
+
 **LinUCB action selection:**
 
 $$
@@ -14880,13 +14896,13 @@ from zoosim.policies.thompson_sampling import LinearThompsonSampling, ThompsonSa
 # Initialize environment
 env = ZooplusSearchGymEnv(seed=42)
 
-# Get catalog statistics for template creation
-catalog_stats = {
-    'price_p25': env.catalog.price.quantile(0.25),
-    'price_p75': env.catalog.price.quantile(0.75),
-    'pop_max': env.catalog.popularity.max(),
-    'own_brand': 'Zooplus',
-}
+	# Get catalog statistics for template creation
+	catalog_stats = {
+	    'price_p25': env.catalog.price.quantile(0.25),
+	    'price_p75': env.catalog.price.quantile(0.75),
+	    'pop_max': env.catalog.bestseller.max(),
+	    'own_brand': 'Zooplus',
+	}
 
 # Create template library (M=8 templates)
 templates = create_standard_templates(catalog_stats, a_max=5.0)
@@ -14942,7 +14958,7 @@ for t in range(T):
     # In real deployment, regret unknown; here we use oracle for analysis
     optimal_reward = info.get('optimal_reward', reward)  # Simulated oracle
     regret = optimal_reward - reward
-    cumulative_regret.append(sum(cumulative_regret) + regret if cumulative_regret else regret)
+    cumulative_regret.append((cumulative_regret[-1] if cumulative_regret else 0.0) + regret)
 
     # Logging
     if (t + 1) % 10_000 == 0:
@@ -15002,8 +15018,8 @@ Final cumulative regret: 4897.3
 
 Template selection distribution:
   Neutral        : 0.008 (   412 times)
-  High Margin    : 0.221 ( 11023 times)
-  CM2 Boost      : 0.302 ( 15089 times)
+  Positive CM2   : 0.221 ( 11023 times)
+  Private Label  : 0.302 ( 15089 times)
   Popular        : 0.073 (  3641 times)
   Premium        : 0.109 (  5472 times)
   Budget         : 0.044 (  2187 times)
@@ -15015,10 +15031,10 @@ Template selection distribution:
 
 1. **Convergence**: Average reward increases from ~112 to ~123 ($\approx 10\%$ improvement)
 2. **Exploration decay**: Neutral template selection drops from 2.3% to 0.8% as confidence grows
-3. **Winner templates**: CM2 Boost (30%), High Margin (22%), Discount (20%) dominate
+3. **Winner templates**: Private Label (30%), Positive CM2 (22%), Discount (20%) dominate
 4. **Regret growth**: Cumulative regret ~5000 over 50k episodes -> average per-episode regret ~0.1 (excellent!)
 
-**Key insight:** The simulator has a **preference hierarchy** CM2 > Margin > Discount. LinUCB discovers this automatically.
+**Key insight:** In this simulator configuration, profitability (CM2) and private-label affinity are strong reward levers; LinUCB discovers this by concentrating probability mass on the corresponding templates.
 
 ---
 
@@ -15056,13 +15072,13 @@ This gives $d = 4 + 3 = 7$ dimensions: a one-hot encoding for user segment (four
 From the bandit's perspective this feels expressive enough. With $\phi_{\text{simple}}$ it can, in principle, learn patterns like:
 
 - "Premium users with specific queries respond well to the Premium template."
-- "pl_lover users with browsing queries respond well to CM2 Boost."
+- "pl_lover users with browsing queries respond well to Private Label."
 - "Price hunters with deal-seeking queries respond well to Budget or Discount templates."
 
 The linear model $\theta_a^\top \phi(x)$ can represent these patterns: each coordinate of $\theta_a$ is simply "how much this segment or query type likes template $a$".
 
 !!! note "Pedagogical Design: Feature Engineering as Iterative Process"
-    We deliberately omit product-level information (prices, margins, discounts, popularity) and user preference signals (price sensitivity, private-label affinity). This is intentional: feature engineering is iterative. We start with a minimal representation, measure performance, diagnose the bottleneck, and then add the missing signals.
+    We deliberately omit product-level information (prices, CM2, discounts, bestseller/popularity signals) and user preference signals (price sensitivity, private-label affinity). This is intentional: feature engineering is iterative. We start with a minimal representation, measure performance, diagnose the bottleneck, and then add the missing signals.
 
     This first experiment also induces model misspecification to instantiate [REM-6.1.1] in a controlled way: the theorems remain correct, but the representation is too weak for the linear model to be useful.
 
@@ -15087,6 +15103,8 @@ uv run python scripts/ch06/template_bandits_demo.py \
     --bandit-base-seed 20250349
 ```
 
+We treat the above $(\text{world-seed}, \text{bandit-base-seed}) = (20250322, 20250349)$ as a canonical run for the chapter narrative; Lab 6.5 checks multi-seed robustness of the qualitative conclusions.
+
 Why 20 000 episodes for the bandits but only 2 000 per static template? Static templates are deterministic---once we have a few thousand episodes, we can estimate their means quite precisely. Bandits, however, must **explore**. The regret bounds suggest that with $T = 20\,000$ and $M = 8$ templates, we should pay roughly
 $$
 O\bigl(\sqrt{M T}\bigr) \approx O\bigl(\sqrt{8 \cdot 20\,000}\bigr) \approx 400
@@ -15105,8 +15123,8 @@ After a couple of minutes, the summary prints:
 Static templates (per-episode averages):
 ID  Template             Reward         GMV         CM2
  0  Neutral                5.75        5.28        0.50
- 1  High Margin            5.44        5.07        0.63
- 2  CM2 Boost              7.35        6.73        0.61
+ 1  Positive CM2           5.44        5.07        0.63
+ 2  Private Label          7.35        6.73        0.61
  3  Popular                4.79        4.53        0.52
  4  Premium                7.56        7.11        0.74  <- Best static
  5  Budget                 3.44        3.04        0.26
@@ -15150,7 +15168,7 @@ Both statements can be true. The tension between them is the pedagogical engine 
 The same run includes a per-segment table. For instance:
 
 - Price hunters lose ~50 % GMV when forced into Premium-like boosts.
-- PL-lover users lose ~30 % GMV when CM2 Boost is disabled.
+- PL-lover users lose ~30 % GMV when Private Label is disabled.
 - Premium users are already near their Pareto frontier.
 
 The per-segment table makes the paradox sharper: **global GMV is dominated by premium buyers**, but the biggest opportunity lies in underserved segments that the simple features cannot separate properly.
@@ -15221,7 +15239,7 @@ In prose, (A1) says: "There exists a linear function of the chosen features that
 With $\phi_{\text{simple}} = [\text{segment}, \text{query\_type}]$, linearity says:
 > For each template $a$, there exist numbers $\theta_{a,\text{segment}}$ and $\theta_{a,\text{query}}$ such that the expected GMV is the **sum** of a "segment effect" and a "query-type effect".
 
-Concretely, suppose template 2 (CM2 Boost) has
+Concretely, suppose template 2 (Private Label) has
 $$
 \theta_2
   = [\theta_{2,\text{premium}},
@@ -15265,17 +15283,17 @@ So both have the **same** $\phi_{\text{simple}}$.
 
 - Base ranker's top-$k$ results contain mostly own-brand products (say 80 % PL).
 - Prices cluster around EUR15 with healthy margins.
-- When we apply CM2 Boost (template 2), the boost pushes even more PL products into the top slots. The user sees a wall of own-brand products they like at acceptable prices and buys two items.
+- When we apply Private Label (template 2), the boost pushes even more PL products into the top slots. The user sees a wall of own-brand products they like at acceptable prices and buys two items.
 
 **Episode B (PL-hostile shelf).**
 
 - Base ranker's top-$k$ results contain almost no own-brand products (say 10 % PL).
 - Prices cluster around EUR40 with thinner margins.
-- Applying CM2 Boost now drags a handful of mediocre PL products up into top positions, replacing highly relevant national-brand products. The user is underwhelmed and leaves without buying.
+- Applying Private Label now drags a handful of mediocre PL products up into top positions, replacing highly relevant national-brand products. The user is underwhelmed and leaves without buying.
 
 **Visual summary:**
 
-| Episode | User Segment | Query Type | $\phi_{\text{simple}}$ | Top-K PL Fraction | CM2 Boost Outcome | GMV |
+| Episode | User Segment | Query Type | $\phi_{\text{simple}}$ | Top-K PL Fraction | Private Label Outcome | GMV |
 |---------|--------------|------------|------------------------|-------------------|-------------------|-----|
 | **A** | pl_lover | browsing | [0,1,0,0,0,1,0] | 80% | Boosts many relevant PL products | **8.2** |
 | **B** | pl_lover | browsing | [0,1,0,0,0,1,0] | 10% | Boosts few mediocre PL products | **2.1** |
@@ -15332,11 +15350,11 @@ The key design idea is to compute features from the **base ranker's top-$K$ resu
 The base ranker from Chapter 5 already scores products by relevance. Given a query and catalog, it produces a ranking. We can take the top $K$ products from this ranking (we use $K=20$ in the demo) and compute aggregates:
 
 - Average and standard deviation of price.
-- Average CM2 margin.
+- Average CM2 (contribution margin, in currency units).
 - Average discount.
 - Fraction of own-brand (PL) products.
 - Fraction of products in strategic categories.
-- Average popularity score.
+- Average bestseller score (our popularity proxy).
 - Average relevance score from the base ranker.
 
 These statistics summarize **what the shelf looks like** before boosting. Crucially, they are **action-independent**: the same regardless of which template the bandit will choose.
@@ -15433,8 +15451,8 @@ The output now shows a reversal relative to Section 6.5:
 Static templates (per-episode averages):
 ID  Template             Reward         GMV         CM2
  0  Neutral                5.75        5.28        0.50
- 1  High Margin            5.44        5.07        0.63
- 2  CM2 Boost              7.35        6.73        0.61
+ 1  Positive CM2           5.44        5.07        0.63
+ 2  Private Label          7.35        6.73        0.61
  3  Popular                4.79        4.53        0.52
  4  Premium                7.56        7.11        0.74  <- Best static
  5  Budget                 3.44        3.04        0.26
@@ -15460,7 +15478,7 @@ Read these numbers carefully---the **algorithm ranking has reversed**:
 
 With oracle user latents, **both algorithms perform excellently**---and nearly identically! The clean features allow both LinUCB's UCB bonus and Thompson Sampling's posterior sampling to converge efficiently to the optimal policy. LinUCB edges out TS by a razor-thin margin (+0.4 percentage points), but the practical difference is negligible.
 
-This makes theoretical sense: LinUCB's regret bound [THM-6.2] assumes the reward function is *exactly* linear in features. With oracle latents providing the true user preferences, the linear assumption holds nearly perfectly, and LinUCB's exploitation becomes a virtue rather than a liability.
+This makes theoretical sense: LinUCB's regret bound [THM-6.2] is proved under a realizability assumption that the conditional mean reward is linear in the features. Oracle latents expose major drivers of user response and therefore drastically reduce model misspecification. The environment remains nonlinear (slate interactions and click/purchase mechanics), so realizability is not exact; rather, the approximation error becomes small enough that LinUCB behaves close to the well-specified regime in this experiment.
 
 ### 6.7.5 Experiment B: Rich Features with Estimated Latents
 
@@ -15561,7 +15579,7 @@ We now summarize the technical artifacts, the empirical compute arc, and the les
 
 On the technical side:
 
-- **Discrete template action space** (Section 6.1): 8 interpretable boost strategies encoding business logic (High Margin, CM2 Boost, Premium, Budget, Discount, etc.).
+- **Discrete template action space** (Section 6.1): 8 interpretable boost strategies encoding business logic (Positive CM2, Private Label, Premium, Budget, Discount, etc.).
 - **Thompson Sampling and LinUCB theory** (Sections 6.2--6.3): posterior sampling and UCB for linear contextual bandits, with sublinear regret guarantees under explicit assumptions.
 - **Production-quality implementations** (Section 6.4): type-hinted NumPy code in `zoosim/policies/thompson_sampling.py` and `zoosim/policies/lin_ucb.py`, wired to the simulator via `scripts/ch06/template_bandits_demo.py`.
 
@@ -16396,7 +16414,7 @@ The flat template library has no structure. Design a **hierarchical template sys
 - Objective C: Strategic goals
 
 **Level 2 (Sub-template):** Given objective, select tactic
-- If Objective A (margin): {High Margin, Premium, CM2}
+- If Objective A (margin): {Positive CM2, Premium, Private Label}
 - If Objective B (volume): {Popular, Discount, Budget}
 - If Objective C (strategic): {Strategic, Category Diversity}
 
@@ -17009,12 +17027,12 @@ Template Selection Frequencies (20,000 episodes):
   Template ID | Name               | Selection % | Avg Reward
   ------------|--------------------|-------------|-----------
             0 | No Boost           |        1.1% |       1.18
-            1 | High Margin        |        1.1% |       1.17
+            1 | Positive CM2       |        1.1% |       1.17
             2 | Popular            |       19.4% |       1.29
             3 | Discount           |        0.6% |       1.05
             4 | Premium            |       48.2% |       1.31
             5 | Private Label      |       28.3% |       1.30
-            6 | CM2 Boost          |        0.3% |       0.89
+            6 | Budget             |        0.3% |       0.89
             7 | Strategic          |        0.8% |       1.05
             8 | Category Diversity |        0.2% |       0.74
 
@@ -17480,11 +17498,11 @@ results = exercise_6_7_hierarchical_templates(
 Exercise 6.7: Hierarchical Templates
 ======================================================================
 
-Hierarchical structure:
-  Level 1 (Meta): 3 objectives
-    - Objective A: Maximize margin (templates: HiMargin, Premium, CM2)
-    - Objective B: Maximize volume (templates: Popular, Discount, Budget)
-    - Objective C: Strategic goals (templates: Strategic, Diversity)
+	Hierarchical structure:
+	  Level 1 (Meta): 3 objectives
+	    - Objective A: Maximize margin (templates: Positive CM2, Premium, Private Label)
+	    - Objective B: Maximize volume (templates: Popular, Discount, Budget)
+	    - Objective C: Strategic goals (templates: Strategic, Category Diversity)
 
   Level 2 (Sub): 2-3 templates per objective
 
@@ -17501,19 +17519,19 @@ Meta-Level Selection Distribution:
 
 Sub-Level Selection (within objectives):
 
-  Margin (A):
-    HiMargin     |        4.6%
-    Premium      |        0.5%
-    CM2Boost     |       94.9%
+	  Margin (A):
+	    Positive CM2        |        4.6%
+	    Premium             |        0.5%
+	    Private Label       |       94.9%
 
   Volume (B):
     Popular      |       88.5%
     Discount     |        0.9%
     Budget       |       10.6%
 
-  Strategic(C):
-    Strategic    |       46.6%
-    Diversity    |       53.4%
+	  Strategic(C):
+	    Strategic           |       46.6%
+	    Category Diversity  |       53.4%
 
 Comparison to Flat LinUCB:
 
@@ -17535,9 +17553,9 @@ Hierarchical templates offer two advantages:
 2. **Better interpretability:** Business can understand "we shifted toward strategic optimization" rather than opaque template IDs
 
 The learned hierarchy reveals interesting patterns:
-- **CM2Boost dominates within Margin** (94.9%): Clear winner for margin optimization
+- **Private Label dominates within Margin** (94.9%): Clear winner for margin optimization
 - **Popular dominates within Volume** (88.5%): Popularity drives clicks/purchases
-- **Diversity edges out Strategic** (53.4% vs 46.6%): Close competition in strategic tier
+- **Category Diversity edges out Strategic** (53.4% vs 46.6%): Close competition in strategic tier
 
 ---
 

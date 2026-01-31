@@ -90,6 +90,11 @@ class SegmentParams:
 
 @dataclass
 class UserConfig:
+    """User segment mixture and per-segment parameter priors.
+
+    `segment_mix` is a probability vector aligned with `segments`.
+    """
+
     segments: List[str] = field(
         default_factory=lambda: ["price_hunter", "pl_lover", "premium", "litter_heavy"]
     )
@@ -126,6 +131,30 @@ class UserConfig:
             ),
         }
     )
+
+    def __post_init__(self) -> None:
+        if len(self.segment_mix) != len(self.segments):
+            raise ValueError(
+                "UserConfig.segment_mix must have the same length as UserConfig.segments "
+                f"(got {len(self.segment_mix)} vs {len(self.segments)})."
+            )
+        if any(p < 0 for p in self.segment_mix):
+            raise ValueError("UserConfig.segment_mix must be non-negative.")
+        total = float(sum(self.segment_mix))
+        if total <= 0.0:
+            raise ValueError("UserConfig.segment_mix must sum to a positive value.")
+        if abs(total - 1.0) > 1e-6:
+            raise ValueError(
+                f"UserConfig.segment_mix must sum to 1 (got {total:.6f}). "
+                "If you intended unnormalized weights, normalize them first."
+            )
+
+        missing = [seg for seg in self.segments if seg not in self.segment_params]
+        if missing:
+            raise ValueError(
+                "UserConfig.segment_params is missing SegmentParams for segments: "
+                + ", ".join(missing)
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -164,6 +193,16 @@ class RelevanceConfig:
 
 @dataclass
 class BehaviorConfig:
+    """User behavior hyperparameters.
+
+    Notes:
+        - `pos_bias[query_type][k]` entries are logits (not probabilities). In the
+          simulator, examination is computed as
+          `sigmoid(pos_bias_k + exam_sensitivity * satisfaction)` (see
+          `zoosim/dynamics/behavior.py`). In particular, when `satisfaction = 0`,
+          the base examination probability is `sigmoid(pos_bias_k)`.
+    """
+
     alpha_rel: float = 1.0
     alpha_price: float = 0.8
     alpha_pl: float = 1.2
@@ -172,6 +211,7 @@ class BehaviorConfig:
     beta_buy: float = 1.2
     beta0: float = 0.3
     w_price_penalty: float = 0.01
+    exam_sensitivity: float = 0.2
     satisfaction_decay: float = 0.2
     satisfaction_gain: float = 0.5
     abandonment_threshold: float = -2.0

@@ -150,7 +150,7 @@ Under assumptions:
 - (A1) **Linear mean rewards**: $\mu(x, a) = \theta_a^* {}^\top \phi(x)$
 - (A2) **Bounded features**: $\|\phi(x)\| \leq 1$ for all $x$
 - (A3) **Bounded parameters**: $\|\theta_a^*\| \leq S$ for all $a$
-- (A4) **Sub-Gaussian noise**: Reward noise has finite variance
+- (A4) **Sub-Gaussian noise**: Reward noise is sub-Gaussian (e.g., bounded or Gaussian); finite variance alone is not sufficient
 
 Both LinUCB and Thompson Sampling achieve:
 $$
@@ -162,9 +162,9 @@ $$
 **Practice:**
 
 - **Violated:** (A1) Linearity: True reward likely nonlinear in features (saturation, interactions)
-- **Satisfied:** (A2) Bounded features: We standardize features to $[-1, 1]$ range
+- **Partially satisfied:** (A2) Bounded features: We scale features to $O(1)$ (one-hots are bounded; continuous aggregates are z-scored), but we do not enforce a hard bound $\|\phi(x)\|\le 1$ unless we explicitly clip
 - **Violated:** (A3) Bounded parameters: No explicit bound on $\|\theta_a\|$, rely on regularization
-- **Satisfied:** (A4) Sub-Gaussian noise: Empirically observed (GMV variance finite)
+- **Often violated (even in the simulator):** (A4) Sub-Gaussian noise: GMV inherits heavy tails from lognormal prices, so the reward noise need not be sub-Gaussian. A fully rigorous guarantee would require clipping / robust regression variants (see Remark 6.1.1); empirically, the simulator remains stable enough for the qualitative diagnostics in this chapter.
 
 ### Why It Works Anyway
 
@@ -186,7 +186,7 @@ Ridge regression penalty $\lambda \|\theta\|^2$ implicitly enforces $\|\theta_a\
 Even if model is misspecified, contextual bandits **still improve over static policies** because:
 - Features provide *some* signal about context-action affinity
 - Exploration discovers which templates work for which contexts
-- Worst case: Degrade to best static template (safe lower bound)
+- With weak signal, behavior approaches a strong static baseline; a true lower bound requires explicit guardrails/fallback policies (Chapter 10)
 
 ### When It Fails
 
@@ -226,7 +226,8 @@ If optimal policy is *not representable* as any template (or convex combination)
 
 **1. Improved regret bounds**
 
-- [@agrawal:near_optimal:2017] shows TS achieves $O(d\sqrt{T})$ regret (no $\sqrt{M}$ factor) under realizability
+- In the **shared-parameter** linear contextual bandit $\mu(x,a)=\langle \theta^*, \phi(x,a)\rangle$, Thompson Sampling achieves $\tilde{O}(d\sqrt{T})$ regret without an explicit $\sqrt{M}$ factor; see [@agrawal:thompson:2013] (and refinements/surveys in [@lattimore:bandit_algorithms:2020, Chapters 19, 35--37])
+- In our Chapter 6 **disjoint-parameter** model $\mu(x,a)=\langle \theta_a^*, \phi(x)\rangle$, worst-case bounds scale as $\tilde{O}(d\sqrt{MT})$ because we effectively learn $M$ separate linear models (one per template)
 - [@foster:practical:2020] proves instance-dependent bounds $O(\sqrt{dT / \Delta})$ where $\Delta$ is gap between best and second-best actions
 
 **2. Misspecification robustness**
@@ -249,7 +250,7 @@ If optimal policy is *not representable* as any template (or convex combination)
 
 **1. Why does Thompson Sampling work so well empirically?**
 
-Theory says $O(\sqrt{MT})$ but practice often sees $O(\sqrt{T})$ or better. Why? Posterior concentration is faster than worst-case analysis predicts (active research).
+Worst-case disjoint-parameter theory scales as $\tilde{O}(d\sqrt{MT})$, but many structured problems behave closer to the shared-parameter rate $\tilde{O}(d\sqrt{T})$. Understanding when and why posterior concentration accelerates beyond worst-case bounds remains active research.
 
 **2. Optimal exploration for finite-sample regimes**
 
@@ -341,7 +342,7 @@ Before deploying template bandits in production, verify:
     - [ ] Exploration parameter $\alpha \in [0.5, 2.0]$ (LinUCB) or $\sigma \in [0.5, 2.0]$ (TS)
 
     **Guardrails:**
-    - [ ] CM2 floor $\geq 60\%$ enforced (Chapter 10 adds hard constraints)
+    - [ ] Profitability floor enforced (e.g., $\mathbb{E}[\text{CM2}] \ge \tau_{\text{cm2}}$ in currency units, or a margin-rate floor; Chapter 10 adds hard constraints)
     - [ ] Rank stability: $\Delta \text{rank}@k < 3$ positions per episode
     - [ ] Fallback to best static template if bandit diverges (monitoring in Chapter 10)
 

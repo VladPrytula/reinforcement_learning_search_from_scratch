@@ -27,7 +27,7 @@ class ActionConfig:
 
 ### 2. The Physics of Failure
 The Continuous agent was trying to optimize a ranking with **1/10th the authority** of the Discrete agent.
-- **Discrete Agent**: Could assert "This is a high-margin item, boost it by +5.0!" (Overriding base relevance).
+- **Discrete Agent**: Could assert "This is a positive-CM2 item, boost it by +5.0!" (Overriding base relevance).
 - **Continuous Agent**: Could only whisper "Boost this by +0.5." (Drowned out by base relevance noise).
 
 Mathematically, the continuous agent was optimizing over a hypercube $\mathcal{A}_{\text{cont}} = [-0.5, 0.5]^{10}$, while the discrete agent selected from corners of a much larger hypercube $\mathcal{A}_{\text{disc}} \subset [-5.0, 5.0]^{10}$.
@@ -36,11 +36,11 @@ Mathematically, the continuous agent was optimizing over a hypercube $\mathcal{A
 
 **What is the "right" action magnitude?** This is a hyperparameter trade-off, not a universal constant. The choice depends on the signal-to-noise ratio of the learning problem.
 
-**Base relevance scale in our simulator**: Lexical and embedding relevance scores typically range from 10 to 30 for relevant products (see §5.2). Position bias and click propensities add multiplicative effects.
+**Base relevance scale in our simulator**: In the simulator used throughout Chapters 4--8, the hybrid base relevance scores cluster near 0 (Lab 2.2 reports std $\approx 0.2$ and typical range roughly $[-0.6, 0.9]$). The ranking impact of $a_{\max}$ is therefore best understood relative to the **within-query spread** of $s_{\text{base}}$ rather than as a percentage.
 
 **Action magnitude relative to base signal:**
-- `a_max = 0.5`: Boosts are **subtle interventions** (±2-5% of base relevance). Agents must learn fine-grained adjustments, but learning signals are weak.
-- `a_max = 5.0`: Boosts are **visible interventions** (±15-50% of base relevance). Agents can override poor base rankings, making learning dynamics observable in experiments.
+- `a_max = 0.5`: Boosts are **moderate interventions** (a few score standard deviations). Agents must learn fine-grained adjustments, and learning signals can be weak in short runs.
+- `a_max = 5.0`: Boosts are **aggressive interventions** (tens of score standard deviations). Templates can dominate the base ranker, making learning dynamics visually obvious but also making the benchmark sensitive to actuation authority.
 
 **Our standardized choice for Chapters 6-8:**
 ```python

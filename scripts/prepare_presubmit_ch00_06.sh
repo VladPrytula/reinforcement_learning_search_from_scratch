@@ -20,7 +20,11 @@ cp -f \
 cp -f docs/book/compiled/chapters_ch00-06/*.md pre-submit/chapters/
 
 for ch in ch00 ch01 ch02 ch03 ch04 ch05 ch06; do
-  rsync -a "docs/book/$ch/" "pre-submit/chapters/docs/book/$ch/"
+  rsync -a --delete --delete-excluded \
+    --exclude='.DS_Store' \
+    --exclude='data/verification_*' \
+    --exclude='data/test_plot_fix/' \
+    "docs/book/$ch/" "pre-submit/chapters/docs/book/$ch/"
 done
 
 echo "[4/5] Refresh standalone code snapshot (pre-submit/code/chapters0-6)..." >&2
@@ -33,11 +37,12 @@ mkdir -p "$CODE_DST"
 rsync -a LICENSE README.md pyproject.toml uv.lock main.py "$CODE_DST/"
 
 # Simulator package
-rsync -a --exclude='__pycache__/' zoosim/ "$CODE_DST/zoosim/"
+rsync -a --exclude='__pycache__/' --exclude='.DS_Store' zoosim/ "$CODE_DST/zoosim/"
 
 # Scripts (Ch00–Ch06 only + verification utilities)
 mkdir -p "$CODE_DST/scripts"
 rsync -a --exclude='__pycache__/' \
+  --exclude='.DS_Store' \
   scripts/__init__.py \
   scripts/ch00 scripts/ch01 scripts/ch02 scripts/ch03 scripts/ch04 scripts/ch05 scripts/ch06 \
   scripts/validate_ch05.py scripts/verify_ch00_ch06.py \
@@ -46,16 +51,20 @@ rsync -a --exclude='__pycache__/' \
 # Tests (Ch00–Ch06 only + shared integration tests)
 mkdir -p "$CODE_DST/tests"
 rsync -a --exclude='__pycache__/' \
+  --exclude='.DS_Store' \
   tests/__init__.py \
   tests/ch00 tests/ch01 tests/ch02 tests/ch03 tests/ch05 tests/ch06 \
   tests/test_catalog_stats.py tests/test_env_basic.py tests/test_template_bandits_rich_est.py \
   "$CODE_DST/tests/"
 
 # Verification artifacts (kept small; useful for reviewers)
-rsync -a verification_runs/ "$CODE_DST/verification_runs/"
+rsync -a --exclude='.DS_Store' verification_runs/ "$CODE_DST/verification_runs/"
 
 # Strip caches if they exist
 find "$CODE_DST" -type d -name '__pycache__' -prune -exec rm -rf {} + || true
 rm -rf "$CODE_DST/.pytest_cache" || true
+find "$CODE_DST" -name '.DS_Store' -delete || true
+
+find pre-submit -name '.DS_Store' -delete || true
 
 echo "[5/5] Done. pre-submit/ is ready to zip." >&2

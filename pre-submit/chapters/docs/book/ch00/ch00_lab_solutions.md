@@ -526,7 +526,7 @@ The power-law fit interpolates this transition but doesn't reflect any fundament
 class ConstrainedQLearning:
     """Q-learning with CM2 floor constraint.
 
-    Maintains separate estimates for Q(x,a) (reward) and CM2(x,a) (margin).
+    Maintains separate estimates for Q(x,a) (reward) and CM2(x,a) (contribution margin, currency units).
     Filters actions based on estimated CM2 feasibility.
     """
     def get_feasible_actions(self, user_name):

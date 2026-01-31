@@ -802,8 +802,15 @@ def exercise_6_6_diversity_template(
         print(f"  {'Template ID':>11} | {'Name':<18} | {'Selection %':>11} | {'Avg Reward':>10}")
         print(f"  {'-'*11}-|-{'-'*18}-|-{'-'*11}-|-{'-'*10}")
         template_names = [
-            "No Boost", "High Margin", "Popular", "Discount",
-            "Premium", "Private Label", "CM2 Boost", "Strategic", "Category Diversity"
+            "No Boost",
+            "Positive CM2",
+            "Popular",
+            "Discount",
+            "Premium",
+            "Private Label",
+            "Budget",
+            "Strategic",
+            "Category Diversity",
         ]
         for i in range(n_templates):
             avg_r = np.mean(template_rewards[i]) if template_rewards[i] else 0.0
@@ -1138,9 +1145,9 @@ def exercise_6_7_hierarchical_templates(
         print("=" * 70)
         print(f"\nHierarchical structure:")
         print(f"  Level 1 (Meta): 3 objectives")
-        print(f"    - Objective A: Maximize margin (templates: HiMargin, Premium, CM2)")
+        print(f"    - Objective A: Maximize margin (templates: Positive CM2, Premium, Private Label)")
         print(f"    - Objective B: Maximize volume (templates: Popular, Discount, Budget)")
-        print(f"    - Objective C: Strategic goals (templates: Strategic, Diversity)")
+        print(f"    - Objective C: Strategic goals (templates: Strategic, Category Diversity)")
         print(f"\n  Level 2 (Sub): 2-3 templates per objective")
 
     rng = np.random.default_rng(seed)
@@ -1148,9 +1155,9 @@ def exercise_6_7_hierarchical_templates(
     d = 7
     n_objectives = 3
     sub_templates = {
-        0: [0, 1, 2],  # Margin: HiMargin, Premium, CM2
+        0: [0, 1, 2],  # Margin: Positive CM2, Premium, Private Label
         1: [3, 4, 5],  # Volume: Popular, Discount, Budget
-        2: [6, 7],     # Strategic: Strategic, Diversity
+        2: [6, 7],     # Strategic: Strategic, Category Diversity
     }
 
     # True rewards (simplified)
@@ -1226,16 +1233,17 @@ def exercise_6_7_hierarchical_templates(
 
         print(f"\nSub-Level Selection (within objectives):\n")
         template_names = [
-            "HiMargin", "Premium", "CM2Boost",
+            "Positive CM2", "Premium", "Private Label",
             "Popular", "Discount", "Budget",
-            "Strategic", "Diversity"
+            "Strategic", "Category Diversity"
         ]
+        name_width = 18
         for obj in range(n_objectives):
             print(f"  {obj_names[obj]}:")
             sub_counts = np.bincount(sub_selections[obj], minlength=len(sub_templates[obj]))
             sub_freqs = sub_counts / max(len(sub_selections[obj]), 1)
             for idx, t in enumerate(sub_templates[obj]):
-                print(f"    {template_names[t]:<12} | {sub_freqs[idx] * 100:>10.1f}%")
+                print(f"    {template_names[t]:<{name_width}} | {sub_freqs[idx] * 100:>10.1f}%")
             print()
 
         print(f"Comparison to Flat LinUCB:\n")

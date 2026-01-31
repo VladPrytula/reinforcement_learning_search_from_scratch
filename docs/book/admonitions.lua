@@ -51,6 +51,8 @@ local ADMONITION_ENVS = {
 -- @return string The escaped string
 local function escape_latex(str)
     if not str then return "" end
+    -- Pandoc may stringify NonBreakingSpace as U+00A0; keep LaTeX output ASCII.
+    str = str:gsub("\194\160", " ")
     local replacements = {
         ["\\"] = "\\textbackslash{}",
         ["{"] = "\\{",

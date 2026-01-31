@@ -88,7 +88,7 @@ def simulate_session(
 
         utility = _latent_utility(user, query, product, config, rng, price_signal=price_signal)
         pos_bias = _position_bias(query, j, config)
-        examine_prob = _sigmoid(pos_bias + 0.2 * satisfaction)
+        examine_prob = _sigmoid(pos_bias + beh.exam_sensitivity * satisfaction)
         if rng.random() > examine_prob:
             break
 

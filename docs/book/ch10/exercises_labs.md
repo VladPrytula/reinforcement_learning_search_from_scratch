@@ -938,7 +938,7 @@ python scripts/ch10/ch10_drift_demo.py
 
 ```
 Starting Simulation (Steps=3000, Drift@1500)...
-Phase 1: T1 (High Margin) is optimal.
+Phase 1: T1 (Positive CM2) is optimal.
 ⚠️  PHASE 2 START: Preference Drift Occurred! (T1 crashes, T3 optimal)
 [SafetyMonitor] 🚨 FALLBACK TRIGGERED: Reward Drift Detected
 [SafetyMonitor] 🔄 Probing Primary Policy (after 100 steps)

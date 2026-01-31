@@ -154,8 +154,16 @@ def _lab_6_1_toy_fallback(
 
     # Simplified simulation
     n_templates = 8
-    template_names = ["Neutral", "High Margin", "CM2 Boost", "Popular",
-                      "Premium", "Budget", "Discount", "Strategic"]
+    template_names = [
+        "Neutral",
+        "Positive CM2",
+        "Private Label",
+        "Popular",
+        "Premium",
+        "Budget",
+        "Discount",
+        "Strategic",
+    ]
 
     # Flat reward structure (simple features can't differentiate)
     base_rewards = np.array([4.5, 5.0, 5.5, 5.2, 5.8, 4.8, 5.3, 4.6])
@@ -338,8 +346,16 @@ def _lab_6_2_toy_fallback(
     """Toy simulation fallback when zoosim is not available."""
     rng = np.random.default_rng(seed)
 
-    template_names = ["Neutral", "High Margin", "CM2 Boost", "Popular",
-                      "Premium", "Budget", "Discount", "Strategic"]
+    template_names = [
+        "Neutral",
+        "Positive CM2",
+        "Private Label",
+        "Popular",
+        "Premium",
+        "Budget",
+        "Discount",
+        "Strategic",
+    ]
 
     # With rich features, bandits can exploit user preferences
     base_rewards = np.array([4.5, 5.0, 5.5, 5.2, 5.8, 4.8, 5.3, 4.6])
@@ -357,7 +373,7 @@ def _lab_6_2_toy_fallback(
         print(f"[TOY FALLBACK] TS GMV: {ts_gmv:.2f} ({ts_pct:+.1f}%)")
 
     return {
-        "static_best": {"name": "CM2 Boost", "result": {"gmv": best_static_gmv}},
+        "static_best": {"name": "Private Label", "result": {"gmv": best_static_gmv}},
         "linucb": {"global": {"gmv": lin_gmv}},
         "ts": {"global": {"gmv": ts_gmv}},
         "_fallback": True,

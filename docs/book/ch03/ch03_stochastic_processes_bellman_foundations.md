@@ -50,7 +50,7 @@ Let $(\Omega, \mathcal{F}, \mathbb{P})$ be a probability space, $T \subseteq \ma
 
 **Intuition**: A stochastic process is a **time-indexed family of random variables**. Each $X_t$ represents the state of a system at time $t$. For a fixed $\omega \in \Omega$, the mapping $t \mapsto X_t(\omega)$ is a **sample path** or **trajectory**.
 
-**Example 3.2.1** (User satisfaction process). Let $E = [0, 1]$ represent satisfaction levels. Define $S_t: \Omega \to [0, 1]$ as the user's satisfaction after the $t$-th query in a session. Then $(S_t)_{t=0}^T$ is a stochastic process modeling satisfaction evolution.
+**Example 3.2.1** (User satisfaction process). Let $E = [0, 1]$ represent satisfaction levels. Define $Y_t: \Omega \to [0, 1]$ as the user's satisfaction after the $t$-th query in a session. Then $(Y_t)_{t=0}^T$ is a stochastic process modeling satisfaction evolution. (We reserve $S_t$ for MDP state processes below.)
 
 **Example 3.2.2** (RL trajectory). In a Markov Decision Process, the sequence $(S_0, A_0, R_0, S_1, A_1, R_1, \ldots)$ is a stochastic process where:
 - $S_t \in \mathcal{S}$ (state space)
@@ -111,13 +111,13 @@ $$
 
 **Example 3.2.4** (Session abandonment). Define:
 $$
-\tau := \inf\{t \geq 0 : S_t < \theta\},
+\tau := \inf\{t \geq 0 : Y_t < \theta\},
 $$
-the first time user satisfaction $S_t$ drops below threshold $\theta$. This is a stopping time: to check "$\tau \leq t$" (user has abandoned by time $t$), we only need to observe $(S_0, \ldots, S_t)$. We do not need to know future satisfaction $S_{t+1}, S_{t+2}, \ldots$.
+the first time user satisfaction $Y_t$ drops below threshold $\theta$. This is a stopping time: to check "$\tau \leq t$" (user has abandoned by time $t$), we only need to observe $(Y_0, \ldots, Y_t)$. We do not need to know future satisfaction $Y_{t+1}, Y_{t+2}, \ldots$.
 
 **Example 3.2.5** (Purchase event). Define $\tau$ as the first time the user makes a purchase. This is a stopping time: the event "$\tau = t$" means "user purchased at time $t$, having not purchased before"---determined by history up to $t$.
 
-**Non-Example 3.2.6** (Last time satisfaction peaks). Define $\tau := \sup\{t : S_t = \max_{s \leq T} S_s\}$ (the last time satisfaction reaches its maximum over $[0, T]$). This is **NOT** a stopping time: to determine "$\tau = t$," we need to know future values $S_{t+1}, \ldots, S_T$ to verify satisfaction never exceeds $S_t$ afterward.
+**Non-Example 3.2.6** (Last time satisfaction peaks). Define $\tau := \sup\{t : Y_t = \max_{s \leq T} Y_s\}$ (the last time satisfaction reaches its maximum over $[0, T]$). This is **NOT** a stopping time: to determine "$\tau = t$," we need to know future values $Y_{t+1}, \ldots, Y_T$ to verify satisfaction never exceeds $Y_t$ afterward.
 
 **Proposition 3.2.1** (Measurability of stopped processes) {#PROP-3.2.1}
 
@@ -185,6 +185,8 @@ For time-homogeneous chains, $P$ is independent of $t$.
 1. For each $x \in E$, $A \mapsto P(x, A)$ is a probability measure on $(E, \mathcal{E})$
 2. For each $A \in \mathcal{E}$, $x \mapsto P(x, A)$ is measurable
 
+Equivalently, $P$ is a stochastic (Markov) kernel in the sense of Chapter 2, §2.2.7; see [DEF-2.2.7].
+
 **Remark 3.3.1** (Standard Borel assumption). For general state spaces, we require $E$ to be a **standard Borel space** (a measurable subset of a Polish space, i.e., separable complete metric space). This ensures:
 
 - Transition kernels $P(x, A)$ are well-defined and measurable
@@ -192,6 +194,7 @@ For time-homogeneous chains, $P$ is independent of $t$.
 - Optimal policies can be chosen measurably
 
 All finite and countable spaces are standard Borel. $\mathbb{R}^n$ with Borel $\sigma$-algebra is standard Borel. This covers essentially all RL applications.
+See Chapter 2, §2.1 (assumptions box and the background “Standard Borel and Polish Spaces”) for the measure-theoretic fine print and references.
 
 ---
 
@@ -203,7 +206,7 @@ A **Markov Decision Process (MDP)** is a tuple $(\mathcal{S}, \mathcal{A}, P, R,
 
 1. $\mathcal{S}$ is the **state space** (a standard Borel space)
 2. $\mathcal{A}$ is the **action space** (a standard Borel space)
-3. $P(\cdot \mid s,a)$ is a **Markov kernel** from $(\mathcal{S}\times\mathcal{A}, \mathcal{B}(\mathcal{S})\otimes\mathcal{B}(\mathcal{A}))$ to $(\mathcal{S}, \mathcal{B}(\mathcal{S}))$: $P(B \mid s,a)$ is the probability of transitioning to a Borel set $B \subseteq \mathcal{S}$ when taking action $a$ in state $s$
+3. $P(\cdot \mid s,a)$ is a **Markov kernel** from $(\mathcal{S}\times\mathcal{A}, \mathcal{B}(\mathcal{S})\otimes\mathcal{B}(\mathcal{A}))$ to $(\mathcal{S}, \mathcal{B}(\mathcal{S}))$: $P(B \mid s,a)$ is the probability of transitioning to a Borel set $B \subseteq \mathcal{S}$ when taking action $a$ in state $s$ (Chapter 2, §2.2.7; [DEF-2.2.7])
 4. $R: \mathcal{S} \times \mathcal{A} \times \mathcal{S} \to \mathbb{R}$ is the **reward function**: $R(s, a, s')$ is the reward obtained from transition $(s, a, s')$
 5. $\gamma \in [0, 1)$ is the **discount factor**
 
@@ -266,7 +269,7 @@ where the expectation is over trajectories $(S_0, A_0, R_0, S_1, A_1, R_1, \ldot
 - $R_t = R(S_t, A_t, S_{t+1})$ (rewards realized from transitions)
 
 **Notation**: The superscript $\mathbb{E}^\pi$ emphasizes that the expectation is under the probability measure $\mathbb{P}^\pi$ induced by policy $\pi$ and dynamics $P$.
-Existence and uniqueness of this trajectory measure (built from the initial state, the policy kernel, and the transition kernel) can be formalized via the Ionescu--Tulcea extension theorem; Chapter 2 gives the measurable construction of MDP trajectories.
+Existence and uniqueness of this trajectory measure (built from the initial state, the policy kernel, and the transition kernel) can be formalized via the Ionescu--Tulcea extension theorem; see Chapter 2, §2.8.1 (“MDPs as Probability Spaces”) for our measurable trajectory-space construction.
 
 **Well-definedness**: Since $\gamma < 1$ and $|R_t| \leq R_{\max}$, the series converges absolutely:
 $$
@@ -609,6 +612,14 @@ These techniques will reappear in convergence proofs for TD-learning (Chapters 8
 
 We now prove the central result: the Bellman optimality operator $\mathcal{T}$ is a $\gamma$-contraction on $(B_b(\mathcal{S}), \|\cdot\|_\infty)$.
 
+!!! note "Assumptions (Discounted dynamic programming)"
+    Throughout Sections 3.4–3.8 we assume:
+    - Standard Borel state/action spaces $(\mathcal{S},\mathcal{A})$ (Remark 3.3.1; see Chapter 2, §2.1).
+    - Measurable Markov kernels for dynamics $P(\cdot\mid s,a)$ and (stochastic) policies $\pi(\cdot\mid s)$ (Chapter 2, §2.2.7; [DEF-2.2.7]).
+    - Bounded measurable rewards: $|r(s,a)| \le R_{\max} < \infty$.
+    - Discount factor $0 \le \gamma < 1$.
+    When we discuss deterministic optimal policies, measurability of maximizers is handled via measurable selection; see Chapter 2, §2.8.2 (e.g., [THM-2.8.3]) and [@puterman:mdps:2014].
+
 **Remark 3.7.0** (Self-mapping property). Before proving contraction, we verify that $\mathcal{T}$ maps bounded measurable functions to bounded measurable functions. Under our standing assumptions---bounded rewards $|r(s,a)| \leq R_{\max}$ and discount $\gamma < 1$ ([DEF-3.4.1])---if $\|V\|_\infty < \infty$, then:
 $$
 \|\mathcal{T}V\|_\infty
@@ -616,6 +627,17 @@ $$
 \leq R_{\max} + \gamma \|V\|_\infty < \infty.
 $$
 This establishes boundedness. Measurability of $s \mapsto (\mathcal{T}V)(s)$ is immediate in the finite-action case (where the supremum is a maximum over finitely many measurable functions) and holds under standard topological hypotheses; see [PROP-2.8.2] and Chapter 2, §2.8.2 (in particular [THM-2.8.3]).
+
+**Lemma 3.7.0** (1-Lipschitz of $\max$ / $\sup$) {#LEM-3.7.0}
+
+If $\mathcal{A}$ is finite and $f,g:\mathcal{A}\to\mathbb{R}$, then
+$$
+\left|\max_{a\in\mathcal{A}} f(a) - \max_{a\in\mathcal{A}} g(a)\right|
+\le \max_{a\in\mathcal{A}} |f(a)-g(a)|.
+$$
+More generally, for arbitrary $\mathcal{A}$ the same inequality holds with $\sup$ in place of $\max$.
+
+*Proof.* For all $a$, $f(a)\le g(a)+|f(a)-g(a)|$, hence taking $\sup_a$ gives $\sup_a f(a)\le \sup_a g(a)+\sup_a|f(a)-g(a)|$. Swapping $f,g$ and combining yields the claim. $\square$
 
 **Theorem 3.7.1** (Bellman Operator Contraction) {#THM-3.7.1}
 
@@ -636,7 +658,7 @@ $$
 \left|\sup_{a\in\mathcal{A}} f(a) - \sup_{a\in\mathcal{A}} g(a)\right|
 \le \sup_{a\in\mathcal{A}} |f(a)-g(a)|.
 $$
-Indeed, $f(a)\le g(a)+|f(a)-g(a)|\le \sup_{a'}g(a')+\sup_{a'}|f(a')-g(a')|$ for all $a$, so taking $\sup_a$ yields $\sup_a f(a)\le \sup_a g(a)+\sup_a|f(a)-g(a)|$. Swapping $f,g$ gives the reverse inequality, and combining yields the claim.
+This is [LEM-3.7.0] (with $\sup$ in place of $\max$).
 
 **Step 2** (Pointwise contraction). Fix $s\in\mathcal{S}$ and define, for each $a\in\mathcal{A}$,
 $$
@@ -659,11 +681,7 @@ Therefore $|(\mathcal{T}V)(s)-(\mathcal{T}W)(s)|\le \gamma\|V-W\|_\infty$ for al
 
 **Step 3** (Supremum over states). Taking $\sup_{s\in\mathcal{S}}$ yields $\|\mathcal{T}V-\mathcal{T}W\|_\infty\le \gamma\|V-W\|_\infty$, which is [EQ-3.16]. $\square$
 
-**Remark 3.7.1** (The sup-stability mechanism). The proof exploits the **non-expansiveness of $\sup$**: taking a supremum is a 1-Lipschitz operation. Formally, for any functions $f, g$,
-$$
-|\sup_a f(a) - \sup_a g(a)| \leq \sup_a |f(a) - g(a)|.
-$$
-This is a fundamental technique in dynamic programming theory, appearing in proofs of policy improvement theorems and error propagation bounds.
+**Remark 3.7.1** (The sup-stability mechanism). Step 1 is the mechanism: taking a supremum (or a maximum over finite actions) is a 1-Lipschitz operation, so the control operator inherits the contraction from the expectation step. This technique reappears in policy improvement proofs and in error-propagation bounds.
 
 **Remark 3.7.2** (Norm specificity). The contraction [EQ-3.16] holds specifically in the **sup-norm** $\|\cdot\|_\infty$. The Bellman operator is generally **not** a contraction in $L^1$ or $L^2$ norms---the proof crucially uses
 $$
@@ -726,9 +744,9 @@ Rearranging yields $\|V^*_{\tilde r} - V^*_r\|_\infty \le \|\Delta r\|_\infty/(1
 **Remark 3.7.6** (OPE preview --- Direct Method). Off-policy evaluation (Chapter 9) can be performed via a **model-based Direct Method**: estimate $(\hat P, \hat r)$ and apply the policy Bellman operator repeatedly under the model to obtain
 $$
 \widehat{V}^{\pi} := \lim_{k\to\infty} (\mathcal{T}^{\pi}_{\hat P, \hat r})^k V_0,
-\tag{3.22}
+\tag{3.19}
 $$
-{#EQ-3.22}
+{#EQ-3.19}
 for any bounded $V_0$. The contraction property (with $\gamma<1$ and bounded $\hat r$) guarantees existence and uniqueness of $\widehat{V}^{\pi}$. Chapter 9 develops full off-policy evaluation (IPS, DR, FQE), comparing the Direct Method previewed here to importance-weighted estimators.
 
 **Remark 3.7.7** (The deadly triad --- when contraction fails). The contraction property [THM-3.7.1] guarantees convergence for **exact, tabular** value iteration. However, three ingredients common in deep RL can break this guarantee:
@@ -747,12 +765,12 @@ The **contextual bandit** from Chapter 1 is the special case $\gamma = 0$ (no st
 
 **Definition 3.8.1** (Bandit Bellman Operator) {#DEF-3.8.1}
 
-For a contextual bandit with Q-function $Q: \mathcal{X} \times \mathcal{A} \to \mathbb{R}$ (the expected immediate reward from Chapter 1), the **bandit Bellman operator** is:
+For a contextual bandit with Q-function $Q: \mathcal{X} \times \mathcal{A} \to \mathbb{R}$ given by the expected one-step reward $Q(x,a)=\mathbb{E}_\omega[R(x,a,\omega)]$ (Chapter 1; see [EQ-1.2] for our concrete reward instantiation), the **bandit Bellman operator** is:
 $$
 (\mathcal{T}_{\text{bandit}} V)(x) := \sup_{a \in \mathcal{A}} Q(x, a).
-\tag{3.19}
+\tag{3.20}
 $$
-{#EQ-3.19}
+{#EQ-3.20}
 
 This is precisely the MDP Bellman operator [EQ-3.12] specialized to $\gamma = 0$, since in the bandit setting the one-step reward is $r(x,a)=Q(x,a)$ (and when $\mathcal{A}$ is finite the supremum is a maximum):
 $$
@@ -765,9 +783,9 @@ In particular, the right-hand side does not depend on $V$: bandits have no boots
 For bandits ($\gamma = 0$), the optimal value function is:
 $$
 V^*(x) = \sup_{a \in \mathcal{A}} Q(x, a),
-\tag{3.20}
+\tag{3.21}
 $$
-{#EQ-3.20}
+{#EQ-3.21}
 
 and value iteration converges in **one step**: $V_1 = \mathcal{T}_{\text{bandit}} V_0 = V^*$ for any $V_0$.
 
@@ -784,7 +802,7 @@ $$
 V^*(x) = \max_{a \in \mathcal{A}} Q(x, a), \quad Q(x, a) = \mathbb{E}_\omega[R(x, a, \omega)].
 $$
 
-This is exactly [EQ-3.20]. The bandit formulation is the $\gamma = 0$ MDP.
+This is exactly [EQ-3.21]. The bandit formulation is the $\gamma = 0$ MDP.
 
 ---
 
@@ -1035,11 +1053,11 @@ All later algorithms---TD-learning, Q-learning, policy gradients---use Bellman o
 
 **Exercise 3.1** (Stopping times) [15 min]
 
-Let $(S_t)$ be a user satisfaction process with $S_t \in [0, 1]$. Which of the following are stopping times?
+Let $(Y_t)$ be a user satisfaction process with $Y_t \in [0, 1]$. Which of the following are stopping times?
 
-(a) $\tau_1 = \inf\{t : S_t < 0.3\}$ (first time satisfaction drops below 0.3)
-(b) $\tau_2 = \sup\{t \leq T : S_t \geq 0.8\}$ (last time satisfaction exceeds 0.8 before horizon $T$)
-(c) $\tau_3 = \min\{t : S_{t+1} < S_t\}$ (first time satisfaction decreases)
+(a) $\tau_1 = \inf\{t : Y_t < 0.3\}$ (first time satisfaction drops below 0.3)
+(b) $\tau_2 = \sup\{t \leq T : Y_t \geq 0.8\}$ (last time satisfaction exceeds 0.8 before horizon $T$)
+(c) $\tau_3 = \min\{t : Y_{t+1} < Y_t\}$ (first time satisfaction decreases)
 
 Justify the answers using [DEF-3.2.4].
 
@@ -1076,7 +1094,7 @@ Implement value iteration for the GridWorld MDP from Section 3.9.1, but with **s
 
 **Exercise 3.5** (Bandit special case) [10 min]
 
-Verify that for $\gamma = 0$, the Bellman operator [EQ-3.12] reduces to the bandit operator [EQ-3.19]. Explain why value iteration converges in one step for bandits.
+Verify that for $\gamma = 0$, the Bellman operator [EQ-3.12] reduces to the bandit operator [EQ-3.20]. Explain why value iteration converges in one step for bandits.
 
 **Exercise 3.6** (Discount factor exploration) [20 min]
 

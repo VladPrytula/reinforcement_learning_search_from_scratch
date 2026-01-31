@@ -161,8 +161,11 @@ class LinUCB:
             mean_rewards[a] = mean_reward
 
             # Uncertainty bonus: α √(φ^T A_a^{-1} φ)  [EQ-6.14]
-            A_inv = np.linalg.inv(self.A[a])
-            uncertainty = np.sqrt(features @ A_inv @ features)
+            # Compute \\phi^T A_a^{-1} \\phi without forming A_a^{-1} explicitly.
+            # Solve A_a u = \\phi => u = A_a^{-1} \\phi, then take \\phi^T u.
+            a_inv_phi = np.linalg.solve(self.A[a], features)
+            quad_form = float(features @ a_inv_phi)
+            uncertainty = np.sqrt(max(quad_form, 0.0))
             uncertainties[a] = uncertainty
 
             # UCB score [EQ-6.15]

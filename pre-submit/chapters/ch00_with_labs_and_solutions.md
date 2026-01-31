@@ -677,7 +677,9 @@ def compute_regret(history, contexts, oracle_Q):
 
 Add a simple CM2 floor constraint: reject actions that violate profitability.
 
-**Setup:** Modify `reward()` to return `(r, cm2)`. Define a floor $\tau = 0.3$ (30% margin minimum).
+**Setup:** Modify `reward()` to return `(r, cm2)`. Define a floor $\tau$ in the same units as CM2 (currency per episode); start with $\tau = 2.0$.
+
+We note that production guardrails are often expressed as **margin-rate floors**, e.g. $\text{CM2} \ge 0.15 \cdot \text{GMV}$ (Chapter 10). In this toy exercise we use an **absolute CM2 floor** to keep the implementation minimal.
 
 **Constrained Q-learning:**
 ```python
@@ -694,9 +696,9 @@ def choose_action_constrained(x, eps, tau_cm2):
 
 (a) Implement `expected_cm2(x, a)` (running average like Q).
 
-(b) Train with $\tau = 0.3$. How does performance change vs unconstrained?
+(b) Train with $\tau = 2.0$. How does performance change vs unconstrained?
 
-(c) Plot the Pareto frontier: GMV vs CM2 as $\tau$ varies over $[0.0, 0.5]$.
+(c) Plot the Pareto frontier: GMV vs CM2 as $\tau$ varies over $\{0, 2, 4, 6, 8, 10, 12\}$ (or a dense grid in $[0, 12]$).
 
 **Connection:** This is a **Constrained MDP (CMDP)**. Chapter 3 previews how CMDPs connect to Bellman operators (Remark 3.5.3), Appendix C develops the duality framework, and Chapter 10 implements production guardrails for multi-constraint optimization.
 
@@ -973,6 +975,8 @@ results = exercise_0_3_regret_analysis(n_train=2000, seed=42)
 ## Exercise 0.4 --- Constrained Q-Learning with CM2 Floor
 
 **Goal:** Add profitability constraint $\mathbb{E}[\text{CM2} \mid x, a] \geq \tau$ and study the GMV-CM2 tradeoff.
+
+In this toy exercise, we treat $\tau$ as an absolute CM2 floor per episode (currency units), not a margin-rate threshold.
 
 ```python
 from scripts.ch00.lab_solutions import exercise_0_4_constrained_qlearning
@@ -1576,7 +1580,7 @@ The power-law fit interpolates this transition but doesn't reflect any fundament
 class ConstrainedQLearning:
     """Q-learning with CM2 floor constraint.
 
-    Maintains separate estimates for Q(x,a) (reward) and CM2(x,a) (margin).
+    Maintains separate estimates for Q(x,a) (reward) and CM2(x,a) (contribution margin, currency units).
     Filters actions based on estimated CM2 feasibility.
     """
     def get_feasible_actions(self, user_name):

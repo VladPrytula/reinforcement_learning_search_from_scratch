@@ -374,7 +374,7 @@ Let's build up the components incrementally:
 
 **Action $\mathcal{A}$**: "What do we control?"
 - Boost weights $\mathbf{w} \in [-a_{\max}, +a_{\max}]^K$ for $K$ features (discount, margin, private label, bestseller, recency)
-- Bounded to prevent catastrophic behavior: $|w_k| \leq a_{\max}$ (typically $a_{\max} \in [0.3, 1.0]$)
+- Bounded to prevent catastrophic behavior: $|w_k| \leq a_{\max}$ (a scale hyperparameter; in conservative deployments with standardized features, $a_{\max}$ is typically order $0.3$--$1.0$, while in Chapters 6--8 we sometimes use a larger pedagogical default such as $a_{\max}=5.0$ to make learning dynamics visually obvious)
 - Continuous space---not discrete arms like classic bandits
 
 **Reward $R$**: "What do we optimize?"
@@ -477,7 +477,7 @@ $$
 $$
 {#EQ-1.11}
 
-Typical range: $a_{\max} \in [0.3, 1.0]$ (determined by domain experts).
+Conservative range (after feature standardization): $a_{\max} \in [0.3, 1.0]$ (determined by domain experts). In our simulator, the default for the Chapter 6--8 training runs is $a_{\max}=5.0$; Section 6.1 calibrates this choice against the base-score scale and explains why this is intentionally aggressive.
 
 ### Implementation: Bounded Action Space
 
@@ -487,13 +487,14 @@ The key operation is **clipping** uncalibrated policy outputs to the bounded spa
 import numpy as np
 
 # Project action onto A = [-a_max, +a_max]^K (full class: Lab 1.7)
-def clip_action(a, a_max=0.5):
+def clip_action(a, a_max):
     """Enforce #EQ-1.11 bounds. Critical for safety."""
     return np.clip(a, -a_max, a_max)
 
 # Neural policy might output unbounded values
 a_bad = np.array([1.2, -0.3, 0.8, -1.5, 0.4])
-a_safe = clip_action(a_bad)  # -> [0.5, -0.3, 0.5, -0.5, 0.4]
+# Example for illustration; in the simulator use cfg.action.a_max.
+a_safe = clip_action(a_bad, a_max=0.5)  # -> [0.5, -0.3, 0.5, -0.5, 0.4]
 ```
 
 | Action | Before | After Clipping |

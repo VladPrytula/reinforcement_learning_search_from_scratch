@@ -60,7 +60,7 @@ We begin.
     These assumptions apply throughout this chapter.
     - Spaces $\mathcal{S}$, $\mathcal{A}$, contexts $\mathcal{X}$, and outcome spaces are standard Borel (measurable subsets of Polish spaces, i.e. separable completely metrizable topological spaces). This guarantees existence of regular conditional probabilities and measurable stochastic kernels.
     - Rewards are integrable: $R \in L^1$. For discounted RL with $0 \le \gamma < 1$, assume bounded rewards (or a uniform bound on expected discounted sums) so value iteration is well-defined.
-    - Transition and policy kernels $P(\cdot \mid s,a)$ and $\pi(\cdot \mid s)$ are Markov kernels measurable in their arguments.
+    - Transition and policy kernels $P(\cdot \mid s,a)$ and $\pi(\cdot \mid s)$ are Markov kernels (stochastic kernels; [DEF-2.2.7]) measurable in their arguments.
     - Off-policy evaluation (IPS): positivity/overlap - if $\pi(a \mid x) > 0$ then $\mu(a \mid x) > 0$ for the logging policy $\mu$.
 
 ??? info "Background: Standard Borel and Polish Spaces"
@@ -237,7 +237,16 @@ $$
 
 **Remark 2.2.6** (Monotone convergence technique). The key mechanism is monotone convergence: approximate $X$ by an increasing sequence $X_n \uparrow X$ of simple functions and pass the limit inside the integral. No domination is required; monotonicity alone suffices.
 
-**Remark 2.2.7** (Dominated convergence, informal). The **Dominated Convergence Theorem** complements monotone convergence: if $X_n \to X$ almost surely and there exists an integrable random variable $Y$ with $|X_n| \le Y$ for all $n$, then $X$ is integrable and $\mathbb{E}[X_n] \to \mathbb{E}[X]$. Intuitively, a single integrable bound $Y$ prevents “mass from escaping to infinity,” allowing us to interchange limit and expectation. In later chapters this justifies moving gradients or limits inside expectations when rewards or score functions are uniformly bounded.
+**Theorem 2.2.4** (Dominated Convergence Theorem) {#THM-2.2.4}
+
+Let $X_1, X_2, \ldots$ be measurable random variables with $X_n \to X$ almost surely. Suppose there exists an integrable random variable $Y$ such that $|X_n| \le Y$ almost surely for all $n$. Then $X$ is integrable and
+$$
+\lim_{n \to \infty} \mathbb{E}[X_n] = \mathbb{E}[X].
+$$
+
+*Proof.* This is the standard Dominated Convergence Theorem for Lebesgue integration; see [@folland:real_analysis:1999, Chapter 2]. $\square$
+
+**Remark 2.2.7** (Dominated convergence technique). Intuitively, a single integrable bound $Y$ prevents “mass from escaping to infinity,” allowing us to interchange limits and expectations. In later chapters this justifies moving gradients or limits inside expectations when rewards or score functions are uniformly bounded.
 
 **Remark 2.2.8** (RL preview: reward expectations). In RL, the value function
 $V^\pi(s) = \mathbb{E}^\pi[\sum_{t=0}^\infty \gamma^t R_t \mid S_0 = s]$
@@ -248,9 +257,9 @@ $$
 \sum_{t=0}^\infty \gamma^t |R_t| \le \frac{R_{\max}}{1-\gamma}<\infty
 $$
 almost surely, and therefore the discounted return is dominated by an integrable bound. By dominated convergence (equivalently, Fubini/Tonelli for absolutely convergent series), we may interchange expectation and the infinite sum:
-$
+$$
 \mathbb{E}^\pi[\sum_{t\ge 0}\gamma^t R_t]=\sum_{t\ge 0}\gamma^t \mathbb{E}^\pi[R_t].
-$
+$$
 Chapter 3 uses this to justify Bellman fixed-point manipulations rigorously.
 
 ### 2.2.5 Measurable Functions
@@ -275,6 +284,21 @@ This definition justifies the **random variable** definition (2.2.3): a random v
 Let $\mathcal{S}_{\text{seg}} = \{s_1, \ldots, s_K\}$ be a finite set of user segments equipped with the power-set $\sigma$-algebra $2^{\mathcal{S}_{\text{seg}}}$. A **segment distribution** is a probability measure $\mathbb{P}_{\text{seg}}$ on $\mathcal{S}_{\text{seg}}$. Equivalently, it is a probability vector $\mathbf{p}_{\text{seg}} \in \Delta_K$ such that $\mathbb{P}_{\text{seg}}(\{s_i\}) = (\mathbf{p}_{\text{seg}})_i$ and $\sum_{i=1}^K (\mathbf{p}_{\text{seg}})_i = 1$.
 
 **Remark 2.2.10** (Simulator connection). In our simulator, $\mathcal{S}_{\text{seg}}$ is the finite set of segment labels (e.g., `price_hunter`, `premium`), and $\mathbf{p}_{\text{seg}}$ is sampled by `zoosim/world/users.py::sample_user`.
+
+### 2.2.7 Stochastic Kernels (Markov Kernels)
+
+**Definition 2.2.7** (Stochastic kernel / Markov kernel) {#DEF-2.2.7}
+
+Let $(X, \mathcal{X})$ and $(Y, \mathcal{Y})$ be measurable spaces. A **stochastic kernel** (or **Markov kernel**) $K$ from $X$ to $Y$ is a map
+$$
+K: X \times \mathcal{Y} \to [0,1], \quad (x, B) \mapsto K(B \mid x),
+$$
+such that:
+
+1. For each fixed $x \in X$, the map $B \mapsto K(B \mid x)$ is a probability measure on $(Y, \mathcal{Y})$.
+2. For each fixed $B \in \mathcal{Y}$, the map $x \mapsto K(B \mid x)$ is $\mathcal{X}$‑measurable.
+
+In RL, the transition law $P(\cdot \mid s,a)$ is a kernel from $(\mathcal{S}\times\mathcal{A}, \mathcal{B}(\mathcal{S})\otimes\mathcal{B}(\mathcal{A}))$ to $(\mathcal{S}, \mathcal{B}(\mathcal{S}))$, and a stochastic policy $\pi(\cdot \mid s)$ is a kernel from $(\mathcal{S}, \mathcal{B}(\mathcal{S}))$ to $(\mathcal{A}, \mathcal{B}(\mathcal{A}))$.
 
 ---
 
@@ -586,6 +610,8 @@ The **DBN cascade model** specifies:
    $$
    where $s(p_k) \in [0, 1]$ is the **satisfaction probability** for product $p_k$.
 
+Conditioned on the filtration up to position $k-1$, the randomness at position $k$ is generated by $C_k \sim \mathrm{Bernoulli}(\mathrm{rel}(p_k))$ on $\{E_k=1\}$ and $S_k = C_k\cdot \mathrm{Bernoulli}(s(p_k))$. This one-step dependence is the Markov structure behind #EQ-2.3.
+
 4. **Abandonment**: Define stopping time
    $$
    \tau = \min\{k : S_k = 1 \text{ or } k = M\},
@@ -663,14 +689,16 @@ These omissions are benign for closed-form derivations (e.g., #EQ-2.1, #EQ-2.3) 
 
 !!! note "Code <-> Config (position bias and satisfaction)"
     PBM and DBN parameters map to configuration fields:
-    - Examination bias vectors: `BehaviorConfig.pos_bias` in `zoosim/core/config.py:180-186`
-    - Satisfaction dynamics: `BehaviorConfig.satisfaction_gain`, `BehaviorConfig.satisfaction_decay`, `BehaviorConfig.abandonment_threshold`, `BehaviorConfig.post_purchase_fatigue` in `zoosim/core/config.py:175-179`
+    - Examination bias vectors (logits): `BehaviorConfig.pos_bias` in `zoosim/core/config.py:220-226`
+    - Examination sensitivity: `BehaviorConfig.exam_sensitivity` in `zoosim/core/config.py:214`
+    - Satisfaction dynamics + stopping thresholds: `BehaviorConfig.satisfaction_gain`, `BehaviorConfig.satisfaction_decay`, `BehaviorConfig.abandonment_threshold`, `BehaviorConfig.post_purchase_fatigue` in `zoosim/core/config.py:215-219`
+    - Examination probability uses the logit-scale bias: `examine_prob = sigmoid(pos_bias + beh.exam_sensitivity * satisfaction)` in `zoosim/dynamics/behavior.py:89-93`
     <!-- KG: MOD-zoosim.behavior, CN-ClickModel. -->
 
 !!! note "Code <-> Behavior (Stopping Times & Satisfaction)"
     The abstract stopping time $\tau$ from [DEF-2.4.3] is implemented concretely in the user session loop:
 
-    - **Implementation**: `zoosim/dynamics/behavior.py` inside `simulate_session`
+    - **Implementation**: `zoosim/dynamics/behavior.py:67-118` (`simulate_session`)
     - **The Filtration**: The loop state (current `satisfaction`, `purchase_count`) represents $\mathcal{F}_t$.
     - **The Stopping Rule**:
       ```python
@@ -717,6 +745,7 @@ Let user $u$ have preference parameters $(\theta_{\text{price}}, \theta_{\text{p
    $$
    {#EQ-2.6}
    where $\text{pos\_bias}_k(q)$ depends on query type and position, and $H_{k-1}$ is a real-valued engagement/patience state.
+   In `zoosim`, the coefficient $\beta_{\text{exam}}$ is stored as `BehaviorConfig.exam_sensitivity`.
    This $H_k$ is **not** the DBN binary satisfaction variable $S_k$ from Definition 2.5.2.
 
 4. **Engagement dynamics (continuous state):**
@@ -747,7 +776,7 @@ Let user $u$ have preference parameters $(\theta_{\text{price}}, \theta_{\text{p
 
 The Utility-Based Cascade Model contains PBM as a parameter specialization (at the level of per-position marginals) and, in general, induces cascade-style dependence through its internal state.
 
-**(a) PBM marginal factorization (per-position).** Set $\alpha_{\text{price}} = \alpha_{\text{pl}} = \alpha_{\text{cat}} = 0$, $\sigma_u = 0$, $\beta_{\text{exam}} = 0$, $\gamma_{\text{gain}} = \gamma_{\text{decay}} = \gamma_{\text{fatigue}} = 0$, and $\theta_{\text{abandon}} = -\infty$ with $n_{\max} = \infty$ (no termination from purchases). We adopt the convention that after the stopping time [EQ-2.8] we record $E_k=0$ and $C_k=0$ for remaining positions.
+**(a) PBM marginal factorization (per-position).** Set $\alpha_{\text{price}} = \alpha_{\text{pl}} = \alpha_{\text{cat}} = 0$, $\sigma_u = 0$, $\beta_{\text{exam}} = 0$ (equivalently, `BehaviorConfig.exam_sensitivity = 0`), $\gamma_{\text{gain}} = \gamma_{\text{decay}} = \gamma_{\text{fatigue}} = 0$, and $\theta_{\text{abandon}} = -\infty$ with $n_{\max} = \infty$ (no termination from purchases). We adopt the convention that after the stopping time [EQ-2.8] we record $E_k=0$ and $C_k=0$ for remaining positions.
 
 Define the position-only continuation probabilities $g_k(q):=\sigma(\text{pos\_bias}_k(q))$, and let $\theta_k := \mathbb{P}(E_k = 1)$ denote the induced marginal examination probability at position $k$. Then $\theta_1 = g_1(q)$ and, for $k \ge 2$,
 $$
@@ -793,7 +822,7 @@ Each component event at position $j \leq k$ is determined by $(E_1, \ldots, E_j,
     | $\alpha_{\text{cat}}$ | `BehaviorConfig.alpha_cat` | 0.6 |
     | $\sigma_u$ | `BehaviorConfig.sigma_u` | 0.8 |
     | $\text{pos\_bias}_k(q)$ | `BehaviorConfig.pos_bias[query_type][k]` | see config |
-    | $\beta_{\text{exam}}$ | hardcoded `0.2` in `behavior.py:91` | 0.2 |
+    | $\beta_{\text{exam}}$ | `BehaviorConfig.exam_sensitivity` | 0.2 |
     | $\gamma_{\text{gain}}$ | `BehaviorConfig.satisfaction_gain` | 0.5 |
     | $\gamma_{\text{decay}}$ | `BehaviorConfig.satisfaction_decay` | 0.2 |
     | $\gamma_{\text{fatigue}}$ | `BehaviorConfig.post_purchase_fatigue` | 1.2 |
@@ -801,6 +830,12 @@ Each component event at position $j \leq k$ is determined by $(E_1, \ldots, E_j,
     | $n_{\max}$ | `BehaviorConfig.max_purchases` | 3 |
 
     **Implementation location**: `zoosim/dynamics/behavior.py:67-118` (`simulate_session` function).
+    
+    **Key mechanics (file:line):**
+    - Utility computation: `_latent_utility` in `zoosim/dynamics/behavior.py:38-55`.
+    - Examination probability: `zoosim/dynamics/behavior.py:89-93` (pos_bias is a logit; `examine_prob = sigmoid(pos_bias + beh.exam_sensitivity * satisfaction)`).
+    - Click and buy logits: `zoosim/dynamics/behavior.py:95-103`.
+    - State updates and stopping conditions: `zoosim/dynamics/behavior.py:97-118`.
 
     <!-- KG: DEF-2.5.3, PROP-2.5.4, PROP-2.5.5, MOD-zoosim.behavior, CODE-behavior.simulate_session. -->
 
@@ -1394,13 +1429,14 @@ $$
 s(q, p) = s_{\text{sem}}(q, p) + s_{\text{lex}}(q, p) + \varepsilon,
 $$
 where $s_{\text{sem}}$ is the cosine similarity between query and product embeddings, $s_{\text{lex}} = \log(1 + \text{overlap}(q, p))$ is the lexical overlap component, and $\varepsilon \sim \mathcal{N}(0, \sigma^2)$ is independent observation noise.
+This is implemented in `zoosim/ranking/relevance.py:17-34`.
 
 **Step 2** (Measurability). The cosine similarity $s_{\text{sem}}: \mathbb{R}^d \times \mathbb{R}^d \to [-1, 1]$ is continuous (hence Borel measurable) away from the origin. The logarithm $\log: (0, \infty) \to \mathbb{R}$ is continuous. Compositions and sums of Borel-measurable functions are Borel measurable ([@folland:real_analysis:1999, Proposition 2.6]). The noise $\varepsilon$ is measurable as a random variable by construction. Thus $s$ is $(\mathcal{B}(\mathcal{Q}) \otimes \mathcal{B}(\mathcal{P}) \otimes \mathcal{B}(\mathbb{R}), \mathcal{B}(\mathbb{R}))$-measurable.
 
 **Step 3** (Finite second moments). We verify each component:
 
 - *Semantic component*: $|s_{\text{sem}}(q, p)| \leq 1$, so $s_{\text{sem}}^2 \leq 1$.
-- *Lexical component*: The overlap count is bounded by token-set sizes: $\text{overlap}(q, p) \leq \min(|q|, |p|) \leq M$ where $M$ is the maximum query/product token count in the simulator. Thus $s_{\text{lex}}^2 \leq (\log(1 + M))^2 < \infty$.
+- *Lexical component*: The overlap count is bounded by token-set sizes: $\text{overlap}(q, p) \leq \min(|q|, |p|) \leq M$ where $M$ is the maximum query/product token count in the simulator. In our implementation, query tokens are constructed as a fixed-length list (see `zoosim/world/queries.py:36-39`), and product tokens are derived from the category string (see `zoosim/ranking/relevance.py:21-25`). Thus $s_{\text{lex}}^2 \leq (\log(1 + M))^2 < \infty$.
 - *Noise component*: $\mathbb{E}[\varepsilon^2] = \sigma^2 < \infty$ by assumption.
 
 **Step 4** (Square-integrability of sum). By independence of $\varepsilon$ from $(q, p)$ and the elementary inequality $(a + b + c)^2 \leq 3(a^2 + b^2 + c^2)$,
@@ -1414,7 +1450,14 @@ Thus $s \in L^2$ under the simulator-induced distribution. $\square$
 **Consequence for OPE (Theorem 2.6.1):** The integrability assumption in Theorem 2.6.1 is satisfied when rewards have **finite first moments**. Since $R(x, a, \omega)$ aggregates GMV (lognormal prices with finite moments), CM2 (bounded margin rates), and clicks (bounded by `top_k`)---all with finite expectations---the IPS estimator is well-defined.
 
 !!! note "Code <-> Theory (Score Distribution)"
-    Lab 2.2 verifies Proposition 2.8.1 empirically. The implementation in `zoosim/ranking/relevance.py` combines:
+    Lab 2.2 verifies Proposition 2.8.1 empirically.
+
+    **Implementation pointers (file:line):**
+    - Context sampling (user segment + parameters): `zoosim/world/users.py:29-54`
+    - Query sampling (type, embedding jitter, tokens): `zoosim/world/queries.py:36-63`
+    - Base score definition (semantic + lexical + noise): `zoosim/ranking/relevance.py:17-34`
+
+    The base relevance score in `zoosim/ranking/relevance.py` combines:
 
     - Cosine similarity (bounded $[-1,1]$)
     - Lexical overlap $\log(1+\text{overlap})$ (bounded by token-set sizes)
@@ -1458,7 +1501,7 @@ Chapter 3 makes this rigorous and proves convergence of value iteration via cont
 
 **Proposition 2.8.2** (Bellman measurability and contraction) {#PROP-2.8.2}.
 
-Assume standard Borel state/action spaces, bounded measurable rewards $r(s,a)$, measurable Markov kernel $P(\cdot \mid s,a)$, measurable policy kernel $\pi(\cdot \mid s)$, and discount $0 \le \gamma < 1$. Then on $(B_b(\mathcal{S}), \|\cdot\|_\infty)$,
+Assume standard Borel state/action spaces, bounded measurable rewards $r(s,a)$, measurable Markov kernel $P(\cdot \mid s,a)$ (a stochastic kernel; [DEF-2.2.7]), measurable policy kernel $\pi(\cdot \mid s)$, and discount $0 \le \gamma < 1$. Then on $(B_b(\mathcal{S}), \|\cdot\|_\infty)$,
 - the policy evaluation operator
   $$
   (\mathcal{T}^\pi V)(s) := \int_{\mathcal{A}} r(s,a)\, \pi(da\mid s) + \gamma \int_{\mathcal{A}}\int_{\mathcal{S}} V(s')\, P(ds'\mid s,a)\, \pi(da\mid s)
@@ -1483,17 +1526,17 @@ g_V(s,a) := \int_{\mathcal{S}} V(s')\,P(ds'\mid s,a).
 $$
 Since $V$ is bounded measurable and $P$ is a Markov kernel measurable in $(s,a)$, the map $(s,a)\mapsto g_V(s,a)$ is measurable and satisfies $|g_V(s,a)|\le \|V\|_\infty$.
 Therefore the integrand
-$
+$$
 f_V(s,a):= r(s,a)+\gamma g_V(s,a)
-$
+$$
 is bounded measurable in $(s,a)$, and because $\pi(\cdot\mid s)$ is a measurable kernel, the map
-$
+$$
 s\mapsto \int_{\mathcal{A}} f_V(s,a)\,\pi(da\mid s)
-$
+$$
 is measurable. This is exactly $\mathcal{T}^\pi V$, so $\mathcal{T}^\pi$ maps $B_b(\mathcal{S})$ to itself. Moreover,
-$
+$$
 \|\mathcal{T}^\pi V\|_\infty \le \|r\|_\infty + \gamma\|V\|_\infty
-$
+$$
 by $|g_V|\le \|V\|_\infty$.
 
 For contraction, let $V,W\in B_b(\mathcal{S})$. Then
@@ -1502,16 +1545,16 @@ $$
 = \gamma \int_{\mathcal{A}}\int_{\mathcal{S}} (V(s')-W(s'))\,P(ds'\mid s,a)\,\pi(da\mid s),
 $$
 so by the triangle inequality and $|V(s')-W(s')|\le \|V-W\|_\infty$,
-$
+$$
 |(\mathcal{T}^\pi V - \mathcal{T}^\pi W)(s)| \le \gamma \|V-W\|_\infty
-$
+$$
 for all $s$, hence $\|\mathcal{T}^\pi V - \mathcal{T}^\pi W\|_\infty \le \gamma\|V-W\|_\infty$.
 
 **(ii) Control operator $\mathcal{T}$.**
 For each fixed $(s,a)$, the same bound gives
-$
+$$
 \left|\int V\,dP(\cdot\mid s,a) - \int W\,dP(\cdot\mid s,a)\right|\le \|V-W\|_\infty,
-$
+$$
 so for every $s$,
 $$
 |(\mathcal{T}V)(s) - (\mathcal{T}W)(s)|
@@ -1527,7 +1570,7 @@ Measurability of $s\mapsto(\mathcal{T}V)(s)$ requires additional topological str
 $$
 (\mathcal{T} V)(s) := \sup_{a \in \mathcal{A}} \Big\{ r(s,a) + \gamma \int_{\mathcal{S}} V(s')\, P(ds'\mid s,a) \Big\},
 $$
-measurability of $\mathcal{T}V$ can require additional topological assumptions (e.g., compact $\mathcal{A}$ and upper semicontinuity) or application of a measurable selection theorem. Contraction still holds under boundedness and $0 \le \gamma < 1$. The measurable selection theorem needed for the control operator appears in **§2.8.2 (Advanced: Measurable Selection and Optimal Policies)** below.
+measurability of $\mathcal{T}V$ can require additional topological assumptions (e.g., compact metric $\mathcal{A}$ and upper semicontinuity) together with a measurable maximum/selection argument. A standard route is the measurable maximum theorem plus the Kuratowski--Ryll--Nardzewski selection theorem; see Theorem 2.8.3 in **§2.8.2 (Advanced: Measurable Selection and Optimal Policies)** below. Contraction still holds under boundedness and $0 \le \gamma < 1$.
 
 ---
 
@@ -1575,9 +1618,9 @@ is nonempty and compact (in particular, closed).
 The remaining issue is measurability of the correspondence $s\mapsto A^*(s)$. Under (A1)–(A2) and the standard Borel/compact-metric assumptions, a measurable maximum theorem guarantees that $A^*$ has a measurable graph (equivalently, $A^*$ is a measurable correspondence); see [@bertsekas:stochastic_oc:1996, Chapter 7] for a treatment in the stochastic control setting.
 
 Since $\mathcal{S}$ is standard Borel and $\mathcal{A}$ is a compact metric space, the Kuratowski--Ryll--Nardzewski selection theorem [@kuratowski:selectors:1965] applies: every nonempty closed-valued measurable correspondence admits a Borel measurable selector. Therefore there exists a Borel measurable $\pi^*:\mathcal{S}\to\mathcal{A}$ such that $\pi^*(s)\in A^*(s)$ for all $s$, i.e.,
-$
+$$
 Q(s,\pi^*(s))=\sup_{a\in\mathcal{A}}Q(s,a).
-$
+$$
 $\square$
 
 **What this guarantees for RL.** This theorem ensures:
@@ -1600,7 +1643,7 @@ $\square$
 
 **Practical takeaway.** In the finite-action and compact-action settings emphasized early in this book, measurability of greedy selectors is immediate; the selection theorem becomes essential primarily when passing to genuinely continuous action spaces. On a first reading, we may treat the set-theoretic details as background and focus on the consequences stated above.
 
-*References:* The original Kuratowski--Ryll--Nardzewski theorem appears in [@kuratowski:selectors:1965]. For textbook treatments: [@kechris:classical_dsp:1995, §36] provides the definitive descriptive set theory perspective; [@bertsekas:stochastic_oc:1996, Chapter 7] develops the RL-specific machinery and verifies standard Borel conditions for typical RL state/action spaces.
+*References:* The original Kuratowski--Ryll--Nardzewski theorem applies to measurable correspondences $F:S\to 2^{A}$ from a standard Borel space $S$ into a Polish space $A$ with nonempty closed values, and yields a Borel measurable selector $f(s)\in F(s)$; see [@kuratowski:selectors:1965]. For textbook treatments: [@kechris:classical_dsp:1995, §36] provides the definitive descriptive set theory perspective; [@bertsekas:stochastic_oc:1996, Chapter 7] develops the stochastic control/RL machinery (measurable maximum arguments plus selection) under standard Borel assumptions.
 
 ---
 
@@ -1674,10 +1717,10 @@ All rely on the probability foundations built in this chapter.
 
     The simulator implements the **Utility-Based Cascade Model** (§2.5.4). Under a parameter specialization it reproduces PBM's marginal factorization (Proposition 2.5.4), and in general it exhibits cascade-style dependence through an internal state.
 
-    - **Position bias**: `BehaviorConfig.pos_bias` in `zoosim/core/config.py:180-186` — dictionary mapping query types to position bias vectors (PBM-like behavior)
-    - **Engagement dynamics ($H_k$)**: `BehaviorConfig.satisfaction_decay` and `satisfaction_gain` in `zoosim/core/config.py:175-176` — state-driven cascade dependence (DBN-like mechanism)
-    - **Abandonment threshold**: `BehaviorConfig.abandonment_threshold` in `zoosim/core/config.py:177` — session termination condition
-    - **Seeds**: `SimulatorConfig.seed` in `zoosim/core/config.py:252` for reproducible click patterns
+    - **Position bias**: `BehaviorConfig.pos_bias` in `zoosim/core/config.py:220-226` — dictionary mapping query types to position bias vectors (PBM-like behavior)
+    - **Engagement dynamics ($H_k$)**: `BehaviorConfig.satisfaction_decay` and `satisfaction_gain` in `zoosim/core/config.py:215-216` — state-driven cascade dependence (DBN-like mechanism)
+    - **Abandonment threshold**: `BehaviorConfig.abandonment_threshold` in `zoosim/core/config.py:217` — session termination condition
+    - **Seeds**: `SimulatorConfig.seed` in `zoosim/core/config.py:292` for reproducible click patterns
 
     **Implementation modules:**
 

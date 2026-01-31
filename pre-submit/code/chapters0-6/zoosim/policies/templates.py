@@ -29,11 +29,11 @@ class BoostTemplate:
     Mathematical correspondence: Template t: C → ℝ from [DEF-6.1.1]
 
     A boost template assigns a boost value to each product based on its
-    attributes (margin, brand, popularity, price, discount, strategic flag).
+    attributes (CM2, private-label flag, bestseller score, price, discount, strategic flag).
 
     Attributes:
         id: Template identifier (0 to M-1)
-        name: Human-readable name (e.g., "High Margin")
+        name: Human-readable name (e.g., "Positive CM2")
         description: Business objective description
         boost_fn: Function mapping product to boost value
                   Signature: (product: Product) -> float
@@ -71,7 +71,7 @@ def compute_catalog_stats(products: List[Product]) -> Dict[str, float]:
         stats: Dictionary with keys:
             - 'price_p25': 25th percentile price
             - 'price_p75': 75th percentile price
-            - 'pop_max': Maximum popularity (bestseller score)
+            - 'pop_max': Maximum bestseller score (popularity proxy)
             - 'own_brand': String identifier for own-brand products
             - 'num_categories': Number of unique categories
     """
@@ -109,9 +109,9 @@ def create_standard_templates(
 
     Template Library:
     - t0: Neutral (no boost)
-    - t1: High Margin (boost CM2 > 0.4)
-    - t2: CM2 Boost (boost own-brand products)
-    - t3: Popular (boost by log-popularity)
+    - t1: Positive CM2 (boost CM2 > 0.4)
+    - t2: Private Label (boost own-brand products)
+    - t3: Popular (boost by normalized log-bestseller score)
     - t4: Premium (boost expensive items, price > 75th percentile)
     - t5: Budget (boost cheap items, price < 25th percentile)
     - t6: Discount (boost discounted products)
@@ -121,7 +121,7 @@ def create_standard_templates(
         catalog_stats: Dictionary with keys:
                       - 'price_p25': 25th percentile price
                       - 'price_p75': 75th percentile price
-                      - 'pop_max': Maximum popularity score
+                      - 'pop_max': Maximum bestseller score (popularity proxy)
                       - 'own_brand': Name of own-brand label
                       - 'num_categories': Number of categories (optional)
         a_max: Maximum absolute boost value (default 5.0)
@@ -146,17 +146,17 @@ def create_standard_templates(
             description="No boost adjustment (base ranker only)",
             boost_fn=lambda p: 0.0,
         ),
-        # t1: High Margin
+        # t1: Positive CM2
         BoostTemplate(
             id=1,
-            name="High Margin",
-            description="Promote products with CM2 > 0.4",
+            name="Positive CM2",
+            description="Promote products with positive contribution margin (CM2 > 0.4)",
             boost_fn=lambda p: a_max if p.cm2 > 0.4 else 0.0,
         ),
-        # t2: CM2 Boost (Own Brand)
+        # t2: Private Label (Own Brand)
         BoostTemplate(
             id=2,
-            name="CM2 Boost",
+            name="Private Label",
             description="Promote own-brand (private-label) products",
             boost_fn=lambda p: a_max if p.is_pl else 0.0,
         ),
